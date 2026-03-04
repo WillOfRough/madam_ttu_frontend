@@ -124,3 +124,13 @@
   background: var(--wine);
   color: var(--cream);
 }
+
+.homeBtn svg {
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+.errorIcon {
+  color: var(--error, #dc3545);
+  opacity: 0.7;
+}

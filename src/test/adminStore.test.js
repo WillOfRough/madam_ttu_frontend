@@ -1,35 +1,46 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import useAdminStore from '../store/adminStore';
 
+// Mock the auth service so tests don't make real API calls
+vi.mock('../api/authService', () => ({
+  login: vi.fn(({ email, password }) => {
+    if (email === 'admin@madam.mj' && password === 'madam2026') {
+      return Promise.resolve({ accountId: 'admin-1', email });
+    }
+    return Promise.reject(new Error('Invalid credentials'));
+  }),
+  logout: vi.fn(() => Promise.resolve()),
+}));
+
 describe('Admin Store - 관리자 상태 관리', () => {
-  beforeEach(() => {
-    useAdminStore.getState().logout();
+  beforeEach(async () => {
+    await useAdminStore.getState().logout();
   });
 
   describe('인증', () => {
-    it('올바른 비밀번호(madam2026)로 로그인 성공', () => {
-      const result = useAdminStore.getState().login('madam2026');
+    it('올바른 자격 증명으로 로그인 성공', async () => {
+      const result = await useAdminStore.getState().login({ email: 'admin@madam.mj', password: 'madam2026' });
       expect(result).toBe(true);
       expect(useAdminStore.getState().isAuthenticated).toBe(true);
     });
 
-    it('잘못된 비밀번호로 로그인 실패', () => {
-      const result = useAdminStore.getState().login('wrong');
+    it('잘못된 자격 증명으로 로그인 실패', async () => {
+      const result = await useAdminStore.getState().login({ email: 'wrong@test.com', password: 'wrong' });
       expect(result).toBe(false);
       expect(useAdminStore.getState().isAuthenticated).toBe(false);
     });
 
-    it('빈 비밀번호로 로그인 실패', () => {
-      const result = useAdminStore.getState().login('');
+    it('빈 비밀번호로 로그인 실패', async () => {
+      const result = await useAdminStore.getState().login({ email: 'test@test.com', password: '' });
       expect(result).toBe(false);
     });
 
-    it('로그아웃하면 인증 해제 및 선택 초기화', () => {
-      useAdminStore.getState().login('madam2026');
+    it('로그아웃하면 인증 해제 및 선택 초기화', async () => {
+      await useAdminStore.getState().login({ email: 'admin@madam.mj', password: 'madam2026' });
       useAdminStore.getState().setSelectedUser('m1');
       useAdminStore.getState().setMatchSource('m2');
 
-      useAdminStore.getState().logout();
+      await useAdminStore.getState().logout();
 
       const state = useAdminStore.getState();
       expect(state.isAuthenticated).toBe(false);

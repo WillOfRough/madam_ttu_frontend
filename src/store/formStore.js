@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 const useFormStore = create((set) => ({
-  currentStep: 1,
+  currentStep: 0,
   formData: {
     // Step 1: 자기소개
     gender: '',
@@ -37,7 +37,7 @@ const useFormStore = create((set) => ({
 
   setStep: (step) => set({ currentStep: step }),
   nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
-  prevStep: () => set((state) => ({ currentStep: Math.max(1, state.currentStep - 1) })),
+  prevStep: () => set((state) => ({ currentStep: Math.max(0, state.currentStep - 1) })),
 
   updateField: (field, value) =>
     set((state) => ({
@@ -92,7 +92,7 @@ const useFormStore = create((set) => ({
 
   resetForm: () =>
     set({
-      currentStep: 1,
+      currentStep: 0,
       formData: {
         gender: '', name: '', nickname: '', oneLiner: '', birthYear: '', height: '',
         location: '', education: '', job: '', religion: '', drinking: '',

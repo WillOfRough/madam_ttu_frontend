@@ -211,3 +211,11 @@
   color: var(--wine);
   background: var(--rose-pale);
 }
+
+.emptyMsg {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--charcoal-pale);
+  font-style: italic;
+  font-size: 0.88rem;
+}

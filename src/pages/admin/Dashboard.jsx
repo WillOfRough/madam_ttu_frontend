@@ -17,8 +17,8 @@ export default function Dashboard() {
 
   if (!isAuthenticated) return null;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/admin');
   };
 

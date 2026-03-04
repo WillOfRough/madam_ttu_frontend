@@ -1,10 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import useFormStore from '../store/formStore';
 import useAdminStore from '../store/adminStore';
 import mockUsers from '../data/mockUsers';
 import { getMatchRecommendations } from '../utils/matchScore';
+
+// Mock the auth service
+vi.mock('../api/authService', () => ({
+  login: vi.fn(({ email, password }) => {
+    if (email === 'admin@madam.mj' && password === 'madam2026') {
+      return Promise.resolve({ accountId: 'admin-1', email });
+    }
+    return Promise.reject(new Error('Invalid credentials'));
+  }),
+  logout: vi.fn(() => Promise.resolve()),
+}));
 
 describe('Integration - 사용자 플로우 시뮬레이션', () => {
   beforeEach(() => {
@@ -13,6 +24,10 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
 
   it('전체 폼 입력 플로우: 기본정보 → 성격 → 선호 → 완료', () => {
     const store = useFormStore.getState();
+
+    // Start at Step 0 (account), simulate login done by moving to Step 1
+    expect(store.currentStep).toBe(0);
+    store.nextStep(); // → Step 1
 
     // Step 1: 기본 정보 입력
     store.updateField('gender', 'male');
@@ -81,6 +96,7 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
 
   it('뒤로가기 플로우: Step 2에서 Step 1로 돌아갈 때 데이터 유지', () => {
     const store = useFormStore.getState();
+    store.setStep(1); // Start at Step 1 (after account registration)
     store.updateField('name', '홍길동');
     store.updateField('gender', 'male');
     store.togglePersonality('#다정한_츤데레');
@@ -100,15 +116,13 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
 });
 
 describe('Integration - 관리자 플로우 시뮬레이션', () => {
-  beforeEach(() => {
-    useAdminStore.getState().logout();
+  beforeEach(async () => {
+    await useAdminStore.getState().logout();
   });
 
-  it('관리자 전체 플로우: 로그인 → 필터링 → 프로필 조회 → 매칭', () => {
-    const store = useAdminStore.getState();
-
+  it('관리자 전체 플로우: 로그인 → 필터링 → 프로필 조회 → 매칭', async () => {
     // 1. 로그인
-    const loginResult = store.login('madam2026');
+    const loginResult = await useAdminStore.getState().login({ email: 'admin@madam.mj', password: 'madam2026' });
     expect(loginResult).toBe(true);
     expect(useAdminStore.getState().isAuthenticated).toBe(true);
 
@@ -146,14 +160,14 @@ describe('Integration - 관리자 플로우 시뮬레이션', () => {
     expect(useAdminStore.getState().selectedUserId).toBe(topMatch.user.id);
 
     // 7. 로그아웃
-    useAdminStore.getState().logout();
+    await useAdminStore.getState().logout();
     expect(useAdminStore.getState().isAuthenticated).toBe(false);
     expect(useAdminStore.getState().selectedUserId).toBeNull();
     expect(useAdminStore.getState().matchSourceId).toBeNull();
   });
 
-  it('필터 조합: 성별 + 검색어', () => {
-    useAdminStore.getState().login('madam2026');
+  it('필터 조합: 성별 + 검색어', async () => {
+    await useAdminStore.getState().login({ email: 'admin@madam.mj', password: 'madam2026' });
     useAdminStore.getState().setGenderFilter('female');
     useAdminStore.getState().setSearchQuery('디자이너');
 

@@ -1,11 +1,10 @@
-import { X, MapPin, Briefcase, GraduationCap, Wine, Cigarette, BookOpen } from 'lucide-react';
+import { X, MapPin, Briefcase, GraduationCap, Wine, Cigarette, BookOpen, Check, XCircle } from 'lucide-react';
 import useAdminStore from '../../store/adminStore';
-import mockUsers from '../../data/mockUsers';
+import useProfileListStore from '../../store/profileListStore';
 import {
   RELIGION_OPTIONS,
   DRINKING_OPTIONS,
   SMOKING_OPTIONS,
-  LOCATION_OPTIONS,
   EDUCATION_OPTIONS,
 } from '../../data/constants';
 import styles from './ProfileCard.module.css';
@@ -16,9 +15,18 @@ function getLabel(options, value) {
 
 export default function ProfileCard() {
   const { selectedUserId, clearSelection, setMatchSource } = useAdminStore();
-  const user = mockUsers.find((u) => u.id === selectedUserId);
+  const { getProfileById, updateProfileStatus } = useProfileListStore();
+  const user = getProfileById(selectedUserId);
 
   if (!user) return null;
+
+  const handleApprove = async () => {
+    await updateProfileStatus(user.id, 'APPROVED');
+  };
+
+  const handleReject = async () => {
+    await updateProfileStatus(user.id, 'REJECTED');
+  };
 
   return (
     <div className={styles.card}>
@@ -33,11 +41,38 @@ export default function ProfileCard() {
         </button>
       </div>
 
+      {/* Status + Actions */}
+      {user.status && (
+        <div className={styles.statusRow}>
+          <span className={`${styles.statusBadge} ${styles[`status_${user.status.toLowerCase()}`]}`}>
+            {user.status}
+          </span>
+          <div className={styles.statusActions}>
+            <button
+              className={styles.approveBtn}
+              onClick={handleApprove}
+              disabled={user.status === 'APPROVED'}
+              title="승인"
+            >
+              <Check size={14} /> 승인
+            </button>
+            <button
+              className={styles.rejectBtn}
+              onClick={handleReject}
+              disabled={user.status === 'REJECTED'}
+              title="거절"
+            >
+              <XCircle size={14} /> 거절
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Photo placeholder */}
       <div className={styles.photoSection}>
         <div className={styles.photoPlaceholder}>
           <BookOpen size={32} />
-          <span>사진 {user.photos.length}장</span>
+          <span>사진 {user.photos?.length || 0}장</span>
         </div>
       </div>
 
@@ -53,7 +88,7 @@ export default function ProfileCard() {
         </div>
         <div className={styles.infoItem}>
           <span className={styles.infoLabel}>MBTI</span>
-          <span className={styles.infoValue}>{user.mbti}</span>
+          <span className={styles.infoValue}>{user.mbti || '-'}</span>
         </div>
       </div>
 
@@ -69,7 +104,7 @@ export default function ProfileCard() {
         </div>
         <div className={styles.detailRow}>
           <MapPin size={15} />
-          <span>{getLabel(LOCATION_OPTIONS, user.location)}</span>
+          <span>{user.location}</span>
         </div>
         <div className={styles.detailRow}>
           <BookOpen size={15} />
@@ -89,7 +124,7 @@ export default function ProfileCard() {
       <div className={styles.tagSection}>
         <h4 className={styles.tagTitle}>성격</h4>
         <div className={styles.tags}>
-          {user.personality.map((p) => (
+          {(user.personality || []).map((p) => (
             <span key={p} className={styles.tag}>{p}</span>
           ))}
         </div>
@@ -99,7 +134,7 @@ export default function ProfileCard() {
       <div className={styles.tagSection}>
         <h4 className={styles.tagTitle}>취미</h4>
         <div className={styles.tags}>
-          {user.hobbies.map((h) => (
+          {(user.hobbies || []).map((h) => (
             <span key={h} className={`${styles.tag} ${styles.hobbyTag}`}>{h}</span>
           ))}
         </div>

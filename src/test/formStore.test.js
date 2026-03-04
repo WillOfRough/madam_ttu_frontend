@@ -8,7 +8,7 @@ describe('Form Store - 폼 상태 관리', () => {
 
   it('초기 상태가 올바른지 확인', () => {
     const state = useFormStore.getState();
-    expect(state.currentStep).toBe(1);
+    expect(state.currentStep).toBe(0);
     expect(state.formData.gender).toBe('');
     expect(state.formData.name).toBe('');
     expect(state.formData.oneLiner).toBe('');
@@ -22,7 +22,7 @@ describe('Form Store - 폼 상태 관리', () => {
   describe('스텝 관리', () => {
     it('nextStep으로 다음 단계 이동', () => {
       useFormStore.getState().nextStep();
-      expect(useFormStore.getState().currentStep).toBe(2);
+      expect(useFormStore.getState().currentStep).toBe(1);
     });
 
     it('prevStep으로 이전 단계 이동', () => {
@@ -31,9 +31,9 @@ describe('Form Store - 폼 상태 관리', () => {
       expect(useFormStore.getState().currentStep).toBe(2);
     });
 
-    it('prevStep은 1 미만으로 내려가지 않음', () => {
+    it('prevStep은 0 미만으로 내려가지 않음', () => {
       useFormStore.getState().prevStep();
-      expect(useFormStore.getState().currentStep).toBe(1);
+      expect(useFormStore.getState().currentStep).toBe(0);
     });
 
     it('setStep으로 특정 단계 설정', () => {
@@ -191,7 +191,7 @@ describe('Form Store - 폼 상태 관리', () => {
       useFormStore.getState().resetForm();
 
       const state = useFormStore.getState();
-      expect(state.currentStep).toBe(1);
+      expect(state.currentStep).toBe(0);
       expect(state.formData.name).toBe('');
       expect(state.formData.gender).toBe('');
       expect(state.formData.personality).toEqual([]);

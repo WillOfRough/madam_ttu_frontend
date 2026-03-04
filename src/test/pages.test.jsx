@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import useFormStore from '../store/formStore';
 import useAdminStore from '../store/adminStore';
@@ -9,6 +9,33 @@ import FormContainer from '../pages/form/FormContainer';
 import Step1Intro from '../pages/form/Step1Intro';
 import Step2Preference from '../pages/form/Step2Preference';
 import AdminLogin from '../pages/admin/AdminLogin';
+
+// Mock auth service
+vi.mock('../api/authService', () => ({
+  login: vi.fn(({ email, password }) => {
+    if (email === 'admin@madam.mj' && password === 'madam2026') {
+      return Promise.resolve({ accountId: 'admin-1', email });
+    }
+    return Promise.reject(new Error('Invalid credentials'));
+  }),
+  logout: vi.fn(() => Promise.resolve()),
+  checkSession: vi.fn(() => Promise.reject(new Error('No session'))),
+}));
+
+// Mock authStore for FormContainer (it imports useAuthStore)
+vi.mock('../store/authStore', () => {
+  const { create } = require('zustand');
+  const store = create(() => ({
+    isLoggedIn: false,
+    accountId: null,
+    email: null,
+    isLoading: false,
+    error: null,
+    checkSession: vi.fn(() => Promise.resolve(false)),
+    clearError: vi.fn(),
+  }));
+  return { default: store };
+});
 
 const RouterWrap = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
 
@@ -46,17 +73,25 @@ describe('FormContainer 페이지', () => {
     useFormStore.getState().resetForm();
   });
 
-  it('Step 1이 기본 렌더링', () => {
+  it('Step 0 (계정 등록)이 기본 렌더링 (미로그인 시)', () => {
+    render(<RouterWrap><FormContainer /></RouterWrap>);
+    expect(screen.getByText(/마담MJ의 서재에 등록하기/)).toBeInTheDocument();
+  });
+
+  it('Step 1이 렌더링 (setStep(1) 시)', () => {
+    useFormStore.getState().setStep(1);
     render(<RouterWrap><FormContainer /></RouterWrap>);
     expect(screen.getAllByText(/소중한 당신을 알고 싶어요/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('프로그레스 바가 표시되는지 확인', () => {
+  it('프로그레스 바가 Step 1에서 표시되는지 확인', () => {
+    useFormStore.getState().setStep(1);
     render(<RouterWrap><FormContainer /></RouterWrap>);
     expect(screen.getByText('1 / 2')).toBeInTheDocument();
   });
 
-  it('마담MJ 경청 메시지가 표시되는지 확인', () => {
+  it('마담MJ 경청 메시지가 Step 1에서 표시되는지 확인', () => {
+    useFormStore.getState().setStep(1);
     render(<RouterWrap><FormContainer /></RouterWrap>);
     expect(screen.getByText(/마담MJ가 당신의 이야기를 경청/)).toBeInTheDocument();
   });
@@ -205,8 +240,8 @@ describe('Step2Preference 페이지', () => {
 });
 
 describe('AdminLogin 페이지', () => {
-  beforeEach(() => {
-    useAdminStore.getState().logout();
+  beforeEach(async () => {
+    await useAdminStore.getState().logout();
   });
 
   it('로그인 폼이 렌더링되는지 확인', () => {
@@ -215,8 +250,9 @@ describe('AdminLogin 페이지', () => {
     expect(screen.getByText('관리자 전용 입구')).toBeInTheDocument();
   });
 
-  it('비밀번호 입력 필드가 있는지 확인', () => {
+  it('이메일과 비밀번호 입력 필드가 있는지 확인', () => {
     render(<RouterWrap><AdminLogin /></RouterWrap>);
+    expect(screen.getByPlaceholderText('관리자 이메일')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('비밀번호를 입력하세요')).toBeInTheDocument();
   });
 
@@ -225,23 +261,31 @@ describe('AdminLogin 페이지', () => {
     expect(screen.getByText('입장하기')).toBeInTheDocument();
   });
 
-  it('잘못된 비밀번호로 에러 표시', () => {
+  it('잘못된 자격 증명으로 에러 표시', async () => {
     render(<RouterWrap><AdminLogin /></RouterWrap>);
-    const input = screen.getByPlaceholderText('비밀번호를 입력하세요');
-    fireEvent.change(input, { target: { value: 'wrong' } });
+    const emailInput = screen.getByPlaceholderText('관리자 이메일');
+    const passwordInput = screen.getByPlaceholderText('비밀번호를 입력하세요');
+    fireEvent.change(emailInput, { target: { value: 'wrong@test.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrong' } });
     fireEvent.click(screen.getByText('입장하기'));
-    expect(screen.getByText('비밀번호가 올바르지 않습니다.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('이메일 또는 비밀번호가 올바르지 않습니다.')).toBeInTheDocument();
+    });
   });
 
-  it('올바른 비밀번호로 인증 성공', () => {
+  it('올바른 자격 증명으로 인증 성공', async () => {
     render(
       <MemoryRouter initialEntries={['/admin']}>
         <AdminLogin />
       </MemoryRouter>
     );
-    const input = screen.getByPlaceholderText('비밀번호를 입력하세요');
-    fireEvent.change(input, { target: { value: 'madam2026' } });
+    const emailInput = screen.getByPlaceholderText('관리자 이메일');
+    const passwordInput = screen.getByPlaceholderText('비밀번호를 입력하세요');
+    fireEvent.change(emailInput, { target: { value: 'admin@madam.mj' } });
+    fireEvent.change(passwordInput, { target: { value: 'madam2026' } });
     fireEvent.click(screen.getByText('입장하기'));
-    expect(useAdminStore.getState().isAuthenticated).toBe(true);
+    await waitFor(() => {
+      expect(useAdminStore.getState().isAuthenticated).toBe(true);
+    });
   });
 });

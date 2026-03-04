@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { X, Heart, ArrowRight, Star } from 'lucide-react';
 import useAdminStore from '../../store/adminStore';
-import mockUsers from '../../data/mockUsers';
+import useProfileListStore from '../../store/profileListStore';
 import { getMatchRecommendations } from '../../utils/matchScore';
 import styles from './MatchSimulation.module.css';
 
@@ -24,12 +24,13 @@ function ScoreBar({ score }) {
 
 export default function MatchSimulation() {
   const { matchSourceId, clearMatchSource, setSelectedUser } = useAdminStore();
-  const sourceUser = mockUsers.find((u) => u.id === matchSourceId);
+  const profiles = useProfileListStore((s) => s.profiles);
+  const sourceUser = profiles.find((u) => u.id === matchSourceId);
 
   const recommendations = useMemo(() => {
     if (!sourceUser) return [];
-    return getMatchRecommendations(sourceUser, mockUsers, 5);
-  }, [sourceUser]);
+    return getMatchRecommendations(sourceUser, profiles, 5);
+  }, [sourceUser, profiles]);
 
   if (!sourceUser) return null;
 
@@ -105,6 +106,9 @@ export default function MatchSimulation() {
             </button>
           </div>
         ))}
+        {recommendations.length === 0 && (
+          <p className={styles.emptyMsg}>매칭 가능한 상대가 없습니다.</p>
+        )}
       </div>
     </div>
   );

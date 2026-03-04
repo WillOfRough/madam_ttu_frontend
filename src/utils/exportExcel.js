@@ -27,20 +27,21 @@ export function exportUsersToExcel(users, filename = '마담MJ_회원목록') {
     ID: user.id,
     성별: GENDER_LABEL[user.gender] || user.gender,
     이름: user.name,
-    닉네임: user.nickname,
+    닉네임: user.nickname || '',
     나이: user.age,
     '키(cm)': user.height,
     지역: user.location,
     학력: user.education,
     직업: user.job,
-    종교: user.religion,
+    종교: user.religion || '',
     음주: user.drinking,
-    흡연: user.smoking,
-    MBTI: user.mbti,
+    흡연: user.smoking || '',
+    MBTI: user.mbti || '',
     '성격 키워드': user.personality?.join(', ') || '',
     취미: user.hobbies?.join(', ') || '',
-    자기소개: user.intro,
-    가입일: user.createdAt,
+    자기소개: user.intro || '',
+    상태: user.status || '',
+    가입일: user.createdAt || '',
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -63,6 +64,7 @@ export function exportUsersToExcel(users, filename = '마담MJ_회원목록') {
     { wch: 30 }, // 성격
     { wch: 24 }, // 취미
     { wch: 40 }, // 자기소개
+    { wch: 10 }, // 상태
     { wch: 12 }, // 가입일
   ];
 

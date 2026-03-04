@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as authService from '../api/authService';
 
 const useAdminStore = create((set) => ({
   isAuthenticated: false,
@@ -7,15 +8,26 @@ const useAdminStore = create((set) => ({
   selectedUserId: null,
   matchSourceId: null,
 
-  login: (password) => {
-    if (password === 'madam2026') {
+  login: async ({ email, password }) => {
+    try {
+      await authService.login({ email, password });
       set({ isAuthenticated: true });
       return true;
+    } catch {
+      return false;
     }
-    return false;
   },
 
-  logout: () => set({ isAuthenticated: false, selectedUserId: null, matchSourceId: null }),
+  logout: async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // ignore
+    }
+    set({ isAuthenticated: false, selectedUserId: null, matchSourceId: null });
+  },
+
+  setAuthenticated: (value) => set({ isAuthenticated: value }),
   setGenderFilter: (filter) => set({ genderFilter: filter }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setSelectedUser: (userId) => set({ selectedUserId: userId }),

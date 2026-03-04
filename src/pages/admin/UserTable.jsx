@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { Search, Download, Eye, Heart, User } from 'lucide-react';
+import { useMemo, useEffect } from 'react';
+import { Search, Download, Eye, Heart, User, Loader } from 'lucide-react';
 import useAdminStore from '../../store/adminStore';
-import mockUsers from '../../data/mockUsers';
+import useProfileListStore from '../../store/profileListStore';
 import { exportUsersToExcel } from '../../utils/exportExcel';
 import styles from './UserTable.module.css';
 
@@ -11,21 +11,26 @@ const GENDER_ICON_CLASS = { male: styles.male, female: styles.female };
 export default function UserTable() {
   const { genderFilter, searchQuery, setGenderFilter, setSearchQuery, setSelectedUser, setMatchSource } =
     useAdminStore();
+  const { profiles, isLoading, error, fetchProfiles } = useProfileListStore();
+
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   const filtered = useMemo(() => {
-    return mockUsers.filter((u) => {
+    return profiles.filter((u) => {
       if (genderFilter !== 'all' && u.gender !== genderFilter) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
-          u.name.toLowerCase().includes(q) ||
-          u.nickname.toLowerCase().includes(q) ||
-          u.job.toLowerCase().includes(q)
+          (u.name || '').toLowerCase().includes(q) ||
+          (u.nickname || '').toLowerCase().includes(q) ||
+          (u.job || '').toLowerCase().includes(q)
         );
       }
       return true;
     });
-  }, [genderFilter, searchQuery]);
+  }, [profiles, genderFilter, searchQuery]);
 
   return (
     <div className={styles.wrapper}>
@@ -41,8 +46,8 @@ export default function UserTable() {
               {g === 'all' ? '전체' : GENDER_LABEL[g]}
               <span className={styles.count}>
                 {g === 'all'
-                  ? mockUsers.length
-                  : mockUsers.filter((u) => u.gender === g).length}
+                  ? profiles.length
+                  : profiles.filter((u) => u.gender === g).length}
               </span>
             </button>
           ))}
@@ -64,6 +69,21 @@ export default function UserTable() {
         </button>
       </div>
 
+      {/* Loading / Error */}
+      {isLoading && profiles.length === 0 && (
+        <div className={styles.loadingWrap}>
+          <Loader size={20} className={styles.spinner} />
+          <span>회원 목록을 불러오고 있습니다...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className={styles.errorWrap}>
+          <p>오류: {error}</p>
+          <button onClick={() => fetchProfiles(true)}>다시 시도</button>
+        </div>
+      )}
+
       {/* Table */}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -75,6 +95,7 @@ export default function UserTable() {
               <th>나이</th>
               <th>직업</th>
               <th>MBTI</th>
+              <th>상태</th>
               <th>가입일</th>
               <th>액션</th>
             </tr>
@@ -93,6 +114,11 @@ export default function UserTable() {
                 <td>{user.age}세</td>
                 <td>{user.job}</td>
                 <td><span className={styles.mbti}>{user.mbti}</span></td>
+                <td>
+                  <span className={`${styles.statusBadge} ${styles[`status_${(user.status || 'pending').toLowerCase()}`]}`}>
+                    {user.status || 'PENDING'}
+                  </span>
+                </td>
                 <td className={styles.dateCell}>{user.createdAt}</td>
                 <td>
                   <div className={styles.actions}>
@@ -116,7 +142,7 @@ export default function UserTable() {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <p className={styles.empty}>검색 결과가 없습니다.</p>
         )}
       </div>
