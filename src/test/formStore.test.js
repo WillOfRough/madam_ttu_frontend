@@ -11,9 +11,12 @@ describe('Form Store - 폼 상태 관리', () => {
     expect(state.currentStep).toBe(1);
     expect(state.formData.gender).toBe('');
     expect(state.formData.name).toBe('');
+    expect(state.formData.oneLiner).toBe('');
+    expect(state.formData.birthYear).toBe('');
     expect(state.formData.personality).toEqual([]);
     expect(state.formData.hobbies).toEqual([]);
     expect(state.formData.photos).toEqual([]);
+    expect(state.formData.lastWord).toBe('');
   });
 
   describe('스텝 관리', () => {
@@ -67,37 +70,37 @@ describe('Form Store - 폼 상태 관리', () => {
 
   describe('성격 키워드 토글', () => {
     it('키워드 추가', () => {
-      useFormStore.getState().togglePersonality('활발한');
-      expect(useFormStore.getState().formData.personality).toContain('활발한');
+      useFormStore.getState().togglePersonality('#다정한_츤데레');
+      expect(useFormStore.getState().formData.personality).toContain('#다정한_츤데레');
     });
 
     it('이미 선택된 키워드 제거', () => {
-      useFormStore.getState().togglePersonality('활발한');
-      useFormStore.getState().togglePersonality('활발한');
-      expect(useFormStore.getState().formData.personality).not.toContain('활발한');
+      useFormStore.getState().togglePersonality('#다정한_츤데레');
+      useFormStore.getState().togglePersonality('#다정한_츤데레');
+      expect(useFormStore.getState().formData.personality).not.toContain('#다정한_츤데레');
     });
 
     it('최대 5개까지만 선택 가능', () => {
-      const keywords = ['활발한', '차분한', '유머러스', '진지한', '다정한'];
+      const keywords = ['#다정한_츤데레', '#프로직장인', '#유머_담당', '#집순이_꿈나무', '#러닝_홀릭'];
       keywords.forEach(kw => useFormStore.getState().togglePersonality(kw));
       expect(useFormStore.getState().formData.personality).toHaveLength(5);
 
       // 6번째는 무시
-      useFormStore.getState().togglePersonality('독립적인');
+      useFormStore.getState().togglePersonality('#감성_충만');
       expect(useFormStore.getState().formData.personality).toHaveLength(5);
-      expect(useFormStore.getState().formData.personality).not.toContain('독립적인');
+      expect(useFormStore.getState().formData.personality).not.toContain('#감성_충만');
     });
 
     it('5개 선택 상태에서 기존 키워드 제거 후 새 키워드 추가 가능', () => {
-      ['활발한', '차분한', '유머러스', '진지한', '다정한'].forEach(kw =>
+      ['#다정한_츤데레', '#프로직장인', '#유머_담당', '#집순이_꿈나무', '#러닝_홀릭'].forEach(kw =>
         useFormStore.getState().togglePersonality(kw)
       );
-      useFormStore.getState().togglePersonality('활발한'); // 제거
+      useFormStore.getState().togglePersonality('#다정한_츤데레'); // 제거
       expect(useFormStore.getState().formData.personality).toHaveLength(4);
 
-      useFormStore.getState().togglePersonality('독립적인'); // 추가
+      useFormStore.getState().togglePersonality('#감성_충만'); // 추가
       expect(useFormStore.getState().formData.personality).toHaveLength(5);
-      expect(useFormStore.getState().formData.personality).toContain('독립적인');
+      expect(useFormStore.getState().formData.personality).toContain('#감성_충만');
     });
   });
 
@@ -181,7 +184,7 @@ describe('Form Store - 폼 상태 관리', () => {
       // 데이터 입력
       useFormStore.getState().updateField('name', '홍길동');
       useFormStore.getState().updateField('gender', 'male');
-      useFormStore.getState().togglePersonality('활발한');
+      useFormStore.getState().togglePersonality('#다정한_츤데레');
       useFormStore.getState().nextStep();
 
       // 리셋

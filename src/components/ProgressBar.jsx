@@ -1,6 +1,6 @@
 import styles from './ProgressBar.module.css';
 
-export default function ProgressBar({ current, total, label }) {
+export default function ProgressBar({ current, total, label, progressText }) {
   const pct = Math.round((current / total) * 100);
 
   return (
@@ -9,9 +9,12 @@ export default function ProgressBar({ current, total, label }) {
       <div className={styles.track}>
         <div className={styles.fill} style={{ width: `${pct}%` }} />
       </div>
-      <span className={styles.step}>
-        {current} / {total}
-      </span>
+      <div className={styles.meta}>
+        <span className={styles.step}>
+          {current} / {total}
+        </span>
+        {progressText && <span className={styles.progressText}>{progressText}</span>}
+      </div>
     </div>
   );
 }

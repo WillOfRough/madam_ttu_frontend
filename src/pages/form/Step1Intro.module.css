@@ -186,3 +186,10 @@
   color: var(--error);
   opacity: 0.8;
 }
+
+.fieldError {
+  font-size: 0.75rem;
+  color: var(--error);
+  margin-top: 4px;
+  padding-left: 2px;
+}

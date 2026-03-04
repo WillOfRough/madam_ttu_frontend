@@ -1,14 +1,9 @@
 /* 마담MJ의 비밀 서재 — 상수 정의 */
 
 export const GENDER_OPTIONS = [
-  { value: 'male', label: '남성' },
-  { value: 'female', label: '여성' },
+  { value: 'male', label: '멋진 신사' },
+  { value: 'female', label: '아름다운 숙녀' },
 ];
-
-export const AGE_OPTIONS = Array.from({ length: 18 }, (_, i) => ({
-  value: String(23 + i),
-  label: `${23 + i}세`,
-}));
 
 export const HEIGHT_OPTIONS = Array.from({ length: 36 }, (_, i) => ({
   value: String(150 + i),
@@ -24,7 +19,7 @@ export const EDUCATION_OPTIONS = [
 ];
 
 export const RELIGION_OPTIONS = [
-  { value: 'none', label: '무교' },
+  { value: 'none', label: '자유로운 영혼 (무교)' },
   { value: 'christian', label: '기독교' },
   { value: 'catholic', label: '천주교' },
   { value: 'buddhist', label: '불교' },
@@ -32,10 +27,10 @@ export const RELIGION_OPTIONS = [
 ];
 
 export const DRINKING_OPTIONS = [
-  { value: 'none', label: '전혀 안 함' },
+  { value: 'none', label: '전혀 안 해요' },
   { value: 'rarely', label: '가끔 (월 1~2회)' },
   { value: 'sometimes', label: '종종 (주 1~2회)' },
-  { value: 'often', label: '자주' },
+  { value: 'often', label: '자주 즐겨요' },
 ];
 
 export const SMOKING_OPTIONS = [
@@ -52,28 +47,16 @@ export const MBTI_OPTIONS = [
 ].map(v => ({ value: v, label: v }));
 
 export const PERSONALITY_KEYWORDS = [
-  '활발한', '차분한', '유머러스', '진지한', '다정한',
-  '독립적인', '감성적인', '이성적인', '모험적인', '안정적인',
-  '외향적인', '내향적인', '낙천적인', '신중한', '열정적인',
-  '배려심 깊은', '호기심 많은', '성실한', '창의적인', '리더십 있는',
+  '#다정한_츤데레', '#프로직장인', '#유머_담당', '#집순이_꿈나무', '#러닝_홀릭',
+  '#댕댕이파', '#카페투어_전문가', '#책냄새_애호가', '#요리하는_매력', '#리액션_장인',
+  '#워커홀릭_반전매력', '#감성_충만', '#운동_덕후', '#여행_중독', '#차분한_리더',
+  '#낙천적_에너자이저', '#섬세한_배려왕', '#호기심_대마왕', '#음악_없인_못살아', '#와인한잔_어때요',
 ];
 
 export const HOBBY_OPTIONS = [
   '운동/헬스', '독서', '영화/넷플릭스', '여행', '요리',
   '카페 탐방', '음악 감상', '게임', '등산', '사진/영상',
   '반려동물', '미술/전시', '와인/위스키', '캠핑', '자기개발',
-];
-
-export const LOCATION_OPTIONS = [
-  { value: 'seoul_gangnam', label: '서울 강남/서초' },
-  { value: 'seoul_songpa', label: '서울 송파/강동' },
-  { value: 'seoul_mapo', label: '서울 마포/용산' },
-  { value: 'seoul_jongno', label: '서울 종로/중구' },
-  { value: 'seoul_gangbuk', label: '서울 강북/성북' },
-  { value: 'seoul_other', label: '서울 기타' },
-  { value: 'gyeonggi', label: '경기도' },
-  { value: 'incheon', label: '인천' },
-  { value: 'other', label: '기타 지역' },
 ];
 
 export const PREFERENCE_PRIORITIES = [
@@ -86,15 +69,15 @@ export const PREFERENCE_PRIORITIES = [
 ];
 
 export const RELIGION_PREFERENCE_OPTIONS = [
-  { value: 'same', label: '같은 종교였으면 좋겠어요' },
+  { value: 'same', label: '서로 같은 믿음을 가진 분과 함께하고 싶어요' },
   { value: 'no_religion', label: '무교인 분이 좋아요' },
-  { value: 'any', label: '상관없어요' },
+  { value: 'any', label: '사랑만 있다면 상관없어요' },
 ];
 
 export const DRINKING_PREFERENCE_OPTIONS = [
   { value: 'none', label: '안 마시는 분이 좋아요' },
-  { value: 'moderate', label: '적당히 마시는 분이 좋아요' },
-  { value: 'together', label: '함께 즐길 수 있는 분이 좋아요' },
+  { value: 'moderate', label: '가끔 한 잔 정도 함께할 수 있는 분이면 좋겠어요' },
+  { value: 'together', label: '시원한 맥주든 향긋한 와인이든, 함께 즐기고 싶어요' },
   { value: 'any', label: '상관없어요' },
 ];
 
@@ -104,13 +87,14 @@ export const SMOKING_PREFERENCE_OPTIONS = [
 ];
 
 export const MADAM_QUOTES = {
-  welcome: '어서 오세요, 마담MJ의 비밀 서재에 오신 것을 환영합니다.',
-  step1_intro: '먼저, 당신이 어떤 사람인지 마담MJ에게 알려주세요.',
-  step1_personality: '당신을 가장 잘 표현하는 키워드는 무엇인가요?',
-  step1_photo: '당신의 매력을 보여줄 사진을 올려주세요.',
-  step2_intro: '이제, 어떤 인연을 꿈꾸는지 들려주세요.',
-  step2_priority: '당신에게 가장 중요한 것부터 순서대로 놓아주세요.',
-  complete: '마담MJ가 정성껏 읽어볼게요. 좋은 인연을 기대해 주세요.',
+  welcome: '어서 오세요! 당신의 인연을 소중히 여기는 마담MJ예요.',
+  step1_intro: '어서 오세요! 당신의 인연을 소중히 여기는 마담MJ예요. 편안한 마음으로 당신의 이야기를 하나씩 들려주실래요? 제가 예쁘게 기록해둘게요.',
+  step1_personality: '당신만의 특별한 매력을 5가지 키워드로 뽐내볼까요?',
+  step1_photo: '당신의 가장 빛나는 미소를 보여주세요!',
+  step2_intro: '이제, 당신이 꿈꾸는 인연은 어떤 모습인지 들려주세요.',
+  step2_priority: '상대방을 생각할 때, 당신의 마음이 가장 먼저 향하는 곳은 어디인가요?',
+  complete: '마담MJ가 당신의 소개서를 정성스럽게 읽고, 가장 어울리는 인연을 찾아볼게요.',
+  privacy: '당신의 소중한 정보와 사진은 마담MJ의 비밀 금고에 안전하게 보관됩니다. 얼굴이 함부로 공개되는 일은 절대 없으니 안심하세요!',
 };
 
 /* ── 닉네임 자동 추천 풀 ── */

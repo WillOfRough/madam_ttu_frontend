@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   GENDER_OPTIONS,
-  AGE_OPTIONS,
   HEIGHT_OPTIONS,
   EDUCATION_OPTIONS,
   RELIGION_OPTIONS,
@@ -10,7 +9,6 @@ import {
   MBTI_OPTIONS,
   PERSONALITY_KEYWORDS,
   HOBBY_OPTIONS,
-  LOCATION_OPTIONS,
   PREFERENCE_PRIORITIES,
   RELIGION_PREFERENCE_OPTIONS,
   DRINKING_PREFERENCE_OPTIONS,
@@ -22,12 +20,6 @@ describe('Constants - 상수 데이터 무결성', () => {
   it('성별 옵션이 male/female 2개인지 확인', () => {
     expect(GENDER_OPTIONS).toHaveLength(2);
     expect(GENDER_OPTIONS.map(o => o.value)).toEqual(['male', 'female']);
-  });
-
-  it('나이 옵션이 23~40세 범위인지 확인', () => {
-    expect(AGE_OPTIONS.length).toBe(18);
-    expect(AGE_OPTIONS[0].value).toBe('23');
-    expect(AGE_OPTIONS[AGE_OPTIONS.length - 1].value).toBe('40');
   });
 
   it('키 옵션이 150~185cm 범위인지 확인', () => {
@@ -63,8 +55,8 @@ describe('Constants - 상수 데이터 무결성', () => {
 
   it('성격 키워드가 20개인지 확인', () => {
     expect(PERSONALITY_KEYWORDS).toHaveLength(20);
-    expect(PERSONALITY_KEYWORDS).toContain('활발한');
-    expect(PERSONALITY_KEYWORDS).toContain('차분한');
+    expect(PERSONALITY_KEYWORDS).toContain('#다정한_츤데레');
+    expect(PERSONALITY_KEYWORDS).toContain('#프로직장인');
   });
 
   it('성격 키워드에 중복이 없는지 확인', () => {
@@ -74,13 +66,6 @@ describe('Constants - 상수 데이터 무결성', () => {
 
   it('취미 옵션이 15개인지 확인', () => {
     expect(HOBBY_OPTIONS).toHaveLength(15);
-  });
-
-  it('지역 옵션에 서울/경기/인천 포함', () => {
-    const values = LOCATION_OPTIONS.map(o => o.value);
-    expect(values).toContain('seoul_gangnam');
-    expect(values).toContain('gyeonggi');
-    expect(values).toContain('incheon');
   });
 
   it('우선순위 항목이 6개이고 id가 유일한지 확인', () => {
@@ -113,5 +98,6 @@ describe('Constants - 상수 데이터 무결성', () => {
     expect(MADAM_QUOTES.step1_intro).toBeTruthy();
     expect(MADAM_QUOTES.step2_intro).toBeTruthy();
     expect(MADAM_QUOTES.complete).toBeTruthy();
+    expect(MADAM_QUOTES.privacy).toBeTruthy();
   });
 });

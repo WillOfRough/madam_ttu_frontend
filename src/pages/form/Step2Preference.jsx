@@ -30,20 +30,20 @@ export default function Step2Preference() {
     <div className={styles.step}>
       {/* Madam Quote */}
       <div className={styles.madamQuote}>
-        <span className={styles.quoteIcon}>"</span>
+        <span className={styles.quoteIcon}>&ldquo;</span>
         <p>{MADAM_QUOTES.step2_intro}</p>
       </div>
 
       {/* Priority Ranking */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>{MADAM_QUOTES.step2_priority}</h3>
-        <p className={styles.hint}>드래그해서 순서를 바꿔주세요. 위에 있을수록 중요해요.</p>
+        <p className={styles.hint}>가장 중요하게 생각하는 순서대로 줄을 세워주세요. 드래그해서 순서를 바꿀 수 있어요.</p>
         <DragRanking items={priorityItems} onReorder={setPriorityItems} />
       </section>
 
       {/* Religion Preference */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>종교에 대해</h3>
+        <h3 className={styles.sectionTitle}>서로 같은 믿음을 가진 분과 함께 걷고 싶으신가요?</h3>
         <RadioGroup
           name="religionPref"
           options={RELIGION_PREFERENCE_OPTIONS}
@@ -54,7 +54,7 @@ export default function Step2Preference() {
 
       {/* Drinking Preference */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>음주에 대해</h3>
+        <h3 className={styles.sectionTitle}>사랑하는 사람과 함께하는 한 잔, 어떻게 생각하세요?</h3>
         <RadioGroup
           name="drinkingPref"
           options={DRINKING_PREFERENCE_OPTIONS}

@@ -7,7 +7,8 @@ const useFormStore = create((set) => ({
     gender: '',
     name: '',
     nickname: '',
-    age: '',
+    oneLiner: '',
+    birthYear: '',
     height: '',
     location: '',
     education: '',
@@ -23,6 +24,7 @@ const useFormStore = create((set) => ({
     dreamTrip: '',
     intro: '',
     photos: [],
+    lastWord: '',
     // Step 2: 선호 조건
     preferences: {
       priorities: ['appearance', 'personality', 'job', 'values', 'humor', 'lifestyle'],
@@ -92,11 +94,11 @@ const useFormStore = create((set) => ({
     set({
       currentStep: 1,
       formData: {
-        gender: '', name: '', nickname: '', age: '', height: '',
+        gender: '', name: '', nickname: '', oneLiner: '', birthYear: '', height: '',
         location: '', education: '', job: '', religion: '', drinking: '',
         smoking: '', mbti: '', personality: [], hobbies: [],
         commonCompliment: '', holidayStyle: '', dreamTrip: '',
-        intro: '', photos: [],
+        intro: '', photos: [], lastWord: '',
         preferences: {
           priorities: ['appearance', 'personality', 'job', 'values', 'humor', 'lifestyle'],
           ageRange: [25, 35],

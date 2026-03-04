@@ -14,16 +14,16 @@ const RouterWrap = ({ children }) => <BrowserRouter>{children}</BrowserRouter>;
 
 describe('PersonalityChip 컴포넌트', () => {
   it('라벨이 정상 렌더링', () => {
-    render(<PersonalityChip label="활발한" selected={false} onClick={() => {}} />);
-    expect(screen.getByText('활발한')).toBeInTheDocument();
+    render(<PersonalityChip label="#다정한_츤데레" selected={false} onClick={() => {}} />);
+    expect(screen.getByText('#다정한_츤데레')).toBeInTheDocument();
   });
 
   it('클릭 이벤트 동작', () => {
     let clicked = false;
     render(
-      <PersonalityChip label="활발한" selected={false} onClick={() => { clicked = true; }} />
+      <PersonalityChip label="#다정한_츤데레" selected={false} onClick={() => { clicked = true; }} />
     );
-    fireEvent.click(screen.getByText('활발한'));
+    fireEvent.click(screen.getByText('#다정한_츤데레'));
     expect(clicked).toBe(true);
   });
 
@@ -31,13 +31,13 @@ describe('PersonalityChip 컴포넌트', () => {
     let clicked = false;
     render(
       <PersonalityChip
-        label="활발한"
+        label="#다정한_츤데레"
         selected={false}
         onClick={() => { clicked = true; }}
         disabled={true}
       />
     );
-    fireEvent.click(screen.getByText('활발한'));
+    fireEvent.click(screen.getByText('#다정한_츤데레'));
     expect(clicked).toBe(false);
   });
 
@@ -45,13 +45,13 @@ describe('PersonalityChip 컴포넌트', () => {
     let clicked = false;
     render(
       <PersonalityChip
-        label="활발한"
+        label="#다정한_츤데레"
         selected={true}
         onClick={() => { clicked = true; }}
         disabled={true}
       />
     );
-    fireEvent.click(screen.getByText('활발한'));
+    fireEvent.click(screen.getByText('#다정한_츤데레'));
     expect(clicked).toBe(true);
   });
 });
@@ -171,7 +171,7 @@ describe('ProgressBar 컴포넌트', () => {
 describe('PrivacyBadge 컴포넌트', () => {
   it('배지 텍스트 렌더링', () => {
     render(<PrivacyBadge />);
-    expect(screen.getByText('개인정보는 마담MJ만 열람합니다')).toBeInTheDocument();
+    expect(screen.getByText(/마담MJ의 비밀 금고에 안전하게 보관/)).toBeInTheDocument();
   });
 });
 

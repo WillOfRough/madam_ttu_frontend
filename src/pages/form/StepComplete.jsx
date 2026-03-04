@@ -39,10 +39,9 @@ export default function StepComplete() {
       {/* Message */}
       <div className={`${styles.message} ${showMessage ? styles.visible : ''}`}>
         <h2>전달이 완료되었습니다</h2>
-        <p className={styles.madamWords}>"{MADAM_QUOTES.complete}"</p>
+        <p className={styles.madamWords}>&ldquo;{MADAM_QUOTES.complete}&rdquo;</p>
         <p className={styles.sub}>
-          마담MJ가 당신의 소개서를 정성스럽게 읽고,<br />
-          가장 어울리는 인연을 찾아볼게요.
+          좋은 인연을 기대해 주세요!
         </p>
       </div>
 

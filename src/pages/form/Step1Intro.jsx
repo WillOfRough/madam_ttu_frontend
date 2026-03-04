@@ -9,16 +9,11 @@ import PhotoUploader from '../../components/PhotoUploader';
 import PrivacyBadge from '../../components/PrivacyBadge';
 import {
   GENDER_OPTIONS,
-  AGE_OPTIONS,
-  HEIGHT_OPTIONS,
   EDUCATION_OPTIONS,
   RELIGION_OPTIONS,
   DRINKING_OPTIONS,
-  SMOKING_OPTIONS,
-  MBTI_OPTIONS,
   PERSONALITY_KEYWORDS,
   HOBBY_OPTIONS,
-  LOCATION_OPTIONS,
   MADAM_QUOTES,
   generateNickname,
 } from '../../data/constants';
@@ -39,20 +34,30 @@ export default function Step1Intro() {
     refreshNickname();
   }, [formData.gender, refreshNickname]);
 
-  // Required: everything except religion, hobbies, hobby text fields
+  // Birth year validation
+  const birthYearValid =
+    formData.birthYear.length === 4 &&
+    /^\d{4}$/.test(formData.birthYear) &&
+    Number(formData.birthYear) >= 1960 &&
+    Number(formData.birthYear) <= 2005;
+
+  // Height validation (140~210)
+  const heightValid =
+    /^\d{3}$/.test(formData.height) &&
+    Number(formData.height) >= 140 &&
+    Number(formData.height) <= 210;
+
+  // Required: everything except religion, hobbies, hobby text fields, oneLiner, smoking, lastWord
   const canProceed =
     formData.gender &&
     formData.name &&
-    formData.age &&
-    formData.height &&
+    birthYearValid &&
+    heightValid &&
     formData.location &&
     formData.education &&
     formData.job &&
     formData.drinking &&
-    formData.smoking &&
-    formData.mbti &&
     formData.personality.length >= 1 &&
-    formData.intro &&
     formData.photos.length >= 3;
 
   // If no nickname typed, use suggested one on next step
@@ -72,10 +77,10 @@ export default function Step1Intro() {
         <div className={styles.quoteBar} />
       </div>
 
-      {/* ── 기본 정보 ── */}
+      {/* ── 소중한 당신을 알고 싶어요 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>먼저, 당신에 대해 알려주세요</h3>
+          <h3 className={styles.sectionTitle}>소중한 당신을 알고 싶어요</h3>
           <div className={styles.sectionLine} />
         </div>
 
@@ -85,24 +90,24 @@ export default function Step1Intro() {
             options={GENDER_OPTIONS}
             value={formData.gender}
             onChange={(v) => updateField('gender', v)}
-            label="성별을 알려주세요"
+            label="당신은 멋진 신사분인가요, 아름다운 숙녀분인가요?"
             required
           />
 
           <TextField
-            label="이름이 어떻게 되세요?"
-            value={formData.name}
-            onChange={(v) => updateField('name', v)}
-            placeholder="본명을 입력해주세요"
-            required
+            label="당신은 어떤 향기를 가진 사람인가요?"
+            value={formData.oneLiner}
+            onChange={(v) => updateField('oneLiner', v)}
+            placeholder="예: 비 오는 날의 따뜻한 라떼 같은 사람입니다"
+            required={false}
           />
 
           <div className={styles.nicknameField}>
             <TextField
-              label="마담MJ가 불러드릴 별칭이에요"
+              label="이름 대신 제가 부를 예쁜 별명을 알려주세요!"
               value={formData.nickname}
               onChange={(v) => updateField('nickname', v)}
-              placeholder={suggestedNickname || '자동 생성 중...'}
+              placeholder={suggestedNickname || '다정한호밀빵, 햇살가득한오후'}
               required={false}
             />
             <button
@@ -115,32 +120,54 @@ export default function Step1Intro() {
             </button>
           </div>
 
-          <SelectField
-            label="올해 나이가 어떻게 되세요?"
-            value={formData.age}
-            onChange={(v) => updateField('age', v)}
-            options={AGE_OPTIONS}
+          <TextField
+            label="이름이 어떻게 되세요?"
+            value={formData.name}
+            onChange={(v) => updateField('name', v)}
+            placeholder="본명을 입력해주세요"
             required
           />
 
-          <SelectField
-            label="키가 어떻게 되세요?"
-            value={formData.height}
-            onChange={(v) => updateField('height', v)}
-            options={HEIGHT_OPTIONS}
-            required
-          />
+          <div>
+            <TextField
+              label="당신이 세상에 빛을 본 소중한 해는 언제인가요?"
+              value={formData.birthYear}
+              onChange={(v) => updateField('birthYear', v.replace(/\D/g, '').slice(0, 4))}
+              placeholder="숫자 4자리로 톡톡 적어주세요! (예: 1995)"
+              required
+            />
+            {formData.birthYear && !birthYearValid && (
+              <p className={styles.fieldError}>
+                어머나, 4자리 숫자로 정확히 적어주셔야 제가 기록해둘 수 있어요!
+              </p>
+            )}
+          </div>
 
-          <SelectField
-            label="주로 어디에서 지내세요?"
+          <TextField
+            label="지금 당신의 일상이 머무는 곳은 어디인가요?"
             value={formData.location}
             onChange={(v) => updateField('location', v)}
-            options={LOCATION_OPTIONS}
+            placeholder="예: 서울 마포구, 경기도 용인 수지"
             required
           />
 
+          <div>
+            <TextField
+              label="당신의 훤칠한 높이는 어느 정도인가요?"
+              value={formData.height}
+              onChange={(v) => updateField('height', v.replace(/\D/g, '').slice(0, 3))}
+              placeholder="숫자만 적어주세요 (예: 175)"
+              required
+            />
+            {formData.height && !heightValid && (
+              <p className={styles.fieldError}>
+                3자리 숫자로 정확히 적어주세요! (예: 165, 178)
+              </p>
+            )}
+          </div>
+
           <SelectField
-            label="최종 학력을 알려주세요"
+            label="배움의 길을 어디까지 걸어오셨나요?"
             value={formData.education}
             onChange={(v) => updateField('education', v)}
             options={EDUCATION_OPTIONS}
@@ -148,10 +175,10 @@ export default function Step1Intro() {
           />
 
           <TextField
-            label="어떤 일을 하고 계세요?"
+            label="지금 당신의 열정을 쏟고 있는 곳은 어디인가요?"
             value={formData.job}
             onChange={(v) => updateField('job', v)}
-            placeholder="예: 소프트웨어 엔지니어"
+            placeholder="공무원, 전문직, 사업가, 회사 이름 등 편하게 적어주세요"
             required
           />
         </div>
@@ -160,13 +187,13 @@ export default function Step1Intro() {
       {/* ── 나의 일상 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>나의 일상이 궁금해요</h3>
+          <h3 className={styles.sectionTitle}>당신의 일상이 궁금해요</h3>
           <div className={styles.sectionLine} />
         </div>
 
         <div className={styles.fieldRow}>
           <SelectField
-            label="종교가 있으신가요?"
+            label="마음속으로 깊이 의지하는 신념이나 종교가 있으신가요?"
             value={formData.religion}
             onChange={(v) => updateField('religion', v)}
             options={RELIGION_OPTIONS}
@@ -174,43 +201,34 @@ export default function Step1Intro() {
           />
 
           <SelectField
-            label="술은 즐기시는 편인가요?"
+            label="사랑하는 사람과 시원한 맥주 한 잔, 즐기시는 편인가요?"
             value={formData.drinking}
             onChange={(v) => updateField('drinking', v)}
             options={DRINKING_OPTIONS}
             required
           />
 
-          <SelectField
-            label="담배는 피우시나요?"
-            value={formData.smoking}
-            onChange={(v) => updateField('smoking', v)}
-            options={SMOKING_OPTIONS}
-            required
-          />
-
-          <SelectField
+          <TextField
             label="혹시 MBTI를 알고 계세요?"
             value={formData.mbti}
-            onChange={(v) => updateField('mbti', v)}
-            options={MBTI_OPTIONS}
-            placeholder="모르면 건너뛰어도 괜찮아요"
-            required
+            onChange={(v) => updateField('mbti', v.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4))}
+            placeholder="모르면 건너뛰어도 괜찮아요 (예: ENFP)"
+            required={false}
           />
         </div>
       </section>
 
-      {/* ── 성격 ── */}
+      {/* ── 성격 키워드 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>
-            주변에서 이런 얘기 많이 들어요
+            당신만의 특별한 매력을 뽐내볼까요?
             <span className={styles.requiredBadge}>필수</span>
           </h3>
           <div className={styles.sectionLine} />
         </div>
         <p className={styles.hint}>
-          나를 잘 표현하는 키워드를 골라주세요 (최대 5개)
+          어떤 단어들이 당신을 가장 잘 설명할까요? (최대 5개)
           <span className={styles.counter}>{formData.personality.length} / 5</span>
         </p>
         <div className={styles.chipGrid}>
@@ -230,13 +248,13 @@ export default function Step1Intro() {
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>
-            휴일은 이렇게 보내요
+            휴일에는 주로 어떻게 시간을 보내시나요?
             <span className={styles.optionalBadge}>선택</span>
           </h3>
           <div className={styles.sectionLine} />
         </div>
         <p className={styles.hint}>
-          관심 있는 것들을 골라주세요 (최대 5개)
+          당신의 마음을 즐겁게 하는 일들을 골라주세요 (최대 5개)
           <span className={styles.counter}>{formData.hobbies.length} / 5</span>
         </p>
         <div className={styles.chipGrid}>
@@ -278,33 +296,18 @@ export default function Step1Intro() {
         </div>
       </section>
 
-      {/* ── 자기소개 ── */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>
-            마담MJ에게 하고 싶은 이야기
-            <span className={styles.requiredBadge}>필수</span>
-          </h3>
-          <div className={styles.sectionLine} />
-        </div>
-        <TextField
-          value={formData.intro}
-          onChange={(v) => updateField('intro', v)}
-          placeholder="나는 이런 사람이에요, 이런 만남을 원해요... 자유롭게 적어주세요"
-          multiline
-          maxLength={500}
-        />
-      </section>
-
       {/* ── 사진 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.sectionTitle}>
-            당신의 매력을 보여줄 사진을 올려주세요
+            당신의 가장 빛나는 미소를 보여주세요!
             <span className={styles.requiredBadge}>필수</span>
           </h3>
           <div className={styles.sectionLine} />
         </div>
+        <p className={styles.hint}>
+          정면이 포함된 사진 3장 이상이면 충분해요. 얼굴이 잘 보이지 않으면 제가 상대를 찾을 때 너무 속상할 거예요!
+        </p>
         <PhotoUploader
           photos={formData.photos}
           onAdd={addPhotos}
@@ -312,6 +315,31 @@ export default function Step1Intro() {
           min={3}
           max={6}
         />
+      </section>
+
+      {/* ── 마담MJ에게 마지막 한마디 ── */}
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h3 className={styles.sectionTitle}>
+            마담MJ에게 마지막으로 한마디!
+            <span className={styles.optionalBadge}>선택</span>
+          </h3>
+          <div className={styles.sectionLine} />
+        </div>
+        <p className={styles.hint}>
+          진짜 원하는 걸 솔직하게 적어주세요. 여기에 적는 내용은 마담MJ만 볼 수 있어요!
+        </p>
+        <div className={styles.fieldRow}>
+          <TextField
+            label="마담MJ에게만 살짝 귀띔해주세요"
+            value={formData.lastWord}
+            onChange={(v) => updateField('lastWord', v)}
+            placeholder="예: 재력이 있는 분이면 좋겠어요 / 키 큰 분이 좋아요 / 연상만 원해요"
+            multiline
+            maxLength={300}
+            required={false}
+          />
+        </div>
       </section>
 
       <PrivacyBadge />

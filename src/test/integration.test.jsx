@@ -18,9 +18,9 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
     store.updateField('gender', 'male');
     store.updateField('name', '테스트 유저');
     store.updateField('nickname', '테스트닉네임');
-    store.updateField('age', '28');
+    store.updateField('birthYear', '1998');
     store.updateField('height', '175');
-    store.updateField('location', 'seoul_gangnam');
+    store.updateField('location', '서울 강남구');
     store.updateField('education', 'bachelor');
     store.updateField('job', '소프트웨어 엔지니어');
     store.updateField('religion', 'none');
@@ -29,7 +29,7 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
     store.updateField('mbti', 'INTJ');
 
     // 성격 키워드 5개 선택
-    ['차분한', '이성적인', '독립적인', '성실한', '호기심 많은'].forEach(kw =>
+    ['#다정한_츤데레', '#프로직장인', '#유머_담당', '#감성_충만', '#호기심_대마왕'].forEach(kw =>
       store.togglePersonality(kw)
     );
 
@@ -83,7 +83,7 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
     const store = useFormStore.getState();
     store.updateField('name', '홍길동');
     store.updateField('gender', 'male');
-    store.togglePersonality('활발한');
+    store.togglePersonality('#다정한_츤데레');
 
     store.nextStep(); // → Step 2
     expect(useFormStore.getState().currentStep).toBe(2);
@@ -95,7 +95,7 @@ describe('Integration - 사용자 플로우 시뮬레이션', () => {
     const data = useFormStore.getState().formData;
     expect(data.name).toBe('홍길동');
     expect(data.gender).toBe('male');
-    expect(data.personality).toContain('활발한');
+    expect(data.personality).toContain('#다정한_츤데레');
   });
 });
 
