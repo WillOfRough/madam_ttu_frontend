@@ -1,9 +1,18 @@
 import styles from './RadioGroup.module.css';
 
-export default function RadioGroup({ name, options, value, onChange, label }) {
+export default function RadioGroup({ name, options, value, onChange, label, required }) {
   return (
     <fieldset className={styles.fieldset}>
-      {label && <legend className={styles.legend}>{label}</legend>}
+      {label && (
+        <legend className={styles.legend}>
+          {label}
+          {required != null && (
+            <span className={required ? styles.requiredBadge : styles.optionalBadge}>
+              {required ? '필수' : '선택'}
+            </span>
+          )}
+        </legend>
+      )}
       <div className={styles.options}>
         {options.map((opt) => (
           <label

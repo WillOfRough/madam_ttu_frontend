@@ -86,6 +86,7 @@ export default function Step1Intro() {
             value={formData.gender}
             onChange={(v) => updateField('gender', v)}
             label="성별을 알려주세요"
+            required
           />
 
           <TextField
@@ -93,6 +94,7 @@ export default function Step1Intro() {
             value={formData.name}
             onChange={(v) => updateField('name', v)}
             placeholder="본명을 입력해주세요"
+            required
           />
 
           <div className={styles.nicknameField}>
@@ -101,6 +103,7 @@ export default function Step1Intro() {
               value={formData.nickname}
               onChange={(v) => updateField('nickname', v)}
               placeholder={suggestedNickname || '자동 생성 중...'}
+              required={false}
             />
             <button
               type="button"
@@ -117,6 +120,7 @@ export default function Step1Intro() {
             value={formData.age}
             onChange={(v) => updateField('age', v)}
             options={AGE_OPTIONS}
+            required
           />
 
           <SelectField
@@ -124,6 +128,7 @@ export default function Step1Intro() {
             value={formData.height}
             onChange={(v) => updateField('height', v)}
             options={HEIGHT_OPTIONS}
+            required
           />
 
           <SelectField
@@ -131,6 +136,7 @@ export default function Step1Intro() {
             value={formData.location}
             onChange={(v) => updateField('location', v)}
             options={LOCATION_OPTIONS}
+            required
           />
 
           <SelectField
@@ -138,6 +144,7 @@ export default function Step1Intro() {
             value={formData.education}
             onChange={(v) => updateField('education', v)}
             options={EDUCATION_OPTIONS}
+            required
           />
 
           <TextField
@@ -145,6 +152,7 @@ export default function Step1Intro() {
             value={formData.job}
             onChange={(v) => updateField('job', v)}
             placeholder="예: 소프트웨어 엔지니어"
+            required
           />
         </div>
       </section>
@@ -158,10 +166,11 @@ export default function Step1Intro() {
 
         <div className={styles.fieldRow}>
           <SelectField
-            label={<>종교가 있으신가요?<span className={styles.optionalBadge}>선택</span></>}
+            label="종교가 있으신가요?"
             value={formData.religion}
             onChange={(v) => updateField('religion', v)}
             options={RELIGION_OPTIONS}
+            required={false}
           />
 
           <SelectField
@@ -169,6 +178,7 @@ export default function Step1Intro() {
             value={formData.drinking}
             onChange={(v) => updateField('drinking', v)}
             options={DRINKING_OPTIONS}
+            required
           />
 
           <SelectField
@@ -176,6 +186,7 @@ export default function Step1Intro() {
             value={formData.smoking}
             onChange={(v) => updateField('smoking', v)}
             options={SMOKING_OPTIONS}
+            required
           />
 
           <SelectField
@@ -184,6 +195,7 @@ export default function Step1Intro() {
             onChange={(v) => updateField('mbti', v)}
             options={MBTI_OPTIONS}
             placeholder="모르면 건너뛰어도 괜찮아요"
+            required
           />
         </div>
       </section>
@@ -191,7 +203,10 @@ export default function Step1Intro() {
       {/* ── 성격 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>주변에서 이런 얘기 많이 들어요</h3>
+          <h3 className={styles.sectionTitle}>
+            주변에서 이런 얘기 많이 들어요
+            <span className={styles.requiredBadge}>필수</span>
+          </h3>
           <div className={styles.sectionLine} />
         </div>
         <p className={styles.hint}>
@@ -242,6 +257,7 @@ export default function Step1Intro() {
             value={formData.commonCompliment}
             onChange={(v) => updateField('commonCompliment', v)}
             placeholder="예: 최근에 재즈 피아노를 배우기 시작했어요"
+            required={false}
           />
 
           <TextField
@@ -249,6 +265,7 @@ export default function Step1Intro() {
             value={formData.dreamTrip}
             onChange={(v) => updateField('dreamTrip', v)}
             placeholder="예: 남프랑스 프로방스의 라벤더 밭"
+            required={false}
           />
 
           <TextField
@@ -256,6 +273,7 @@ export default function Step1Intro() {
             value={formData.holidayStyle}
             onChange={(v) => updateField('holidayStyle', v)}
             placeholder="예: 비 오는 날 창가에서 책 읽기"
+            required={false}
           />
         </div>
       </section>
@@ -263,7 +281,10 @@ export default function Step1Intro() {
       {/* ── 자기소개 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>마담MJ에게 하고 싶은 이야기</h3>
+          <h3 className={styles.sectionTitle}>
+            마담MJ에게 하고 싶은 이야기
+            <span className={styles.requiredBadge}>필수</span>
+          </h3>
           <div className={styles.sectionLine} />
         </div>
         <TextField
@@ -278,7 +299,10 @@ export default function Step1Intro() {
       {/* ── 사진 ── */}
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>당신의 매력을 보여줄 사진을 올려주세요</h3>
+          <h3 className={styles.sectionTitle}>
+            당신의 매력을 보여줄 사진을 올려주세요
+            <span className={styles.requiredBadge}>필수</span>
+          </h3>
           <div className={styles.sectionLine} />
         </div>
         <PhotoUploader

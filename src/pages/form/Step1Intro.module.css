@@ -120,18 +120,30 @@
   transform: rotate(180deg);
 }
 
-/* ── Optional badge ── */
+/* ── Required / Optional badges (section-level) ── */
+.requiredBadge,
 .optionalBadge {
   display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 400;
-  color: var(--charcoal-pale);
-  background: var(--cream-dark);
-  padding: 1px 8px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  padding: 1px 7px;
   border-radius: var(--radius-full);
   margin-left: 8px;
   vertical-align: middle;
   letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+.requiredBadge {
+  color: var(--wine);
+  background: rgba(107, 29, 42, 0.08);
+  border: 1px solid rgba(107, 29, 42, 0.12);
+}
+
+.optionalBadge {
+  color: var(--charcoal-pale);
+  background: var(--cream-dark);
+  border: 1px solid transparent;
 }
 
 /* ── Actions ── */
