@@ -1,0 +1,315 @@
+.page {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-xl);
+}
+
+/* ── Mesh Gradient Background ── */
+.meshBg {
+  position: absolute;
+  inset: -50%;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 40%, rgba(107, 29, 42, 0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, rgba(184, 146, 74, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 90%, rgba(212, 160, 168, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 70% 60%, rgba(107, 29, 42, 0.04) 0%, transparent 50%);
+  animation: meshMorph 20s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+.meshOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(170deg, transparent 30%, rgba(250, 246, 240, 0.4) 100%);
+  pointer-events: none;
+}
+
+/* ── Corner Flourishes ── */
+.flourish {
+  position: absolute;
+  color: var(--gold);
+  pointer-events: none;
+}
+
+.topLeft {
+  top: 20px;
+  left: 20px;
+}
+
+.bottomRight {
+  bottom: 20px;
+  right: 20px;
+}
+
+/* ── Container ── */
+.container {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 520px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+/* ── Wax Seal ── */
+.sealWrap {
+  position: relative;
+  opacity: 0;
+  transform: scale(3) rotate(-20deg);
+  filter: blur(8px);
+  transition: all 1s var(--ease-out);
+}
+
+.sealWrap.active {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  filter: blur(0);
+}
+
+.seal {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    #8A2E3E 0%,
+    #6B1D2A 40%,
+    #4A0F1A 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 20px rgba(107, 29, 42, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.seal::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px solid rgba(184, 146, 74, 0.3);
+}
+
+.sealInner {
+  color: var(--gold-light);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.sealGlow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184, 146, 74, 0.15) 0%, transparent 70%);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* ── Letter intro ── */
+.letter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.8s var(--ease-out);
+}
+
+.letter.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.letterLine {
+  width: 40px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.letterFrom {
+  font-family: var(--font-display-en);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+}
+
+/* ── Main Content ── */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xl);
+  opacity: 0;
+  transform: translateY(30px);
+  filter: blur(3px);
+  transition: all 1s var(--ease-out);
+}
+
+.main.active {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display-en);
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  padding: 6px 18px;
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-full);
+  background: rgba(184, 146, 74, 0.04);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-weight: 700;
+  color: var(--wine);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.title em {
+  font-style: normal;
+  font-weight: 300;
+  display: block;
+  font-size: 1.1em;
+  color: var(--wine-light);
+}
+
+.subtitle {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--charcoal-light);
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+}
+
+/* ── Features — Elegant inline ── */
+.features {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.features span {
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.04em;
+}
+
+.featureDot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.featureDot:first-child {
+  display: none;
+}
+
+/* ── CTA Button — Premium, editorial ── */
+.cta {
+  position: relative;
+  padding: 18px 52px;
+  background: var(--wine);
+  color: var(--cream);
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+  box-shadow:
+    0 4px 24px rgba(107, 29, 42, 0.3),
+    0 1px 3px rgba(107, 29, 42, 0.2);
+}
+
+.cta:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 40px rgba(107, 29, 42, 0.35),
+    0 0 60px rgba(184, 146, 74, 0.15);
+  background: var(--wine-light);
+}
+
+.cta:active {
+  transform: translateY(-1px);
+}
+
+.ctaText {
+  position: relative;
+  z-index: 1;
+}
+
+.ctaShine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(184, 146, 74, 0.12) 45%,
+    rgba(184, 146, 74, 0.25) 50%,
+    rgba(184, 146, 74, 0.12) 55%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+/* ── Privacy ── */
+.privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.02em;
+}
+
+.privacy svg {
+  opacity: 0.6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .flourish { display: none; }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+  .cta {
+    padding: 16px 36px;
+    font-size: 0.9rem;
+  }
+}

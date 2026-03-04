@@ -1,0 +1,11 @@
+.container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+
+.container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,15 @@
+.container {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-lg);
+}
+
+.progressWrap {
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-xl) var(--space-md);
+  }
+}

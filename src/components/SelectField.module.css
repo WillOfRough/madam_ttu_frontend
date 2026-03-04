@@ -1,0 +1,51 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--font-serif);
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--wine);
+  letter-spacing: 0.01em;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+.select {
+  width: 100%;
+  padding: 14px 18px;
+  padding-right: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--charcoal);
+  font-size: 0.95rem;
+  appearance: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-inner);
+}
+
+.select:focus {
+  border-color: var(--wine);
+  box-shadow: var(--shadow-inner), 0 0 0 3px var(--wine-glow);
+}
+
+.select.placeholder {
+  color: var(--charcoal-pale);
+  font-style: italic;
+}
+
+.icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--charcoal-pale);
+  pointer-events: none;
+}

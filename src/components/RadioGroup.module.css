@@ -1,0 +1,76 @@
+.fieldset {
+  border: none;
+}
+
+.legend {
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  color: var(--wine);
+  margin-bottom: var(--space-md);
+  display: block;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 14px 18px;
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.option:hover {
+  border-color: var(--wine-glow);
+  background: rgba(107, 29, 42, 0.015);
+}
+
+.option.selected {
+  border-color: var(--wine);
+  background: rgba(107, 29, 42, 0.03);
+  box-shadow: 0 0 0 3px var(--wine-glow);
+}
+
+.input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--charcoal-pale);
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color var(--duration-fast);
+}
+
+.option.selected .radio {
+  border-color: var(--wine);
+}
+
+.option.selected .radio::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wine);
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--charcoal);
+}

@@ -1,0 +1,102 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.photoCard {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(26, 26, 26, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--duration-fast);
+  backdrop-filter: blur(4px);
+}
+
+.removeBtn:hover {
+  background: var(--error);
+}
+
+.mainBadge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  background: var(--gold);
+  color: white;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.dropzone {
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-sm);
+  border: 1.5px dashed rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.dropzone:hover,
+.dropzone.active {
+  border-color: var(--wine);
+  background: rgba(107, 29, 42, 0.02);
+}
+
+.dropIcon {
+  color: var(--charcoal-pale);
+}
+
+.dropText {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--charcoal-pale);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
