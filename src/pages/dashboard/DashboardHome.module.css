@@ -1,0 +1,132 @@
+.page {
+  max-width: 960px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  margin-bottom: var(--space-xl);
+  letter-spacing: -0.03em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+}
+
+.section {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.01em;
+}
+
+.viewAll {
+  font-size: 0.8rem;
+  color: var(--coral);
+  font-weight: 600;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.viewAll:hover {
+  color: var(--coral-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.empty {
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--charcoal-pale);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.table {
+  width: 100%;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr;
+  gap: var(--space-md);
+  padding: 10px 24px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr;
+  gap: var(--space-md);
+  padding: 14px 24px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  align-items: center;
+  color: var(--charcoal-mid);
+}
+
+.tableRow:hover {
+  background: var(--navy-glow);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.name {
+  font-weight: 650;
+  color: var(--charcoal);
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .sectionHeader {
+    padding: 14px 16px;
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs) var(--space-md);
+    padding: 12px 16px;
+  }
+}

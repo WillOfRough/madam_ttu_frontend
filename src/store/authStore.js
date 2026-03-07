@@ -2,33 +2,18 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as authService from '../api/authService';
 
+const DEV = import.meta.env.DEV;
+const MOCK_MANAGER_ID = '00000000-0000-0000-0000-000000000001';
+
 const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       isLoggedIn: false,
-      accountId: null,
+      managerId: null,
       email: null,
+      name: null,
       isLoading: false,
       error: null,
-
-      signup: async ({ email, password, name }) => {
-        set({ isLoading: true, error: null });
-        try {
-          const data = await authService.signup({ email, password, name });
-          // After signup, auto-login
-          await authService.login({ email, password });
-          set({
-            isLoggedIn: true,
-            accountId: data.accountId || data.id,
-            email,
-            isLoading: false,
-          });
-          return data;
-        } catch (err) {
-          set({ isLoading: false, error: err.message });
-          throw err;
-        }
-      },
 
       login: async ({ email, password }) => {
         set({ isLoading: true, error: null });
@@ -36,12 +21,54 @@ const useAuthStore = create(
           const data = await authService.login({ email, password });
           set({
             isLoggedIn: true,
-            accountId: data.accountId || data.id,
-            email,
+            managerId: data.managerId || data.id,
+            email: data.email || email,
+            name: data.name || null,
             isLoading: false,
           });
           return data;
         } catch (err) {
+          // DEV: 백엔드 없이 로컬 테스트용 패스스루
+          if (DEV) {
+            const mockName = email.split('@')[0] || 'Manager';
+            set({
+              isLoggedIn: true,
+              managerId: MOCK_MANAGER_ID,
+              email,
+              name: mockName,
+              isLoading: false,
+            });
+            return { managerId: MOCK_MANAGER_ID, email, name: mockName };
+          }
+          set({ isLoading: false, error: err.message });
+          throw err;
+        }
+      },
+
+      register: async ({ token, email, password, name }) => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await authService.register({ token, email, password, name });
+          await authService.login({ email, password });
+          set({
+            isLoggedIn: true,
+            managerId: data.managerId || data.id,
+            email,
+            name,
+            isLoading: false,
+          });
+          return data;
+        } catch (err) {
+          if (DEV) {
+            set({
+              isLoggedIn: true,
+              managerId: MOCK_MANAGER_ID,
+              email,
+              name,
+              isLoading: false,
+            });
+            return { managerId: MOCK_MANAGER_ID, email, name };
+          }
           set({ isLoading: false, error: err.message });
           throw err;
         }
@@ -55,8 +82,9 @@ const useAuthStore = create(
         }
         set({
           isLoggedIn: false,
-          accountId: null,
+          managerId: null,
           email: null,
+          name: null,
           error: null,
         });
       },
@@ -66,12 +94,12 @@ const useAuthStore = create(
           const data = await authService.checkSession();
           set({
             isLoggedIn: true,
-            accountId: data.accountId || data.id,
+            managerId: data.managerId || data.id,
             email: data.email,
+            name: data.name || null,
           });
           return true;
         } catch {
-          set({ isLoggedIn: false, accountId: null, email: null });
           return false;
         }
       },
@@ -79,11 +107,12 @@ const useAuthStore = create(
       clearError: () => set({ error: null }),
     }),
     {
-      name: 'auth-storage',
+      name: 'findmyone-auth',
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
-        accountId: state.accountId,
+        managerId: state.managerId,
         email: state.email,
+        name: state.name,
       }),
     },
   ),

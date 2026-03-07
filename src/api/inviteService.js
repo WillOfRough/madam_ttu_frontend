@@ -1,0 +1,23 @@
+import { apiFetch } from './config';
+
+export async function createInvite(managerId, { expiresInHours = 24, label } = {}) {
+  return apiFetch('/api/invites', {
+    method: 'POST',
+    body: { managerId, expiresInHours, label },
+  });
+}
+
+export async function getMyInvites(managerId) {
+  return apiFetch(`/api/invites?managerId=${managerId}`, { method: 'GET' });
+}
+
+export async function validateToken(token) {
+  return apiFetch(`/api/invites/validate?token=${token}`, { method: 'GET' });
+}
+
+export async function revokeInvite(managerId, inviteId) {
+  return apiFetch(`/api/invites/${inviteId}/revoke`, {
+    method: 'POST',
+    body: { managerId },
+  });
+}

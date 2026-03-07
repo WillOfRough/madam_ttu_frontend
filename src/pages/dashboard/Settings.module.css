@@ -1,0 +1,86 @@
+.page {
+  max-width: 540px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  margin-bottom: var(--space-xl);
+  letter-spacing: -0.03em;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--charcoal);
+}
+
+.cardHeader h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.fields {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.fieldLabel {
+  font-size: 0.84rem;
+  color: var(--charcoal-light);
+  font-weight: 500;
+}
+
+.fieldValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  text-align: right;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 14px var(--space-lg);
+  background: var(--white);
+  border: 1.5px solid var(--danger);
+  border-radius: var(--radius-lg);
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 650;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.logoutBtn:hover {
+  background: var(--danger);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(235, 87, 87, 0.25);
+}

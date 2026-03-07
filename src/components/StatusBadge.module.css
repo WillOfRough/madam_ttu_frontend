@@ -1,0 +1,36 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.pending {
+  background: var(--pending-light);
+  color: #8a5e00;
+}
+
+.approved, .active {
+  background: var(--success-light);
+  color: #1a7a3a;
+}
+
+.rejected, .revoked {
+  background: var(--danger-light);
+  color: #b71c2c;
+}
+
+.used {
+  background: var(--info-light);
+  color: #0a6b7d;
+}
+
+.expired {
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
+}

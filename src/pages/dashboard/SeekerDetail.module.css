@@ -1,0 +1,244 @@
+.page {
+  max-width: 720px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal-light);
+  margin-bottom: var(--space-lg);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.back:hover {
+  color: var(--navy);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  gap: var(--space-md);
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+  letter-spacing: -0.03em;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ownerBadgeMe {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--navy-glow);
+  color: var(--navy);
+}
+
+.ownerBadgeOther {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: var(--charcoal-light);
+}
+
+.readonlyNotice {
+  background: linear-gradient(135deg, #fff8f0 0%, #fff3e6 100%);
+  border: 1px solid #f2c899;
+  border-left: 3px solid var(--pending);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 0.84rem;
+  color: #7a5530;
+  line-height: 1.5;
+  margin-bottom: var(--space-lg);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.approveBtn, .rejectBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.approveBtn {
+  background: var(--success);
+  color: var(--white);
+  box-shadow: 0 1px 3px rgba(39, 174, 96, 0.25);
+}
+
+.approveBtn:hover {
+  background: #219d54;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(39, 174, 96, 0.3);
+}
+
+.rejectBtn {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.rejectBtn:hover {
+  background: #fde2e2;
+  color: #c0392b;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-card);
+}
+
+.cardTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+  letter-spacing: -0.01em;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fieldLabel {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fieldValue {
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  font-weight: 500;
+}
+
+.text {
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.noteInput {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  resize: vertical;
+  font-family: var(--font-sans);
+  line-height: 1.65;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  min-height: 80px;
+}
+
+.noteInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.saveBtn {
+  margin-top: var(--space-sm);
+  padding: 9px 22px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.saveBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading {
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--charcoal-pale);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .fields {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .approveBtn, .rejectBtn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .name {
+    font-size: 1.3rem;
+  }
+}

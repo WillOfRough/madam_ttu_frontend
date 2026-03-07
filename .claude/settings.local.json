@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:love-soul-265481232089.asia-northeast3.run.app)",
+      "Bash(curl -s -X POST https://love-soul-265481232089.asia-northeast3.run.app/api/managers/register -H 'Content-Type: application/json' -d '{\"\"\"\"email\"\"\"\":\"\"\"\"test@findmyone.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"Test1234!\"\"\"\",\"\"\"\"name\"\"\"\":\"\"\"\"테스트매니저\"\"\"\"}')",
+      "Bash(python3:*)",
+      "Bash(curl -s -X POST https://love-soul-265481232089.asia-northeast3.run.app/api/managers/register -H 'Content-Type: application/json' -d {\"\"email\"\":\"\"test@findmyone.com\"\",\"\"password\"\":\"\"Test1234!\"\",\"\"name\"\":\"\"테스트매니저\"\"})",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(gh repo rename:*)",
+      "Bash(git remote:*)",
+      "Bash(kill:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "love-soul"
+  ]
+}

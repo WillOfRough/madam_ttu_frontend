@@ -1,6 +1,6 @@
 .container {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(16px);
   transition: opacity var(--duration-normal) var(--ease-out),
     transform var(--duration-normal) var(--ease-out);
 }

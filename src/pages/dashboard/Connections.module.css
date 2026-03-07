@@ -1,0 +1,259 @@
+.page {
+  max-width: 720px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+}
+
+.createBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 1px 3px rgba(26, 43, 75, 0.15);
+}
+
+.createBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(26, 43, 75, 0.2);
+}
+
+.descBox {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f4f8 100%);
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--navy);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: var(--space-lg);
+}
+
+.descHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.descTitle {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.descClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  color: var(--charcoal-pale);
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.descClose:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--charcoal);
+}
+
+.descText {
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  line-height: 1.65;
+}
+
+.inviteBox {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e8f4fd 100%);
+  border: 1px solid #c8e3f6;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: var(--space-xl);
+}
+
+.inviteLabel {
+  font-size: 0.84rem;
+  color: #1a5276;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.inviteUrlRow {
+  display: flex;
+  gap: 10px;
+}
+
+.inviteInput {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1.5px solid #c8e3f6;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  background: var(--white);
+  color: var(--charcoal);
+  font-family: var(--font-sans);
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.copyBtn:hover {
+  background: var(--navy-light);
+}
+
+.loading {
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--charcoal-pale);
+  font-size: 0.9rem;
+}
+
+.empty {
+  padding: 64px var(--space-xl);
+  text-align: center;
+  color: var(--charcoal-pale);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.emptyHint {
+  font-size: 0.84rem;
+  color: var(--charcoal-pale);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.cardInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.connName {
+  display: block;
+  font-weight: 650;
+  font-size: 0.92rem;
+  color: var(--charcoal);
+  letter-spacing: -0.01em;
+}
+
+.connMeta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  margin-top: 2px;
+}
+
+.disconnectBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--danger);
+  background: var(--danger-light);
+  font-weight: 600;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.disconnectBtn:hover {
+  background: #fde2e2;
+  color: #c0392b;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+
+  .createBtn {
+    justify-content: center;
+  }
+
+  .inviteUrlRow {
+    flex-direction: column;
+  }
+
+  .card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+    padding: 16px;
+  }
+
+  .disconnectBtn {
+    align-self: flex-end;
+  }
+}

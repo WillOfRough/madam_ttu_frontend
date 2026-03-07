@@ -1,76 +1,79 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .label {
-  font-family: var(--font-serif);
-  font-size: 0.82rem;
-  font-weight: 400;
-  color: var(--wine);
-  letter-spacing: 0.01em;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  line-height: 1.5;
 }
 
 .requiredBadge,
 .optionalBadge {
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 500;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-  line-height: 1.6;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .requiredBadge {
-  color: var(--wine);
-  background: rgba(107, 29, 42, 0.08);
-  border: 1px solid rgba(107, 29, 42, 0.12);
+  color: var(--coral);
+  background: var(--coral-dim);
 }
 
 .optionalBadge {
   color: var(--charcoal-pale);
-  background: var(--cream-dark);
-  border: 1px solid transparent;
+  background: var(--bg-warm);
 }
 
 .input {
   width: 100%;
-  padding: 14px 18px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  background: white;
+  background: var(--white);
   color: var(--charcoal);
   font-size: 0.95rem;
+  line-height: 1.5;
   transition: all var(--duration-fast) var(--ease-out);
-  box-shadow: var(--shadow-inner);
 }
 
 .input::placeholder {
   color: var(--charcoal-pale);
-  font-style: italic;
-  opacity: 0.7;
+  font-weight: 400;
+}
+
+.input:hover {
+  border-color: var(--charcoal-pale);
 }
 
 .input:focus {
-  border-color: var(--wine);
-  box-shadow: var(--shadow-inner), 0 0 0 3px var(--wine-glow);
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
 .textarea {
   resize: vertical;
-  min-height: 110px;
+  min-height: 120px;
   line-height: 1.7;
 }
 
 .counter {
   text-align: right;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--charcoal-pale);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }

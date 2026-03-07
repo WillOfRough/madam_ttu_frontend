@@ -3,66 +3,66 @@
 }
 
 .legend {
-  font-family: var(--font-serif);
-  font-size: 0.88rem;
-  color: var(--wine);
-  margin-bottom: var(--space-md);
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  letter-spacing: -0.01em;
 }
 
 .requiredBadge,
 .optionalBadge {
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 500;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-  line-height: 1.6;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .requiredBadge {
-  color: var(--wine);
-  background: rgba(107, 29, 42, 0.08);
-  border: 1px solid rgba(107, 29, 42, 0.12);
+  color: var(--coral);
+  background: var(--coral-dim);
 }
 
 .optionalBadge {
   color: var(--charcoal-pale);
-  background: var(--cream-dark);
-  border: 1px solid transparent;
+  background: var(--bg-warm);
 }
 
 .options {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
 .option {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  justify-content: center;
+  gap: 10px;
   padding: 14px 18px;
-  background: white;
+  background: var(--white);
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1.5px solid var(--border);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
 
 .option:hover {
-  border-color: var(--wine-glow);
-  background: rgba(107, 29, 42, 0.015);
+  border-color: var(--navy-light);
+  background: var(--bg);
 }
 
 .option.selected {
-  border-color: var(--wine);
-  background: rgba(107, 29, 42, 0.03);
-  box-shadow: 0 0 0 3px var(--wine-glow);
+  border-color: var(--navy);
+  background: var(--navy-glow);
+  box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
 .input {
@@ -72,31 +72,33 @@
 }
 
 .radio {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 1.5px solid var(--charcoal-pale);
+  border: 2px solid var(--border);
   position: relative;
   flex-shrink: 0;
-  transition: border-color var(--duration-fast);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .option.selected .radio {
-  border-color: var(--wine);
+  border-color: var(--navy);
+  background: var(--navy);
 }
 
 .option.selected .radio::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 4px;
+  left: 4px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--wine);
+  background: var(--white);
 }
 
 .label {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   color: var(--charcoal);
 }

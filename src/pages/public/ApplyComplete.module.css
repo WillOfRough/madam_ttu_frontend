@@ -1,0 +1,48 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: var(--bg);
+}
+
+.container {
+  max-width: 440px;
+  width: 100%;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 56px 36px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: scaleIn var(--duration-slow) var(--ease-out) both;
+}
+
+.iconWrap {
+  color: var(--success);
+  margin-bottom: 24px;
+  animation: gentleBounce 2s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.message {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  margin-bottom: 8px;
+}
+
+.subMessage {
+  font-size: 0.9rem;
+  color: var(--charcoal-light);
+  line-height: 1.75;
+}

@@ -1,42 +1,41 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .label {
-  font-family: var(--font-serif);
-  font-size: 0.82rem;
-  font-weight: 400;
-  color: var(--wine);
-  letter-spacing: 0.01em;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  line-height: 1.5;
 }
 
 .requiredBadge,
 .optionalBadge {
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 500;
-  padding: 1px 7px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.02em;
-  vertical-align: middle;
-  line-height: 1.6;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .requiredBadge {
-  color: var(--wine);
-  background: rgba(107, 29, 42, 0.08);
-  border: 1px solid rgba(107, 29, 42, 0.12);
+  color: var(--coral);
+  background: var(--coral-dim);
 }
 
 .optionalBadge {
   color: var(--charcoal-pale);
-  background: var(--cream-dark);
-  border: 1px solid transparent;
+  background: var(--bg-warm);
 }
 
 .selectWrap {
@@ -45,34 +44,41 @@
 
 .select {
   width: 100%;
-  padding: 14px 18px;
-  padding-right: 40px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 14px 44px 14px 16px;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  background: white;
+  background: var(--white);
   color: var(--charcoal);
   font-size: 0.95rem;
   appearance: none;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  box-shadow: var(--shadow-inner);
+  line-height: 1.5;
+}
+
+.select:hover {
+  border-color: var(--charcoal-pale);
 }
 
 .select:focus {
-  border-color: var(--wine);
-  box-shadow: var(--shadow-inner), 0 0 0 3px var(--wine-glow);
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
 .select.placeholder {
   color: var(--charcoal-pale);
-  font-style: italic;
 }
 
 .icon {
   position: absolute;
-  right: 14px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--charcoal-pale);
   pointer-events: none;
+  transition: color var(--duration-fast);
+}
+
+.selectWrap:focus-within .icon {
+  color: var(--navy);
 }
