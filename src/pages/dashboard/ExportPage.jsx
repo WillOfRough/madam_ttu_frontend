@@ -1,28 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Download, FileSpreadsheet } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import * as seekerService from '../../api/seekerService';
 import * as exportService from '../../api/exportService';
 import { exportSeekersToExcel } from '../../utils/exportExcel';
 import styles from './ExportPage.module.css';
 
 export default function ExportPage() {
-  const managerId = useAuthStore((s) => s.managerId);
   const [logs, setLogs] = useState([]);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    if (managerId) {
-      exportService.getExportLogs(managerId)
-        .then(setLogs)
-        .catch(() => {});
-    }
-  }, [managerId]);
+    exportService.getExportLogs()
+      .then(setLogs)
+      .catch(() => {});
+  }, []);
 
   const handleExport = async () => {
     setExporting(true);
     try {
-      const result = await seekerService.listSeekers(managerId, {
+      const result = await seekerService.listSeekers({
         owner: 'all',
         approval: 'approved',
         limit: 1000,

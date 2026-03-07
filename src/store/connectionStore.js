@@ -6,20 +6,20 @@ const useConnectionStore = create((set) => ({
   isLoading: false,
   error: null,
 
-  fetchConnections: async (managerId) => {
+  fetchConnections: async () => {
     set({ isLoading: true, error: null });
     try {
-      const result = await connectionService.getConnections(managerId);
+      const result = await connectionService.getConnections();
       set({ connections: result.data || result.connections || result, isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: err.message });
     }
   },
 
-  createInvite: async (managerId, options) => {
+  createInvite: async (options) => {
     set({ isLoading: true, error: null });
     try {
-      const invite = await connectionService.createConnectionInvite(managerId, options);
+      const invite = await connectionService.createConnectionInvite(options);
       set({ isLoading: false });
       return invite;
     } catch (err) {
@@ -28,10 +28,10 @@ const useConnectionStore = create((set) => ({
     }
   },
 
-  disconnect: async (managerId, targetManagerId) => {
+  disconnect: async (targetManagerId) => {
     set({ isLoading: true, error: null });
     try {
-      await connectionService.disconnect(managerId, targetManagerId);
+      await connectionService.disconnect(targetManagerId);
       set((s) => ({
         connections: s.connections.filter((c) => c.managerId !== targetManagerId && c.id !== targetManagerId),
         isLoading: false,

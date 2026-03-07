@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import * as seekerService from '../../api/seekerService';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -10,7 +9,6 @@ import styles from './SeekerDetail.module.css';
 export default function SeekerDetail() {
   const { seekerId } = useParams();
   const navigate = useNavigate();
-  const managerId = useAuthStore((s) => s.managerId);
   const [seeker, setSeeker] = useState(null);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -18,9 +16,9 @@ export default function SeekerDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (managerId && seekerId) {
+    if (seekerId) {
       setLoading(true);
-      seekerService.getSeekerDetail(managerId, seekerId)
+      seekerService.getSeekerDetail(seekerId)
         .then((data) => {
           setSeeker(data);
           setNote(data.managerNote || '');
@@ -28,11 +26,11 @@ export default function SeekerDetail() {
         .catch(() => navigate('/dashboard/seekers'))
         .finally(() => setLoading(false));
     }
-  }, [managerId, seekerId, navigate]);
+  }, [seekerId, navigate]);
 
   const handleApproval = async (status) => {
     try {
-      await seekerService.updateApproval(managerId, seekerId, status);
+      await seekerService.updateApproval(seekerId, status);
       setSeeker((s) => ({ ...s, approval: status }));
     } catch { /* ignore */ }
     setModal(null);
@@ -41,7 +39,7 @@ export default function SeekerDetail() {
   const handleSaveNote = async () => {
     setSaving(true);
     try {
-      await seekerService.updateNote(managerId, seekerId, note);
+      await seekerService.updateNote(seekerId, note);
     } catch { /* ignore */ }
     setSaving(false);
   };

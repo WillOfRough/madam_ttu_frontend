@@ -24,11 +24,11 @@ const useSeekerListStore = create((set, get) => ({
 
   setPage: (page) => set({ page }),
 
-  fetchSeekers: async (managerId) => {
+  fetchSeekers: async () => {
     const { page, limit, filters } = get();
     set({ isLoading: true, error: null });
     try {
-      const result = await seekerService.listSeekers(managerId, {
+      const result = await seekerService.listSeekers({
         ...filters,
         page,
         limit,

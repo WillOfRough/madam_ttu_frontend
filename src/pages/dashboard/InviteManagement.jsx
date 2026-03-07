@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Plus, Copy, Trash2, Mail, X } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import useInviteStore from '../../store/inviteStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import styles from './InviteManagement.module.css';
 
 export default function InviteManagement() {
-  const managerId = useAuthStore((s) => s.managerId);
   const { invites, isLoading, fetchInvites, createInvite, revokeInvite } = useInviteStore();
   const [label, setLabel] = useState('');
   const [hours, setHours] = useState(24);
@@ -16,12 +14,12 @@ export default function InviteManagement() {
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideInviteDesc') !== '1');
 
   useEffect(() => {
-    if (managerId) fetchInvites(managerId);
-  }, [managerId, fetchInvites]);
+    fetchInvites();
+  }, [fetchInvites]);
 
   const handleCreate = async () => {
     try {
-      await createInvite(managerId, { expiresInHours: hours, label: label || undefined });
+      await createInvite({ expiresInHours: hours, label: label || undefined });
       setLabel('');
     } catch { /* ignore */ }
   };
@@ -37,7 +35,7 @@ export default function InviteManagement() {
   const handleRevoke = async () => {
     if (!revokeTarget) return;
     try {
-      await revokeInvite(managerId, revokeTarget.id);
+      await revokeInvite(revokeTarget.id);
     } catch { /* ignore */ }
     setRevokeTarget(null);
   };

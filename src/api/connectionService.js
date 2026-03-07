@@ -1,26 +1,25 @@
 import { apiFetch } from './config';
 
-export async function createConnectionInvite(managerId, { expiresInHours = 24, label } = {}) {
+export async function createConnectionInvite({ expiresInHours = 24, label } = {}) {
   return apiFetch('/api/connections/invite', {
     method: 'POST',
-    body: { managerId, expiresInHours, label },
+    body: { expiresInHours, label },
   });
 }
 
-export async function joinConnection(managerId, token) {
+export async function joinConnection(token) {
   return apiFetch('/api/connections/join', {
     method: 'POST',
-    body: { managerId, token },
+    body: { token },
   });
 }
 
-export async function getConnections(managerId) {
-  return apiFetch(`/api/connections?managerId=${managerId}`, { method: 'GET' });
+export async function getConnections() {
+  return apiFetch('/api/connections', { method: 'GET' });
 }
 
-export async function disconnect(managerId, targetManagerId) {
-  return apiFetch('/api/connections/disconnect', {
-    method: 'POST',
-    body: { managerId, targetManagerId },
+export async function disconnect(managerId) {
+  return apiFetch(`/api/connections/${managerId}`, {
+    method: 'DELETE',
   });
 }

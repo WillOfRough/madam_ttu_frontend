@@ -1,21 +1,19 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Link2, Mail, Clock } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
 import SummaryCard from '../../components/SummaryCard';
 import StatusBadge from '../../components/StatusBadge';
 import styles from './DashboardHome.module.css';
 
 export default function DashboardHome() {
-  const managerId = useAuthStore((s) => s.managerId);
   const summary = useManagerStore((s) => s.summary);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (managerId) fetchSummary(managerId);
-  }, [managerId, fetchSummary]);
+    fetchSummary();
+  }, [fetchSummary]);
 
   const cards = [
     { icon: Users, label: '내 Seeker', value: summary?.mySeekerCount ?? '-', color: 'navy' },

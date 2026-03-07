@@ -22,7 +22,7 @@ export default function ConnectManager() {
     setStatus('loading');
     setError(null);
     try {
-      await connectionService.joinConnection(managerId, token);
+      await connectionService.joinConnection(token);
       setStatus('success');
     } catch (err) {
       setError(err.message || '연결에 실패했습니다.');

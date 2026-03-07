@@ -75,11 +75,6 @@ const useAuthStore = create(
       },
 
       logout: async () => {
-        try {
-          await authService.logout();
-        } catch {
-          // ignore logout errors
-        }
         set({
           isLoggedIn: false,
           managerId: null,

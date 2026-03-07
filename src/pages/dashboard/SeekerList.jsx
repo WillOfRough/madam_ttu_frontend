@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import useSeekerListStore from '../../store/seekerListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -9,18 +8,15 @@ import Pagination from '../../components/Pagination';
 import styles from './SeekerList.module.css';
 
 export default function SeekerList() {
-  const managerId = useAuthStore((s) => s.managerId);
   const { seekers, totalCount, page, limit, filters, isLoading, setFilter, setPage, fetchSeekers } =
     useSeekerListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (managerId) {
-      fetchSeekers(managerId);
-      fetchConnections(managerId);
-    }
-  }, [managerId, page, filters, fetchSeekers, fetchConnections]);
+    fetchSeekers();
+    fetchConnections();
+  }, [page, filters, fetchSeekers, fetchConnections]);
 
   const totalPages = Math.ceil(totalCount / limit);
 

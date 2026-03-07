@@ -6,7 +6,6 @@ import useManagerStore from '../../store/managerStore';
 import styles from './Settings.module.css';
 
 export default function Settings() {
-  const managerId = useAuthStore((s) => s.managerId);
   const email = useAuthStore((s) => s.email);
   const name = useAuthStore((s) => s.name);
   const logout = useAuthStore((s) => s.logout);
@@ -15,8 +14,8 @@ export default function Settings() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (managerId) fetchInfo(managerId);
-  }, [managerId, fetchInfo]);
+    fetchInfo();
+  }, [fetchInfo]);
 
   const handleLogout = async () => {
     await logout();

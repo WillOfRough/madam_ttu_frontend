@@ -6,20 +6,20 @@ const useInviteStore = create((set) => ({
   isLoading: false,
   error: null,
 
-  fetchInvites: async (managerId) => {
+  fetchInvites: async () => {
     set({ isLoading: true, error: null });
     try {
-      const result = await inviteService.getMyInvites(managerId);
+      const result = await inviteService.getMyInvites();
       set({ invites: result.data || result.invites || result, isLoading: false });
     } catch (err) {
       set({ isLoading: false, error: err.message });
     }
   },
 
-  createInvite: async (managerId, options) => {
+  createInvite: async (options) => {
     set({ isLoading: true, error: null });
     try {
-      const invite = await inviteService.createInvite(managerId, options);
+      const invite = await inviteService.createInvite(options);
       set((s) => ({ invites: [invite, ...s.invites], isLoading: false }));
       return invite;
     } catch (err) {
@@ -28,10 +28,10 @@ const useInviteStore = create((set) => ({
     }
   },
 
-  revokeInvite: async (managerId, inviteId) => {
+  revokeInvite: async (inviteId) => {
     set({ isLoading: true, error: null });
     try {
-      await inviteService.revokeInvite(managerId, inviteId);
+      await inviteService.revokeInvite(inviteId);
       set((s) => ({
         invites: s.invites.map((inv) =>
           inv.id === inviteId ? { ...inv, status: 'revoked' } : inv

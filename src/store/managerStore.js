@@ -7,10 +7,10 @@ const useManagerStore = create((set) => ({
   isLoading: false,
   error: null,
 
-  fetchInfo: async (managerId) => {
+  fetchInfo: async () => {
     set({ isLoading: true, error: null });
     try {
-      const info = await managerService.getMyInfo(managerId);
+      const info = await managerService.getMyInfo();
       set({ info, isLoading: false });
       return info;
     } catch (err) {
@@ -19,10 +19,10 @@ const useManagerStore = create((set) => ({
     }
   },
 
-  fetchSummary: async (managerId) => {
+  fetchSummary: async () => {
     set({ isLoading: true, error: null });
     try {
-      const summary = await managerService.getDashboardSummary(managerId);
+      const summary = await managerService.getDashboardSummary();
       set({ summary, isLoading: false });
       return summary;
     } catch (err) {

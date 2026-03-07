@@ -7,33 +7,33 @@ export async function createSeeker(data) {
   });
 }
 
-export async function listSeekers(managerId, params = {}) {
+export async function listSeekers(params = {}) {
   const query = new URLSearchParams();
-  query.set('managerId', managerId);
-  if (params.owner) query.set('owner', params.owner);
   if (params.gender) query.set('gender', params.gender);
   if (params.approval) query.set('approval', params.approval);
+  if (params.owner) query.set('owner', params.owner);
   if (params.sort) query.set('sort', params.sort);
   if (params.page) query.set('page', String(params.page));
   if (params.limit) query.set('limit', String(params.limit));
 
-  return apiFetch(`/api/seekers?${query.toString()}`, { method: 'GET' });
+  const qs = query.toString();
+  return apiFetch(`/api/seekers${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
-export async function getSeekerDetail(managerId, seekerId) {
-  return apiFetch(`/api/seekers/${seekerId}?managerId=${managerId}`, { method: 'GET' });
+export async function getSeekerDetail(seekerId) {
+  return apiFetch(`/api/seekers/${seekerId}`, { method: 'GET' });
 }
 
-export async function updateApproval(managerId, seekerId, status) {
+export async function updateApproval(seekerId, status) {
   return apiFetch(`/api/seekers/${seekerId}/approval`, {
     method: 'PATCH',
-    body: { managerId, status },
+    body: { status },
   });
 }
 
-export async function updateNote(managerId, seekerId, note) {
+export async function updateNote(seekerId, note) {
   return apiFetch(`/api/seekers/${seekerId}/note`, {
     method: 'PATCH',
-    body: { managerId, note },
+    body: { note },
   });
 }

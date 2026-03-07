@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link2, Plus, Copy, Unlink, X } from 'lucide-react';
-import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import ConfirmModal from '../../components/ConfirmModal';
 import styles from './Connections.module.css';
 
 export default function Connections() {
-  const managerId = useAuthStore((s) => s.managerId);
   const { connections, isLoading, fetchConnections, createInvite, disconnect } = useConnectionStore();
   const [inviteUrl, setInviteUrl] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -14,12 +12,12 @@ export default function Connections() {
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideConnectionDesc') !== '1');
 
   useEffect(() => {
-    if (managerId) fetchConnections(managerId);
-  }, [managerId, fetchConnections]);
+    fetchConnections();
+  }, [fetchConnections]);
 
   const handleCreateInvite = async () => {
     try {
-      const result = await createInvite(managerId, { expiresInHours: 48 });
+      const result = await createInvite({ expiresInHours: 48 });
       const token = result.token || result.id;
       setInviteUrl(`${window.location.origin}/connect/${token}`);
       setCopied(false);
@@ -37,7 +35,7 @@ export default function Connections() {
   const handleDisconnect = async () => {
     if (!disconnectTarget) return;
     try {
-      await disconnect(managerId, disconnectTarget.managerId || disconnectTarget.id);
+      await disconnect(disconnectTarget.managerId || disconnectTarget.id);
     } catch { /* ignore */ }
     setDisconnectTarget(null);
   };
