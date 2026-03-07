@@ -400,8 +400,8 @@ export async function mockFetch(path, options = {}) {
     return { managerId: MANAGER_ID, success: true };
   }
 
-  // GET /api/invites/validate (token validation)
-  if (method === 'GET' && pathname === '/api/invites/validate') {
+  // GET /api/invites/{token}/validate (token validation)
+  if (method === 'GET' && pathname.match(/^\/api\/invites\/[^/]+\/validate$/)) {
     return { valid: true, type: 'seeker', managerName: 'Manager' };
   }
 

@@ -12,7 +12,7 @@ export async function getMyInvites(managerId) {
 }
 
 export async function validateToken(token) {
-  return apiFetch(`/api/invites/validate?token=${token}`, { method: 'GET' });
+  return apiFetch(`/api/invites/${token}/validate`, { method: 'GET' });
 }
 
 export async function revokeInvite(managerId, inviteId) {
