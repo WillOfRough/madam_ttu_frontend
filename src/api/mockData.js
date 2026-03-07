@@ -505,9 +505,9 @@ export async function mockFetch(path, options = {}) {
     return newInvite;
   }
 
-  // POST /api/invites/:id/revoke
-  if (method === 'POST' && /\/api\/invites\/[^/]+\/revoke/.test(pathname)) {
-    const id = pathname.split('/').slice(-2, -1)[0];
+  // DELETE /api/invites/:id
+  if (method === 'DELETE' && /^\/api\/invites\/[^/]+$/.test(pathname)) {
+    const id = pathname.split('/').pop();
     const inv = invites.find((i) => i.id === id);
     if (inv) inv.status = 'revoked';
     dashboardSummary.activeInviteCount = invites.filter((i) => i.status === 'active').length;

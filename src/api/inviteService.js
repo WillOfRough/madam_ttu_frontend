@@ -16,8 +16,7 @@ export async function validateToken(token) {
 }
 
 export async function revokeInvite(managerId, inviteId) {
-  return apiFetch(`/api/invites/${inviteId}/revoke`, {
-    method: 'POST',
-    body: { managerId },
+  return apiFetch(`/api/invites/${inviteId}`, {
+    method: 'DELETE',
   });
 }
