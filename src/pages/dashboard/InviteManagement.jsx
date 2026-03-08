@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Plus, Copy, Trash2, Mail, X } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
+import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
+import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
 export default function InviteManagement() {
@@ -21,7 +23,10 @@ export default function InviteManagement() {
     try {
       await createInvite({ expiresInHours: hours, label: label || undefined });
       setLabel('');
-    } catch { /* ignore */ }
+      toast.success('초대 링크가 생성되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '초대 링크 생성에 실패했습니다.');
+    }
   };
 
   const handleCopy = (invite) => {
@@ -29,6 +34,7 @@ export default function InviteManagement() {
     const url = `${window.location.origin}/invite/${token}`;
     navigator.clipboard.writeText(url);
     setCopiedId(invite.id);
+    toast.success('링크가 복사되었습니다.');
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -36,7 +42,10 @@ export default function InviteManagement() {
     if (!revokeTarget) return;
     try {
       await revokeInvite(revokeTarget.id);
-    } catch { /* ignore */ }
+      toast.success('초대 링크가 폐기되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '초대 링크 폐기에 실패했습니다.');
+    }
     setRevokeTarget(null);
   };
 
@@ -88,7 +97,7 @@ export default function InviteManagement() {
       </div>
 
       {isLoading ? (
-        <div className={styles.loading}>불러오는 중...</div>
+        <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
       ) : invites.length === 0 ? (
         <div className={styles.empty}>
           <Mail size={40} strokeWidth={1} />

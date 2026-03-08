@@ -9,6 +9,7 @@ export default function TextField({
   maxLength,
   type = 'text',
   required,
+  error,
 }) {
   const Component = multiline ? 'textarea' : 'input';
 
@@ -25,7 +26,7 @@ export default function TextField({
         </label>
       )}
       <Component
-        className={`${styles.input} ${multiline ? styles.textarea : ''}`}
+        className={`${styles.input} ${multiline ? styles.textarea : ''} ${error ? styles.inputError : ''}`}
         type={multiline ? undefined : type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -33,7 +34,8 @@ export default function TextField({
         maxLength={maxLength}
         rows={multiline ? 4 : undefined}
       />
-      {maxLength && (
+      {error && <span className={styles.errorText}>{error}</span>}
+      {maxLength && !error && (
         <span className={styles.counter}>
           {value.length}/{maxLength}
         </span>

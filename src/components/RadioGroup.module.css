@@ -102,3 +102,9 @@
   font-weight: 500;
   color: var(--charcoal);
 }
+
+.errorText {
+  font-size: 0.78rem;
+  color: var(--danger);
+  margin-top: 4px;
+}

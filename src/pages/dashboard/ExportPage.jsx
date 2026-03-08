@@ -3,6 +3,7 @@ import { Download, FileSpreadsheet } from 'lucide-react';
 import * as seekerService from '../../api/seekerService';
 import * as exportService from '../../api/exportService';
 import { exportSeekersToExcel } from '../../utils/exportExcel';
+import { toast } from '../../store/toastStore';
 import styles from './ExportPage.module.css';
 
 export default function ExportPage() {
@@ -12,7 +13,9 @@ export default function ExportPage() {
   useEffect(() => {
     exportService.getExportLogs()
       .then(setLogs)
-      .catch(() => {});
+      .catch((err) => {
+        toast.error(err.message || '내보내기 이력을 불러오지 못했습니다.');
+      });
   }, []);
 
   const handleExport = async () => {
@@ -26,7 +29,10 @@ export default function ExportPage() {
       });
       const seekers = result.data || result.seekers || result;
       exportSeekersToExcel(seekers);
-    } catch { /* ignore */ }
+      toast.success(`${seekers.length}건의 Seeker 데이터를 내보냈습니다.`);
+    } catch (err) {
+      toast.error(err.message || '내보내기에 실패했습니다.');
+    }
     setExporting(false);
   };
 

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import * as seekerService from '../../api/seekerService';
+import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
+import { SkeletonLine } from '../../components/Skeleton';
 import styles from './SeekerDetail.module.css';
 
 export default function SeekerDetail() {
@@ -32,7 +34,10 @@ export default function SeekerDetail() {
     try {
       await seekerService.updateApproval(seekerId, status);
       setSeeker((s) => ({ ...s, approval: status }));
-    } catch { /* ignore */ }
+      toast.success(status === 'approved' ? '승인되었습니다.' : '거절되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '상태 변경에 실패했습니다.');
+    }
     setModal(null);
   };
 
@@ -40,11 +45,23 @@ export default function SeekerDetail() {
     setSaving(true);
     try {
       await seekerService.updateNote(seekerId, note);
-    } catch { /* ignore */ }
+      toast.success('메모가 저장되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '메모 저장에 실패했습니다.');
+    }
     setSaving(false);
   };
 
-  if (loading) return <div className={styles.loading}>불러오는 중...</div>;
+  if (loading) return (
+    <div className={styles.page}>
+      <SkeletonLine width="100px" height="16px" />
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <SkeletonLine width="40%" height="28px" />
+        <SkeletonLine width="100%" height="200px" />
+        <SkeletonLine width="100%" height="120px" />
+      </div>
+    </div>
+  );
   if (!seeker) return null;
 
   const fields = [

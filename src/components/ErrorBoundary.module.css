@@ -1,0 +1,48 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: var(--space-md);
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 48px 40px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.message {
+  font-size: 0.9rem;
+  color: var(--charcoal-light);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.retryBtn {
+  padding: 12px 32px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--navy);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.retryBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}

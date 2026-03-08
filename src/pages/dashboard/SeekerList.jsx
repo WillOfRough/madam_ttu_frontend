@@ -5,6 +5,7 @@ import useSeekerListStore from '../../store/seekerListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
+import { SkeletonTable } from '../../components/Skeleton';
 import styles from './SeekerList.module.css';
 
 export default function SeekerList() {
@@ -72,7 +73,7 @@ export default function SeekerList() {
       </div>
 
       {isLoading ? (
-        <div className={styles.loading}>불러오는 중...</div>
+        <SkeletonTable rows={6} columns={5} />
       ) : seekers.length === 0 ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />

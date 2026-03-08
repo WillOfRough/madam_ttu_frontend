@@ -1,6 +1,6 @@
 import styles from './RadioGroup.module.css';
 
-export default function RadioGroup({ name, options, value, onChange, label, required }) {
+export default function RadioGroup({ name, options, value, onChange, label, required, error }) {
   return (
     <fieldset className={styles.fieldset}>
       {label && (
@@ -32,6 +32,7 @@ export default function RadioGroup({ name, options, value, onChange, label, requ
           </label>
         ))}
       </div>
+      {error && <span className={styles.errorText}>{error}</span>}
     </fieldset>
   );
 }

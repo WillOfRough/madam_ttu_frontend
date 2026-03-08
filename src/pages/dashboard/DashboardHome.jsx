@@ -4,10 +4,12 @@ import { Users, Link2, Mail, Clock } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
 import SummaryCard from '../../components/SummaryCard';
 import StatusBadge from '../../components/StatusBadge';
+import { SkeletonCard, SkeletonTable } from '../../components/Skeleton';
 import styles from './DashboardHome.module.css';
 
 export default function DashboardHome() {
   const summary = useManagerStore((s) => s.summary);
+  const isLoading = useManagerStore((s) => s.isLoading);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
   const navigate = useNavigate();
 
@@ -23,6 +25,18 @@ export default function DashboardHome() {
   ];
 
   const pendingSeekers = summary?.recentPendingSeekers || [];
+
+  if (isLoading && !summary) {
+    return (
+      <div className={styles.page}>
+        <h1 className={styles.title}>대시보드</h1>
+        <div className={styles.grid}>
+          {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+        </div>
+        <SkeletonTable rows={3} columns={4} />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>

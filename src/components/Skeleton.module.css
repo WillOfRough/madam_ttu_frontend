@@ -1,0 +1,74 @@
+.line {
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--bg) 37%, var(--bg-warm) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-xs);
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.table {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.tableRow {
+  display: flex;
+  gap: var(--space-md);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light);
+  align-items: center;
+}
+
+.tableRow > * {
+  flex: 1;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.listItemAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--bg) 37%, var(--bg-warm) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  flex-shrink: 0;
+}
+
+.listItemContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

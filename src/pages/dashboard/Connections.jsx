@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link2, Plus, Copy, Unlink, X } from 'lucide-react';
 import useConnectionStore from '../../store/connectionStore';
+import { toast } from '../../store/toastStore';
 import ConfirmModal from '../../components/ConfirmModal';
+import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './Connections.module.css';
 
 export default function Connections() {
@@ -21,13 +23,17 @@ export default function Connections() {
       const token = result.token || result.id;
       setInviteUrl(`${window.location.origin}/connect/${token}`);
       setCopied(false);
-    } catch { /* ignore */ }
+      toast.success('연결 초대 링크가 생성되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '초대 링크 생성에 실패했습니다.');
+    }
   };
 
   const handleCopy = () => {
     if (inviteUrl) {
       navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
+      toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -36,7 +42,10 @@ export default function Connections() {
     if (!disconnectTarget) return;
     try {
       await disconnect(disconnectTarget.managerId || disconnectTarget.id);
-    } catch { /* ignore */ }
+      toast.success('연결이 해제되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '연결 해제에 실패했습니다.');
+    }
     setDisconnectTarget(null);
   };
 
@@ -80,7 +89,7 @@ export default function Connections() {
       )}
 
       {isLoading ? (
-        <div className={styles.loading}>불러오는 중...</div>
+        <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
       ) : connections.length === 0 ? (
         <div className={styles.empty}>
           <Link2 size={40} strokeWidth={1} />

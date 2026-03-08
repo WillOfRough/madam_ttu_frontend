@@ -77,3 +77,18 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
+
+.inputError {
+  border-color: var(--danger);
+}
+
+.inputError:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(235, 87, 87, 0.1);
+}
+
+.errorText {
+  font-size: 0.78rem;
+  color: var(--danger);
+  line-height: 1.4;
+}
