@@ -13,6 +13,8 @@ import {
   GENDER_OPTIONS,
   EDUCATION_OPTIONS,
   RELIGION_OPTIONS,
+  MBTI_OPTIONS,
+  HOBBY_KEYWORDS,
   generateNickname,
   INTRO_KEYWORDS,
   IDEAL_KEYWORDS,
@@ -60,11 +62,14 @@ function validateStep(step, form) {
     } else if (form.occupation.length < 2) {
       errors.occupation = '2자 이상 입력해주세요.';
     }
+    if (!form.company) {
+      errors.company = '회사를 입력해주세요.';
+    }
   } else if (step === 3) {
     if (!form.introduction) {
       errors.introduction = '자기소개를 입력해주세요.';
-    } else if (form.introduction.length < 50) {
-      errors.introduction = `${50 - form.introduction.length}자 더 작성해주세요. (최소 50자)`;
+    } else if (form.introduction.length < 20) {
+      errors.introduction = `${20 - form.introduction.length}자 더 작성해주세요. (최소 20자)`;
     }
     if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
     if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';
@@ -83,6 +88,7 @@ export default function SeekerForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState({});
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     setToken(token);
@@ -122,7 +128,7 @@ export default function SeekerForm() {
     // Mark all current step fields as touched to show errors
     const stepFields = {
       0: ['gender', 'birthYear', 'phone'],
-      1: ['occupation', 'height'],
+      1: ['occupation', 'height', 'company'],
       3: ['introduction', 'consentPrivacy', 'consentThirdParty'],
     };
     const fields = stepFields[step] || [];
@@ -235,6 +241,9 @@ export default function SeekerForm() {
                 required
                 error={getError('phone')}
               />
+              <p className={styles.phoneHint}>
+                연락처는 매칭 성사 시에만 상대방에게 공유됩니다. 그 전에는 절대 노출되지 않으니 안심하세요.
+              </p>
 
               <TextField
                 label="현재 당신의 일상이 머무는 곳은 어디인가요?"
@@ -269,8 +278,16 @@ export default function SeekerForm() {
               <TextField
                 label="회사"
                 value={form.company}
-                onChange={(v) => setField('company', v)}
+                onChange={(v) => { setField('company', v); markTouched('company'); }}
                 placeholder="현재 근무 중인 곳"
+                required
+                error={getError('company')}
+              />
+              <TextField
+                label="회사 위치"
+                value={form.companyLocation}
+                onChange={(v) => setField('companyLocation', v)}
+                placeholder="예) 서울 강남, 판교"
                 required={false}
               />
               <SelectField
@@ -281,6 +298,13 @@ export default function SeekerForm() {
                 placeholder="최종 학력을 알려주세요"
                 required={false}
               />
+              <TextField
+                label="학교"
+                value={form.school}
+                onChange={(v) => setField('school', v)}
+                placeholder="최종 학교명"
+                required={false}
+              />
             </div>
           )}
 
@@ -288,26 +312,27 @@ export default function SeekerForm() {
           {step === 2 && (
             <div className={styles.fields}>
               <SelectField
-                label="종교"
+                label="혹시 종교가 있으신가요?"
                 value={form.religion}
                 onChange={(v) => setField('religion', v)}
                 options={RELIGION_OPTIONS}
                 placeholder="선택해주세요"
                 required={false}
               />
-              <TextField
-                label="당신을 가장 잘 설명해 주는 4개의 알파벳이 있을까요?"
+              <SelectField
+                label="MBTI를 알고 계시다면 알려주세요"
                 value={form.mbti}
-                onChange={(v) => setField('mbti', v.toUpperCase())}
-                placeholder="ENTJ"
-                maxLength={4}
+                onChange={(v) => setField('mbti', v)}
+                options={[...MBTI_OPTIONS, { value: '잘 모르겠어요', label: '잘 모르겠어요' }]}
+                placeholder="선택해주세요"
                 required={false}
               />
-              <TextField
+              <KeywordTagInput
                 label="일상 속에서 당신을 미소 짓게 하는 활동은 무엇인가요?"
-                value={form.hobbies}
-                onChange={(v) => setField('hobbies', v)}
-                placeholder="등산, 요리, 독서"
+                hint="클릭하거나 직접 입력해주세요"
+                suggestions={HOBBY_KEYWORDS}
+                selected={form.hobbies}
+                onToggle={(kw) => toggleKeyword('hobbies', kw)}
                 required={false}
               />
             </div>
@@ -326,7 +351,7 @@ export default function SeekerForm() {
               />
 
               <TextField
-                label="당신이라는 사람을 한 권의 책으로 비유한다면 어떤 문장을 적고 싶으신가요?"
+                label="간단한 자기소개"
                 value={form.introduction}
                 onChange={(v) => { setField('introduction', v); markTouched('introduction'); }}
                 placeholder="진솔하게 자신을 표현해주세요..."
@@ -385,7 +410,43 @@ export default function SeekerForm() {
                   />
                   <span>관리자 및 매칭 상대 정보 제공 동의 <em>(필수)</em></span>
                 </label>
+                <button
+                  type="button"
+                  className={styles.termsLink}
+                  onClick={() => setShowTerms(true)}
+                >
+                  약관 보기
+                </button>
               </div>
+
+              {showTerms && (
+                <div className={styles.termsOverlay} onClick={() => setShowTerms(false)}>
+                  <div className={styles.termsModal} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.termsHeader}>
+                      <h3 className={styles.termsTitle}>이용약관 및 개인정보 처리방침</h3>
+                      <button className={styles.termsClose} onClick={() => setShowTerms(false)}>×</button>
+                    </div>
+                    <div className={styles.termsBody}>
+                      <h4>1. 개인정보 수집 및 이용 동의</h4>
+                      <p>수집 항목: 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
+                      <p>수집 목적: 매칭 서비스 제공 및 회원 관리</p>
+                      <p>보유 기간: 서비스 이용 종료 시까지 (탈퇴 요청 시 즉시 파기)</p>
+
+                      <h4>2. 제3자 정보 제공 동의</h4>
+                      <p>제공 대상: 매칭 관리자 및 매칭 상대방</p>
+                      <p>제공 항목: 별명, 성별, 나이, 거주지역, 키, 직업, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
+                      <p>제공 목적: 매칭 서비스 진행</p>
+                      <p>연락처는 매칭 성사 후 양측 동의 시에만 상대방에게 공유됩니다.</p>
+
+                      <h4>3. 동의 거부 권리</h4>
+                      <p>위 동의를 거부할 권리가 있으며, 동의 거부 시 서비스 이용이 제한될 수 있습니다.</p>
+                    </div>
+                    <button className={styles.termsConfirmBtn} onClick={() => setShowTerms(false)}>
+                      확인
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {error && <p className={styles.error}>{error}</p>}
             </div>
