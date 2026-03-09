@@ -399,11 +399,11 @@ export default function SeekerForm() {
 
               <div className={styles.idealSection}>
                 <div className={styles.idealNotice}>
-                  <p className={styles.idealNoticeTitle}>💡 솔직할수록 좋은 인연을 만나요</p>
+                  <p className={styles.idealNoticeTitle}>💡 구체적일수록 딱 맞는 사람을 만나요</p>
                   <p className={styles.idealNoticeText}>
-                    "키 큰 사람이 좋아요", "유머 감각 있는 사람" — 이런 솔직한 마음이
-                    오히려 더 잘 맞는 사람을 찾는 데 큰 도움이 됩니다.
-                    속물이라고 생각하지 않아요. 진짜 원하는 걸 적어야 진짜 맞는 사람을 만날 수 있으니까요.
+                    "키 175 이상", "MBTI가 E인 사람", "강남 근처 거주" — 이렇게 구체적으로 적을수록
+                    매칭 확률이 올라갑니다. 외모, 성격, 재력, 거주지, 종교, 라이프스타일 등
+                    솔직하게 적어주세요. 정확한 기준이 정확한 만남을 만듭니다.
                   </p>
                 </div>
 
