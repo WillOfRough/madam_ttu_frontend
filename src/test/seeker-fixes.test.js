@@ -41,29 +41,29 @@ function validateIntroduction(introduction) {
   const errors = {};
   if (!introduction) {
     errors.introduction = '자기소개를 입력해주세요.';
-  } else if (introduction.length < 50) {
-    errors.introduction = `${50 - introduction.length}자 더 작성해주세요. (최소 50자)`;
+  } else if (introduction.length < 20) {
+    errors.introduction = `${20 - introduction.length}자 더 작성해주세요. (최소 20자)`;
   }
   return errors;
 }
 
-describe('Bug 2: 자기소개 최소 글자수 50자 검증', () => {
-  it('49자 입력 시 에러가 발생해야 한다', () => {
-    const text = 'a'.repeat(49);
+describe('Bug 2: 자기소개 최소 글자수 20자 검증', () => {
+  it('19자 입력 시 에러가 발생해야 한다', () => {
+    const text = 'a'.repeat(19);
     const errors = validateIntroduction(text);
     expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('최소 50자');
+    expect(errors.introduction).toContain('최소 20자');
   });
 
-  it('20자 입력 시 에러가 발생해야 한다 (이전에는 통과했던 케이스)', () => {
+  it('10자 입력 시 에러가 발생해야 한다', () => {
+    const text = 'a'.repeat(10);
+    const errors = validateIntroduction(text);
+    expect(errors.introduction).toBeDefined();
+    expect(errors.introduction).toContain('10자 더 작성해주세요');
+  });
+
+  it('20자 입력 시 에러가 없어야 한다', () => {
     const text = 'a'.repeat(20);
-    const errors = validateIntroduction(text);
-    expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('30자 더 작성해주세요');
-  });
-
-  it('50자 입력 시 에러가 없어야 한다', () => {
-    const text = 'a'.repeat(50);
     const errors = validateIntroduction(text);
     expect(errors.introduction).toBeUndefined();
   });
@@ -168,7 +168,7 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1994',
       phone: '010-1234-5678',
       occupation: '개발자',
-      introduction: 'a'.repeat(50),
+      introduction: 'a'.repeat(20),
       consentPrivacy: true,
       consentThirdParty: true,
     }, suggestedNickname);
@@ -185,7 +185,7 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1995',
       phone: '010-1111-2222',
       occupation: '디자이너',
-      introduction: 'a'.repeat(50),
+      introduction: 'a'.repeat(20),
       mbti: '잘 모르겠어요',
       consentPrivacy: true,
       consentThirdParty: true,
@@ -201,7 +201,7 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1990',
       phone: '010-3333-4444',
       occupation: '엔지니어',
-      introduction: 'a'.repeat(100),
+      introduction: 'a'.repeat(50),
       mbti: 'INTJ',
       consentPrivacy: true,
       consentThirdParty: true,
@@ -210,9 +210,9 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
     expect(payload.mbti).toBe('INTJ');
   });
 
-  it('50자 미만 자기소개는 프론트엔드 검증에서 차단되어야 한다', () => {
-    const errors = validateIntroduction('a'.repeat(30));
+  it('20자 미만 자기소개는 프론트엔드 검증에서 차단되어야 한다', () => {
+    const errors = validateIntroduction('a'.repeat(15));
     expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('최소 50자');
+    expect(errors.introduction).toContain('최소 20자');
   });
 });
