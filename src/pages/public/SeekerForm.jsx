@@ -372,10 +372,10 @@ export default function SeekerForm() {
                   error={getError('introQ1')}
                 />
                 <TextField
-                  label="요즘 빠져있는 것은?"
+                  label="나만의 매력이나 자신 있는 점은?"
                   value={form.introQ2}
                   onChange={(v) => { setField('introQ2', v); markTouched('introQ2'); }}
-                  placeholder="러닝에 빠져서 매주 한강 뛰고 있어요"
+                  placeholder="요리를 잘해서 친구들이 집에 자주 놀러 와요"
                   required
                   error={getError('introQ2')}
                 />
@@ -417,10 +417,11 @@ export default function SeekerForm() {
                 />
 
                 <TextField
-                  label="어떤 사람을 만날 때 당신의 눈이 가장 반짝이나요?"
+                  label="어떤 사람이 이상형인가요?"
+                  hint="외모, 성격, 가치관 등 솔직하게 적어주세요. 구체적일수록 좋은 매칭으로 이어져요."
                   value={form.idealType}
                   onChange={(v) => setField('idealType', v)}
-                  placeholder="이상형을 자유롭게 적어주세요..."
+                  placeholder="웃을 때 눈이 예쁜 사람, 대화가 잘 통하는 사람이 좋아요"
                   multiline
                   maxLength={500}
                   required={false}
