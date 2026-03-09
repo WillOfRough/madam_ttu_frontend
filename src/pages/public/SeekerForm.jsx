@@ -68,8 +68,8 @@ function validateStep(step, form) {
   } else if (step === 3) {
     if (!form.introduction) {
       errors.introduction = '자기소개를 입력해주세요.';
-    } else if (form.introduction.length < 20) {
-      errors.introduction = `${20 - form.introduction.length}자 더 작성해주세요. (최소 20자)`;
+    } else if (form.introduction.length < 50) {
+      errors.introduction = `${50 - form.introduction.length}자 더 작성해주세요. (최소 50자)`;
     }
     if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
     if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';

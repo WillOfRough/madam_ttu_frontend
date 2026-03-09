@@ -79,7 +79,7 @@ const useSeekerFormStore = create((set, get) => ({
       education: form.education || undefined,
       school: form.school || undefined,
       religion: form.religion || undefined,
-      mbti: form.mbti || undefined,
+      mbti: (form.mbti && form.mbti.length <= 4) ? form.mbti : undefined,
       hobbies: form.hobbies.length > 0 ? form.hobbies.join(', ') : undefined,
       introduction: introText,
       idealType: idealText || undefined,

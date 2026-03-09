@@ -48,7 +48,7 @@ const NICKNAME_NOUN = [
 export function generateNickname() {
   const adj = NICKNAME_ADJ[Math.floor(Math.random() * NICKNAME_ADJ.length)];
   const noun = NICKNAME_NOUN[Math.floor(Math.random() * NICKNAME_NOUN.length)];
-  return `${adj} ${noun}`;
+  return `${adj}${noun}`;
 }
 
 /* ── 취미 키워드 ── */
