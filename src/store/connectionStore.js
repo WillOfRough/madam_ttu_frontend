@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import * as connectionService from '../api/connectionService';
 
-const useConnectionStore = create((set) => ({
+const useConnectionStore = create((set, get) => ({
   connections: [],
+  receivedRequests: [],
+  sentRequests: [],
   isLoading: false,
   error: null,
 
@@ -42,7 +44,56 @@ const useConnectionStore = create((set) => ({
     }
   },
 
-  reset: () => set({ connections: [], error: null }),
+  fetchRequests: async () => {
+    set({ error: null });
+    try {
+      const result = await connectionService.getRequests();
+      set({
+        receivedRequests: result.received || [],
+        sentRequests: result.sent || [],
+      });
+    } catch (err) {
+      set({ error: err.message });
+    }
+  },
+
+  sendRequest: async ({ name, message }) => {
+    try {
+      const req = await connectionService.sendRequest({ name, message });
+      set((s) => ({ sentRequests: [req, ...s.sentRequests] }));
+      return req;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  acceptRequest: async (requestId) => {
+    try {
+      const result = await connectionService.acceptRequest(requestId);
+      set((s) => ({
+        receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
+        connections: result.connection
+          ? [...s.connections, { ...result.connection, seekerCount: 0 }]
+          : s.connections,
+      }));
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  rejectRequest: async (requestId) => {
+    try {
+      await connectionService.rejectRequest(requestId);
+      set((s) => ({
+        receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
+      }));
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  reset: () => set({ connections: [], receivedRequests: [], sentRequests: [], error: null }),
 }));
 
 export default useConnectionStore;

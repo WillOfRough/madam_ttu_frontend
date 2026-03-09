@@ -19,7 +19,7 @@ export function exportSeekersToExcel(seekers, filename = 'findmyone_Seeker목록
     취미: s.hobbies || '',
     자기소개: s.introduction || '',
     이상형: s.idealType || '',
-    상태: s.approval || '',
+    상태: s.approvalStatus || '',
     등록일: s.createdAt || '',
   }));
 

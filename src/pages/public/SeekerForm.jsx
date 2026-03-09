@@ -66,10 +66,15 @@ function validateStep(step, form) {
       errors.company = '회사를 입력해주세요.';
     }
   } else if (step === 3) {
-    if (!form.introduction) {
-      errors.introduction = '자기소개를 입력해주세요.';
-    } else if (form.introduction.length < 20) {
-      errors.introduction = `${20 - form.introduction.length}자 더 작성해주세요. (최소 20자)`;
+    if (!form.introQ1.trim()) errors.introQ1 = '답변을 입력해주세요.';
+    if (!form.introQ2.trim()) errors.introQ2 = '답변을 입력해주세요.';
+    if (!form.introQ3.trim()) errors.introQ3 = '답변을 입력해주세요.';
+    const combined = [form.introQ1, form.introQ2, form.introQ3, form.introQ4]
+      .map((a) => a.trim()).filter(Boolean).join(' ');
+    const keywordsPrefix = form.introKeywords.length > 0 ? `[${form.introKeywords.join(', ')}] ` : '';
+    const totalLen = keywordsPrefix.length + combined.length;
+    if (combined.length > 0 && totalLen < 20) {
+      errors.introLength = `${20 - totalLen}자 더 작성해주세요. (최소 20자)`;
     }
     if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
     if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';
@@ -129,7 +134,7 @@ export default function SeekerForm() {
     const stepFields = {
       0: ['gender', 'birthYear', 'phone'],
       1: ['occupation', 'height', 'company'],
-      3: ['introduction', 'consentPrivacy', 'consentThirdParty'],
+      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'consentPrivacy', 'consentThirdParty'],
     };
     const fields = stepFields[step] || [];
     const newTouched = { ...touched };
@@ -143,7 +148,7 @@ export default function SeekerForm() {
   };
 
   const handleSubmitClick = () => {
-    setTouched({ introduction: true, consentPrivacy: true, consentThirdParty: true });
+    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, consentPrivacy: true, consentThirdParty: true });
     if (!hasErrors) {
       handleSubmit();
     }
@@ -350,16 +355,47 @@ export default function SeekerForm() {
                 required={false}
               />
 
-              <TextField
-                label="간단한 자기소개"
-                value={form.introduction}
-                onChange={(v) => { setField('introduction', v); markTouched('introduction'); }}
-                placeholder="진솔하게 자신을 표현해주세요..."
-                multiline
-                maxLength={1000}
-                required
-                error={getError('introduction')}
-              />
+              <div className={styles.guidedIntro}>
+                <div className={styles.guidedIntroNotice}>
+                  <p className={styles.guidedIntroNoticeTitle}>✍️ 질문에 답하면 자기소개가 완성돼요</p>
+                  <p className={styles.guidedIntroNoticeText}>
+                    어렵게 생각하지 마세요! 아래 질문에 편하게 답변하면 자연스러운 자기소개가 만들어집니다.
+                  </p>
+                </div>
+
+                <TextField
+                  label="휴일에는 주로 뭘 하시나요?"
+                  value={form.introQ1}
+                  onChange={(v) => { setField('introQ1', v); markTouched('introQ1'); }}
+                  placeholder="카페에서 책 읽거나 넷플릭스 봐요"
+                  required
+                  error={getError('introQ1')}
+                />
+                <TextField
+                  label="요즘 빠져있는 것은?"
+                  value={form.introQ2}
+                  onChange={(v) => { setField('introQ2', v); markTouched('introQ2'); }}
+                  placeholder="러닝에 빠져서 매주 한강 뛰고 있어요"
+                  required
+                  error={getError('introQ2')}
+                />
+                <TextField
+                  label="친구들이 나를 어떤 사람이라고 하나요?"
+                  value={form.introQ3}
+                  onChange={(v) => { setField('introQ3', v); markTouched('introQ3'); }}
+                  placeholder="조용한데 유머가 있다고 해요"
+                  required
+                  error={getError('introQ3')}
+                />
+                <TextField
+                  label="연인과 함께하고 싶은 것은?"
+                  value={form.introQ4}
+                  onChange={(v) => { setField('introQ4', v); }}
+                  placeholder="같이 여행 다니고 싶어요"
+                  required={false}
+                />
+                {getError('introLength') && <p className={styles.fieldError}>{getError('introLength')}</p>}
+              </div>
 
               <div className={styles.idealSection}>
                 <div className={styles.idealNotice}>
@@ -408,7 +444,7 @@ export default function SeekerForm() {
                     onChange={(e) => { setField('consentThirdParty', e.target.checked); markTouched('consentThirdParty'); }}
                     className={styles.consentCheckbox}
                   />
-                  <span>관리자 및 매칭 상대 정보 제공 동의 <em>(필수)</em></span>
+                  <span>매니저 및 매칭 상대 정보 제공 동의 <em>(필수)</em></span>
                 </label>
                 <button
                   type="button"
@@ -433,7 +469,7 @@ export default function SeekerForm() {
                       <p>보유 기간: 서비스 이용 종료 시까지 (탈퇴 요청 시 즉시 파기)</p>
 
                       <h4>2. 제3자 정보 제공 동의</h4>
-                      <p>제공 대상: 매칭 관리자 및 매칭 상대방</p>
+                      <p>제공 대상: 매칭 매니저 및 매칭 상대방</p>
                       <p>제공 항목: 별명, 성별, 나이, 거주지역, 키, 직업, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
                       <p>제공 목적: 매칭 서비스 진행</p>
                       <p>연락처는 매칭 성사 후 양측 동의 시에만 상대방에게 공유됩니다.</p>

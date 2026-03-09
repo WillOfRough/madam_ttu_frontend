@@ -73,6 +73,40 @@
   box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
+.nicknameHint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--charcoal-light);
+  line-height: 1.4;
+}
+
+.nicknameHint strong {
+  color: var(--navy);
+  font-weight: 650;
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--navy-glow);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.refreshBtn:hover {
+  background: rgba(26, 43, 75, 0.12);
+}
+
 .error {
   font-size: 0.84rem;
   font-weight: 500;

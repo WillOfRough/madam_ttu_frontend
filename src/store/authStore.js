@@ -19,11 +19,12 @@ const useAuthStore = create(
         set({ isLoading: true, error: null });
         try {
           const data = await authService.login({ email, password });
+          const mgr = data.manager || data;
           set({
             isLoggedIn: true,
-            managerId: data.managerId || data.id,
-            email: data.email || email,
-            name: data.name || null,
+            managerId: mgr.id,
+            email: mgr.email || email,
+            name: mgr.name || null,
             isLoading: false,
           });
           return data;
@@ -50,9 +51,10 @@ const useAuthStore = create(
         try {
           const data = await authService.register({ token, email, password, name });
           await authService.login({ email, password });
+          const mgr = data.manager || data;
           set({
             isLoggedIn: true,
-            managerId: data.managerId || data.id,
+            managerId: mgr.id || data.id,
             email,
             name,
             isLoading: false,
@@ -89,7 +91,7 @@ const useAuthStore = create(
           const data = await authService.checkSession();
           set({
             isLoggedIn: true,
-            managerId: data.managerId || data.id,
+            managerId: data.id,
             email: data.email,
             name: data.name || null,
           });

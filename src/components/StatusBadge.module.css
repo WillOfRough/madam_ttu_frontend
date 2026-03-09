@@ -25,11 +25,6 @@
   color: #b71c2c;
 }
 
-.used {
-  background: var(--info-light);
-  color: #0a6b7d;
-}
-
 .expired {
   background: var(--bg-warm);
   color: var(--charcoal-pale);

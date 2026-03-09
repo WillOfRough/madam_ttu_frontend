@@ -1,21 +1,36 @@
 import { useEffect, useState } from 'react';
-import { Link2, Plus, Copy, Unlink, X } from 'lucide-react';
+import { Link2, Plus, Copy, Unlink, X, Search, UserPlus, Check, XCircle, Send, Clock } from 'lucide-react';
 import useConnectionStore from '../../store/connectionStore';
+import { searchManager } from '../../api/connectionService';
 import { toast } from '../../store/toastStore';
 import ConfirmModal from '../../components/ConfirmModal';
+import StatusBadge from '../../components/StatusBadge';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './Connections.module.css';
 
 export default function Connections() {
-  const { connections, isLoading, fetchConnections, createInvite, disconnect } = useConnectionStore();
+  const {
+    connections, receivedRequests, sentRequests, isLoading,
+    fetchConnections, fetchRequests, createInvite, disconnect,
+    sendRequest, acceptRequest, rejectRequest,
+  } = useConnectionStore();
   const [inviteUrl, setInviteUrl] = useState(null);
   const [copied, setCopied] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState(null);
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideConnectionDesc') !== '1');
 
+  // Search state
+  const [searchName, setSearchName] = useState('');
+  const [searchResult, setSearchResult] = useState(null); // { id, name } or null
+  const [searchError, setSearchError] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [requestMessage, setRequestMessage] = useState('');
+  const [sendingRequest, setSendingRequest] = useState(false);
+
   useEffect(() => {
     fetchConnections();
-  }, [fetchConnections]);
+    fetchRequests();
+  }, [fetchConnections, fetchRequests]);
 
   const handleCreateInvite = async () => {
     try {
@@ -47,6 +62,53 @@ export default function Connections() {
       toast.error(err.message || '연결 해제에 실패했습니다.');
     }
     setDisconnectTarget(null);
+  };
+
+  const handleSearch = async () => {
+    if (!searchName.trim()) return;
+    setSearching(true);
+    setSearchError('');
+    setSearchResult(null);
+    try {
+      const result = await searchManager(searchName.trim());
+      setSearchResult(result);
+    } catch (err) {
+      setSearchError(err.message || '해당 매니저를 찾을 수 없습니다.');
+    }
+    setSearching(false);
+  };
+
+  const handleSendRequest = async () => {
+    if (!searchResult) return;
+    setSendingRequest(true);
+    try {
+      await sendRequest({ name: searchResult.name, message: requestMessage });
+      toast.success(`'${searchResult.name}' 님에게 연결 요청을 보냈습니다.`);
+      setSearchResult(null);
+      setSearchName('');
+      setRequestMessage('');
+    } catch (err) {
+      toast.error(err.message || '연결 요청에 실패했습니다.');
+    }
+    setSendingRequest(false);
+  };
+
+  const handleAccept = async (req) => {
+    try {
+      const result = await acceptRequest(req.id);
+      toast.success(result.message || `'${req.managerName}' 님과 연결되었습니다.`);
+    } catch (err) {
+      toast.error(err.message || '수락에 실패했습니다.');
+    }
+  };
+
+  const handleReject = async (req) => {
+    try {
+      await rejectRequest(req.id);
+      toast.success('연결 요청을 거절했습니다.');
+    } catch (err) {
+      toast.error(err.message || '거절에 실패했습니다.');
+    }
   };
 
   return (
@@ -88,39 +150,145 @@ export default function Connections() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
-      ) : connections.length === 0 ? (
-        <div className={styles.empty}>
-          <Link2 size={40} strokeWidth={1} />
-          <p>연결된 매니저가 없습니다.</p>
-          <p className={styles.emptyHint}>초대 링크를 생성하여 다른 매니저와 연결하세요.</p>
+      {/* Search + Request Section */}
+      <div className={styles.searchSection}>
+        <h2 className={styles.sectionTitle}>매니저 검색</h2>
+        <div className={styles.searchRow}>
+          <input
+            className={styles.searchInput}
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="매니저 이름을 정확히 입력하세요"
+          />
+          <button className={styles.searchBtn} onClick={handleSearch} disabled={searching || !searchName.trim()}>
+            <Search size={14} /> {searching ? '검색 중...' : '검색'}
+          </button>
         </div>
-      ) : (
-        <div className={styles.list}>
-          {connections.map((conn) => (
-            <div key={conn.id || conn.managerId} className={styles.card}>
-              <div className={styles.cardInfo}>
-                <div className={styles.avatar}>
-                  {(conn.name || conn.email || '?').charAt(0)}
-                </div>
-                <div>
-                  <span className={styles.connName}>{conn.name || conn.email}</span>
-                  <span className={styles.connMeta}>
-                    Seeker {conn.seekerCount ?? 0}명
-                  </span>
-                </div>
-              </div>
+
+        {searchError && <p className={styles.searchError}>{searchError}</p>}
+
+        {searchResult && (
+          <div className={styles.searchResultCard}>
+            <div className={styles.searchResultInfo}>
+              <div className={styles.avatar}>{searchResult.name.charAt(0)}</div>
+              <span className={styles.searchResultName}>{searchResult.name}</span>
+            </div>
+            <div className={styles.requestForm}>
+              <input
+                className={styles.messageInput}
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value.slice(0, 500))}
+                placeholder="메시지 (선택, 최대 500자)"
+              />
               <button
-                className={styles.disconnectBtn}
-                onClick={() => setDisconnectTarget(conn)}
+                className={styles.sendBtn}
+                onClick={handleSendRequest}
+                disabled={sendingRequest}
               >
-                <Unlink size={14} /> 해제
+                <UserPlus size={14} /> {sendingRequest ? '전송 중...' : '연결 요청'}
               </button>
             </div>
-          ))}
+          </div>
+        )}
+      </div>
+
+      {/* Received Requests */}
+      {receivedRequests.length > 0 && (
+        <div className={styles.requestSection}>
+          <h2 className={styles.sectionTitle}>받은 요청</h2>
+          <div className={styles.list}>
+            {receivedRequests.map((req) => (
+              <div key={req.id} className={styles.requestCard}>
+                <div className={styles.requestInfo}>
+                  <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
+                  <div>
+                    <span className={styles.connName}>{req.managerName}</span>
+                    {req.message && <span className={styles.requestMessage}>{req.message}</span>}
+                    <span className={styles.connMeta}>
+                      {new Date(req.createdAt).toLocaleDateString('ko-KR')}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.requestActions}>
+                  <button className={styles.acceptBtn} onClick={() => handleAccept(req)}>
+                    <Check size={14} /> 수락
+                  </button>
+                  <button className={styles.rejectBtn} onClick={() => handleReject(req)}>
+                    <XCircle size={14} /> 거절
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
+
+      {/* Sent Requests */}
+      {sentRequests.length > 0 && (
+        <div className={styles.requestSection}>
+          <h2 className={styles.sectionTitle}>보낸 요청</h2>
+          <div className={styles.list}>
+            {sentRequests.map((req) => (
+              <div key={req.id} className={styles.sentCard}>
+                <div className={styles.cardInfo}>
+                  <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
+                  <div>
+                    <span className={styles.connName}>{req.managerName}</span>
+                    {req.message && <span className={styles.requestMessage}>{req.message}</span>}
+                    <span className={styles.connMeta}>
+                      {new Date(req.createdAt).toLocaleDateString('ko-KR')}
+                    </span>
+                  </div>
+                </div>
+                <div className={styles.sentStatus}>
+                  {req.status === 'pending' && <span className={styles.pendingBadge}><Clock size={12} /> 대기 중</span>}
+                  {req.status === 'accepted' && <StatusBadge status="approved" />}
+                  {req.status === 'rejected' && <StatusBadge status="rejected" />}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Existing Connections */}
+      <div className={styles.connectionSection}>
+        <h2 className={styles.sectionTitle}>연결된 매니저</h2>
+        {isLoading ? (
+          <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
+        ) : connections.length === 0 ? (
+          <div className={styles.empty}>
+            <Link2 size={40} strokeWidth={1} />
+            <p>연결된 매니저가 없습니다.</p>
+            <p className={styles.emptyHint}>초대 링크를 생성하거나 이름으로 검색하여 연결하세요.</p>
+          </div>
+        ) : (
+          <div className={styles.list}>
+            {connections.map((conn) => (
+              <div key={conn.id || conn.managerId} className={styles.card}>
+                <div className={styles.cardInfo}>
+                  <div className={styles.avatar}>
+                    {(conn.name || conn.email || '?').charAt(0)}
+                  </div>
+                  <div>
+                    <span className={styles.connName}>{conn.name || conn.email}</span>
+                    <span className={styles.connMeta}>
+                      Seeker {conn.seekerCount ?? 0}명
+                    </span>
+                  </div>
+                </div>
+                <button
+                  className={styles.disconnectBtn}
+                  onClick={() => setDisconnectTarget(conn)}
+                >
+                  <Unlink size={14} /> 해제
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {disconnectTarget && (
         <ConfirmModal

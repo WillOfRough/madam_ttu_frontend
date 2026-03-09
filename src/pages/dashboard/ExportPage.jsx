@@ -62,8 +62,8 @@ export default function ExportPage() {
           <div className={styles.logsList}>
             {logs.map((log, i) => (
               <div key={log.id || i} className={styles.logItem}>
-                <span className={styles.logType}>{log.type || 'Excel'}</span>
-                <span className={styles.logCount}>{log.count ?? '-'}건</span>
+                <span className={styles.logType}>{log.exportType || 'Excel'}</span>
+                <span className={styles.logCount}>{log.recordCount ?? '-'}건</span>
                 <span className={styles.logDate}>
                   {log.createdAt ? new Date(log.createdAt).toLocaleDateString('ko-KR') : '-'}
                 </span>

@@ -32,51 +32,114 @@ describe('Bug 1: generateNickname() 공백 제거', () => {
 });
 
 // ──────────────────────────────────────────────
-// Bug 2: 자기소개 최소 글자수 불일치 검증
-// 백엔드: @Size(min = 50, max = 1000)
+// Bug 2: 가이드 질문 조합 자기소개 검증
+// introQ1~Q3 필수, 조합 후 20자 이상
 // ──────────────────────────────────────────────
 
-// SeekerForm.jsx의 validateStep 로직을 직접 테스트하기 위해 재현
-function validateIntroduction(introduction) {
+function combineIntro(introQ1, introQ2, introQ3, introQ4, introKeywords = []) {
+  const answers = [introQ1, introQ2, introQ3, introQ4]
+    .map((a) => a.trim())
+    .filter(Boolean)
+    .join(' ');
+  const prefix = introKeywords.length > 0 ? `[${introKeywords.join(', ')}] ` : '';
+  return prefix + answers;
+}
+
+function validateGuidedIntro(form) {
   const errors = {};
-  if (!introduction) {
-    errors.introduction = '자기소개를 입력해주세요.';
-  } else if (introduction.length < 20) {
-    errors.introduction = `${20 - introduction.length}자 더 작성해주세요. (최소 20자)`;
+  if (!form.introQ1.trim()) errors.introQ1 = '답변을 입력해주세요.';
+  if (!form.introQ2.trim()) errors.introQ2 = '답변을 입력해주세요.';
+  if (!form.introQ3.trim()) errors.introQ3 = '답변을 입력해주세요.';
+  const combined = [form.introQ1, form.introQ2, form.introQ3, form.introQ4 || '']
+    .map((a) => a.trim()).filter(Boolean).join(' ');
+  const keywordsPrefix = (form.introKeywords || []).length > 0 ? `[${form.introKeywords.join(', ')}] ` : '';
+  const totalLen = keywordsPrefix.length + combined.length;
+  if (combined.length > 0 && totalLen < 20) {
+    errors.introLength = `${20 - totalLen}자 더 작성해주세요. (최소 20자)`;
   }
   return errors;
 }
 
-describe('Bug 2: 자기소개 최소 글자수 20자 검증', () => {
-  it('19자 입력 시 에러가 발생해야 한다', () => {
-    const text = 'a'.repeat(19);
-    const errors = validateIntroduction(text);
-    expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('최소 20자');
+describe('Bug 2: 가이드 질문 자기소개 검증', () => {
+  it('Q1 비어있으면 에러가 발생해야 한다', () => {
+    const errors = validateGuidedIntro({ introQ1: '', introQ2: '답변2', introQ3: '답변3' });
+    expect(errors.introQ1).toBeDefined();
   });
 
-  it('10자 입력 시 에러가 발생해야 한다', () => {
-    const text = 'a'.repeat(10);
-    const errors = validateIntroduction(text);
-    expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('10자 더 작성해주세요');
+  it('Q2 비어있으면 에러가 발생해야 한다', () => {
+    const errors = validateGuidedIntro({ introQ1: '답변1', introQ2: '', introQ3: '답변3' });
+    expect(errors.introQ2).toBeDefined();
   });
 
-  it('20자 입력 시 에러가 없어야 한다', () => {
-    const text = 'a'.repeat(20);
-    const errors = validateIntroduction(text);
-    expect(errors.introduction).toBeUndefined();
+  it('Q3 비어있으면 에러가 발생해야 한다', () => {
+    const errors = validateGuidedIntro({ introQ1: '답변1', introQ2: '답변2', introQ3: '' });
+    expect(errors.introQ3).toBeDefined();
   });
 
-  it('빈 문자열 입력 시 필수 입력 에러가 발생해야 한다', () => {
-    const errors = validateIntroduction('');
-    expect(errors.introduction).toBe('자기소개를 입력해주세요.');
+  it('Q4는 비어있어도 에러가 없어야 한다 (선택)', () => {
+    const errors = validateGuidedIntro({
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
+    });
+    expect(errors.introQ4).toBeUndefined();
   });
 
-  it('1000자 입력 시 에러가 없어야 한다', () => {
-    const text = 'a'.repeat(1000);
-    const errors = validateIntroduction(text);
-    expect(errors.introduction).toBeUndefined();
+  it('Q1~Q3 채우면 필수 에러가 없어야 한다', () => {
+    const errors = validateGuidedIntro({
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
+    });
+    expect(errors.introQ1).toBeUndefined();
+    expect(errors.introQ2).toBeUndefined();
+    expect(errors.introQ3).toBeUndefined();
+  });
+
+  it('조합 결과가 20자 미만이면 introLength 에러 발생', () => {
+    const errors = validateGuidedIntro({
+      introQ1: 'ab',
+      introQ2: 'cd',
+      introQ3: 'ef',
+    });
+    expect(errors.introLength).toBeDefined();
+    expect(errors.introLength).toContain('최소 20자');
+  });
+
+  it('조합 결과가 20자 이상이면 introLength 에러 없음', () => {
+    const errors = validateGuidedIntro({
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
+    });
+    const combined = combineIntro('카페에서 책 읽어요', '러닝에 빠져있어요', '유머 있다고 해요', '');
+    expect(combined.length).toBeGreaterThanOrEqual(20);
+    expect(errors.introLength).toBeUndefined();
+  });
+
+  it('키워드 prefix 포함하여 20자 이상이면 통과', () => {
+    const errors = validateGuidedIntro({
+      introQ1: 'ab',
+      introQ2: 'cd',
+      introQ3: 'ef',
+      introKeywords: ['활발한', '따뜻한', '유머러스'],
+    });
+    expect(errors.introLength).toBeUndefined();
+  });
+
+  it('combineIntro가 답변들을 공백으로 조합한다', () => {
+    const result = combineIntro('답변1', '답변2', '답변3', '답변4');
+    expect(result).toBe('답변1 답변2 답변3 답변4');
+  });
+
+  it('combineIntro가 빈 답변을 제외한다', () => {
+    const result = combineIntro('답변1', '', '답변3', '');
+    expect(result).toBe('답변1 답변3');
+  });
+
+  it('combineIntro가 키워드 prefix를 포함한다', () => {
+    const result = combineIntro('답변1', '답변2', '답변3', '', ['활발한']);
+    expect(result).toBe('[활발한] 답변1 답변2 답변3');
   });
 });
 
@@ -126,9 +189,13 @@ describe('Bug 3: MBTI 비표준값 필터링', () => {
 describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
   function buildPayload(form, suggestedNickname) {
     const nickname = form.nickname || suggestedNickname;
+    const introAnswers = [form.introQ1 || '', form.introQ2 || '', form.introQ3 || '', form.introQ4 || '']
+      .map((a) => a.trim())
+      .filter(Boolean)
+      .join(' ');
     const introText = [
       form.introKeywords && form.introKeywords.length > 0 ? `[${form.introKeywords.join(', ')}] ` : '',
-      form.introduction,
+      introAnswers,
     ].join('');
     const idealText = [
       form.idealKeywords && form.idealKeywords.length > 0 ? `[${form.idealKeywords.join(', ')}] ` : '',
@@ -145,16 +212,12 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       height: form.height ? Number(form.height) : undefined,
       occupation: form.occupation,
       company: form.company || undefined,
-      companyLocation: form.companyLocation || undefined,
       education: form.education || undefined,
-      school: form.school || undefined,
       religion: form.religion || undefined,
       mbti: (form.mbti && form.mbti.length <= 4) ? form.mbti : undefined,
       hobbies: form.hobbies && form.hobbies.length > 0 ? form.hobbies.join(', ') : undefined,
       introduction: introText,
       idealType: idealText || undefined,
-      consentPrivacy: form.consentPrivacy,
-      consentThirdParty: form.consentThirdParty,
     };
   }
 
@@ -168,7 +231,9 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1994',
       phone: '010-1234-5678',
       occupation: '개발자',
-      introduction: 'a'.repeat(20),
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
       consentPrivacy: true,
       consentThirdParty: true,
     }, suggestedNickname);
@@ -185,7 +250,9 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1995',
       phone: '010-1111-2222',
       occupation: '디자이너',
-      introduction: 'a'.repeat(20),
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
       mbti: '잘 모르겠어요',
       consentPrivacy: true,
       consentThirdParty: true,
@@ -201,7 +268,9 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       birthYear: '1990',
       phone: '010-3333-4444',
       occupation: '엔지니어',
-      introduction: 'a'.repeat(50),
+      introQ1: '카페에서 책 읽어요',
+      introQ2: '러닝에 빠져있어요',
+      introQ3: '유머 있다고 해요',
       mbti: 'INTJ',
       consentPrivacy: true,
       consentThirdParty: true,
@@ -211,8 +280,8 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
   });
 
   it('20자 미만 자기소개는 프론트엔드 검증에서 차단되어야 한다', () => {
-    const errors = validateIntroduction('a'.repeat(15));
-    expect(errors.introduction).toBeDefined();
-    expect(errors.introduction).toContain('최소 20자');
+    const errors = validateGuidedIntro({ introQ1: 'ab', introQ2: 'cd', introQ3: 'ef' });
+    expect(errors.introLength).toBeDefined();
+    expect(errors.introLength).toContain('최소 20자');
   });
 });

@@ -1,34 +1,34 @@
 import { apiFetch } from './config';
 
 export async function login({ email, password }) {
-  return apiFetch('/api/auth/login', {
+  return apiFetch('/api/v1/auth/login', {
     method: 'POST',
     body: { email, password },
   });
 }
 
 export async function signup({ email, password, name }) {
-  return apiFetch('/api/managers/signup', {
+  return apiFetch('/api/v1/managers/signup', {
     method: 'POST',
     body: { email, password, name },
   });
 }
 
 export async function register({ token, email, password, name }) {
-  return apiFetch('/api/managers/register', {
+  return apiFetch('/api/v1/managers/register', {
     method: 'POST',
     body: { token, email, password, name },
   });
 }
 
 export async function checkSession() {
-  return apiFetch('/api/auth/me', {
+  return apiFetch('/api/v1/auth/me', {
     method: 'GET',
   });
 }
 
 export async function changePassword({ currentPassword, newPassword, confirmPassword }) {
-  return apiFetch('/api/auth/change-password', {
+  return apiFetch('/api/v1/auth/change-password', {
     method: 'POST',
     body: { currentPassword, newPassword, confirmPassword },
   });

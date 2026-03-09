@@ -25,7 +25,7 @@ const seekers = [
       '안녕하세요! 마케팅 일을 하고 있는 서연입니다. 새로운 사람 만나는 걸 좋아하고, 주말에는 전시회나 팝업스토어를 자주 가요. 대화할 때 서로의 생각을 편하게 나눌 수 있는 관계를 원해요.',
     idealType:
       '유머감각이 있고, 자기 일에 열정적인 분이면 좋겠어요. 같이 맛집 투어 다니면서 소소한 일상을 즐길 수 있는 사람이 좋아요.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: '밝고 활발한 성격. 대화 능력 좋음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-28T09:00:00Z',
@@ -49,7 +49,7 @@ const seekers = [
       '개발자로 일하면서도 야외활동을 즐기는 편입니다. 주말에는 클라이밍장이나 한강에서 시간을 보내요. 깊은 대화를 좋아하고 진정성 있는 만남을 찾고 있습니다.',
     idealType:
       '서로의 공간을 존중하면서도 함께하는 시간을 소중히 여기는 분. 지적 호기심이 많고 자기만의 세계가 있는 분이면 좋겠습니다.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: '차분하고 진중한 인상. 연봉 높음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-25T14:30:00Z',
@@ -73,7 +73,7 @@ const seekers = [
       '디자이너로 일하고 있는 지민입니다. 조용한 카페에서 그림 그리는 걸 좋아하고, 고양이 두 마리와 함께 살고 있어요. 감성적이지만 현실적인 사람이에요.',
     idealType:
       '따뜻하고 배려심이 있는 분. 동물을 좋아하시는 분이면 더 좋겠어요. 주말에 같이 카페 투어 다닐 수 있는 분!',
-    approval: 'pending',
+    approvalStatus: 'pending',
     managerNote: '',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-03-05T11:20:00Z',
@@ -97,7 +97,7 @@ const seekers = [
       '법률사무소에서 기업자문 업무를 하고 있습니다. 바쁜 일상 속에서도 의미 있는 만남을 위해 시간을 내려고 합니다. 진지하게 미래를 함께할 분을 찾고 있어요.',
     idealType:
       '밝고 긍정적인 에너지를 가진 분. 서로 다른 분야에서 일하더라도 존중하고 응원할 수 있는 관계를 원합니다.',
-    approval: 'pending',
+    approvalStatus: 'pending',
     managerNote: '',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-03-04T16:45:00Z',
@@ -121,7 +121,7 @@ const seekers = [
       '프리랜서 포토그래퍼로 일하고 있어요. 자유로운 일정 덕분에 여행도 많이 다니고, 제주도에서 한 달 살기도 해봤어요. 독립적이지만 함께일 때 더 빛나는 사람입니다.',
     idealType:
       '모험적이고 새로운 경험을 두려워하지 않는 분. 같이 여행 다니면서 추억을 쌓고 싶어요.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: '자유로운 영혼. 비주얼 좋음.',
     ownerManagerId: 'm002',
     createdAt: '2026-02-20T08:15:00Z',
@@ -145,7 +145,7 @@ const seekers = [
       '외과 전문의로 일하고 있습니다. 바쁜 일정이지만 사람을 만나는 시간만큼은 소중히 여기는 편이에요. 따뜻하고 성실한 만남을 원합니다.',
     idealType:
       '이해심이 많고 서로의 시간을 존중할 수 있는 분. 건강한 라이프스타일을 즐기는 분이면 좋겠습니다.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: '스펙 최상급. 매너 좋음.',
     ownerManagerId: 'm002',
     createdAt: '2026-02-18T10:00:00Z',
@@ -169,7 +169,7 @@ const seekers = [
       '금융업계에서 일하면서 자기계발에도 열심인 예은입니다. 운동을 좋아하고, 주말에는 크로스핏이나 러닝을 자주 해요. 목표가 분명한 사람을 좋아합니다.',
     idealType:
       '자기 일에 열정적이고, 함께 성장할 수 있는 분이면 좋겠어요. 운동이나 건강한 취미를 공유할 수 있는 분이면 더 좋겠습니다.',
-    approval: 'pending',
+    approvalStatus: 'pending',
     managerNote: '',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-03-06T13:00:00Z',
@@ -193,7 +193,7 @@ const seekers = [
       '방송 PD로 일하면서 다양한 사람들을 만나고 있지만, 진짜 나를 알아주는 사람은 아직 못 만난 것 같아요. 유쾌하고 에너지 넘치는 성격입니다.',
     idealType:
       '같이 있으면 편하고 웃음이 끊이지 않는 분. 서로의 직업을 이해해주면서 응원할 수 있는 관계를 꿈꿔요.',
-    approval: 'rejected',
+    approvalStatus: 'rejected',
     managerNote: '프로필 사진 부적절. 재신청 요청.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-15T17:30:00Z',
@@ -217,7 +217,7 @@ const seekers = [
       '호텔에서 일하면서 서비스 마인드가 몸에 밴 것 같아요. 사람을 챙기는 걸 좋아하고, 주말에는 빵을 만들어서 주변에 나눠주는 게 취미예요.',
     idealType:
       '진실되고 성실한 분. 화려하지 않아도 일상이 따뜻한 관계를 만들어갈 수 있는 분이면 좋겠습니다.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: '성격 정말 좋음. 적극 추천.',
     ownerManagerId: 'm003',
     createdAt: '2026-02-22T09:45:00Z',
@@ -241,7 +241,7 @@ const seekers = [
       'AI 스타트업을 운영하고 있는 태양입니다. 일할 땐 진지하지만, 놀 때는 화끈하게 노는 스타일이에요. 도전적인 삶을 살면서도 편안한 안식처가 되어줄 사람을 찾고 있습니다.',
     idealType:
       '지적 대화가 통하고, 서로의 꿈을 응원할 수 있는 파트너. 같이 여행 가서 새로운 경험을 즐길 수 있는 분이면 좋겠어요.',
-    approval: 'approved',
+    approvalStatus: 'approved',
     managerNote: 'VIP. 스펙/외모/성격 모두 우수.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-10T15:00:00Z',
@@ -274,7 +274,8 @@ const invites = [
     id: 'inv001',
     token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001',
     label: '김서연 지인 소개용',
-    status: 'used',
+    status: 'active',
+    useCount: 1,
     createdAt: '2026-02-27T09:00:00Z',
     expiresAt: '2026-02-28T09:00:00Z',
   },
@@ -283,6 +284,7 @@ const invites = [
     token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0002',
     label: '3월 신규 모집',
     status: 'active',
+    useCount: 3,
     createdAt: '2026-03-05T10:00:00Z',
     expiresAt: '2026-03-12T10:00:00Z',
   },
@@ -291,6 +293,7 @@ const invites = [
     token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0003',
     label: '회사 동료 추천',
     status: 'active',
+    useCount: 0,
     createdAt: '2026-03-06T08:00:00Z',
     expiresAt: '2026-03-07T08:00:00Z',
   },
@@ -299,6 +302,7 @@ const invites = [
     token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0004',
     label: '',
     status: 'expired',
+    useCount: 2,
     createdAt: '2026-02-01T12:00:00Z',
     expiresAt: '2026-02-02T12:00:00Z',
   },
@@ -307,15 +311,55 @@ const invites = [
     token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0005',
     label: '테스트용',
     status: 'revoked',
+    useCount: 0,
     createdAt: '2026-02-20T16:00:00Z',
     expiresAt: '2026-02-21T16:00:00Z',
   },
 ];
 
+// ── Connection Requests ───────────────────────────────
+const connectionRequests = [
+  {
+    id: 'req001',
+    managerId: 'm004',
+    managerName: '김태희',
+    status: 'pending',
+    message: '안녕하세요! 같이 매칭 풀 공유해요.',
+    createdAt: '2026-03-07T10:00:00Z',
+  },
+  {
+    id: 'req002',
+    managerId: 'm005',
+    managerName: '정재영',
+    status: 'pending',
+    message: '',
+    createdAt: '2026-03-08T14:00:00Z',
+  },
+];
+
+const sentRequests = [
+  {
+    id: 'req003',
+    managerId: 'm006',
+    managerName: '최유리',
+    status: 'pending',
+    message: '연결 요청합니다!',
+    createdAt: '2026-03-06T09:00:00Z',
+  },
+];
+
+// Searchable managers for mock
+const searchableManagers = [
+  { id: 'm004', name: '김태희' },
+  { id: 'm005', name: '정재영' },
+  { id: 'm006', name: '최유리' },
+  { id: 'm007', name: '홍길동' },
+];
+
 // ── Export Logs ─────────────────────────────────────────
 const exportLogs = [
-  { id: 'exp001', type: 'Excel', count: 6, createdAt: '2026-03-01T09:00:00Z' },
-  { id: 'exp002', type: 'Excel', count: 8, createdAt: '2026-02-15T14:30:00Z' },
+  { id: 'exp001', exportType: 'Excel', recordCount: 6, createdAt: '2026-03-01T09:00:00Z' },
+  { id: 'exp002', exportType: 'Excel', recordCount: 8, createdAt: '2026-02-15T14:30:00Z' },
 ];
 
 // ── Manager lookup map ────────────────────────────────
@@ -336,11 +380,11 @@ function enrichSeeker(s) {
 // ── Dashboard Summary ──────────────────────────────────
 const dashboardSummary = {
   mySeekerCount: seekers.filter((s) => s.ownerManagerId === MANAGER_ID).length,
-  pendingCount: seekers.filter((s) => s.approval === 'pending').length,
-  connectionCount: connections.length,
+  pendingCount: seekers.filter((s) => s.approvalStatus === 'pending').length,
+  connectedManagerCount: connections.length,
   activeInviteCount: invites.filter((i) => i.status === 'active').length,
   recentPendingSeekers: seekers
-    .filter((s) => s.approval === 'pending')
+    .filter((s) => s.approvalStatus === 'pending')
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
     .map((s) => ({ ...s, ...enrichSeeker(s) })),
@@ -351,8 +395,6 @@ const managerInfo = {
   id: MANAGER_ID,
   name: 'Manager',
   email: 'manager@findmyone.kr',
-  connectionCount: connections.length,
-  seekerCount: seekers.filter((s) => s.ownerManagerId === MANAGER_ID).length,
 };
 
 // ── Route Matcher ──────────────────────────────────────
@@ -369,82 +411,92 @@ export async function mockFetch(path, options = {}) {
   const pathname = url.pathname;
   const params = url.searchParams;
 
-  // POST /api/auth/login
-  if (method === 'POST' && pathname === '/api/auth/login') {
+  // POST /api/v1/auth/login
+  if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};
     return {
-      managerId: MANAGER_ID,
-      id: MANAGER_ID,
-      email: body.email || 'manager@findmyone.kr',
-      name: (body.email || 'manager').split('@')[0],
+      manager: {
+        id: MANAGER_ID,
+        email: body.email || 'manager@findmyone.kr',
+        name: (body.email || 'manager').split('@')[0],
+      },
     };
   }
 
-  // GET /api/auth/me
-  if (method === 'GET' && pathname === '/api/auth/me') {
+  // GET /api/v1/auth/me
+  if (method === 'GET' && pathname === '/api/v1/auth/me') {
     return {
-      managerId: MANAGER_ID,
       id: MANAGER_ID,
       email: 'manager@findmyone.kr',
       name: 'Manager',
+      connections: connections.map((c) => ({
+        managerId: c.managerId,
+        name: c.name,
+        seekerCount: c.seekerCount,
+        connectedAt: c.connectedAt,
+      })),
+      mySeekerCount: seekers.filter((s) => s.ownerManagerId === MANAGER_ID).length,
+      createdAt: '2026-01-01T00:00:00Z',
     };
   }
 
-  // POST /api/auth/logout
-  if (method === 'POST' && pathname === '/api/auth/logout') {
+  // POST /api/v1/auth/logout
+  if (method === 'POST' && pathname === '/api/v1/auth/logout') {
     return { success: true };
   }
 
-  // POST /api/auth/signup (register)
-  if (method === 'POST' && pathname === '/api/auth/signup') {
+  // POST /api/v1/auth/signup (register)
+  if (method === 'POST' && pathname === '/api/v1/auth/signup') {
     return { managerId: MANAGER_ID, success: true };
   }
 
-  // GET /api/invites/{token}/validate (token validation)
-  if (method === 'GET' && pathname.match(/^\/api\/invites\/[^/]+\/validate$/)) {
-    return { valid: true, type: 'seeker', managerName: 'Manager' };
+  // GET /api/v1/invites/{token}/validate (token validation)
+  if (method === 'GET' && pathname.match(/^\/api\/v1\/invites\/[^/]+\/validate$/)) {
+    return { valid: true, managerName: 'Manager' };
   }
 
-  // POST /api/seekers (create seeker)
-  if (method === 'POST' && pathname === '/api/seekers') {
+  // POST /api/v1/seekers (create seeker)
+  if (method === 'POST' && pathname === '/api/v1/seekers') {
     return { success: true, message: '프로필이 성공적으로 등록되었습니다.' };
   }
 
-  // POST /api/connections/join
-  if (method === 'POST' && pathname === '/api/connections/join') {
+  // POST /api/v1/connections/join
+  if (method === 'POST' && pathname === '/api/v1/connections/join') {
     return { success: true, message: '연결되었습니다.' };
   }
 
-  // POST /api/connections/disconnect
-  if (method === 'POST' && pathname === '/api/connections/disconnect') {
+  // POST /api/v1/connections/disconnect
+  if (method === 'POST' && pathname === '/api/v1/connections/disconnect') {
     const body = options.body || {};
     const idx = connections.findIndex((c) => c.managerId === body.targetManagerId);
     if (idx !== -1) connections.splice(idx, 1);
-    dashboardSummary.connectionCount = connections.length;
+    dashboardSummary.connectedManagerCount = connections.length;
     return { success: true };
   }
 
-  // GET /api/managers/:id/dashboard
-  if (method === 'GET' && /^\/api\/managers\/[^/]+\/dashboard$/.test(pathname)) {
+  // GET /api/v1/dashboard/summary
+  if (method === 'GET' && pathname === '/api/v1/dashboard/summary') {
     return dashboardSummary;
   }
 
-  // GET /api/managers/:id
-  if (method === 'GET' && /^\/api\/managers\/[^/]+$/.test(pathname)) {
+  // GET /api/v1/managers/:id
+  if (method === 'GET' && /^\/api\/v1\/managers\/[^/]+$/.test(pathname)) {
     return managerInfo;
   }
 
-  // GET /api/seekers/:id  (detail)
-  if (method === 'GET' && /^\/api\/seekers\/[^?]+$/.test(pathname) && !pathname.endsWith('/seekers')) {
+  // GET /api/v1/seekers/:id  (detail)
+  if (method === 'GET' && /^\/api\/v1\/seekers\/[^?]+$/.test(pathname) && !pathname.endsWith('/seekers')) {
     const id = pathname.split('/').pop();
     const found = seekers.find((s) => s.id === id);
     if (found) return { ...found, ...enrichSeeker(found) };
     throw new Error('Seeker not found');
   }
 
-  // GET /api/seekers  (list)
-  if (method === 'GET' && pathname === '/api/seekers') {
+  // GET /api/v1/seekers  (list)
+  if (method === 'GET' && pathname === '/api/v1/seekers') {
     let filtered = [...seekers];
+    const nameQ = params.get('name');
+    const phoneQ = params.get('phone');
     const gender = params.get('gender');
     const approval = params.get('approval');
     const owner = params.get('owner');
@@ -452,8 +504,10 @@ export async function mockFetch(path, options = {}) {
     const page = parseInt(params.get('page') || '1', 10);
     const limit = parseInt(params.get('limit') || '20', 10);
 
+    if (nameQ) filtered = filtered.filter((s) => s.name.includes(nameQ));
+    if (phoneQ) filtered = filtered.filter((s) => s.phone === phoneQ);
     if (gender) filtered = filtered.filter((s) => s.gender === gender);
-    if (approval) filtered = filtered.filter((s) => s.approval === approval);
+    if (approval) filtered = filtered.filter((s) => s.approvalStatus === approval);
     if (owner === 'me') {
       filtered = filtered.filter((s) => s.ownerManagerId === MANAGER_ID);
     } else if (owner && owner !== 'all') {
@@ -468,35 +522,37 @@ export async function mockFetch(path, options = {}) {
     });
 
     const start = (page - 1) * limit;
+    const totalPages = Math.ceil(filtered.length / limit);
     return {
       data: filtered.slice(start, start + limit).map((s) => ({ ...s, ...enrichSeeker(s) })),
-      totalCount: filtered.length,
+      pagination: { page, limit, total: filtered.length, totalPages },
     };
   }
 
-  // GET /api/connections
-  if (method === 'GET' && pathname === '/api/connections') {
-    return { data: connections };
+  // GET /api/v1/connections
+  if (method === 'GET' && pathname === '/api/v1/connections') {
+    return { connections };
   }
 
-  // GET /api/invites
-  if (method === 'GET' && pathname === '/api/invites') {
-    return { data: invites };
+  // GET /api/v1/invites
+  if (method === 'GET' && pathname === '/api/v1/invites') {
+    return invites;
   }
 
-  // GET /api/exports
-  if (method === 'GET' && pathname === '/api/exports') {
+  // GET /api/v1/exports
+  if (method === 'GET' && pathname === '/api/v1/exports') {
     return exportLogs;
   }
 
-  // POST /api/invites  (create)
-  if (method === 'POST' && pathname === '/api/invites') {
+  // POST /api/v1/invites  (create)
+  if (method === 'POST' && pathname === '/api/v1/invites') {
     const body = options.body || {};
     const newInvite = {
       id: `inv${Date.now()}`,
       token: crypto.randomUUID(),
       label: body.label || '',
       status: 'active',
+      useCount: 0,
       createdAt: new Date().toISOString(),
       expiresAt: new Date(Date.now() + (body.expiresInHours || 24) * 3600000).toISOString(),
     };
@@ -505,8 +561,8 @@ export async function mockFetch(path, options = {}) {
     return newInvite;
   }
 
-  // DELETE /api/invites/:id
-  if (method === 'DELETE' && /^\/api\/invites\/[^/]+$/.test(pathname)) {
+  // DELETE /api/v1/invites/:id
+  if (method === 'DELETE' && /^\/api\/v1\/invites\/[^/]+$/.test(pathname)) {
     const id = pathname.split('/').pop();
     const inv = invites.find((i) => i.id === id);
     if (inv) inv.status = 'revoked';
@@ -514,23 +570,87 @@ export async function mockFetch(path, options = {}) {
     return { success: true };
   }
 
-  // POST /api/connections/invite
-  if (method === 'POST' && pathname === '/api/connections/invite') {
+  // GET /api/v1/connections/search?name=
+  if (method === 'GET' && pathname === '/api/v1/connections/search') {
+    const name = params.get('name');
+    const found = searchableManagers.find((m) => m.name === name);
+    if (found) return found;
+    throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
+  }
+
+  // GET /api/v1/connections/requests
+  if (method === 'GET' && pathname === '/api/v1/connections/requests') {
+    return {
+      received: connectionRequests.filter((r) => r.status === 'pending'),
+      sent: sentRequests,
+    };
+  }
+
+  // POST /api/v1/connections/requests (send)
+  if (method === 'POST' && pathname === '/api/v1/connections/requests') {
+    const body = options.body || {};
+    const target = searchableManagers.find((m) => m.name === body.name);
+    if (!target) throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
+    const newReq = {
+      id: `req${Date.now()}`,
+      managerId: target.id,
+      managerName: target.name,
+      status: 'pending',
+      message: body.message || '',
+      createdAt: new Date().toISOString(),
+    };
+    sentRequests.unshift(newReq);
+    return newReq;
+  }
+
+  // POST /api/v1/connections/requests/:id/accept
+  if (method === 'POST' && /^\/api\/v1\/connections\/requests\/[^/]+\/accept$/.test(pathname)) {
+    const reqId = pathname.split('/').slice(-2, -1)[0];
+    const req = connectionRequests.find((r) => r.id === reqId);
+    if (req) {
+      req.status = 'accepted';
+      connections.push({
+        id: `c${Date.now()}`,
+        managerId: req.managerId,
+        name: req.managerName,
+        email: '',
+        seekerCount: 0,
+        connectedAt: new Date().toISOString(),
+      });
+      dashboardSummary.connectedManagerCount = connections.length;
+    }
+    return {
+      success: true,
+      connection: req ? { managerId: req.managerId, name: req.managerName } : {},
+      message: req ? `'${req.managerName}' 님과 연결되었습니다.` : '연결되었습니다.',
+    };
+  }
+
+  // POST /api/v1/connections/requests/:id/reject
+  if (method === 'POST' && /^\/api\/v1\/connections\/requests\/[^/]+\/reject$/.test(pathname)) {
+    const reqId = pathname.split('/').slice(-2, -1)[0];
+    const req = connectionRequests.find((r) => r.id === reqId);
+    if (req) req.status = 'rejected';
+    return { success: true, message: '연결 요청을 거절했습니다.' };
+  }
+
+  // POST /api/v1/connections/invite
+  if (method === 'POST' && pathname === '/api/v1/connections/invite') {
     return { token: crypto.randomUUID() };
   }
 
-  // PATCH /api/seekers/:id/approval
-  if (method === 'PATCH' && /\/api\/seekers\/[^/]+\/approval/.test(pathname)) {
+  // PATCH /api/v1/seekers/:id/approval
+  if (method === 'PATCH' && /\/api\/v1\/seekers\/[^/]+\/approval/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
     const s = seekers.find((sk) => sk.id === id);
-    if (s) s.approval = body.status;
-    dashboardSummary.pendingCount = seekers.filter((sk) => sk.approval === 'pending').length;
+    if (s) s.approvalStatus = body.status;
+    dashboardSummary.pendingCount = seekers.filter((sk) => sk.approvalStatus === 'pending').length;
     return { success: true };
   }
 
-  // PATCH /api/seekers/:id/note
-  if (method === 'PATCH' && /\/api\/seekers\/[^/]+\/note/.test(pathname)) {
+  // PATCH /api/v1/seekers/:id/note
+  if (method === 'PATCH' && /\/api\/v1\/seekers\/[^/]+\/note/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
     const s = seekers.find((sk) => sk.id === id);

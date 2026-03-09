@@ -5,7 +5,6 @@ const LABELS = {
   approved: '승인',
   rejected: '거절',
   active: '활성',
-  used: '사용됨',
   expired: '만료',
   revoked: '폐기',
 };

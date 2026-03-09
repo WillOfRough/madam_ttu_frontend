@@ -131,6 +131,263 @@
   background: var(--navy-light);
 }
 
+/* ── Section Titles ── */
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.02em;
+}
+
+/* ── Search Section ── */
+.searchSection {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.searchRow {
+  display: flex;
+  gap: 10px;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.searchInput::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.searchInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.searchBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.searchBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+}
+
+.searchBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+}
+
+.searchError {
+  font-size: 0.82rem;
+  color: var(--danger);
+  margin-top: var(--space-sm);
+}
+
+.searchResultCard {
+  margin-top: var(--space-md);
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.searchResultInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.searchResultName {
+  font-weight: 650;
+  font-size: 0.92rem;
+  color: var(--charcoal);
+}
+
+.requestForm {
+  display: flex;
+  gap: 10px;
+}
+
+.messageInput {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+}
+
+.messageInput::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.messageInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--coral);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: var(--coral-light);
+}
+
+.sendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Request Sections ── */
+.requestSection {
+  margin-bottom: var(--space-xl);
+}
+
+.connectionSection {
+  margin-bottom: var(--space-xl);
+}
+
+.requestCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.requestCard:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.requestInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.requestMessage {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--charcoal-light);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.requestActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.acceptBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1a7a3a;
+  background: var(--success-light);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.acceptBtn:hover {
+  background: #d4edda;
+  color: #155724;
+}
+
+.rejectBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--danger);
+  background: var(--danger-light);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.rejectBtn:hover {
+  background: #fde2e2;
+  color: #c0392b;
+}
+
+/* ── Sent Request Card ── */
+.sentCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.sentStatus {
+  flex-shrink: 0;
+}
+
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--pending-light);
+  color: #8a5e00;
+}
+
+/* ── Existing ── */
 .loading {
   padding: var(--space-3xl);
   text-align: center;
@@ -246,11 +503,27 @@
     flex-direction: column;
   }
 
-  .card {
+  .searchRow {
+    flex-direction: column;
+  }
+
+  .requestForm {
+    flex-direction: column;
+  }
+
+  .card, .requestCard, .sentCard {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-md);
     padding: 16px;
+  }
+
+  .requestActions {
+    justify-content: flex-end;
+  }
+
+  .sentStatus {
+    align-self: flex-end;
   }
 
   .disconnectBtn {

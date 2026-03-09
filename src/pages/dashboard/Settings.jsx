@@ -40,16 +40,16 @@ export default function Settings() {
             <span className={styles.fieldLabel}>이메일</span>
             <span className={styles.fieldValue}>{info?.email || email || '-'}</span>
           </div>
-          {info?.connectionCount != null && (
+          {info?.connections != null && (
             <div className={styles.field}>
               <span className={styles.fieldLabel}>연결된 매니저</span>
-              <span className={styles.fieldValue}>{info.connectionCount}명</span>
+              <span className={styles.fieldValue}>{info.connections.length}명</span>
             </div>
           )}
-          {info?.seekerCount != null && (
+          {info?.mySeekerCount != null && (
             <div className={styles.field}>
               <span className={styles.fieldLabel}>내 Seeker</span>
-              <span className={styles.fieldValue}>{info.seekerCount}명</span>
+              <span className={styles.fieldValue}>{info.mySeekerCount}명</span>
             </div>
           )}
         </div>

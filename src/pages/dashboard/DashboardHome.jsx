@@ -20,7 +20,7 @@ export default function DashboardHome() {
   const cards = [
     { icon: Users, label: '내 Seeker', value: summary?.mySeekerCount ?? '-', color: 'navy' },
     { icon: Clock, label: '승인 대기', value: summary?.pendingCount ?? '-', color: 'pending' },
-    { icon: Link2, label: '연결된 매니저', value: summary?.connectionCount ?? '-', color: 'success' },
+    { icon: Link2, label: '연결된 매니저', value: summary?.connectedManagerCount ?? '-', color: 'success' },
     { icon: Mail, label: '활성 초대링크', value: summary?.activeInviteCount ?? '-', color: 'coral' },
   ];
 
@@ -75,7 +75,7 @@ export default function DashboardHome() {
                 <span className={styles.name}>{seeker.name}</span>
                 <span>{seeker.gender === 'male' ? '남성' : '여성'}</span>
                 <span>{seeker.occupation}</span>
-                <span><StatusBadge status={seeker.approval || 'pending'} /></span>
+                <span><StatusBadge status={seeker.approvalStatus || 'pending'} /></span>
               </div>
             ))}
           </div>

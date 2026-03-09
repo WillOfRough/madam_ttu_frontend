@@ -25,6 +25,21 @@ export default function SeekerList() {
     <div className={styles.page}>
       <h1 className={styles.title}>Seeker 관리</h1>
 
+      <div className={styles.searchRow}>
+        <input
+          className={styles.searchInput}
+          value={filters.name}
+          onChange={(e) => setFilter('name', e.target.value)}
+          placeholder="이름 검색"
+        />
+        <input
+          className={styles.searchInput}
+          value={filters.phone}
+          onChange={(e) => setFilter('phone', e.target.value)}
+          placeholder="전화번호 검색 (정확 일치)"
+        />
+      </div>
+
       <div className={styles.filters}>
         <select
           className={styles.filterSelect}
@@ -101,7 +116,7 @@ export default function SeekerList() {
                 <span className={seeker.isOwner ? styles.ownerMe : styles.ownerOther}>
                   {seeker.ownerManager?.name || (seeker.isOwner ? '나' : '-')}
                 </span>
-                <span><StatusBadge status={seeker.approval || 'pending'} /></span>
+                <span><StatusBadge status={seeker.approvalStatus || 'pending'} /></span>
               </div>
             ))}
           </div>

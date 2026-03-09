@@ -19,7 +19,10 @@ const INITIAL_FORM = {
   mbti: '',
   hobbies: [],
   // Step 4: 진심
-  introduction: '',
+  introQ1: '',
+  introQ2: '',
+  introQ3: '',
+  introQ4: '',
   introKeywords: [],
   idealType: '',
   idealKeywords: [],
@@ -56,9 +59,13 @@ const useSeekerFormStore = create((set, get) => ({
   getPayload: () => {
     const { form, token, suggestedNickname } = get();
     const nickname = form.nickname || suggestedNickname;
+    const introAnswers = [form.introQ1, form.introQ2, form.introQ3, form.introQ4]
+      .map((a) => a.trim())
+      .filter(Boolean)
+      .join(' ');
     const introText = [
       form.introKeywords.length > 0 ? `[${form.introKeywords.join(', ')}] ` : '',
-      form.introduction,
+      introAnswers,
     ].join('');
     const idealText = [
       form.idealKeywords.length > 0 ? `[${form.idealKeywords.join(', ')}] ` : '',
@@ -75,16 +82,12 @@ const useSeekerFormStore = create((set, get) => ({
       height: form.height ? Number(form.height) : undefined,
       occupation: form.occupation,
       company: form.company || undefined,
-      companyLocation: form.companyLocation || undefined,
       education: form.education || undefined,
-      school: form.school || undefined,
       religion: form.religion || undefined,
       mbti: (form.mbti && form.mbti.length <= 4) ? form.mbti : undefined,
       hobbies: form.hobbies.length > 0 ? form.hobbies.join(', ') : undefined,
       introduction: introText,
       idealType: idealText || undefined,
-      consentPrivacy: form.consentPrivacy,
-      consentThirdParty: form.consentThirdParty,
     };
   },
 

@@ -33,7 +33,7 @@ export default function SeekerDetail() {
   const handleApproval = async (status) => {
     try {
       await seekerService.updateApproval(seekerId, status);
-      setSeeker((s) => ({ ...s, approval: status }));
+      setSeeker((s) => ({ ...s, approvalStatus: status }));
       toast.success(status === 'approved' ? '승인되었습니다.' : '거절되었습니다.');
     } catch (err) {
       toast.error(err.message || '상태 변경에 실패했습니다.');
@@ -91,7 +91,7 @@ export default function SeekerDetail() {
         <div>
           <h1 className={styles.name}>{seeker.name}</h1>
           <div className={styles.headerMeta}>
-            <StatusBadge status={seeker.approval || 'pending'} />
+            <StatusBadge status={seeker.approvalStatus || 'pending'} />
             {seeker.ownerManager && (
               <span className={seeker.isOwner ? styles.ownerBadgeMe : styles.ownerBadgeOther}>
                 {seeker.isOwner ? '내 Seeker' : `${seeker.ownerManager.name}의 Seeker`}
@@ -100,7 +100,7 @@ export default function SeekerDetail() {
           </div>
         </div>
 
-        {seeker.isOwner && seeker.approval === 'pending' && (
+        {seeker.isOwner && seeker.approvalStatus === 'pending' && (
           <div className={styles.actions}>
             <button
               className={styles.approveBtn}
@@ -152,7 +152,7 @@ export default function SeekerDetail() {
 
       {seeker.isOwner ? (
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>관리자 메모</h3>
+          <h3 className={styles.cardTitle}>매니저 메모</h3>
           <textarea
             className={styles.noteInput}
             value={note}
@@ -170,7 +170,7 @@ export default function SeekerDetail() {
         </div>
       ) : seeker.managerNote ? (
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>관리자 메모</h3>
+          <h3 className={styles.cardTitle}>매니저 메모</h3>
           <p className={styles.text}>{seeker.managerNote}</p>
         </div>
       ) : null}

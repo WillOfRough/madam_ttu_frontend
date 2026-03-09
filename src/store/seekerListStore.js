@@ -11,6 +11,8 @@ const useSeekerListStore = create((set, get) => ({
     gender: null,
     approval: null,
     sort: 'createdAt:desc',
+    name: '',
+    phone: '',
   },
   isLoading: false,
   error: null,
@@ -35,7 +37,7 @@ const useSeekerListStore = create((set, get) => ({
       });
       set({
         seekers: result.data || result.seekers || result,
-        totalCount: result.totalCount || result.total || 0,
+        totalCount: result.pagination?.total ?? result.totalCount ?? 0,
         isLoading: false,
       });
     } catch (err) {
@@ -47,7 +49,7 @@ const useSeekerListStore = create((set, get) => ({
     seekers: [],
     totalCount: 0,
     page: 1,
-    filters: { owner: 'all', gender: null, approval: null, sort: 'createdAt:desc' },
+    filters: { owner: 'all', gender: null, approval: null, sort: 'createdAt:desc', name: '', phone: '' },
     error: null,
   }),
 }));

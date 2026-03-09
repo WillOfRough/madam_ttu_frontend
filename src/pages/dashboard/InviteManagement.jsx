@@ -117,6 +117,7 @@ export default function InviteManagement() {
                 <span className={styles.cardMeta}>
                   생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
                   {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
+                  {invite.useCount != null && ` · 등록 ${invite.useCount}명`}
                 </span>
               </div>
               <div className={styles.cardActions}>

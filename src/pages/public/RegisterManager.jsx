@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { RefreshCw } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import { generateNickname } from '../../data/constants';
 import styles from './RegisterManager.module.css';
 
 export default function RegisterManager() {
@@ -8,7 +10,9 @@ export default function RegisterManager() {
   const navigate = useNavigate();
   const register = useAuthStore((s) => s.register);
   const isLoading = useAuthStore((s) => s.isLoading);
+  const initialNickname = useMemo(() => generateNickname(), []);
   const [name, setName] = useState('');
+  const [suggestedName, setSuggestedName] = useState(initialNickname);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -23,8 +27,9 @@ export default function RegisterManager() {
       return;
     }
 
+    const finalName = name.trim() || suggestedName;
     try {
-      await register({ token, email, password, name });
+      await register({ token, email, password, name: finalName });
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || '가입에 실패했습니다.');
@@ -39,15 +44,24 @@ export default function RegisterManager() {
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label className={styles.label}>이름</label>
+            <label className={styles.label}>별명</label>
             <input
               className={styles.input}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="이름"
-              required
+              placeholder={suggestedName}
               autoFocus
             />
+            <div className={styles.nicknameHint}>
+              <span>입력하지 않으면 <strong>{suggestedName}</strong> 으로 설정됩니다</span>
+              <button
+                type="button"
+                className={styles.refreshBtn}
+                onClick={() => setSuggestedName(generateNickname())}
+              >
+                <RefreshCw size={13} /> 다른 별명
+              </button>
+            </div>
           </div>
 
           <div className={styles.field}>
