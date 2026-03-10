@@ -8,17 +8,11 @@ import styles from './ConnectManager.module.css';
 export default function ConnectManager() {
   const { token } = useParams();
   const navigate = useNavigate();
-  const managerId = useAuthStore((s) => s.managerId);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [error, setError] = useState(null);
 
   const handleConnect = async () => {
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
     setStatus('loading');
     setError(null);
     try {
@@ -51,18 +45,35 @@ export default function ConnectManager() {
             <p className={styles.message}>
               {isLoggedIn
                 ? '이 초대를 수락하면 상대 매니저와 Seeker 풀을 공유하게 됩니다.'
-                : '연결을 수락하려면 먼저 로그인이 필요합니다.'}
+                : '연결을 수락하려면 로그인 또는 회원가입이 필요합니다.'}
             </p>
 
             {error && <p className={styles.error}>{error}</p>}
 
-            <button
-              className={styles.btn}
-              onClick={handleConnect}
-              disabled={status === 'loading'}
-            >
-              {status === 'loading' ? '연결 중...' : isLoggedIn ? '연결 수락' : '로그인하러 가기'}
-            </button>
+            {isLoggedIn ? (
+              <button
+                className={styles.btn}
+                onClick={handleConnect}
+                disabled={status === 'loading'}
+              >
+                {status === 'loading' ? '연결 중...' : '연결 수락'}
+              </button>
+            ) : (
+              <>
+                <button
+                  className={styles.btn}
+                  onClick={() => navigate('/login', { state: { from: `/connect/${token}` } })}
+                >
+                  로그인하고 연결
+                </button>
+                <button
+                  className={styles.btnSecondary}
+                  onClick={() => navigate(`/register/${token}`)}
+                >
+                  회원가입하고 연결
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
