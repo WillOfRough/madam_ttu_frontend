@@ -73,9 +73,13 @@ function validateStep(step, form) {
     if (!form.education) {
       errors.education = '학력을 선택해주세요.';
     }
+    if (!form.school || !form.school.trim()) {
+      errors.school = '학교명을 입력해주세요.';
+    }
   } else if (step === 2) {
     if (!form.religion) errors.religion = '종교를 선택해주세요.';
     if (!form.mbti) errors.mbti = 'MBTI를 선택해주세요.';
+    if (form.hobbies.length < 3) errors.hobbies = '활동을 최소 3개 선택해주세요.';
   } else if (step === 3) {
     if (!form.introQ1.trim()) errors.introQ1 = '답변을 입력해주세요.';
     if (!form.introQ2.trim()) errors.introQ2 = '답변을 입력해주세요.';
@@ -150,8 +154,8 @@ export default function SeekerForm() {
     // Mark all current step fields as touched to show errors
     const stepFields = {
       0: ['gender', 'birthYear', 'phone', 'location'],
-      1: ['occupation', 'height', 'company', 'education'],
-      2: ['religion', 'mbti'],
+      1: ['occupation', 'height', 'company', 'education', 'school'],
+      2: ['religion', 'mbti', 'hobbies'],
       3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'consentPrivacy', 'consentThirdParty'],
     };
     const fields = stepFields[step] || [];
@@ -327,9 +331,10 @@ export default function SeekerForm() {
               <TextField
                 label="학교"
                 value={form.school}
-                onChange={(v) => setField('school', v)}
+                onChange={(v) => { setField('school', v); markTouched('school'); }}
                 placeholder="최종 학교명"
-                required={false}
+                required
+                error={getError('school')}
               />
             </div>
           )}
@@ -357,11 +362,12 @@ export default function SeekerForm() {
               />
               <KeywordTagInput
                 label="일상 속에서 당신을 미소 짓게 하는 활동은 무엇인가요?"
-                hint="클릭하거나 직접 입력해주세요"
+                hint="최소 3개 이상 선택해주세요. 클릭하거나 직접 입력할 수 있어요!"
                 suggestions={HOBBY_KEYWORDS}
                 selected={form.hobbies}
-                onToggle={(kw) => toggleKeyword('hobbies', kw)}
-                required={false}
+                onToggle={(kw) => { toggleKeyword('hobbies', kw); markTouched('hobbies'); }}
+                required
+                error={getError('hobbies')}
               />
             </div>
           )}
