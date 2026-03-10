@@ -97,6 +97,12 @@ const useAuthStore = create(
           });
           return true;
         } catch {
+          set({
+            isLoggedIn: false,
+            managerId: null,
+            email: null,
+            name: null,
+          });
           return false;
         }
       },

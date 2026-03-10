@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
 // Layout
@@ -28,16 +28,17 @@ import Settings from './pages/dashboard/Settings';
 
 function AuthListener() {
   const navigate = useNavigate();
+  const location = useLocation();
   const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
     const handleUnauthorized = () => {
       logout();
-      navigate('/login');
+      navigate('/login', { state: { from: location } });
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, [navigate, logout]);
+  }, [navigate, logout, location]);
 
   return null;
 }

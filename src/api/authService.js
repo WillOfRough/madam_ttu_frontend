@@ -4,6 +4,7 @@ export async function login({ email, password }) {
   return apiFetch('/api/v1/auth/login', {
     method: 'POST',
     body: { email, password },
+    skipUnauthorizedEvent: true,
   });
 }
 
@@ -24,6 +25,7 @@ export async function register({ token, email, password, name }) {
 export async function checkSession() {
   return apiFetch('/api/v1/auth/me', {
     method: 'GET',
+    skipUnauthorizedEvent: true,
   });
 }
 

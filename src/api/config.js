@@ -13,7 +13,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
-  const { body, headers, ...rest } = options;
+  const { body, headers, skipUnauthorizedEvent, ...rest } = options;
 
   // DEV 모드: 백엔드 없이 목 데이터 사용
   if (DEV && !API_BASE) {
@@ -39,7 +39,9 @@ export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, fetchOptions);
 
   if (res.status === 401) {
-    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    if (!skipUnauthorizedEvent) {
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    }
     throw new ApiError('Unauthorized', 401);
   }
 
