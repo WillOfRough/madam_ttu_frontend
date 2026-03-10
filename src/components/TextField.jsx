@@ -2,6 +2,7 @@ import styles from './TextField.module.css';
 
 export default function TextField({
   label,
+  hint,
   value,
   onChange,
   placeholder = '',
@@ -25,6 +26,7 @@ export default function TextField({
           )}
         </label>
       )}
+      {hint && <p className={styles.hint}>{hint}</p>}
       <Component
         className={`${styles.input} ${multiline ? styles.textarea : ''} ${error ? styles.inputError : ''}`}
         type={multiline ? undefined : type}
