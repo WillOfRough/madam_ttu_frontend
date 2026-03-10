@@ -82,3 +82,13 @@
 .selectWrap:focus-within .icon {
   color: var(--navy);
 }
+
+.selectError {
+  border-color: var(--danger);
+}
+
+.error {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--danger);
+}

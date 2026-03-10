@@ -52,8 +52,13 @@ function validateStep(step, form) {
     } else if (!PHONE_REGEX.test(form.phone)) {
       errors.phone = '010-0000-0000 형식으로 입력해주세요.';
     }
+    if (!form.location || !form.location.trim()) {
+      errors.location = '거주지역을 입력해주세요.';
+    }
   } else if (step === 1) {
-    if (form.height) {
+    if (!form.height) {
+      errors.height = '키를 입력해주세요.';
+    } else {
       const h = Number(form.height);
       if (h < 100 || h > 250) errors.height = '100~250cm 사이의 값을 입력해주세요.';
     }
@@ -63,8 +68,14 @@ function validateStep(step, form) {
       errors.occupation = '2자 이상 입력해주세요.';
     }
     if (!form.company) {
-      errors.company = '회사를 입력해주세요.';
+      errors.company = '회사명을 입력해주세요.';
     }
+    if (!form.education) {
+      errors.education = '학력을 선택해주세요.';
+    }
+  } else if (step === 2) {
+    if (!form.religion) errors.religion = '종교를 선택해주세요.';
+    if (!form.mbti) errors.mbti = 'MBTI를 선택해주세요.';
   } else if (step === 3) {
     if (!form.introQ1.trim()) errors.introQ1 = '답변을 입력해주세요.';
     if (!form.introQ2.trim()) errors.introQ2 = '답변을 입력해주세요.';
@@ -75,6 +86,12 @@ function validateStep(step, form) {
     const totalLen = keywordsPrefix.length + combined.length;
     if (combined.length > 0 && totalLen < 20) {
       errors.introLength = `${20 - totalLen}자 더 작성해주세요. (최소 20자)`;
+    }
+    if (form.introKeywords.length < 3) {
+      errors.introKeywords = '키워드를 최소 3개 선택해주세요.';
+    }
+    if (!form.idealType || !form.idealType.trim()) {
+      errors.idealType = '이상형을 적어주세요.';
     }
     if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
     if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';
@@ -132,9 +149,10 @@ export default function SeekerForm() {
   const handleNext = () => {
     // Mark all current step fields as touched to show errors
     const stepFields = {
-      0: ['gender', 'birthYear', 'phone'],
-      1: ['occupation', 'height', 'company'],
-      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'consentPrivacy', 'consentThirdParty'],
+      0: ['gender', 'birthYear', 'phone', 'location'],
+      1: ['occupation', 'height', 'company', 'education'],
+      2: ['religion', 'mbti'],
+      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'consentPrivacy', 'consentThirdParty'],
     };
     const fields = stepFields[step] || [];
     const newTouched = { ...touched };
@@ -148,7 +166,7 @@ export default function SeekerForm() {
   };
 
   const handleSubmitClick = () => {
-    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, consentPrivacy: true, consentThirdParty: true });
+    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, consentPrivacy: true, consentThirdParty: true });
     if (!hasErrors) {
       handleSubmit();
     }
@@ -251,11 +269,13 @@ export default function SeekerForm() {
               </p>
 
               <TextField
-                label="현재 당신의 일상이 머무는 곳은 어디인가요?"
+                label="현재 어디에 살고 계신가요?"
+                hint="만남 장소를 정하는 데 도움이 되니 구체적으로 적어주세요."
                 value={form.location}
-                onChange={(v) => setField('location', v)}
+                onChange={(v) => { setField('location', v); markTouched('location'); }}
                 placeholder="예) 서울 영등포구, 경기도 용인 수지"
-                required={false}
+                required
+                error={getError('location')}
               />
             </div>
           )}
@@ -269,7 +289,7 @@ export default function SeekerForm() {
                 onChange={(v) => { setField('height', v); markTouched('height'); }}
                 placeholder="178 (cm)"
                 type="number"
-                required={false}
+                required
                 error={getError('height')}
               />
               <TextField
@@ -281,10 +301,10 @@ export default function SeekerForm() {
                 error={getError('occupation')}
               />
               <TextField
-                label="회사"
+                label="현재 다니고 계신 회사명은 어디인가요?"
                 value={form.company}
                 onChange={(v) => { setField('company', v); markTouched('company'); }}
-                placeholder="현재 근무 중인 곳"
+                placeholder="예) 삼성전자, 네이버, 프리랜서"
                 required
                 error={getError('company')}
               />
@@ -296,12 +316,13 @@ export default function SeekerForm() {
                 required={false}
               />
               <SelectField
-                label="학력"
+                label="최종 학력이 어떻게 되시나요?"
                 value={form.education}
-                onChange={(v) => setField('education', v)}
+                onChange={(v) => { setField('education', v); markTouched('education'); }}
                 options={EDUCATION_OPTIONS}
-                placeholder="최종 학력을 알려주세요"
-                required={false}
+                placeholder="최종 학력을 선택해주세요"
+                required
+                error={getError('education')}
               />
               <TextField
                 label="학교"
@@ -319,18 +340,20 @@ export default function SeekerForm() {
               <SelectField
                 label="혹시 종교가 있으신가요?"
                 value={form.religion}
-                onChange={(v) => setField('religion', v)}
+                onChange={(v) => { setField('religion', v); markTouched('religion'); }}
                 options={RELIGION_OPTIONS}
                 placeholder="선택해주세요"
-                required={false}
+                required
+                error={getError('religion')}
               />
               <SelectField
-                label="MBTI를 알고 계시다면 알려주세요"
+                label="MBTI가 어떻게 되시나요?"
                 value={form.mbti}
-                onChange={(v) => setField('mbti', v)}
+                onChange={(v) => { setField('mbti', v); markTouched('mbti'); }}
                 options={[...MBTI_OPTIONS, { value: '잘 모르겠어요', label: '잘 모르겠어요' }]}
                 placeholder="선택해주세요"
-                required={false}
+                required
+                error={getError('mbti')}
               />
               <KeywordTagInput
                 label="일상 속에서 당신을 미소 짓게 하는 활동은 무엇인가요?"
@@ -348,11 +371,12 @@ export default function SeekerForm() {
             <div className={styles.fields}>
               <KeywordTagInput
                 label="나를 표현하는 키워드"
-                hint="클릭하거나 직접 입력해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
+                hint="최소 3개 이상 선택해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
                 suggestions={INTRO_KEYWORDS}
                 selected={form.introKeywords}
-                onToggle={(kw) => toggleKeyword('introKeywords', kw)}
-                required={false}
+                onToggle={(kw) => { toggleKeyword('introKeywords', kw); markTouched('introKeywords'); }}
+                required
+                error={getError('introKeywords')}
               />
 
               <div className={styles.guidedIntro}>
@@ -418,13 +442,14 @@ export default function SeekerForm() {
 
                 <TextField
                   label="어떤 사람이 이상형인가요?"
-                  hint="외모, 성격, 가치관 등 솔직하게 적어주세요. 구체적일수록 좋은 매칭으로 이어져요."
+                  hint="외모, 성격, 재력, 거주지, 종교 등 구체적으로 적을수록 딱 맞는 사람을 만날 확률이 올라가요."
                   value={form.idealType}
-                  onChange={(v) => setField('idealType', v)}
-                  placeholder="웃을 때 눈이 예쁜 사람, 대화가 잘 통하는 사람이 좋아요"
+                  onChange={(v) => { setField('idealType', v); markTouched('idealType'); }}
+                  placeholder="예) 눈이 큰 사람, 키 175 이상, 좋은 회사 다니는 사람, 강남 근처 거주, MBTI E인 사람"
                   multiline
                   maxLength={500}
-                  required={false}
+                  required
+                  error={getError('idealType')}
                 />
               </div>
 

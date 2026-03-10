@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 import styles from './SelectField.module.css';
 
-export default function SelectField({ label, value, onChange, options, placeholder = '선택해주세요', required }) {
+export default function SelectField({ label, value, onChange, options, placeholder = '선택해주세요', required, error }) {
   return (
     <div className={styles.wrapper}>
       {label && (
@@ -16,7 +16,7 @@ export default function SelectField({ label, value, onChange, options, placehold
       )}
       <div className={styles.selectWrap}>
         <select
-          className={`${styles.select} ${!value ? styles.placeholder : ''}`}
+          className={`${styles.select} ${!value ? styles.placeholder : ''} ${error ? styles.selectError : ''}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         >
@@ -31,6 +31,7 @@ export default function SelectField({ label, value, onChange, options, placehold
         </select>
         <ChevronDown size={16} className={styles.icon} />
       </div>
+      {error && <span className={styles.error}>{error}</span>}
     </div>
   );
 }

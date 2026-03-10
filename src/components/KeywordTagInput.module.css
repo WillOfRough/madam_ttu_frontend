@@ -174,3 +174,9 @@
   color: var(--charcoal-pale);
   font-variant-numeric: tabular-nums;
 }
+
+.error {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--danger);
+}

@@ -10,6 +10,7 @@ export default function KeywordTagInput({
   onToggle,
   maxTags = 8,
   required,
+  error,
 }) {
   const [custom, setCustom] = useState('');
 
@@ -95,6 +96,7 @@ export default function KeywordTagInput({
       )}
 
       <span className={styles.counter}>{selected.length}/{maxTags}개 선택</span>
+      {error && <span className={styles.error}>{error}</span>}
     </div>
   );
 }
