@@ -35,9 +35,9 @@ function validateStep(step, form) {
   const errors = {};
   if (step === 0) {
     if (!form.name || !form.name.trim()) {
-      errors.name = '실명을 입력해주세요.';
+      errors.name = '소중한 인연을 위해 이름을 알려주세요.';
     } else if (form.name.length < 2 || form.name.length > 20) {
-      errors.name = '실명은 2~20자로 입력해주세요.';
+      errors.name = '이름은 2~20자로 적어주세요.';
     } else if (!NAME_PATTERN.test(form.name)) {
       errors.name = '한글 또는 영문만 입력 가능합니다. (공백 불가)';
     }
@@ -225,8 +225,8 @@ export default function ClientForm() {
           {step === 0 && (
             <div className={styles.fields}>
               <TextField
-                label="실명"
-                hint="매칭 진행 시 매니저만 확인할 수 있습니다."
+                label="당신의 이름을 알려주세요"
+                hint="매칭 진행 시 매니저만 확인하며, 상대방에게는 별명으로 소개됩니다."
                 value={form.name}
                 onChange={(v) => { setField('name', v); markTouched('name'); }}
                 placeholder="홍길동"
@@ -576,7 +576,7 @@ export default function ClientForm() {
                     </div>
                     <div className={styles.termsBody}>
                       <h4>1. 개인정보 수집 및 이용 동의</h4>
-                      <p>수집 항목: 실명, 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
+                      <p>수집 항목: 이름, 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
                       <p>수집 목적: 매칭 서비스 제공 및 회원 관리</p>
                       <p>보유 기간: 서비스 이용 종료 시까지 (탈퇴 요청 시 즉시 파기)</p>
 
