@@ -127,6 +127,7 @@ export default function ClientForm() {
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState({});
   const [showTerms, setShowTerms] = useState(false);
+  const [loadedPhotos, setLoadedPhotos] = useState({});
 
   useEffect(() => {
     setToken(token);
@@ -138,6 +139,7 @@ export default function ClientForm() {
   useEffect(() => {
     previewUrls.current.forEach((u) => URL.revokeObjectURL(u));
     previewUrls.current = form.photos.map((f) => URL.createObjectURL(f));
+    setLoadedPhotos({});
     return () => {
       previewUrls.current.forEach((u) => URL.revokeObjectURL(u));
     };
@@ -503,7 +505,13 @@ export default function ClientForm() {
                 <div className={styles.photoGrid}>
                   {form.photos.map((file, idx) => (
                     <div key={idx} className={styles.photoItem}>
-                      <img src={previewUrls.current[idx]} alt={`사진 ${idx + 1}`} />
+                      {!loadedPhotos[idx] && <div className={styles.photoSkeleton} />}
+                      <img
+                        src={previewUrls.current[idx]}
+                        alt={`사진 ${idx + 1}`}
+                        onLoad={() => setLoadedPhotos((prev) => ({ ...prev, [idx]: true }))}
+                        className={loadedPhotos[idx] ? styles.photoLoaded : styles.photoLoading}
+                      />
                       <button
                         type="button"
                         className={styles.photoRemoveBtn}
