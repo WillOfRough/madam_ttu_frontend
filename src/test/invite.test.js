@@ -44,9 +44,9 @@ function createInviteStore(mockApi = {}) {
 }
 
 // ──────────────────────────────────────────────
-// #5 seeker 초대 생성
+// #5 client 초대 생성
 // ──────────────────────────────────────────────
-describe('#5 seeker 초대 생성', () => {
+describe('#5 client 초대 생성', () => {
   let store;
   let mockCreateInvite;
 
@@ -55,11 +55,11 @@ describe('#5 seeker 초대 생성', () => {
     store = createInviteStore({ createInvite: mockCreateInvite });
   });
 
-  it('seeker 초대 토큰을 생성하고 invites에 추가한다', async () => {
+  it('client 초대 토큰을 생성하고 invites에 추가한다', async () => {
     const mockInvite = {
       id: 'inv-1',
-      token: 'seeker-token-uuid',
-      url: 'https://findmyone.com/invite/seeker-token-uuid',
+      token: 'client-token-uuid',
+      url: 'https://findmyone.com/invite/client-token-uuid',
       status: 'active',
       label: '소개 희망자 초대',
       expiresAt: '2026-03-12T00:00:00Z',
@@ -76,30 +76,30 @@ describe('#5 seeker 초대 생성', () => {
 });
 
 // ──────────────────────────────────────────────
-// #6 seeker 링크 유효성
+// #6 client 링크 유효성
 // ──────────────────────────────────────────────
-describe('#6 seeker 링크 유효성', () => {
-  it('유효한 seeker 토큰 검증 시 valid=true', async () => {
+describe('#6 client 링크 유효성', () => {
+  it('유효한 client 토큰 검증 시 valid=true', async () => {
     const mockValidate = vi.fn().mockResolvedValue({
       valid: true,
-      type: 'seeker',
+      type: 'client',
       managerName: '테스트매니저',
     });
 
-    const result = await mockValidate('valid-seeker-token');
+    const result = await mockValidate('valid-client-token');
 
     expect(result.valid).toBe(true);
-    expect(result.type).toBe('seeker');
+    expect(result.type).toBe('client');
     expect(result.managerName).toBe('테스트매니저');
   });
 
-  it('만료된 seeker 토큰 검증 시 에러', async () => {
+  it('만료된 client 토큰 검증 시 에러', async () => {
     const mockValidate = vi.fn().mockRejectedValue(new Error('토큰이 만료되었습니다.'));
 
-    await expect(mockValidate('expired-seeker-token')).rejects.toThrow('토큰이 만료되었습니다.');
+    await expect(mockValidate('expired-client-token')).rejects.toThrow('토큰이 만료되었습니다.');
   });
 
-  it('revoked seeker 토큰 검증 시 에러', async () => {
+  it('revoked client 토큰 검증 시 에러', async () => {
     const mockValidate = vi.fn().mockRejectedValue(new Error('폐기된 토큰입니다.'));
 
     await expect(mockValidate('revoked-token')).rejects.toThrow('폐기된 토큰입니다.');
@@ -107,16 +107,16 @@ describe('#6 seeker 링크 유효성', () => {
 });
 
 // ──────────────────────────────────────────────
-// #7 seeker 다회용
+// #7 client 다회용
 // ──────────────────────────────────────────────
-describe('#7 seeker 다회용', () => {
-  it('같은 토큰으로 seeker를 3명 등록할 수 있다', async () => {
-    const token = 'multi-use-seeker-token';
-    const mockCreateSeeker = vi.fn().mockResolvedValue({ success: true });
+describe('#7 client 다회용', () => {
+  it('같은 토큰으로 client를 3명 등록할 수 있다', async () => {
+    const token = 'multi-use-client-token';
+    const mockCreateClient = vi.fn().mockResolvedValue({ success: true });
 
     // 3회 호출 모두 성공
     for (let i = 1; i <= 3; i++) {
-      const result = await mockCreateSeeker({
+      const result = await mockCreateClient({
         token,
         name: `사용자${i}`,
         gender: 'male',
@@ -128,19 +128,19 @@ describe('#7 seeker 다회용', () => {
       expect(result.success).toBe(true);
     }
 
-    expect(mockCreateSeeker).toHaveBeenCalledTimes(3);
+    expect(mockCreateClient).toHaveBeenCalledTimes(3);
   });
 
   it('토큰이 만료되기 전까지 계속 사용 가능', async () => {
-    const mockValidate = vi.fn().mockResolvedValue({ valid: true, type: 'seeker' });
-    const mockCreateSeeker = vi.fn().mockResolvedValue({ success: true });
+    const mockValidate = vi.fn().mockResolvedValue({ valid: true, type: 'client' });
+    const mockCreateClient = vi.fn().mockResolvedValue({ success: true });
 
     // 검증 → 생성 반복 3회
     for (let i = 0; i < 3; i++) {
       const validation = await mockValidate('persistent-token');
       expect(validation.valid).toBe(true);
 
-      const result = await mockCreateSeeker({ token: 'persistent-token', name: `이름${i}` });
+      const result = await mockCreateClient({ token: 'persistent-token', name: `이름${i}` });
       expect(result.success).toBe(true);
     }
 

@@ -82,6 +82,17 @@
   font-size: 0.9rem;
 }
 
+.error {
+  padding: var(--space-lg) var(--space-xl);
+  text-align: center;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-md);
+  font-size: 0.88rem;
+}
+
 .empty {
   padding: 64px var(--space-xl);
   text-align: center;
@@ -153,6 +164,16 @@
   font-weight: 650;
   color: var(--charcoal);
   letter-spacing: -0.01em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.realName {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--charcoal-pale);
+  letter-spacing: 0;
 }
 
 @media (max-width: 640px) {

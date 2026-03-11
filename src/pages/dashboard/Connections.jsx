@@ -274,7 +274,7 @@ export default function Connections() {
                   <div>
                     <span className={styles.connName}>{conn.name || conn.email}</span>
                     <span className={styles.connMeta}>
-                      Seeker {conn.seekerCount ?? 0}명
+                      Seeker {conn.clientCount ?? 0}명
                     </span>
                   </div>
                 </div>

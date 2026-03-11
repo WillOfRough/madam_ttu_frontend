@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
-import styles from './SeekerOath.module.css';
+import styles from './ClientOath.module.css';
 
 const OATH_ITEMS = [
   '기혼자 및 교제 중인 분은 가입이 불가합니다.',
@@ -9,7 +9,7 @@ const OATH_ITEMS = [
   '본인의 양심에 따라 정직하게 작성해주세요.',
 ];
 
-export default function SeekerOath() {
+export default function ClientOath() {
   const { token } = useParams();
   const navigate = useNavigate();
   const [agreed, setAgreed] = useState(false);

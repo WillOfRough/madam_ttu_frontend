@@ -4,7 +4,7 @@ import styles from './BottomNav.module.css';
 
 const TABS = [
   { to: '/dashboard', icon: Home, label: '홈', end: true },
-  { to: '/dashboard/seekers', icon: Users, label: 'Seeker' },
+  { to: '/dashboard/clients', icon: Users, label: 'Seeker' },
   { to: '/dashboard/connections', icon: Link2, label: '연결' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
   { to: '/dashboard/settings', icon: Settings, label: '설정' },

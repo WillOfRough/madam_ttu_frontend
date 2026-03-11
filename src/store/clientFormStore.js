@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 
+const NAME_PATTERN = /^[가-힣a-zA-Z]+$/;
+
 const INITIAL_FORM = {
   // Step 1: 기본 정보
+  name: '',
   nickname: '',
   gender: '',
   birthYear: '',
@@ -26,15 +29,21 @@ const INITIAL_FORM = {
   introKeywords: [],
   idealType: '',
   idealKeywords: [],
+  photos: [],
   consentPrivacy: false,
   consentThirdParty: false,
 };
 
-const useSeekerFormStore = create((set, get) => ({
+const MAX_PHOTOS = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+const useClientFormStore = create((set, get) => ({
   step: 0,
   form: { ...INITIAL_FORM },
   token: null,
   suggestedNickname: '',
+  photoError: null,
 
   setToken: (token) => set({ token }),
   setSuggestedNickname: (n) => set({ suggestedNickname: n }),
@@ -44,6 +53,39 @@ const useSeekerFormStore = create((set, get) => ({
 
   setField: (key, value) => {
     set((s) => ({ form: { ...s.form, [key]: value } }));
+  },
+
+  addPhotos: (files) => {
+    const { form } = get();
+    const current = form.photos;
+    const remaining = MAX_PHOTOS - current.length;
+    if (remaining <= 0) {
+      set({ photoError: `사진은 최대 ${MAX_PHOTOS}장까지 등록 가능합니다.` });
+      return;
+    }
+    const validFiles = [];
+    for (const file of Array.from(files).slice(0, remaining)) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        set({ photoError: `${file.name}: JPG, PNG, WebP 형식만 가능합니다.` });
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        set({ photoError: `${file.name}: 파일 크기는 10MB 이하여야 합니다.` });
+        return;
+      }
+      validFiles.push(file);
+    }
+    set((s) => ({
+      form: { ...s.form, photos: [...s.form.photos, ...validFiles] },
+      photoError: null,
+    }));
+  },
+
+  removePhoto: (index) => {
+    set((s) => ({
+      form: { ...s.form, photos: s.form.photos.filter((_, i) => i !== index) },
+      photoError: null,
+    }));
   },
 
   toggleKeyword: (field, keyword) => {
@@ -74,7 +116,8 @@ const useSeekerFormStore = create((set, get) => ({
 
     return {
       token,
-      name: nickname,
+      name: form.name,
+      nickname: nickname,
       gender: form.gender,
       birthDate: form.birthYear ? `${form.birthYear}-01-01` : '',
       phone: form.phone,
@@ -91,7 +134,8 @@ const useSeekerFormStore = create((set, get) => ({
     };
   },
 
-  reset: () => set({ step: 0, form: { ...INITIAL_FORM }, token: null, suggestedNickname: '' }),
+  reset: () => set({ step: 0, form: { ...INITIAL_FORM }, token: null, suggestedNickname: '', photoError: null }),
 }));
 
-export default useSeekerFormStore;
+export { NAME_PATTERN };
+export default useClientFormStore;

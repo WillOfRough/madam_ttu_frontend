@@ -149,8 +149,8 @@ describe('#10 연결 리스트 조회', () => {
   it('연결 목록을 가져와서 store에 저장한다', async () => {
     mockGetConnections.mockResolvedValue({
       connections: [
-        { managerId: 'mgr-1', name: '매니저A', seekerCount: 5, connectedAt: '2026-03-01' },
-        { managerId: 'mgr-2', name: '매니저B', seekerCount: 3, connectedAt: '2026-03-05' },
+        { managerId: 'mgr-1', name: '매니저A', clientCount: 5, connectedAt: '2026-03-01' },
+        { managerId: 'mgr-2', name: '매니저B', clientCount: 3, connectedAt: '2026-03-05' },
       ],
     });
 
@@ -159,7 +159,7 @@ describe('#10 연결 리스트 조회', () => {
 
     expect(state.connections).toHaveLength(2);
     expect(state.connections[0].name).toBe('매니저A');
-    expect(state.connections[1].seekerCount).toBe(3);
+    expect(state.connections[1].clientCount).toBe(3);
     expect(state.isLoading).toBe(false);
   });
 

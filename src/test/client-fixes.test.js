@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { generateNickname } from '../data/constants';
+import { NAME_PATTERN } from '../store/clientFormStore';
 
 // ──────────────────────────────────────────────
 // Bug 1: 닉네임에 공백 포함 여부 검증
@@ -148,7 +149,7 @@ describe('Bug 2: 가이드 질문 자기소개 검증', () => {
 // 백엔드: @Size(max = 4)
 // ──────────────────────────────────────────────
 
-// seekerFormStore.js의 mbti 필터링 로직 재현
+// clientFormStore.js의 mbti 필터링 로직 재현
 function filterMbti(mbtiValue) {
   return (mbtiValue && mbtiValue.length <= 4) ? mbtiValue : undefined;
 }
@@ -204,7 +205,8 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
 
     return {
       token: form.token,
-      name: nickname,
+      name: form.name,
+      nickname: nickname,
       gender: form.gender,
       birthDate: form.birthYear ? `${form.birthYear}-01-01` : '',
       phone: form.phone,
@@ -221,11 +223,10 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
     };
   }
 
-  const backendNamePattern = /^[가-힣a-zA-Z]+$/;
-
-  it('자동 생성 닉네임 사용 시 name 필드가 백엔드 패턴 통과', () => {
+  it('실명(name)과 닉네임(nickname)이 독립적으로 전달되어야 한다', () => {
     const suggestedNickname = generateNickname();
     const payload = buildPayload({
+      name: '홍길동',
       nickname: '',
       gender: 'male',
       birthYear: '1994',
@@ -238,14 +239,23 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
       consentThirdParty: true,
     }, suggestedNickname);
 
-    expect(payload.name).toMatch(backendNamePattern);
-    expect(payload.name.length).toBeGreaterThanOrEqual(2);
-    expect(payload.name.length).toBeLessThanOrEqual(20);
+    expect(payload.name).toBe('홍길동');
+    expect(payload.nickname).toBe(suggestedNickname);
+    expect(payload.name).not.toBe(payload.nickname);
+  });
+
+  it('name 필드가 NAME_PATTERN 에 맞아야 한다', () => {
+    expect(NAME_PATTERN.test('홍길동')).toBe(true);
+    expect(NAME_PATTERN.test('John')).toBe(true);
+    expect(NAME_PATTERN.test('홍 길동')).toBe(false); // 공백 불가
+    expect(NAME_PATTERN.test('홍길동!')).toBe(false); // 특수문자 불가
+    expect(NAME_PATTERN.test('')).toBe(false); // 빈 문자열 불가
   });
 
   it('MBTI "잘 모르겠어요" 선택 시 payload에 mbti 필드가 없어야 한다', () => {
     const payload = buildPayload({
-      nickname: '테스트',
+      name: '테스트',
+      nickname: '테스트닉네임',
       gender: 'female',
       birthYear: '1995',
       phone: '010-1111-2222',
@@ -263,7 +273,8 @@ describe('통합: payload 생성 시 백엔드 DTO 호환성', () => {
 
   it('MBTI "INTJ" 선택 시 payload에 mbti 필드가 포함되어야 한다', () => {
     const payload = buildPayload({
-      nickname: '테스트',
+      name: '테스트',
+      nickname: '테스트닉네임',
       gender: 'male',
       birthYear: '1990',
       phone: '010-3333-4444',

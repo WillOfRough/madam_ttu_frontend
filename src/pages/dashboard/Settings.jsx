@@ -46,10 +46,10 @@ export default function Settings() {
               <span className={styles.fieldValue}>{info.connections.length}명</span>
             </div>
           )}
-          {info?.mySeekerCount != null && (
+          {info?.myClientCount != null && (
             <div className={styles.field}>
               <span className={styles.fieldLabel}>내 Seeker</span>
-              <span className={styles.fieldValue}>{info.mySeekerCount}명</span>
+              <span className={styles.fieldValue}>{info.myClientCount}명</span>
             </div>
           )}
         </div>

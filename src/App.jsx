@@ -11,16 +11,16 @@ import Login from './pages/public/Login';
 import RegisterManager from './pages/public/RegisterManager';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
-import SeekerOath from './pages/public/SeekerOath';
-import SeekerForm from './pages/public/SeekerForm';
+import ClientOath from './pages/public/ClientOath';
+import ClientForm from './pages/public/ClientForm';
 import ApplyComplete from './pages/public/ApplyComplete';
 import ExpiredLink from './pages/public/ExpiredLink';
 import NotFound from './pages/public/NotFound';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
-import SeekerList from './pages/dashboard/SeekerList';
-import SeekerDetail from './pages/dashboard/SeekerDetail';
+import ClientList from './pages/dashboard/ClientList';
+import ClientDetail from './pages/dashboard/ClientDetail';
 import Connections from './pages/dashboard/Connections';
 import InviteManagement from './pages/dashboard/InviteManagement';
 import ExportPage from './pages/dashboard/ExportPage';
@@ -67,8 +67,8 @@ export default function App() {
         <Route path="/register/:token" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
         <Route path="/invite/:token" element={<InviteValidation />} />
-        <Route path="/apply/oath/:token" element={<SeekerOath />} />
-        <Route path="/apply/:token" element={<SeekerForm />} />
+        <Route path="/apply/oath/:token" element={<ClientOath />} />
+        <Route path="/apply/:token" element={<ClientForm />} />
         <Route path="/apply/complete" element={<ApplyComplete />} />
         <Route path="/expired" element={<ExpiredLink />} />
 
@@ -76,8 +76,8 @@ export default function App() {
         <Route element={<RequireAuth />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardHome />} />
-            <Route path="/dashboard/seekers" element={<SeekerList />} />
-            <Route path="/dashboard/seekers/:seekerId" element={<SeekerDetail />} />
+            <Route path="/dashboard/clients" element={<ClientList />} />
+            <Route path="/dashboard/clients/:clientId" element={<ClientDetail />} />
             <Route path="/dashboard/connections" element={<Connections />} />
             <Route path="/dashboard/invites" element={<InviteManagement />} />
             <Route path="/dashboard/export" element={<ExportPage />} />

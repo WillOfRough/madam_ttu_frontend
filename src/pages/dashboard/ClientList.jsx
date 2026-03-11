@@ -1,23 +1,23 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import useSeekerListStore from '../../store/seekerListStore';
+import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
-import styles from './SeekerList.module.css';
+import styles from './ClientList.module.css';
 
-export default function SeekerList() {
-  const { seekers, totalCount, page, limit, filters, isLoading, setFilter, setPage, fetchSeekers } =
-    useSeekerListStore();
+export default function ClientList() {
+  const { clients, totalCount, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
+    useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchSeekers();
+    fetchClients();
     fetchConnections();
-  }, [page, filters, fetchSeekers, fetchConnections]);
+  }, [page, filters, fetchClients, fetchConnections]);
 
   const totalPages = Math.ceil(totalCount / limit);
 
@@ -87,9 +87,15 @@ export default function SeekerList() {
         </select>
       </div>
 
+      {error && (
+        <div className={styles.error}>
+          <p>데이터를 불러오는 중 오류가 발생했습니다.</p>
+        </div>
+      )}
+
       {isLoading ? (
         <SkeletonTable rows={6} columns={5} />
-      ) : seekers.length === 0 ? (
+      ) : clients.length === 0 && !error ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />
           <p>등록된 Seeker가 없습니다.</p>
@@ -104,19 +110,22 @@ export default function SeekerList() {
               <span>소속</span>
               <span>상태</span>
             </div>
-            {seekers.map((seeker) => (
+            {clients.map((client) => (
               <div
-                key={seeker.id}
+                key={client.id}
                 className={styles.tableRow}
-                onClick={() => navigate(`/dashboard/seekers/${seeker.id}`)}
+                onClick={() => navigate(`/dashboard/clients/${client.id}`)}
               >
-                <span className={styles.name}>{seeker.name}</span>
-                <span>{seeker.gender === 'male' ? '남성' : '여성'}</span>
-                <span>{seeker.occupation || '-'}</span>
-                <span className={seeker.isOwner ? styles.ownerMe : styles.ownerOther}>
-                  {seeker.ownerManager?.name || (seeker.isOwner ? '나' : '-')}
+                <span className={styles.name}>
+                  {client.nickname || client.name}
+                  {client.nickname && <span className={styles.realName}>{client.name}</span>}
                 </span>
-                <span><StatusBadge status={seeker.approvalStatus || 'pending'} /></span>
+                <span>{client.gender === 'male' ? '남성' : '여성'}</span>
+                <span>{client.occupation || '-'}</span>
+                <span className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
+                  {client.ownerManager?.name || (client.isOwner ? '나' : '-')}
+                </span>
+                <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>
               </div>
             ))}
           </div>

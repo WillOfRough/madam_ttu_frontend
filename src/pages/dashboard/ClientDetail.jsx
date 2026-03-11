@@ -1,39 +1,43 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
-import * as seekerService from '../../api/seekerService';
+import * as clientService from '../../api/clientService';
+import { getPhotoUrl } from '../../api/config';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonLine } from '../../components/Skeleton';
-import styles from './SeekerDetail.module.css';
+import styles from './ClientDetail.module.css';
 
-export default function SeekerDetail() {
-  const { seekerId } = useParams();
+export default function ClientDetail() {
+  const { clientId } = useParams();
   const navigate = useNavigate();
-  const [seeker, setSeeker] = useState(null);
+  const [client, setClient] = useState(null);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+
+  const closeLightbox = useCallback(() => setLightboxUrl(null), []);
 
   useEffect(() => {
-    if (seekerId) {
+    if (clientId) {
       setLoading(true);
-      seekerService.getSeekerDetail(seekerId)
+      clientService.getClientDetail(clientId)
         .then((data) => {
-          setSeeker(data);
+          setClient(data);
           setNote(data.managerNote || '');
         })
-        .catch(() => navigate('/dashboard/seekers'))
+        .catch(() => navigate('/dashboard/clients'))
         .finally(() => setLoading(false));
     }
-  }, [seekerId, navigate]);
+  }, [clientId, navigate]);
 
   const handleApproval = async (status) => {
     try {
-      await seekerService.updateApproval(seekerId, status);
-      setSeeker((s) => ({ ...s, approvalStatus: status }));
+      await clientService.updateApproval(clientId, status);
+      setClient((c) => ({ ...c, approvalStatus: status }));
       toast.success(status === 'approved' ? '승인되었습니다.' : '거절되었습니다.');
     } catch (err) {
       toast.error(err.message || '상태 변경에 실패했습니다.');
@@ -44,7 +48,7 @@ export default function SeekerDetail() {
   const handleSaveNote = async () => {
     setSaving(true);
     try {
-      await seekerService.updateNote(seekerId, note);
+      await clientService.updateNote(clientId, note);
       toast.success('메모가 저장되었습니다.');
     } catch (err) {
       toast.error(err.message || '메모 저장에 실패했습니다.');
@@ -62,45 +66,49 @@ export default function SeekerDetail() {
       </div>
     </div>
   );
-  if (!seeker) return null;
+  if (!client) return null;
 
   const fields = [
-    { label: '성별', value: seeker.gender === 'male' ? '남성' : '여성' },
-    { label: '생년월일', value: seeker.birthDate },
-    { label: '연락처', value: seeker.phone },
-    { label: '이메일', value: seeker.email },
-    { label: '거주지역', value: seeker.location },
-    { label: '키', value: seeker.height ? `${seeker.height}cm` : null },
-    { label: '직업', value: seeker.occupation },
-    { label: '회사', value: seeker.company },
-    { label: '회사 위치', value: seeker.companyLocation },
-    { label: '학력', value: seeker.education },
-    { label: '학교', value: seeker.school },
-    { label: '종교', value: seeker.religion },
-    { label: 'MBTI', value: seeker.mbti },
-    { label: '취미', value: seeker.hobbies },
+    { label: '닉네임', value: client.nickname },
+    { label: '성별', value: client.gender === 'male' ? '남성' : '여성' },
+    { label: '생년월일', value: client.birthDate },
+    { label: '연락처', value: client.phone },
+    { label: '이메일', value: client.email },
+    { label: '거주지역', value: client.location },
+    { label: '키', value: client.height ? `${client.height}cm` : null },
+    { label: '직업', value: client.occupation },
+    { label: '회사', value: client.company },
+    { label: '회사 위치', value: client.companyLocation },
+    { label: '학력', value: client.education },
+    { label: '학교', value: client.school },
+    { label: '종교', value: client.religion },
+    { label: 'MBTI', value: client.mbti },
+    { label: '취미', value: client.hobbies },
   ].filter((f) => f.value);
 
   return (
     <div className={styles.page}>
-      <button className={styles.back} onClick={() => navigate('/dashboard/seekers')}>
+      <button className={styles.back} onClick={() => navigate('/dashboard/clients')}>
         <ArrowLeft size={18} /> 목록으로
       </button>
 
       <div className={styles.header}>
         <div>
-          <h1 className={styles.name}>{seeker.name}</h1>
+          <h1 className={styles.name}>
+            {client.nickname || client.name}
+            {client.nickname && <span className={styles.realName}>{client.name}</span>}
+          </h1>
           <div className={styles.headerMeta}>
-            <StatusBadge status={seeker.approvalStatus || 'pending'} />
-            {seeker.ownerManager && (
-              <span className={seeker.isOwner ? styles.ownerBadgeMe : styles.ownerBadgeOther}>
-                {seeker.isOwner ? '내 Seeker' : `${seeker.ownerManager.name}의 Seeker`}
+            <StatusBadge status={client.approvalStatus || 'pending'} />
+            {client.ownerManager && (
+              <span className={client.isOwner ? styles.ownerBadgeMe : styles.ownerBadgeOther}>
+                {client.isOwner ? '내 Seeker' : `${client.ownerManager.name}의 Seeker`}
               </span>
             )}
           </div>
         </div>
 
-        {seeker.isOwner && seeker.approvalStatus === 'pending' && (
+        {client.isOwner && client.approvalStatus === 'pending' && (
           <div className={styles.actions}>
             <button
               className={styles.approveBtn}
@@ -118,9 +126,9 @@ export default function SeekerDetail() {
         )}
       </div>
 
-      {!seeker.isOwner && (
+      {!client.isOwner && (
         <div className={styles.readonlyNotice}>
-          이 Seeker는 {seeker.ownerManager?.name || '다른 매니저'}님이 관리하는 프로필입니다. 열람만 가능합니다.
+          이 Seeker는 {client.ownerManager?.name || '다른 매니저'}님이 관리하는 프로필입니다. 열람만 가능합니다.
         </div>
       )}
 
@@ -136,21 +144,42 @@ export default function SeekerDetail() {
         </div>
       </div>
 
-      {seeker.introduction && (
+      {client.photoIds?.length > 0 && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>사진</h3>
+          <div className={styles.photoGallery}>
+            {client.photoIds.map((photoId, idx) => {
+              const src = getPhotoUrl(photoId);
+              return (
+                <button
+                  key={photoId}
+                  className={styles.photoThumb}
+                  onClick={() => setLightboxUrl(src)}
+                  type="button"
+                >
+                  <img src={src} alt={`사진 ${idx + 1}`} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {client.introduction && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>자기소개</h3>
-          <p className={styles.text}>{seeker.introduction}</p>
+          <p className={styles.text}>{client.introduction}</p>
         </div>
       )}
 
-      {seeker.idealType && (
+      {client.idealType && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>이상형</h3>
-          <p className={styles.text}>{seeker.idealType}</p>
+          <p className={styles.text}>{client.idealType}</p>
         </div>
       )}
 
-      {seeker.isOwner ? (
+      {client.isOwner ? (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>매니저 메모</h3>
           <textarea
@@ -168,17 +197,17 @@ export default function SeekerDetail() {
             {saving ? '저장 중...' : '메모 저장'}
           </button>
         </div>
-      ) : seeker.managerNote ? (
+      ) : client.managerNote ? (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>매니저 메모</h3>
-          <p className={styles.text}>{seeker.managerNote}</p>
+          <p className={styles.text}>{client.managerNote}</p>
         </div>
       ) : null}
 
       {modal === 'approve' && (
         <ConfirmModal
           title="Seeker 승인"
-          message={`${seeker.name}님을 승인하시겠습니까?`}
+          message={`${client.name}님을 승인하시겠습니까?`}
           confirmLabel="승인"
           onConfirm={() => handleApproval('approved')}
           onCancel={() => setModal(null)}
@@ -188,12 +217,19 @@ export default function SeekerDetail() {
       {modal === 'reject' && (
         <ConfirmModal
           title="Seeker 거절"
-          message={`${seeker.name}님을 거절하시겠습니까?`}
+          message={`${client.name}님을 거절하시겠습니까?`}
           confirmLabel="거절"
           danger
           onConfirm={() => handleApproval('rejected')}
           onCancel={() => setModal(null)}
         />
+      )}
+
+      {lightboxUrl && (
+        <div className={styles.lightbox} onClick={closeLightbox}>
+          <img src={lightboxUrl} alt="확대 보기" onClick={(e) => e.stopPropagation()} />
+          <button className={styles.lightboxClose} onClick={closeLightbox}>×</button>
+        </div>
       )}
     </div>
   );

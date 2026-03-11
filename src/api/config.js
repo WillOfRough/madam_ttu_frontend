@@ -12,6 +12,13 @@ export class ApiError extends Error {
   }
 }
 
+export function getPhotoUrl(photoId) {
+  if (DEV && !API_BASE) {
+    return `https://picsum.photos/seed/${photoId}/400/400`;
+  }
+  return `${API_BASE}/api/v1/seekers/photos/${photoId}`;
+}
+
 export async function apiFetch(path, options = {}) {
   const { body, headers, skipUnauthorizedEvent, ...rest } = options;
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Download, FileSpreadsheet } from 'lucide-react';
-import * as seekerService from '../../api/seekerService';
+import * as clientService from '../../api/clientService';
 import * as exportService from '../../api/exportService';
-import { exportSeekersToExcel } from '../../utils/exportExcel';
+import { exportClientsToExcel } from '../../utils/exportExcel';
 import { toast } from '../../store/toastStore';
 import styles from './ExportPage.module.css';
 
@@ -21,15 +21,15 @@ export default function ExportPage() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const result = await seekerService.listSeekers({
+      const result = await clientService.listClients({
         owner: 'all',
         approval: 'approved',
         limit: 1000,
         page: 1,
       });
-      const seekers = result.data || result.seekers || result;
-      exportSeekersToExcel(seekers);
-      toast.success(`${seekers.length}건의 Seeker 데이터를 내보냈습니다.`);
+      const clientList = result.data || result.clients || result;
+      exportClientsToExcel(clientList);
+      toast.success(`${clientList.length}건의 Seeker 데이터를 내보냈습니다.`);
     } catch (err) {
       toast.error(err.message || '내보내기에 실패했습니다.');
     }

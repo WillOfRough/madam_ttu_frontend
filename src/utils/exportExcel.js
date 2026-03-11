@@ -2,25 +2,25 @@ import * as XLSX from 'xlsx';
 
 const GENDER_LABEL = { male: '남성', female: '여성' };
 
-export function exportSeekersToExcel(seekers, filename = 'findmyone_Seeker목록') {
-  const rows = seekers.map((s) => ({
-    이름: s.name,
-    성별: GENDER_LABEL[s.gender] || s.gender,
-    생년월일: s.birthDate || '',
-    연락처: s.phone || '',
-    이메일: s.email || '',
-    거주지역: s.location || '',
-    '키(cm)': s.height || '',
-    직업: s.occupation || '',
-    회사: s.company || '',
-    학력: s.education || '',
-    종교: s.religion || '',
-    MBTI: s.mbti || '',
-    취미: s.hobbies || '',
-    자기소개: s.introduction || '',
-    이상형: s.idealType || '',
-    상태: s.approvalStatus || '',
-    등록일: s.createdAt || '',
+export function exportClientsToExcel(clients, filename = 'findmyone_Seeker목록') {
+  const rows = clients.map((c) => ({
+    이름: c.name,
+    성별: GENDER_LABEL[c.gender] || c.gender,
+    생년월일: c.birthDate || '',
+    연락처: c.phone || '',
+    이메일: c.email || '',
+    거주지역: c.location || '',
+    '키(cm)': c.height || '',
+    직업: c.occupation || '',
+    회사: c.company || '',
+    학력: c.education || '',
+    종교: c.religion || '',
+    MBTI: c.mbti || '',
+    취미: c.hobbies || '',
+    자기소개: c.introduction || '',
+    이상형: c.idealType || '',
+    상태: c.approvalStatus || '',
+    등록일: c.createdAt || '',
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);

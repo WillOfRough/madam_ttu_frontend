@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import * as seekerService from '../api/seekerService';
+import * as clientService from '../api/clientService';
 
-const useSeekerListStore = create((set, get) => ({
-  seekers: [],
+const useClientListStore = create((set, get) => ({
+  clients: [],
   totalCount: 0,
   page: 1,
   limit: 20,
@@ -26,17 +26,17 @@ const useSeekerListStore = create((set, get) => ({
 
   setPage: (page) => set({ page }),
 
-  fetchSeekers: async () => {
+  fetchClients: async () => {
     const { page, limit, filters } = get();
     set({ isLoading: true, error: null });
     try {
-      const result = await seekerService.listSeekers({
+      const result = await clientService.listClients({
         ...filters,
         page,
         limit,
       });
       set({
-        seekers: result.data || result.seekers || result,
+        clients: result.data || result.clients || result,
         totalCount: result.pagination?.total ?? result.totalCount ?? 0,
         isLoading: false,
       });
@@ -46,7 +46,7 @@ const useSeekerListStore = create((set, get) => ({
   },
 
   reset: () => set({
-    seekers: [],
+    clients: [],
     totalCount: 0,
     page: 1,
     filters: { owner: 'all', gender: null, approval: null, sort: 'createdAt:desc', name: '', phone: '' },
@@ -54,4 +54,4 @@ const useSeekerListStore = create((set, get) => ({
   }),
 }));
 
-export default useSeekerListStore;
+export default useClientListStore;

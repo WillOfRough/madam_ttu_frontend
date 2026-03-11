@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
-import useSeekerFormStore from '../../store/seekerFormStore';
-import * as seekerService from '../../api/seekerService';
+import { ArrowLeft, RefreshCw, ImagePlus, X as XIcon } from 'lucide-react';
+import useClientFormStore, { NAME_PATTERN } from '../../store/clientFormStore';
+import * as clientService from '../../api/clientService';
 import TextField from '../../components/TextField';
 import SelectField from '../../components/SelectField';
 import RadioGroup from '../../components/RadioGroup';
@@ -19,7 +19,7 @@ import {
   INTRO_KEYWORDS,
   IDEAL_KEYWORDS,
 } from '../../data/constants';
-import styles from './SeekerForm.module.css';
+import styles from './ClientForm.module.css';
 
 const STEP_TITLES = [
   '당신을 알아가는 첫걸음',
@@ -34,8 +34,15 @@ const CURRENT_YEAR = new Date().getFullYear();
 function validateStep(step, form) {
   const errors = {};
   if (step === 0) {
-    if (form.nickname && form.nickname.length > 20) {
-      errors.nickname = '별명은 20자 이하로 입력해주세요.';
+    if (!form.name || !form.name.trim()) {
+      errors.name = '실명을 입력해주세요.';
+    } else if (form.name.length < 2 || form.name.length > 20) {
+      errors.name = '실명은 2~20자로 입력해주세요.';
+    } else if (!NAME_PATTERN.test(form.name)) {
+      errors.name = '한글 또는 영문만 입력 가능합니다. (공백 불가)';
+    }
+    if (form.nickname && form.nickname.length > 50) {
+      errors.nickname = '별명은 50자 이하로 입력해주세요.';
     }
     if (!form.gender) errors.gender = '성별을 선택해주세요.';
     if (!form.birthYear) {
@@ -103,14 +110,16 @@ function validateStep(step, form) {
   return errors;
 }
 
-export default function SeekerForm() {
+export default function ClientForm() {
   const { token } = useParams();
   const navigate = useNavigate();
   const {
-    step, form, suggestedNickname,
+    step, form, suggestedNickname, photoError,
     setToken, setSuggestedNickname, nextStep, prevStep,
     setField, toggleKeyword, getPayload, reset,
-  } = useSeekerFormStore();
+    addPhotos, removePhoto,
+  } = useClientFormStore();
+  const fileInputRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState({});
@@ -121,6 +130,15 @@ export default function SeekerForm() {
     setSuggestedNickname(generateNickname());
     return () => reset();
   }, [token, setToken, setSuggestedNickname, reset]);
+
+  const previewUrls = useRef([]);
+  useEffect(() => {
+    previewUrls.current.forEach((u) => URL.revokeObjectURL(u));
+    previewUrls.current = form.photos.map((f) => URL.createObjectURL(f));
+    return () => {
+      previewUrls.current.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [form.photos]);
 
   const rerollNickname = () => {
     setSuggestedNickname(generateNickname());
@@ -142,7 +160,8 @@ export default function SeekerForm() {
     setSubmitting(true);
     setError(null);
     try {
-      await seekerService.createSeeker(getPayload());
+      const payload = getPayload();
+      await clientService.createClient(payload, form.photos);
       navigate('/apply/complete');
     } catch (err) {
       setError(err.message || '제출에 실패했습니다. 잠시 후 다시 시도해주세요.');
@@ -151,9 +170,8 @@ export default function SeekerForm() {
   };
 
   const handleNext = () => {
-    // Mark all current step fields as touched to show errors
     const stepFields = {
-      0: ['gender', 'birthYear', 'phone', 'location'],
+      0: ['name', 'gender', 'birthYear', 'phone', 'location'],
       1: ['occupation', 'height', 'company', 'education', 'school'],
       2: ['religion', 'mbti', 'hobbies'],
       3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'consentPrivacy', 'consentThirdParty'],
@@ -203,6 +221,17 @@ export default function SeekerForm() {
           {/* Step 1: 기본 정보 */}
           {step === 0 && (
             <div className={styles.fields}>
+              <TextField
+                label="실명"
+                hint="매칭 진행 시 매니저만 확인할 수 있습니다."
+                value={form.name}
+                onChange={(v) => { setField('name', v); markTouched('name'); }}
+                placeholder="홍길동"
+                maxLength={20}
+                required
+                error={getError('name')}
+              />
+
               <div className={styles.nicknameSection}>
                 <label className={styles.fieldLabel}>
                   이곳에서 불릴 당신만의 별명을 골라주세요
@@ -227,7 +256,7 @@ export default function SeekerForm() {
                   onChange={(e) => setField('nickname', e.target.value)}
                   onBlur={() => markTouched('nickname')}
                   placeholder={`추천: ${suggestedNickname}`}
-                  maxLength={20}
+                  maxLength={50}
                 />
                 {getError('nickname') && <span className={styles.fieldError}>{getError('nickname')}</span>}
               </div>
@@ -459,6 +488,50 @@ export default function SeekerForm() {
                 />
               </div>
 
+              <div className={styles.photoSection}>
+                <label className={styles.fieldLabel}>
+                  프로필 사진
+                  <span className={styles.optionalBadge}>선택</span>
+                </label>
+                <p className={styles.photoHint}>최대 5장, 장당 10MB (JPG, PNG, WebP)</p>
+                <div className={styles.photoGrid}>
+                  {form.photos.map((file, idx) => (
+                    <div key={idx} className={styles.photoItem}>
+                      <img src={previewUrls.current[idx]} alt={`사진 ${idx + 1}`} />
+                      <button
+                        type="button"
+                        className={styles.photoRemoveBtn}
+                        onClick={() => removePhoto(idx)}
+                      >
+                        <XIcon size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {form.photos.length < 5 && (
+                    <button
+                      type="button"
+                      className={styles.photoAdd}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <ImagePlus size={24} />
+                      <span>추가</span>
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files?.length) addPhotos(e.target.files);
+                    e.target.value = '';
+                  }}
+                />
+                {photoError && <p className={styles.fieldError}>{photoError}</p>}
+              </div>
+
               <div className={styles.consents}>
                 <label className={styles.consentLabel}>
                   <input
@@ -496,7 +569,7 @@ export default function SeekerForm() {
                     </div>
                     <div className={styles.termsBody}>
                       <h4>1. 개인정보 수집 및 이용 동의</h4>
-                      <p>수집 항목: 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
+                      <p>수집 항목: 실명, 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
                       <p>수집 목적: 매칭 서비스 제공 및 회원 관리</p>
                       <p>보유 기간: 서비스 이용 종료 시까지 (탈퇴 요청 시 즉시 파기)</p>
 

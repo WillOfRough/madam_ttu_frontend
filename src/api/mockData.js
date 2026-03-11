@@ -4,11 +4,13 @@
 
 const MANAGER_ID = '00000000-0000-0000-0000-000000000001';
 
-// ── Seekers ────────────────────────────────────────────
-const seekers = [
+// ── Clients ────────────────────────────────────────────
+const clients = [
   {
     id: 's001',
     name: '김서연',
+    nickname: '반짝이는 서연',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c001', 'ef1b2c3d-1234-5678-9abc-def012345001'],
     gender: 'female',
     birthDate: '1995-03-12',
     phone: '010-9876-5432',
@@ -33,6 +35,8 @@ const seekers = [
   {
     id: 's002',
     name: '이준혁',
+    nickname: null,
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c002'],
     gender: 'male',
     birthDate: '1993-07-22',
     phone: '010-1234-5678',
@@ -57,6 +61,8 @@ const seekers = [
   {
     id: 's003',
     name: '박지민',
+    nickname: '카페 탐험가',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c003', 'ef1b2c3d-1234-5678-9abc-def012345003', 'ab2d3e4f-5678-9abc-def0-123456789003'],
     gender: 'female',
     birthDate: '1996-11-05',
     phone: '010-5555-1234',
@@ -81,6 +87,8 @@ const seekers = [
   {
     id: 's004',
     name: '최민수',
+    nickname: null,
+    photoIds: [],
     gender: 'male',
     birthDate: '1992-01-30',
     phone: '010-7777-8888',
@@ -105,6 +113,8 @@ const seekers = [
   {
     id: 's005',
     name: '한소희',
+    nickname: '제주도 소희',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c005', 'ef1b2c3d-1234-5678-9abc-def012345005'],
     gender: 'female',
     birthDate: '1994-08-18',
     phone: '010-3333-4444',
@@ -129,6 +139,8 @@ const seekers = [
   {
     id: 's006',
     name: '정우진',
+    nickname: null,
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c006'],
     gender: 'male',
     birthDate: '1991-04-09',
     phone: '010-2222-9999',
@@ -153,6 +165,8 @@ const seekers = [
   {
     id: 's007',
     name: '윤예은',
+    nickname: '크로스핏 예은',
+    photoIds: [],
     gender: 'female',
     birthDate: '1997-06-25',
     phone: '010-8888-1111',
@@ -177,6 +191,8 @@ const seekers = [
   {
     id: 's008',
     name: '강도윤',
+    nickname: null,
+    photoIds: [],
     gender: 'male',
     birthDate: '1993-12-03',
     phone: '010-6666-5555',
@@ -201,6 +217,8 @@ const seekers = [
   {
     id: 's009',
     name: '임수아',
+    nickname: '베이킹 수아',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c009', 'ef1b2c3d-1234-5678-9abc-def012345009', 'ab2d3e4f-5678-9abc-def0-123456789009', 'ff3c38a7-8465-4a6a-81a3-73c917990009'],
     gender: 'female',
     birthDate: '1995-09-14',
     phone: '010-4444-7777',
@@ -225,6 +243,8 @@ const seekers = [
   {
     id: 's010',
     name: '오태양',
+    nickname: 'AI 태양',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c010', 'ef1b2c3d-1234-5678-9abc-def012345010', 'ab2d3e4f-5678-9abc-def0-123456789010'],
     gender: 'male',
     birthDate: '1990-02-28',
     phone: '010-1111-2222',
@@ -255,7 +275,7 @@ const connections = [
     managerId: 'm002',
     name: '박소영',
     email: 'soyoung@findmyone.kr',
-    seekerCount: 7,
+    clientCount: 7,
     connectedAt: '2026-01-15T10:00:00Z',
   },
   {
@@ -263,7 +283,7 @@ const connections = [
     managerId: 'm003',
     name: '이현우',
     email: 'hyunwoo@findmyone.kr',
-    seekerCount: 4,
+    clientCount: 4,
     connectedAt: '2026-02-01T14:00:00Z',
   },
 ];
@@ -369,25 +389,27 @@ const managerMap = {
   'm003': { id: 'm003', name: '이현우' },
 };
 
-function enrichSeeker(s) {
-  const owner = managerMap[s.ownerManagerId] || { id: s.ownerManagerId, name: '알 수 없음' };
+function enrichClient(c) {
+  const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
   return {
+    nickname: c.nickname || null,
+    photoIds: c.photoIds || [],
     ownerManager: owner,
-    isOwner: s.ownerManagerId === MANAGER_ID,
+    isOwner: c.ownerManagerId === MANAGER_ID,
   };
 }
 
 // ── Dashboard Summary ──────────────────────────────────
 const dashboardSummary = {
-  mySeekerCount: seekers.filter((s) => s.ownerManagerId === MANAGER_ID).length,
-  pendingCount: seekers.filter((s) => s.approvalStatus === 'pending').length,
+  myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
+  pendingCount: clients.filter((c) => c.approvalStatus === 'pending').length,
   connectedManagerCount: connections.length,
   activeInviteCount: invites.filter((i) => i.status === 'active').length,
-  recentPendingSeekers: seekers
-    .filter((s) => s.approvalStatus === 'pending')
+  recentPendingClients: clients
+    .filter((c) => c.approvalStatus === 'pending')
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
-    .map((s) => ({ ...s, ...enrichSeeker(s) })),
+    .map((c) => ({ ...c, ...enrichClient(c) })),
 };
 
 // ── Manager Info ───────────────────────────────────────
@@ -432,10 +454,10 @@ export async function mockFetch(path, options = {}) {
       connections: connections.map((c) => ({
         managerId: c.managerId,
         name: c.name,
-        seekerCount: c.seekerCount,
+        clientCount: c.clientCount,
         connectedAt: c.connectedAt,
       })),
-      mySeekerCount: seekers.filter((s) => s.ownerManagerId === MANAGER_ID).length,
+      myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
       createdAt: '2026-01-01T00:00:00Z',
     };
   }
@@ -455,7 +477,7 @@ export async function mockFetch(path, options = {}) {
     return { valid: true, managerName: 'Manager' };
   }
 
-  // POST /api/v1/seekers (create seeker)
+  // POST /api/v1/seekers (create client)
   if (method === 'POST' && pathname === '/api/v1/seekers') {
     return { success: true, message: '프로필이 성공적으로 등록되었습니다.' };
   }
@@ -487,14 +509,14 @@ export async function mockFetch(path, options = {}) {
   // GET /api/v1/seekers/:id  (detail)
   if (method === 'GET' && /^\/api\/v1\/seekers\/[^?]+$/.test(pathname) && !pathname.endsWith('/seekers')) {
     const id = pathname.split('/').pop();
-    const found = seekers.find((s) => s.id === id);
-    if (found) return { ...found, ...enrichSeeker(found) };
-    throw new Error('Seeker not found');
+    const found = clients.find((c) => c.id === id);
+    if (found) return { ...found, ...enrichClient(found) };
+    throw new Error('Client not found');
   }
 
   // GET /api/v1/seekers  (list)
   if (method === 'GET' && pathname === '/api/v1/seekers') {
-    let filtered = [...seekers];
+    let filtered = [...clients];
     const nameQ = params.get('name');
     const phoneQ = params.get('phone');
     const gender = params.get('gender');
@@ -504,14 +526,14 @@ export async function mockFetch(path, options = {}) {
     const page = parseInt(params.get('page') || '1', 10);
     const limit = parseInt(params.get('limit') || '20', 10);
 
-    if (nameQ) filtered = filtered.filter((s) => s.name.includes(nameQ));
-    if (phoneQ) filtered = filtered.filter((s) => s.phone === phoneQ);
-    if (gender) filtered = filtered.filter((s) => s.gender === gender);
-    if (approval) filtered = filtered.filter((s) => s.approvalStatus === approval);
+    if (nameQ) filtered = filtered.filter((c) => c.name.includes(nameQ));
+    if (phoneQ) filtered = filtered.filter((c) => c.phone === phoneQ);
+    if (gender) filtered = filtered.filter((c) => c.gender === gender);
+    if (approval) filtered = filtered.filter((c) => c.approvalStatus === approval);
     if (owner === 'me') {
-      filtered = filtered.filter((s) => s.ownerManagerId === MANAGER_ID);
+      filtered = filtered.filter((c) => c.ownerManagerId === MANAGER_ID);
     } else if (owner && owner !== 'all') {
-      filtered = filtered.filter((s) => s.ownerManagerId === owner);
+      filtered = filtered.filter((c) => c.ownerManagerId === owner);
     }
 
     const [field, dir] = sort.split(':');
@@ -524,7 +546,7 @@ export async function mockFetch(path, options = {}) {
     const start = (page - 1) * limit;
     const totalPages = Math.ceil(filtered.length / limit);
     return {
-      data: filtered.slice(start, start + limit).map((s) => ({ ...s, ...enrichSeeker(s) })),
+      data: filtered.slice(start, start + limit).map((c) => ({ ...c, ...enrichClient(c) })),
       pagination: { page, limit, total: filtered.length, totalPages },
     };
   }
@@ -614,7 +636,7 @@ export async function mockFetch(path, options = {}) {
         managerId: req.managerId,
         name: req.managerName,
         email: '',
-        seekerCount: 0,
+        clientCount: 0,
         connectedAt: new Date().toISOString(),
       });
       dashboardSummary.connectedManagerCount = connections.length;
@@ -643,9 +665,9 @@ export async function mockFetch(path, options = {}) {
   if (method === 'PATCH' && /\/api\/v1\/seekers\/[^/]+\/approval/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
-    const s = seekers.find((sk) => sk.id === id);
-    if (s) s.approvalStatus = body.status;
-    dashboardSummary.pendingCount = seekers.filter((sk) => sk.approvalStatus === 'pending').length;
+    const c = clients.find((cl) => cl.id === id);
+    if (c) c.approvalStatus = body.status;
+    dashboardSummary.pendingCount = clients.filter((cl) => cl.approvalStatus === 'pending').length;
     return { success: true };
   }
 
@@ -653,8 +675,8 @@ export async function mockFetch(path, options = {}) {
   if (method === 'PATCH' && /\/api\/v1\/seekers\/[^/]+\/note/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
-    const s = seekers.find((sk) => sk.id === id);
-    if (s) s.managerNote = body.note;
+    const c = clients.find((cl) => cl.id === id);
+    if (c) c.managerNote = body.note;
     return { success: true };
   }
 

@@ -73,7 +73,7 @@ const useConnectionStore = create((set, get) => ({
       set((s) => ({
         receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
         connections: result.connection
-          ? [...s.connections, { ...result.connection, seekerCount: 0 }]
+          ? [...s.connections, { ...result.connection, clientCount: 0 }]
           : s.connections,
       }));
       return result;
