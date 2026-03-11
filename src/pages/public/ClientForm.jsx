@@ -104,6 +104,9 @@ function validateStep(step, form) {
     if (!form.idealType || !form.idealType.trim()) {
       errors.idealType = '이상형을 적어주세요.';
     }
+    if (!form.photos || form.photos.length === 0) {
+      errors.photos = '사진을 최소 1장 등록해주세요.';
+    }
     if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
     if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';
   }
@@ -174,7 +177,7 @@ export default function ClientForm() {
       0: ['name', 'gender', 'birthYear', 'phone', 'location'],
       1: ['occupation', 'height', 'company', 'education', 'school'],
       2: ['religion', 'mbti', 'hobbies'],
-      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'consentPrivacy', 'consentThirdParty'],
+      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'photos', 'consentPrivacy', 'consentThirdParty'],
     };
     const fields = stepFields[step] || [];
     const newTouched = { ...touched };
@@ -188,7 +191,7 @@ export default function ClientForm() {
   };
 
   const handleSubmitClick = () => {
-    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, consentPrivacy: true, consentThirdParty: true });
+    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, photos: true, consentPrivacy: true, consentThirdParty: true });
     if (!hasErrors) {
       handleSubmit();
     }
@@ -490,10 +493,13 @@ export default function ClientForm() {
 
               <div className={styles.photoSection}>
                 <label className={styles.fieldLabel}>
-                  프로필 사진
-                  <span className={styles.optionalBadge}>선택</span>
+                  당신의 매력을 보여줄 사진을 올려주세요
+                  <span className={styles.requiredMark}> *</span>
                 </label>
-                <p className={styles.photoHint}>최대 5장, 장당 10MB (JPG, PNG, WebP)</p>
+                <p className={styles.photoHint}>최소 1장 필수, 최대 5장 (장당 10MB / JPG, PNG, WebP)</p>
+                <p className={styles.photoWarning}>
+                  얼굴이 잘 보이는 사진을 올려주세요. 마스크 착용, 선글라스, 과도한 필터, 옆모습·뒷모습 등 얼굴 확인이 어려운 사진은 매칭에 불이익이 있을 수 있습니다.
+                </p>
                 <div className={styles.photoGrid}>
                   {form.photos.map((file, idx) => (
                     <div key={idx} className={styles.photoItem}>
@@ -530,6 +536,7 @@ export default function ClientForm() {
                   }}
                 />
                 {photoError && <p className={styles.fieldError}>{photoError}</p>}
+                {getError('photos') && <p className={styles.fieldError}>{getError('photos')}</p>}
               </div>
 
               <div className={styles.consents}>
