@@ -25,7 +25,7 @@ const useMatchStore = create((set, get) => ({
     const { page, size, filters } = get();
     set({ isLoading: true, error: null });
     try {
-      const result = await matchService.listMatches({ page, size });
+      const result = await matchService.listMatches({ page: page - 1, size });
       let data = result.data || result.matches || [];
       if (filters.status) {
         data = data.filter((m) => m.status === filters.status);

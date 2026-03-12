@@ -387,7 +387,7 @@ const searchableManagers = [
 const matches = [
   {
     matchId: 'match001',
-    status: 'PENDING',
+    status: 'pending',
     note: '성격 잘 맞을 것 같아서 매칭합니다.',
     seekerA: {
       seekerId: 's001',
@@ -411,7 +411,7 @@ const matches = [
   },
   {
     matchId: 'match002',
-    status: 'CONFIRMED',
+    status: 'confirmed',
     note: '둘 다 여행 취미 보유.',
     seekerA: {
       seekerId: 's005',
@@ -435,7 +435,7 @@ const matches = [
   },
   {
     matchId: 'match003',
-    status: 'CANCELLED',
+    status: 'cancelled',
     note: '',
     seekerA: {
       seekerId: 's003',
@@ -459,7 +459,7 @@ const matches = [
   },
   {
     matchId: 'match004',
-    status: 'PENDING',
+    status: 'pending',
     note: '운동 좋아하는 두 분.',
     seekerA: {
       seekerId: 's007',
@@ -483,7 +483,7 @@ const matches = [
   },
   {
     matchId: 'match005',
-    status: 'COMPLETED',
+    status: 'completed',
     note: '감성적인 두 분을 매칭합니다.',
     seekerA: {
       seekerId: 's009',
@@ -848,7 +848,7 @@ export async function mockFetch(path, options = {}) {
     const tokenB = randomToken();
     const newMatch = {
       matchId: `match${Date.now()}`,
-      status: 'PENDING',
+      status: 'pending',
       note: body.note || '',
       seekerA: {
         seekerId: seekerA.id,
@@ -944,7 +944,7 @@ export async function mockFetch(path, options = {}) {
     // Update match status
     const m = proposal.match;
     if (m.seekerA.response && m.seekerB.response) {
-      m.status = m.seekerA.response === 'accepted' && m.seekerB.response === 'accepted' ? 'CONFIRMED' : 'CANCELLED';
+      m.status = m.seekerA.response === 'accepted' && m.seekerB.response === 'accepted' ? 'confirmed' : 'cancelled';
     }
     return { success: true, message: '응답이 완료되었습니다.' };
   }

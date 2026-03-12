@@ -8,10 +8,10 @@ import { SkeletonLine } from '../../components/Skeleton';
 import styles from './MatchDetail.module.css';
 
 const STATUS_LABELS = {
-  PENDING: 'pending',
-  CONFIRMED: 'approved',
-  CANCELLED: 'rejected',
-  COMPLETED: 'active',
+  pending: 'pending',
+  confirmed: 'approved',
+  cancelled: 'rejected',
+  completed: 'active',
 };
 
 const RESPONSE_MAP = {

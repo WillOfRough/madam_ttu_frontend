@@ -11,10 +11,10 @@ import { toast } from '../../store/toastStore';
 import styles from './MatchList.module.css';
 
 const STATUS_LABELS = {
-  PENDING: 'pending',
-  CONFIRMED: 'approved',
-  CANCELLED: 'rejected',
-  COMPLETED: 'active',
+  pending: 'pending',
+  confirmed: 'approved',
+  cancelled: 'rejected',
+  completed: 'active',
 };
 
 function formatDate(iso) {
@@ -50,10 +50,10 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
-          <option value="PENDING">대기</option>
-          <option value="CONFIRMED">확정</option>
-          <option value="CANCELLED">취소</option>
-          <option value="COMPLETED">완료</option>
+          <option value="pending">대기</option>
+          <option value="confirmed">확정</option>
+          <option value="cancelled">취소</option>
+          <option value="completed">완료</option>
         </select>
       </div>
 
