@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Link2, Mail, Settings } from 'lucide-react';
+import { Home, Users, Heart, Link2, Mail, Settings } from 'lucide-react';
 import styles from './BottomNav.module.css';
 
 const TABS = [
   { to: '/dashboard', icon: Home, label: '홈', end: true },
   { to: '/dashboard/clients', icon: Users, label: 'Seeker' },
+  { to: '/dashboard/matches', icon: Heart, label: '매칭' },
   { to: '/dashboard/connections', icon: Link2, label: '연결' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
   { to: '/dashboard/settings', icon: Settings, label: '설정' },

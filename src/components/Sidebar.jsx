@@ -1,11 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Link2, Mail, Download, Settings, LogOut } from 'lucide-react';
+import { Home, Users, Link2, Mail, Heart, Download, Settings, LogOut } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import styles from './Sidebar.module.css';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: Home, label: '홈', end: true },
   { to: '/dashboard/clients', icon: Users, label: 'Seeker' },
+  { to: '/dashboard/matches', icon: Heart, label: '매칭' },
   { to: '/dashboard/connections', icon: Link2, label: '연결' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
   { to: '/dashboard/export', icon: Download, label: '내보내기' },

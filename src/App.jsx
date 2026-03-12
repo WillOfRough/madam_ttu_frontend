@@ -16,6 +16,7 @@ import ClientForm from './pages/public/ClientForm';
 import ApplyComplete from './pages/public/ApplyComplete';
 import ExpiredLink from './pages/public/ExpiredLink';
 import NotFound from './pages/public/NotFound';
+import Proposal from './pages/public/Proposal';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -25,6 +26,8 @@ import Connections from './pages/dashboard/Connections';
 import InviteManagement from './pages/dashboard/InviteManagement';
 import ExportPage from './pages/dashboard/ExportPage';
 import Settings from './pages/dashboard/Settings';
+import MatchList from './pages/dashboard/MatchList';
+import MatchDetail from './pages/dashboard/MatchDetail';
 
 function AuthListener() {
   const navigate = useNavigate();
@@ -71,6 +74,7 @@ export default function App() {
         <Route path="/apply/:token" element={<ClientForm />} />
         <Route path="/apply/complete" element={<ApplyComplete />} />
         <Route path="/expired" element={<ExpiredLink />} />
+        <Route path="/proposal/:token" element={<Proposal />} />
 
         {/* Dashboard (auth required) */}
         <Route element={<RequireAuth />}>
@@ -81,6 +85,8 @@ export default function App() {
             <Route path="/dashboard/connections" element={<Connections />} />
             <Route path="/dashboard/invites" element={<InviteManagement />} />
             <Route path="/dashboard/export" element={<ExportPage />} />
+            <Route path="/dashboard/matches" element={<MatchList />} />
+            <Route path="/dashboard/matches/:matchId" element={<MatchDetail />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
         </Route>

@@ -4,6 +4,13 @@
 
 const MANAGER_ID = '00000000-0000-0000-0000-000000000001';
 
+function randomToken(len = 12) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let out = '';
+  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
 // ── Clients ────────────────────────────────────────────
 const clients = [
   {
@@ -292,7 +299,7 @@ const connections = [
 const invites = [
   {
     id: 'inv001',
-    token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0001',
+    token: 'AbC123xYz001',
     label: '김서연 지인 소개용',
     status: 'active',
     useCount: 1,
@@ -301,7 +308,7 @@ const invites = [
   },
   {
     id: 'inv002',
-    token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0002',
+    token: 'KpR482mNv002',
     label: '3월 신규 모집',
     status: 'active',
     useCount: 3,
@@ -310,7 +317,7 @@ const invites = [
   },
   {
     id: 'inv003',
-    token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0003',
+    token: 'Wq7jTn3sL003',
     label: '회사 동료 추천',
     status: 'active',
     useCount: 0,
@@ -319,7 +326,7 @@ const invites = [
   },
   {
     id: 'inv004',
-    token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0004',
+    token: 'Hy9fBk2pD004',
     label: '',
     status: 'expired',
     useCount: 2,
@@ -328,7 +335,7 @@ const invites = [
   },
   {
     id: 'inv005',
-    token: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeee0005',
+    token: 'Xm4cRt8wJ005',
     label: '테스트용',
     status: 'revoked',
     useCount: 0,
@@ -375,6 +382,157 @@ const searchableManagers = [
   { id: 'm006', name: '최유리' },
   { id: 'm007', name: '홍길동' },
 ];
+
+// ── Matches ───────────────────────────────────────────
+const matches = [
+  {
+    matchId: 'match001',
+    status: 'PENDING',
+    note: '성격 잘 맞을 것 같아서 매칭합니다.',
+    seekerA: {
+      seekerId: 's001',
+      seekerName: '김서연',
+      seekerGender: 'female',
+      managerName: 'Manager',
+      response: null,
+      respondedAt: null,
+      proposalToken: 'PrTk01aB3cD1',
+    },
+    seekerB: {
+      seekerId: 's002',
+      seekerName: '이준혁',
+      seekerGender: 'male',
+      managerName: 'Manager',
+      response: null,
+      respondedAt: null,
+      proposalToken: 'PrTk02eF4gH2',
+    },
+    createdAt: '2026-03-10T09:00:00Z',
+  },
+  {
+    matchId: 'match002',
+    status: 'CONFIRMED',
+    note: '둘 다 여행 취미 보유.',
+    seekerA: {
+      seekerId: 's005',
+      seekerName: '한소희',
+      seekerGender: 'female',
+      managerName: '박소영',
+      response: 'accepted',
+      respondedAt: '2026-03-08T14:00:00Z',
+      proposalToken: 'PrTk03iJ5kL3',
+    },
+    seekerB: {
+      seekerId: 's010',
+      seekerName: '오태양',
+      seekerGender: 'male',
+      managerName: 'Manager',
+      response: 'accepted',
+      respondedAt: '2026-03-08T16:30:00Z',
+      proposalToken: 'PrTk04mN6oP4',
+    },
+    createdAt: '2026-03-07T11:00:00Z',
+  },
+  {
+    matchId: 'match003',
+    status: 'CANCELLED',
+    note: '',
+    seekerA: {
+      seekerId: 's003',
+      seekerName: '박지민',
+      seekerGender: 'female',
+      managerName: 'Manager',
+      response: 'accepted',
+      respondedAt: '2026-03-06T10:00:00Z',
+      proposalToken: 'PrTk05qR7sT5',
+    },
+    seekerB: {
+      seekerId: 's004',
+      seekerName: '최민수',
+      seekerGender: 'male',
+      managerName: 'Manager',
+      response: 'rejected',
+      respondedAt: '2026-03-06T12:00:00Z',
+      proposalToken: 'PrTk06uV8wX6',
+    },
+    createdAt: '2026-03-05T15:00:00Z',
+  },
+  {
+    matchId: 'match004',
+    status: 'PENDING',
+    note: '운동 좋아하는 두 분.',
+    seekerA: {
+      seekerId: 's007',
+      seekerName: '윤예은',
+      seekerGender: 'female',
+      managerName: 'Manager',
+      response: 'accepted',
+      respondedAt: '2026-03-09T18:00:00Z',
+      proposalToken: 'PrTk07yZ9aB7',
+    },
+    seekerB: {
+      seekerId: 's006',
+      seekerName: '정우진',
+      seekerGender: 'male',
+      managerName: '박소영',
+      response: null,
+      respondedAt: null,
+      proposalToken: 'PrTk08cD0eF8',
+    },
+    createdAt: '2026-03-09T10:00:00Z',
+  },
+  {
+    matchId: 'match005',
+    status: 'COMPLETED',
+    note: '감성적인 두 분을 매칭합니다.',
+    seekerA: {
+      seekerId: 's009',
+      seekerName: '임수아',
+      seekerGender: 'female',
+      managerName: '이현우',
+      response: 'accepted',
+      respondedAt: '2026-03-02T10:00:00Z',
+      proposalToken: 'PrTk09gH1iJ9',
+    },
+    seekerB: {
+      seekerId: 's008',
+      seekerName: '강도윤',
+      seekerGender: 'male',
+      managerName: 'Manager',
+      response: 'accepted',
+      respondedAt: '2026-03-02T14:00:00Z',
+      proposalToken: 'PrTk10kL2mN0',
+    },
+    createdAt: '2026-03-01T09:00:00Z',
+  },
+];
+
+// Build proposal lookup from matches
+function getProposalByToken(token) {
+  for (const m of matches) {
+    if (m.seekerA.proposalToken === token) {
+      const counterpartSeeker = clients.find((c) => c.id === m.seekerB.seekerId);
+      return {
+        match: m,
+        participant: m.seekerA,
+        counterpart: counterpartSeeker,
+        myName: m.seekerA.seekerName,
+        status: m.seekerA.response ? 'responded' : 'pending',
+      };
+    }
+    if (m.seekerB.proposalToken === token) {
+      const counterpartSeeker = clients.find((c) => c.id === m.seekerA.seekerId);
+      return {
+        match: m,
+        participant: m.seekerB,
+        counterpart: counterpartSeeker,
+        myName: m.seekerB.seekerName,
+        status: m.seekerB.response ? 'responded' : 'pending',
+      };
+    }
+  }
+  return null;
+}
 
 // ── Export Logs ─────────────────────────────────────────
 const exportLogs = [
@@ -571,7 +729,7 @@ export async function mockFetch(path, options = {}) {
     const body = options.body || {};
     const newInvite = {
       id: `inv${Date.now()}`,
-      token: crypto.randomUUID(),
+      token: randomToken(),
       label: body.label || '',
       status: 'active',
       useCount: 0,
@@ -658,7 +816,7 @@ export async function mockFetch(path, options = {}) {
 
   // POST /api/v1/connections/invite
   if (method === 'POST' && pathname === '/api/v1/connections/invite') {
-    return { token: crypto.randomUUID() };
+    return { token: randomToken() };
   }
 
   // PATCH /api/v1/seekers/:id/approval
@@ -678,6 +836,117 @@ export async function mockFetch(path, options = {}) {
     const c = clients.find((cl) => cl.id === id);
     if (c) c.managerNote = body.note;
     return { success: true };
+  }
+
+  // POST /api/v1/matches (create match)
+  if (method === 'POST' && pathname === '/api/v1/matches') {
+    const body = options.body || {};
+    const seekerA = clients.find((c) => c.id === body.seekerAId);
+    const seekerB = clients.find((c) => c.id === body.seekerBId);
+    if (!seekerA || !seekerB) throw Object.assign(new Error('Seeker를 찾을 수 없습니다.'), { status: 404 });
+    const tokenA = randomToken();
+    const tokenB = randomToken();
+    const newMatch = {
+      matchId: `match${Date.now()}`,
+      status: 'PENDING',
+      note: body.note || '',
+      seekerA: {
+        seekerId: seekerA.id,
+        seekerName: seekerA.name,
+        seekerGender: seekerA.gender,
+        managerName: (managerMap[seekerA.ownerManagerId] || {}).name || '알 수 없음',
+        response: null,
+        respondedAt: null,
+        proposalToken: tokenA,
+      },
+      seekerB: {
+        seekerId: seekerB.id,
+        seekerName: seekerB.name,
+        seekerGender: seekerB.gender,
+        managerName: (managerMap[seekerB.ownerManagerId] || {}).name || '알 수 없음',
+        response: null,
+        respondedAt: null,
+        proposalToken: tokenB,
+      },
+      createdAt: new Date().toISOString(),
+    };
+    matches.unshift(newMatch);
+    return {
+      matchId: newMatch.matchId,
+      status: newMatch.status,
+      seekerA: { seekerId: seekerA.id, seekerName: seekerA.name, proposalToken: tokenA },
+      seekerB: { seekerId: seekerB.id, seekerName: seekerB.name, proposalToken: tokenB },
+    };
+  }
+
+  // GET /api/v1/matches/:matchId (detail)
+  if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+$/.test(pathname) && !pathname.endsWith('/matches')) {
+    const id = pathname.split('/').pop();
+    const found = matches.find((m) => m.matchId === id);
+    if (found) return found;
+    throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+  }
+
+  // GET /api/v1/matches (list)
+  if (method === 'GET' && pathname === '/api/v1/matches') {
+    const page = parseInt(params.get('page') || '1', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    const sorted = [...matches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const start = (page - 1) * size;
+    const totalPages = Math.ceil(sorted.length / size);
+    return {
+      data: sorted.slice(start, start + size),
+      pagination: { page, limit: size, total: sorted.length, totalPages },
+    };
+  }
+
+  // GET /api/v1/proposals/:token
+  if (method === 'GET' && /^\/api\/v1\/proposals\/[^/]+$/.test(pathname) && !pathname.includes('/respond')) {
+    const token = pathname.split('/').pop();
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    const cp = proposal.counterpart;
+    const birthYear = cp?.birthDate ? new Date(cp.birthDate).getFullYear() : null;
+    const age = birthYear ? new Date().getFullYear() - birthYear : null;
+    return {
+      myName: proposal.myName,
+      status: proposal.status,
+      counterpart: cp
+        ? {
+            nickname: cp.nickname || cp.name,
+            gender: cp.gender,
+            age,
+            height: cp.height,
+            occupation: cp.occupation,
+            education: cp.education,
+            location: cp.location,
+            religion: cp.religion,
+            mbti: cp.mbti,
+            hobbies: cp.hobbies,
+            introduction: cp.introduction,
+            photoUrls: (cp.photoIds || []).map((id) => `https://picsum.photos/seed/${id}/400/400`),
+          }
+        : null,
+    };
+  }
+
+  // POST /api/v1/proposals/:token/respond
+  if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/respond$/.test(pathname)) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    if (proposal.participant.response) {
+      throw Object.assign(new Error('이미 응답한 프로포절입니다.'), { status: 400 });
+    }
+    proposal.participant.response = body.response;
+    proposal.participant.respondedAt = new Date().toISOString();
+    // Update match status
+    const m = proposal.match;
+    if (m.seekerA.response && m.seekerB.response) {
+      m.status = m.seekerA.response === 'accepted' && m.seekerB.response === 'accepted' ? 'CONFIRMED' : 'CANCELLED';
+    }
+    return { success: true, message: '응답이 완료되었습니다.' };
   }
 
   // fallback
