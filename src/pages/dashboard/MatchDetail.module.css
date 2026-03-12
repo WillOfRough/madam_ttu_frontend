@@ -1,5 +1,5 @@
 .page {
-  max-width: 800px;
+  max-width: 720px;
   animation: slideUp var(--duration-normal) var(--ease-out) both;
 }
 
@@ -34,8 +34,8 @@
 }
 
 .participants {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-md);
   margin-bottom: var(--space-md);
 }
@@ -44,14 +44,14 @@
   background: var(--white);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px 24px;
   box-shadow: var(--shadow-card);
 }
 
 .participantHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--border-light);
@@ -72,23 +72,22 @@
   color: var(--navy);
 }
 
-.participantFields {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.participantBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px var(--space-xl);
 }
 
 .participantField {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.84rem;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .fieldLabel {
   color: var(--charcoal-pale);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -96,21 +95,25 @@
 .fieldValue {
   color: var(--charcoal);
   font-weight: 500;
+  font-size: 0.88rem;
 }
 
 .responseWaiting {
   color: var(--pending);
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .responseAccepted {
   color: var(--success);
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .responseRejected {
   color: var(--danger);
   font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .tokenSection {
@@ -136,7 +139,8 @@
 
 .tokenValue {
   flex: 1;
-  font-size: 0.8rem;
+  min-width: 0;
+  font-size: 0.78rem;
   font-family: monospace;
   color: var(--charcoal-light);
   background: var(--bg);
@@ -159,6 +163,7 @@
   background: var(--navy-glow);
   transition: all var(--duration-fast) var(--ease-out);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .copyBtn:hover {
@@ -170,7 +175,7 @@
   background: var(--white);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 24px 28px;
+  padding: 22px 24px;
   margin-bottom: var(--space-md);
   box-shadow: var(--shadow-card);
 }
@@ -198,10 +203,6 @@
 }
 
 @media (max-width: 640px) {
-  .participants {
-    grid-template-columns: 1fr;
-  }
-
   .header {
     flex-direction: column;
     align-items: flex-start;
@@ -215,7 +216,12 @@
     padding: 18px;
   }
 
+  .participantBody {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
   .card {
-    padding: 20px;
+    padding: 18px;
   }
 }

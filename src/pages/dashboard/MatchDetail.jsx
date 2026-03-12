@@ -122,7 +122,7 @@ function ParticipantCard({ participant, label }) {
         </span>
       </div>
 
-      <div className={styles.participantFields}>
+      <div className={styles.participantBody}>
         <div className={styles.participantField}>
           <span className={styles.fieldLabel}>담당 매니저</span>
           <span className={styles.fieldValue}>{participant.managerName}</span>
