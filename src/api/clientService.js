@@ -1,5 +1,55 @@
 import { apiFetch } from './config';
 
+const MAX_DIMENSION = 1280;
+const JPEG_QUALITY = 0.8;
+
+function compressImage(file) {
+  return new Promise((resolve) => {
+    // Skip non-image or already small files
+    if (!file.type.startsWith('image/') || file.size <= 500 * 1024) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+      if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+        resolve(file);
+        return;
+      }
+
+      const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        JPEG_QUALITY,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src = url;
+  });
+}
+
 export async function createClient(data, photos = []) {
   const formData = new FormData();
   for (const [key, value] of Object.entries(data)) {
@@ -7,7 +57,10 @@ export async function createClient(data, photos = []) {
       formData.append(key, String(value));
     }
   }
-  photos.forEach((file) => formData.append('photos', file));
+
+  const compressed = await Promise.all(photos.map(compressImage));
+  compressed.forEach((file) => formData.append('photos', file));
+
   return apiFetch('/api/v1/seekers', {
     method: 'POST',
     body: formData,

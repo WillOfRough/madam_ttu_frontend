@@ -35,7 +35,7 @@ const INITIAL_FORM = {
 };
 
 const MAX_PHOTOS = 5;
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const useClientFormStore = create((set, get) => ({
@@ -70,7 +70,7 @@ const useClientFormStore = create((set, get) => ({
         return;
       }
       if (file.size > MAX_FILE_SIZE) {
-        set({ photoError: `${file.name}: 파일 크기는 10MB 이하여야 합니다.` });
+        set({ photoError: `${file.name}: 파일 크기는 15MB 이하여야 합니다.` });
         return;
       }
       validFiles.push(file);
