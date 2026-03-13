@@ -10,11 +10,14 @@ import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
 import styles from './MatchList.module.css';
 
-const STATUS_LABELS = {
-  pending: 'pending',
-  confirmed: 'approved',
-  cancelled: 'rejected',
-  completed: 'active',
+const STATUS_STEP_LABELS = {
+  pending_b: 'B 프로필 확인 대기',
+  pending_a: 'A 프로필 확인 대기',
+  matched: '매칭 성사',
+  scheduling: '일정 조율 중',
+  confirmed: '약속 확정됨',
+  completed: '미팅 완료',
+  cancelled: '매칭 종료',
 };
 
 function formatDate(iso) {
@@ -50,10 +53,13 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
-          <option value="pending">대기</option>
-          <option value="confirmed">확정</option>
-          <option value="cancelled">취소</option>
+          <option value="pending_b">B 확인중</option>
+          <option value="pending_a">A 확인중</option>
+          <option value="matched">매칭됨</option>
+          <option value="scheduling">일정조율</option>
+          <option value="confirmed">약속확정</option>
           <option value="completed">완료</option>
+          <option value="cancelled">취소</option>
         </select>
       </div>
 
@@ -95,13 +101,13 @@ export default function MatchList() {
                       </span>
                     </span>
                   </div>
-                  <StatusBadge status={STATUS_LABELS[m.status] || m.status} />
+                  <StatusBadge status={m.status} />
                 </div>
                 <div className={styles.cardMeta}>
                   <span>{formatDate(m.createdAt)}</span>
-                  {m.note && <span>|</span>}
-                  {m.note && <span className={styles.cardNote}>{m.note}</span>}
+                  <span className={styles.stepInfo}>{STATUS_STEP_LABELS[m.status] || ''}</span>
                 </div>
+                {m.note && <div className={styles.cardNote}>{m.note}</div>}
               </div>
             ))}
           </div>

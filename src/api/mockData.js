@@ -383,11 +383,13 @@ const searchableManagers = [
   { id: 'm007', name: '홍길동' },
 ];
 
-// ── Matches ───────────────────────────────────────────
+// ── Matches (순차적 매칭 + 일정 조율) ────────────────────
 const matches = [
+  // 1) pending_b — B가 아직 미확인
   {
     matchId: 'match001',
-    status: 'pending',
+    status: 'pending_b',
+    currentTurn: 'B',
     note: '성격 잘 맞을 것 같아서 매칭합니다.',
     seekerA: {
       seekerId: 's001',
@@ -397,6 +399,7 @@ const matches = [
       response: null,
       respondedAt: null,
       proposalToken: 'PrTk01aB3cD1',
+      proposalSentAt: null,
     },
     seekerB: {
       seekerId: 's002',
@@ -406,21 +409,33 @@ const matches = [
       response: null,
       respondedAt: null,
       proposalToken: 'PrTk02eF4gH2',
+      proposalSentAt: '2026-03-10T09:00:00Z',
     },
+    schedule: {
+      proposedBy: null,
+      timeSlots: [],
+      pickedSlot: null,
+      venue: null,
+      confirmedAt: null,
+    },
+    meetingDate: null,
     createdAt: '2026-03-10T09:00:00Z',
   },
+  // 2) pending_a — B수락, A 확인 대기
   {
     matchId: 'match002',
-    status: 'confirmed',
+    status: 'pending_a',
+    currentTurn: 'A',
     note: '둘 다 여행 취미 보유.',
     seekerA: {
       seekerId: 's005',
       seekerName: '한소희',
       seekerGender: 'female',
       managerName: '박소영',
-      response: 'accepted',
-      respondedAt: '2026-03-08T14:00:00Z',
+      response: null,
+      respondedAt: null,
       proposalToken: 'PrTk03iJ5kL3',
+      proposalSentAt: '2026-03-08T16:30:00Z',
     },
     seekerB: {
       seekerId: 's010',
@@ -428,38 +443,25 @@ const matches = [
       seekerGender: 'male',
       managerName: 'Manager',
       response: 'accepted',
-      respondedAt: '2026-03-08T16:30:00Z',
+      respondedAt: '2026-03-08T14:00:00Z',
       proposalToken: 'PrTk04mN6oP4',
+      proposalSentAt: '2026-03-07T11:00:00Z',
     },
+    schedule: {
+      proposedBy: null,
+      timeSlots: [],
+      pickedSlot: null,
+      venue: null,
+      confirmedAt: null,
+    },
+    meetingDate: null,
     createdAt: '2026-03-07T11:00:00Z',
   },
+  // 3) scheduling — 일정 조율 중
   {
     matchId: 'match003',
-    status: 'cancelled',
-    note: '',
-    seekerA: {
-      seekerId: 's003',
-      seekerName: '박지민',
-      seekerGender: 'female',
-      managerName: 'Manager',
-      response: 'accepted',
-      respondedAt: '2026-03-06T10:00:00Z',
-      proposalToken: 'PrTk05qR7sT5',
-    },
-    seekerB: {
-      seekerId: 's004',
-      seekerName: '최민수',
-      seekerGender: 'male',
-      managerName: 'Manager',
-      response: 'rejected',
-      respondedAt: '2026-03-06T12:00:00Z',
-      proposalToken: 'PrTk06uV8wX6',
-    },
-    createdAt: '2026-03-05T15:00:00Z',
-  },
-  {
-    matchId: 'match004',
-    status: 'pending',
+    status: 'scheduling',
+    currentTurn: null,
     note: '운동 좋아하는 두 분.',
     seekerA: {
       seekerId: 's007',
@@ -469,21 +471,39 @@ const matches = [
       response: 'accepted',
       respondedAt: '2026-03-09T18:00:00Z',
       proposalToken: 'PrTk07yZ9aB7',
+      proposalSentAt: '2026-03-09T16:00:00Z',
     },
     seekerB: {
       seekerId: 's006',
       seekerName: '정우진',
       seekerGender: 'male',
       managerName: '박소영',
-      response: null,
-      respondedAt: null,
+      response: 'accepted',
+      respondedAt: '2026-03-09T12:00:00Z',
       proposalToken: 'PrTk08cD0eF8',
+      proposalSentAt: '2026-03-09T10:00:00Z',
     },
+    schedule: {
+      proposedBy: 'PrTk08cD0eF8',
+      timeSlots: [
+        { id: 'slot1', date: '2026-03-20', time: '14:00' },
+        { id: 'slot2', date: '2026-03-20', time: '18:00' },
+        { id: 'slot3', date: '2026-03-21', time: '12:00' },
+        { id: 'slot4', date: '2026-03-21', time: '19:00' },
+        { id: 'slot5', date: '2026-03-22', time: '14:00' },
+      ],
+      pickedSlot: null,
+      venue: null,
+      confirmedAt: null,
+    },
+    meetingDate: null,
     createdAt: '2026-03-09T10:00:00Z',
   },
+  // 4) confirmed — 약속 확정됨
   {
-    matchId: 'match005',
-    status: 'completed',
+    matchId: 'match004',
+    status: 'confirmed',
+    currentTurn: null,
     note: '감성적인 두 분을 매칭합니다.',
     seekerA: {
       seekerId: 's009',
@@ -493,6 +513,7 @@ const matches = [
       response: 'accepted',
       respondedAt: '2026-03-02T10:00:00Z',
       proposalToken: 'PrTk09gH1iJ9',
+      proposalSentAt: '2026-03-02T08:00:00Z',
     },
     seekerB: {
       seekerId: 's008',
@@ -502,32 +523,100 @@ const matches = [
       response: 'accepted',
       respondedAt: '2026-03-02T14:00:00Z',
       proposalToken: 'PrTk10kL2mN0',
+      proposalSentAt: '2026-03-01T09:00:00Z',
     },
+    schedule: {
+      proposedBy: 'PrTk10kL2mN0',
+      timeSlots: [
+        { id: 'slot1', date: '2026-03-18', time: '14:00' },
+        { id: 'slot2', date: '2026-03-18', time: '19:00' },
+        { id: 'slot3', date: '2026-03-19', time: '18:00' },
+      ],
+      pickedSlot: { id: 'slot2', date: '2026-03-18', time: '19:00' },
+      venue: '청담동 르카페',
+      confirmedAt: '2026-03-05T10:00:00Z',
+    },
+    meetingDate: '2026-03-18T19:00:00Z',
     createdAt: '2026-03-01T09:00:00Z',
   },
+  // 5) cancelled — 취소된 매칭
+  {
+    matchId: 'match005',
+    status: 'cancelled',
+    currentTurn: null,
+    note: '',
+    cancelReason: 'B가 프로필 확인 후 거절',
+    seekerA: {
+      seekerId: 's003',
+      seekerName: '박지민',
+      seekerGender: 'female',
+      managerName: 'Manager',
+      response: null,
+      respondedAt: null,
+      proposalToken: 'PrTk05qR7sT5',
+      proposalSentAt: null,
+    },
+    seekerB: {
+      seekerId: 's004',
+      seekerName: '최민수',
+      seekerGender: 'male',
+      managerName: 'Manager',
+      response: 'rejected',
+      respondedAt: '2026-03-06T12:00:00Z',
+      proposalToken: 'PrTk06uV8wX6',
+      proposalSentAt: '2026-03-05T15:00:00Z',
+    },
+    schedule: {
+      proposedBy: null,
+      timeSlots: [],
+      pickedSlot: null,
+      venue: null,
+      confirmedAt: null,
+    },
+    meetingDate: null,
+    createdAt: '2026-03-05T15:00:00Z',
+  },
 ];
+
+// ── Schedule token lookup ────────────────────────────────
+// schedule tokens: match-level tokens for schedule page
+const scheduleTokens = {
+  'SchTk03B': { matchId: 'match003', role: 'proposer', seekerToken: 'PrTk08cD0eF8' },
+  'SchTk03A': { matchId: 'match003', role: 'picker', seekerToken: 'PrTk07yZ9aB7' },
+  'SchTk04B': { matchId: 'match004', role: 'proposer', seekerToken: 'PrTk10kL2mN0' },
+  'SchTk04A': { matchId: 'match004', role: 'picker', seekerToken: 'PrTk09gH1iJ9' },
+};
 
 // Build proposal lookup from matches
 function getProposalByToken(token) {
   for (const m of matches) {
     if (m.seekerA.proposalToken === token) {
       const counterpartSeeker = clients.find((c) => c.id === m.seekerB.seekerId);
+      const isActive = m.status === 'pending_a' || m.status === 'matched' || m.status === 'scheduling' || m.status === 'confirmed' || m.status === 'completed' || (m.status === 'cancelled' && m.seekerA.response != null);
       return {
         match: m,
+        side: 'A',
         participant: m.seekerA,
         counterpart: counterpartSeeker,
         myName: m.seekerA.seekerName,
         status: m.seekerA.response ? 'responded' : 'pending',
+        isActive,
+        matchStatus: m.status,
       };
     }
     if (m.seekerB.proposalToken === token) {
       const counterpartSeeker = clients.find((c) => c.id === m.seekerA.seekerId);
+      // B's proposal is always active once match is created
+      const isActive = true;
       return {
         match: m,
+        side: 'B',
         participant: m.seekerB,
         counterpart: counterpartSeeker,
         myName: m.seekerB.seekerName,
         status: m.seekerB.response ? 'responded' : 'pending',
+        isActive,
+        matchStatus: m.status,
       };
     }
   }
@@ -838,7 +927,7 @@ export async function mockFetch(path, options = {}) {
     return { success: true };
   }
 
-  // POST /api/v1/matches (create match)
+  // POST /api/v1/matches (create match) — now creates with pending_b status
   if (method === 'POST' && pathname === '/api/v1/matches') {
     const body = options.body || {};
     const seekerA = clients.find((c) => c.id === body.seekerAId);
@@ -848,7 +937,8 @@ export async function mockFetch(path, options = {}) {
     const tokenB = randomToken();
     const newMatch = {
       matchId: `match${Date.now()}`,
-      status: 'pending',
+      status: 'pending_b',
+      currentTurn: 'B',
       note: body.note || '',
       seekerA: {
         seekerId: seekerA.id,
@@ -858,6 +948,7 @@ export async function mockFetch(path, options = {}) {
         response: null,
         respondedAt: null,
         proposalToken: tokenA,
+        proposalSentAt: null,
       },
       seekerB: {
         seekerId: seekerB.id,
@@ -867,7 +958,16 @@ export async function mockFetch(path, options = {}) {
         response: null,
         respondedAt: null,
         proposalToken: tokenB,
+        proposalSentAt: new Date().toISOString(),
       },
+      schedule: {
+        proposedBy: null,
+        timeSlots: [],
+        pickedSlot: null,
+        venue: null,
+        confirmedAt: null,
+      },
+      meetingDate: null,
       createdAt: new Date().toISOString(),
     };
     matches.unshift(newMatch);
@@ -877,6 +977,91 @@ export async function mockFetch(path, options = {}) {
       seekerA: { seekerId: seekerA.id, seekerName: seekerA.name, proposalToken: tokenA },
       seekerB: { seekerId: seekerB.id, seekerName: seekerB.name, proposalToken: tokenB },
     };
+  }
+
+  // PATCH /api/v1/matches/:matchId/status (manager manual status change)
+  if (method === 'PATCH' && /^\/api\/v1\/matches\/[^/]+\/status$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    m.status = body.status;
+    return { success: true, status: m.status };
+  }
+
+  // GET /api/v1/matches/:matchId/schedule (schedule info)
+  if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+\/schedule$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    return {
+      matchId: m.matchId,
+      status: m.status,
+      schedule: m.schedule,
+      meetingDate: m.meetingDate,
+      seekerA: { seekerName: m.seekerA.seekerName, proposalToken: m.seekerA.proposalToken },
+      seekerB: { seekerName: m.seekerB.seekerName, proposalToken: m.seekerB.proposalToken },
+    };
+  }
+
+  // POST /api/v1/matches/:matchId/schedule/propose (propose time slots)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/schedule\/propose$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    m.schedule.proposedBy = body.proposerToken || 'unknown';
+    m.schedule.timeSlots = (body.timeSlots || []).map((slot, i) => ({
+      id: `slot${i + 1}`,
+      date: slot.date,
+      time: slot.time,
+    }));
+    m.status = 'scheduling';
+    return { success: true, schedule: m.schedule };
+  }
+
+  // POST /api/v1/matches/:matchId/schedule/pick (pick one slot)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/schedule\/pick$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    const slot = m.schedule.timeSlots.find((s) => s.id === body.slotId);
+    if (!slot) throw Object.assign(new Error('해당 시간을 찾을 수 없습니다.'), { status: 400 });
+    m.schedule.pickedSlot = slot;
+    return { success: true, pickedSlot: slot };
+  }
+
+  // POST /api/v1/matches/:matchId/schedule/confirm (manager confirms with venue)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/schedule\/confirm$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    m.schedule.venue = body.venue || '';
+    m.schedule.confirmedAt = new Date().toISOString();
+    m.meetingDate = `${m.schedule.pickedSlot.date}T${m.schedule.pickedSlot.time}:00Z`;
+    m.status = 'confirmed';
+    return { success: true, schedule: m.schedule, meetingDate: m.meetingDate };
+  }
+
+  // POST /api/v1/matches/:matchId/cancel (cancel match)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/cancel$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+
+    // Calculate refund eligibility
+    let refundable = false;
+    if (m.meetingDate) {
+      const hoursUntilMeeting = (new Date(m.meetingDate) - new Date()) / (1000 * 60 * 60);
+      refundable = hoursUntilMeeting >= 72;
+    }
+
+    m.status = 'cancelled';
+    m.cancelReason = body.reason || '';
+    return { success: true, refundable };
   }
 
   // GET /api/v1/matches/:matchId (detail)
@@ -905,12 +1090,28 @@ export async function mockFetch(path, options = {}) {
     const token = pathname.split('/').pop();
     const proposal = getProposalByToken(token);
     if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+
+    // Check if proposal is active (sequential disclosure)
+    if (!proposal.isActive) {
+      return {
+        myName: proposal.myName,
+        status: 'inactive',
+        isActive: false,
+        counterpart: null,
+      };
+    }
+
     const cp = proposal.counterpart;
     const birthYear = cp?.birthDate ? new Date(cp.birthDate).getFullYear() : null;
     const age = birthYear ? new Date().getFullYear() - birthYear : null;
     return {
       myName: proposal.myName,
       status: proposal.status,
+      isActive: true,
+      matchStatus: proposal.matchStatus,
+      side: proposal.side,
+      matchId: proposal.match.matchId,
+      managerComment: cp ? (clients.find((c) => c.id === cp.id)?.managerNote || '') : '',
       counterpart: cp
         ? {
             nickname: cp.nickname || cp.name,
@@ -918,7 +1119,6 @@ export async function mockFetch(path, options = {}) {
             age,
             height: cp.height,
             occupation: cp.occupation,
-            education: cp.education,
             location: cp.location,
             religion: cp.religion,
             mbti: cp.mbti,
@@ -930,7 +1130,7 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
-  // POST /api/v1/proposals/:token/respond
+  // POST /api/v1/proposals/:token/respond — sequential logic
   if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/respond$/.test(pathname)) {
     const token = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
@@ -939,14 +1139,56 @@ export async function mockFetch(path, options = {}) {
     if (proposal.participant.response) {
       throw Object.assign(new Error('이미 응답한 프로포절입니다.'), { status: 400 });
     }
+
     proposal.participant.response = body.response;
     proposal.participant.respondedAt = new Date().toISOString();
-    // Update match status
+
     const m = proposal.match;
-    if (m.seekerA.response && m.seekerB.response) {
-      m.status = m.seekerA.response === 'accepted' && m.seekerB.response === 'accepted' ? 'confirmed' : 'cancelled';
+
+    if (body.response === 'rejected') {
+      // Any rejection → cancelled
+      m.status = 'cancelled';
+      m.cancelReason = `${proposal.side === 'B' ? 'B' : 'A'}가 프로필 확인 후 거절`;
+      return { success: true, message: '응답이 전달되었습니다.', matchStatus: 'cancelled' };
     }
-    return { success: true, message: '응답이 완료되었습니다.' };
+
+    // accepted
+    if (proposal.side === 'B') {
+      // B accepted → move to pending_a, activate A's proposal
+      m.status = 'pending_a';
+      m.currentTurn = 'A';
+      m.seekerA.proposalSentAt = new Date().toISOString();
+      return {
+        success: true,
+        message: '응답이 전달되었습니다. 상대방의 확인을 기다리고 있어요.',
+        matchStatus: 'pending_a',
+      };
+    } else {
+      // A accepted → matched
+      m.status = 'matched';
+      m.currentTurn = null;
+      return {
+        success: true,
+        message: '매칭이 성사되었습니다! 곧 일정 조율 안내가 갈 거예요.',
+        matchStatus: 'matched',
+      };
+    }
+  }
+
+  // GET /api/v1/schedule/:token (schedule page data)
+  if (method === 'GET' && /^\/api\/v1\/schedule\/[^/]+$/.test(pathname)) {
+    const token = pathname.split('/').pop();
+    const entry = scheduleTokens[token];
+    if (!entry) throw Object.assign(new Error('일정 조율 링크를 찾을 수 없습니다.'), { status: 404 });
+    const m = matches.find((match) => match.matchId === entry.matchId);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    return {
+      matchId: m.matchId,
+      role: entry.role,
+      status: m.status,
+      schedule: m.schedule,
+      meetingDate: m.meetingDate,
+    };
   }
 
   // fallback

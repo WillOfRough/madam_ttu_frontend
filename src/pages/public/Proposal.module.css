@@ -40,6 +40,159 @@
   letter-spacing: -0.02em;
 }
 
+/* ── Oath Screen ── */
+.oathCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 48px 32px 40px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  margin-top: var(--space-xl);
+}
+
+.oathIcon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  background: var(--navy-glow);
+  color: var(--navy);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.oathTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+
+.oathSubtitle {
+  font-size: 0.92rem;
+  color: var(--charcoal-pale);
+  margin-bottom: 28px;
+}
+
+.oathItems {
+  text-align: left;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border-light);
+}
+
+.oathItem {
+  display: flex;
+  gap: 12px;
+  line-height: 1.65;
+}
+
+.oathNum {
+  font-weight: 700;
+  color: var(--navy);
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+
+.oathText {
+  font-size: 0.92rem;
+  color: var(--charcoal-mid);
+}
+
+.agreeLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.agreeLabel:hover {
+  border-color: var(--charcoal-pale);
+}
+
+.agreeLabel:has(.checkbox:checked) {
+  border-color: var(--navy);
+  border-style: solid;
+  background: var(--navy-glow);
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--navy);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.oathBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.oathBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.oathBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+}
+
+/* ── Inactive Banner ── */
+.inactiveBanner {
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-xl);
+  box-shadow: var(--shadow-card);
+  color: var(--charcoal-pale);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.inactiveTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.inactiveDesc {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  line-height: 1.6;
+}
+
+/* ── Profile Cards ── */
 .card {
   background: var(--white);
   border: 1px solid var(--border-light);
@@ -92,6 +245,7 @@
   white-space: pre-wrap;
 }
 
+/* ── Blurred Photos ── */
 .photoGallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -112,10 +266,28 @@
   display: block;
 }
 
+.blurredPhoto {
+  filter: blur(12px);
+  transform: scale(1.1);
+}
+
+/* ── Caution Note ── */
+.cautionNote {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+  padding: 14px 20px;
+  background: var(--pending-light);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-md);
+  line-height: 1.6;
+}
+
+/* ── Action Buttons ── */
 .actions {
   display: flex;
   gap: 12px;
-  margin-top: var(--space-lg);
+  margin-top: var(--space-md);
 }
 
 .acceptBtn,
@@ -158,6 +330,7 @@
   transform: none;
 }
 
+/* ── Responded Banner ── */
 .respondedBanner {
   text-align: center;
   padding: var(--space-lg);
@@ -178,8 +351,10 @@
   font-size: 0.88rem;
   color: var(--charcoal-pale);
   margin-top: 4px;
+  line-height: 1.6;
 }
 
+/* ── Loading & Error ── */
 .loadingPage {
   min-height: 100vh;
   display: flex;
@@ -212,5 +387,9 @@
 
   .actions {
     flex-direction: column;
+  }
+
+  .oathCard {
+    padding: 36px 20px 32px;
   }
 }

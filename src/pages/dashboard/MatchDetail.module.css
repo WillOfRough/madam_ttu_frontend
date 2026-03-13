@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-lg);
   gap: var(--space-md);
 }
 
@@ -33,6 +33,77 @@
   letter-spacing: -0.03em;
 }
 
+/* ── Step Indicator ── */
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  padding: 20px 24px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.stepDot {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.stepDone {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.stepCurrent {
+  background: var(--navy-glow);
+  color: var(--navy);
+  border: 2px solid var(--navy);
+}
+
+.stepLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.stepLabelCurrent {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.stepLine {
+  width: 24px;
+  height: 2px;
+  background: var(--border);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+.stepLineDone {
+  background: var(--navy);
+}
+
+/* ── Participants ── */
 .participants {
   display: flex;
   flex-direction: column;
@@ -61,6 +132,15 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--charcoal);
+}
+
+.participantLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
 }
 
 .participantGender {
@@ -96,6 +176,9 @@
   color: var(--charcoal);
   font-weight: 500;
   font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .responseWaiting {
@@ -151,6 +234,13 @@
   white-space: nowrap;
 }
 
+.tokenInactive {
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+  font-style: italic;
+  padding: 6px 0;
+}
+
 .copyBtn {
   display: flex;
   align-items: center;
@@ -171,6 +261,7 @@
   color: var(--white);
 }
 
+/* ── Cards ── */
 .card {
   background: var(--white);
   border: 1px solid var(--border-light);
@@ -188,6 +279,9 @@
   padding-bottom: var(--space-sm);
   border-bottom: 1px solid var(--border-light);
   letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .text {
@@ -200,6 +294,284 @@
 .meta {
   font-size: 0.82rem;
   color: var(--charcoal-pale);
+  margin-bottom: 4px;
+}
+
+/* ── Schedule Section ── */
+.scheduleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.scheduleField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slotTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.slotTag {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--charcoal-light);
+}
+
+.slotTagPicked {
+  background: var(--navy-glow);
+  border-color: var(--navy);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.waitingText {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  font-style: italic;
+}
+
+.confirmSection {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.confirmHint {
+  font-size: 0.84rem;
+  color: var(--charcoal-light);
+  margin-bottom: 12px;
+}
+
+/* ── Refund Info ── */
+.refundInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.refundBadge {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.refund_safe {
+  background: var(--success-light);
+  color: #1a7a3a;
+}
+
+.refund_warn {
+  background: var(--pending-light);
+  color: #8a5e00;
+}
+
+.refund_danger {
+  background: var(--danger-light);
+  color: #b71c2c;
+}
+
+.refund_past {
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
+}
+
+.refundHours {
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+}
+
+.policyList {
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  line-height: 1.8;
+  padding-left: 18px;
+  margin: 0;
+}
+
+/* ── Action Buttons ── */
+.actionBar {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--space-md);
+}
+
+.actionBtn {
+  padding: 10px 20px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.actionBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dangerBtn {
+  padding: 10px 20px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: #fde2e2;
+  color: #c0392b;
+}
+
+.dangerBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Cancelled Banner ── */
+.cancelledBanner {
+  text-align: center;
+  padding: var(--space-lg);
+  background: var(--danger-light);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-md);
+}
+
+.cancelledTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #b71c2c;
+}
+
+.cancelledReason {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  margin-top: 4px;
+}
+
+/* ── Confirm Schedule Modal ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modalTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  margin-bottom: var(--space-sm);
+}
+
+.modalDesc {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  margin-bottom: var(--space-lg);
+}
+
+.modalField {
+  margin-bottom: var(--space-md);
+}
+
+.modalLabel {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+}
+
+.modalInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: var(--space-lg);
+}
+
+.cancelModalBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--charcoal-light);
+  background: var(--bg);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.cancelModalBtn:hover {
+  background: var(--border-light);
+}
+
+.confirmModalBtn {
+  padding: 9px 22px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.confirmModalBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.confirmModalBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 640px) {
@@ -223,5 +595,28 @@
 
   .card {
     padding: 18px;
+  }
+
+  .stepIndicator {
+    padding: 14px 16px;
+    gap: 4px;
+  }
+
+  .stepLine {
+    width: 16px;
+    margin: 0 4px;
+  }
+
+  .stepLabel {
+    font-size: 0.68rem;
+    margin-left: 4px;
+  }
+
+  .actionBar {
+    flex-direction: column;
+  }
+
+  .modal {
+    padding: 20px;
   }
 }

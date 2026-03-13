@@ -152,6 +152,12 @@
   color: var(--charcoal-pale);
 }
 
+.stepInfo {
+  font-size: 0.78rem;
+  color: var(--charcoal-light);
+  font-weight: 500;
+}
+
 .cardNote {
   font-size: 0.82rem;
   color: var(--charcoal-light);

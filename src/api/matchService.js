@@ -30,3 +30,44 @@ export async function respondProposal(token, response) {
     body: { response },
   });
 }
+
+// ── New: sequential matching + scheduling APIs ──
+
+export async function updateMatchStatus(matchId, status) {
+  return apiFetch(`/api/v1/matches/${matchId}/status`, {
+    method: 'PATCH',
+    body: { status },
+  });
+}
+
+export async function getSchedule(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/schedule`, { method: 'GET' });
+}
+
+export async function proposeSchedule(matchId, { timeSlots }) {
+  return apiFetch(`/api/v1/matches/${matchId}/schedule/propose`, {
+    method: 'POST',
+    body: { timeSlots },
+  });
+}
+
+export async function pickSchedule(matchId, { slotId }) {
+  return apiFetch(`/api/v1/matches/${matchId}/schedule/pick`, {
+    method: 'POST',
+    body: { slotId },
+  });
+}
+
+export async function confirmSchedule(matchId, { venue, note }) {
+  return apiFetch(`/api/v1/matches/${matchId}/schedule/confirm`, {
+    method: 'POST',
+    body: { venue, note },
+  });
+}
+
+export async function cancelMatch(matchId, { reason }) {
+  return apiFetch(`/api/v1/matches/${matchId}/cancel`, {
+    method: 'POST',
+    body: { reason },
+  });
+}

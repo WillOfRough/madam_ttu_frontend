@@ -29,3 +29,34 @@
   background: var(--bg-warm);
   color: var(--charcoal-pale);
 }
+
+/* ── Match flow statuses ── */
+.pending_b, .pending_a {
+  background: var(--pending-light);
+  color: #8a5e00;
+}
+
+.matched {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.scheduling {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.confirmed {
+  background: var(--success-light);
+  color: #1a7a3a;
+}
+
+.completed {
+  background: #e0f2e9;
+  color: #0d5c2e;
+}
+
+.cancelled {
+  background: var(--danger-light);
+  color: #b71c2c;
+}

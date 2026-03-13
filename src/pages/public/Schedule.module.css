@@ -1,0 +1,269 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--bg);
+}
+
+.container {
+  max-width: 520px;
+  width: 100%;
+  animation: slideUp var(--duration-slow) var(--ease-out) both;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.05em;
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.desc {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  text-align: center;
+  margin-bottom: var(--space-xl);
+  line-height: 1.6;
+}
+
+/* ── Proposer: Date Groups ── */
+.dateList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.dateGroup {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.dateLabel {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.timeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timeSlot {
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: var(--white);
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.timeSlot:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.timeSlotSelected {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.timeSlotSelected:hover {
+  background: var(--navy-light);
+  color: var(--white);
+  border-color: var(--navy-light);
+}
+
+/* ── Picker: Slot List ── */
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: var(--space-lg);
+}
+
+.slotOption {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.slotOption:hover {
+  border-color: var(--navy);
+}
+
+.slotOptionSelected {
+  border-color: var(--navy);
+  background: var(--navy-glow);
+}
+
+.slotRadio {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--navy);
+  flex-shrink: 0;
+}
+
+.slotLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+/* ── Policy Note ── */
+.policyNote {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: var(--space-lg);
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  line-height: 1.7;
+}
+
+.policyNote strong {
+  display: block;
+  font-size: 0.84rem;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+
+.policyNote ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.policyNote li {
+  margin-bottom: 2px;
+}
+
+/* ── Submit Button ── */
+.submitBtn {
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.submitBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+}
+
+/* ── Complete Banner ── */
+.completeBanner {
+  text-align: center;
+  padding: 48px 32px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.completeTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+}
+
+.completeDate {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.completeVenue {
+  font-size: 0.92rem;
+  color: var(--charcoal-light);
+}
+
+.completeDesc {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  line-height: 1.6;
+}
+
+/* ── Loading & Error ── */
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--charcoal-pale);
+  font-size: 0.92rem;
+}
+
+.errorPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--charcoal-pale);
+  font-size: 0.92rem;
+  gap: var(--space-md);
+}
+
+@media (max-width: 640px) {
+  .dateGroup {
+    padding: 14px 16px;
+  }
+
+  .timeGrid {
+    gap: 6px;
+  }
+
+  .timeSlot {
+    padding: 7px 11px;
+    font-size: 0.78rem;
+  }
+
+  .completeBanner {
+    padding: 36px 20px;
+  }
+}
