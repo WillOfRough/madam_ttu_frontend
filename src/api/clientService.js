@@ -2,7 +2,11 @@ import { apiFetch } from './config';
 
 export async function createClient(data, photos = []) {
   const formData = new FormData();
-  formData.append('request', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  for (const [key, value] of Object.entries(data)) {
+    if (value != null && value !== '') {
+      formData.append(key, String(value));
+    }
+  }
   photos.forEach((file) => formData.append('photos', file));
   return apiFetch('/api/v1/seekers', {
     method: 'POST',
