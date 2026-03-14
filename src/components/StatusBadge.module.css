@@ -31,14 +31,9 @@
 }
 
 /* ── Match flow statuses ── */
-.pending_b, .pending_a {
+.proposal_sent, .proposal_accepted {
   background: var(--pending-light);
   color: #8a5e00;
-}
-
-.matched {
-  background: #e3f2fd;
-  color: #1565c0;
 }
 
 .scheduling {
@@ -46,7 +41,7 @@
   color: #7b1fa2;
 }
 
-.confirmed {
+.scheduled {
   background: var(--success-light);
   color: #1a7a3a;
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate OG image for findmyone invite links (1200x630)"""
+"""Generate OG image for knotsandlinks invite links (1200x630)"""
 
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -62,7 +62,7 @@ draw.ellipse([(hx + 8 - hr, hy - hr), (hx + 8 + hr, hy + hr)], fill=CORAL)
 draw.polygon([(hx - hr - 8, hy + 10), (hx + hr + 8, hy + 10), (hx, hy + hr + 30)], fill=CORAL)
 
 # Logo text
-draw.text((W // 2, 230), 'findmyone', font=font_logo, fill=CORAL, anchor='mm')
+draw.text((W // 2, 230), 'knotsandlinks', font=font_logo, fill=CORAL, anchor='mm')
 
 # Main title
 draw.text((W // 2, 320), '소중한 인연을 연결합니다', font=font_title, fill=WHITE, anchor='mm')

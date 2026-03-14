@@ -1,9 +1,9 @@
 import { apiFetch } from './config';
 
-export async function createMatch({ seekerAId, seekerBId, note }) {
+export async function createMatch({ seekerAId, seekerBId, type, note }) {
   return apiFetch('/api/v1/matches', {
     method: 'POST',
-    body: { seekerAId, seekerBId, note },
+    body: { seekerAId, seekerBId, type, note },
   });
 }
 
@@ -20,6 +20,8 @@ export async function getMatchDetail(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}`, { method: 'GET' });
 }
 
+// ── Proposal APIs (공개) ──
+
 export async function getProposal(token) {
   return apiFetch(`/api/v1/proposals/${token}`, { method: 'GET' });
 }
@@ -31,37 +33,30 @@ export async function respondProposal(token, response) {
   });
 }
 
-// ── New: sequential matching + scheduling APIs ──
+export async function getAvailableTimes(token) {
+  return apiFetch(`/api/v1/proposals/${token}/available-times`, { method: 'GET' });
+}
 
-export async function updateMatchStatus(matchId, status) {
-  return apiFetch(`/api/v1/matches/${matchId}/status`, {
-    method: 'PATCH',
-    body: { status },
+export async function registerAvailableTimes(token, { times }) {
+  return apiFetch(`/api/v1/proposals/${token}/available-times`, {
+    method: 'POST',
+    body: { times },
   });
 }
 
-export async function getSchedule(matchId) {
-  return apiFetch(`/api/v1/matches/${matchId}/schedule`, { method: 'GET' });
-}
-
-export async function proposeSchedule(matchId, { timeSlots }) {
-  return apiFetch(`/api/v1/matches/${matchId}/schedule/propose`, {
+export async function selectTime(token, { timeId }) {
+  return apiFetch(`/api/v1/proposals/${token}/select-time`, {
     method: 'POST',
-    body: { timeSlots },
+    body: { timeId },
   });
 }
 
-export async function pickSchedule(matchId, { slotId }) {
-  return apiFetch(`/api/v1/matches/${matchId}/schedule/pick`, {
-    method: 'POST',
-    body: { slotId },
-  });
-}
+// ── Manager APIs (인증 필요) ──
 
-export async function confirmSchedule(matchId, { venue, note }) {
-  return apiFetch(`/api/v1/matches/${matchId}/schedule/confirm`, {
+export async function confirmMatch(matchId, { location, endTime }) {
+  return apiFetch(`/api/v1/matches/${matchId}/confirm`, {
     method: 'POST',
-    body: { venue, note },
+    body: { location, endTime },
   });
 }
 
@@ -69,5 +64,11 @@ export async function cancelMatch(matchId, { reason }) {
   return apiFetch(`/api/v1/matches/${matchId}/cancel`, {
     method: 'POST',
     body: { reason },
+  });
+}
+
+export async function completeMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/complete`, {
+    method: 'POST',
   });
 }

@@ -8,17 +8,17 @@ export async function login({ email, password }) {
   });
 }
 
-export async function signup({ email, password, name }) {
+export async function signup({ email, password, name, nickname, inviteCode }) {
   return apiFetch('/api/v1/managers/signup', {
     method: 'POST',
-    body: { email, password, name },
+    body: { email, password, name, nickname, ...(inviteCode ? { inviteCode } : {}) },
   });
 }
 
-export async function register({ token, email, password, name }) {
+export async function register({ token, email, password, name, nickname }) {
   return apiFetch('/api/v1/managers/register', {
     method: 'POST',
-    body: { token, email, password, name },
+    body: { token, email, password, name, nickname },
   });
 }
 

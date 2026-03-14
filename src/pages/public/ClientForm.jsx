@@ -209,7 +209,7 @@ export default function ClientForm() {
                 <ArrowLeft size={18} /> 뒤로
               </button>
             )}
-            <span className={styles.logo}>findmyone</span>
+            <span className={styles.logo}>knotsandlinks</span>
           </div>
 
           <p className={styles.notice}>이 링크는 귀하만을 위한 일회성 링크입니다</p>

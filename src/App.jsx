@@ -17,7 +17,6 @@ import ApplyComplete from './pages/public/ApplyComplete';
 import ExpiredLink from './pages/public/ExpiredLink';
 import NotFound from './pages/public/NotFound';
 import Proposal from './pages/public/Proposal';
-import Schedule from './pages/public/Schedule';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -76,7 +75,6 @@ export default function App() {
         <Route path="/apply/complete" element={<ApplyComplete />} />
         <Route path="/expired" element={<ExpiredLink />} />
         <Route path="/proposal/:token" element={<Proposal />} />
-        <Route path="/schedule/:token" element={<Schedule />} />
 
         {/* Dashboard (auth required) */}
         <Route element={<RequireAuth />}>

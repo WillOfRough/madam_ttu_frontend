@@ -26,7 +26,7 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <span className={styles.logoText}>findmyone</span>
+        <span className={styles.logoText}>knotsandlinks</span>
       </div>
 
       {name && (

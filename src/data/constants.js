@@ -1,4 +1,4 @@
-/* findmyone — 상수 정의 */
+/* knotsandlinks — 상수 정의 */
 
 export const GENDER_OPTIONS = [
   { value: 'male', label: '남성' },

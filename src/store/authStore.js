@@ -46,10 +46,10 @@ const useAuthStore = create(
         }
       },
 
-      register: async ({ token, email, password, name }) => {
+      register: async ({ token, email, password, name, nickname }) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await authService.register({ token, email, password, name });
+          const data = await authService.register({ token, email, password, name, nickname });
           await authService.login({ email, password });
           const mgr = data.manager || data;
           set({
@@ -110,7 +110,7 @@ const useAuthStore = create(
       clearError: () => set({ error: null }),
     }),
     {
-      name: 'findmyone-auth',
+      name: 'knotsandlinks-auth',
       partialize: (state) => ({
         isLoggedIn: state.isLoggedIn,
         managerId: state.managerId,

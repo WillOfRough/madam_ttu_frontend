@@ -14,18 +14,18 @@ const RESPONSE_MAP = {
 };
 
 const STEPS = [
-  { key: 'pending_b', label: 'B확인' },
-  { key: 'pending_a', label: 'A확인' },
+  { key: 'proposal_sent', label: 'B확인' },
+  { key: 'proposal_accepted', label: 'A확인' },
   { key: 'scheduling', label: '일정조율' },
-  { key: 'confirmed', label: '약속확정' },
+  { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
 ];
 
 function getStepIndex(status) {
-  if (status === 'pending_b') return 0;
-  if (status === 'pending_a') return 1;
-  if (status === 'matched' || status === 'scheduling') return 2;
-  if (status === 'confirmed') return 3;
+  if (status === 'proposal_sent') return 0;
+  if (status === 'proposal_accepted') return 1;
+  if (status === 'scheduling') return 2;
+  if (status === 'scheduled') return 3;
   if (status === 'completed') return 4;
   return -1; // cancelled
 }
@@ -115,7 +115,7 @@ export default function MatchDetail() {
   const handleConfirmSchedule = async () => {
     setActionLoading(true);
     try {
-      await matchService.confirmSchedule(matchId, { venue, note: '' });
+      await matchService.confirmMatch(matchId, { location: venue, endTime: null });
       toast.success('약속이 확정되었습니다.');
       reload();
     } catch (err) {
@@ -129,7 +129,7 @@ export default function MatchDetail() {
   const handleCompleteMatch = async () => {
     setActionLoading(true);
     try {
-      await matchService.updateMatchStatus(matchId, 'completed');
+      await matchService.completeMatch(matchId);
       toast.success('미팅 완료 처리되었습니다.');
       reload();
     } catch (err) {
@@ -189,7 +189,7 @@ export default function MatchDetail() {
       </div>
 
       {/* Schedule Section */}
-      {(match.status === 'matched' || match.status === 'scheduling' || match.status === 'confirmed' || match.status === 'completed') && match.schedule && (
+      {(match.status === 'scheduling' || match.status === 'scheduled' || match.status === 'completed') && match.schedule && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
@@ -238,8 +238,8 @@ export default function MatchDetail() {
             </div>
           )}
 
-          {match.status === 'matched' && !match.schedule.proposedBy && (
-            <p className={styles.waitingText}>일정 조율 링크를 발송해주세요.</p>
+          {match.status === 'scheduling' && !match.schedule.proposedBy && (
+            <p className={styles.waitingText}>가용시간 등록을 기다리고 있습니다.</p>
           )}
 
           {match.status === 'scheduling' && !match.schedule.pickedSlot && (
@@ -258,8 +258,8 @@ export default function MatchDetail() {
         </div>
       )}
 
-      {/* Refund Status (confirmed) */}
-      {match.status === 'confirmed' && refundStatus && (
+      {/* Refund Status (scheduled) */}
+      {match.status === 'scheduled' && refundStatus && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <AlertTriangle size={16} /> 취소/환불 규정
@@ -295,7 +295,7 @@ export default function MatchDetail() {
 
       {/* Manager Action Buttons */}
       <div className={styles.actionBar}>
-        {match.status === 'confirmed' && (
+        {match.status === 'scheduled' && (
           <>
             <button className={styles.actionBtn} onClick={handleCompleteMatch} disabled={actionLoading}>
               미팅 완료 처리
@@ -375,7 +375,7 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
-  const isLinkActive = side === 'B' || matchStatus !== 'pending_b';
+  const isLinkActive = side === 'B' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {
     if (!isLinkActive) return;
@@ -395,9 +395,9 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
 
   // Sequential status text
   let statusText = null;
-  if (matchStatus === 'pending_b') {
+  if (matchStatus === 'proposal_sent') {
     statusText = side === 'B' ? '프로필 확인 대기' : 'B 확인 후 전달 예정';
-  } else if (matchStatus === 'pending_a') {
+  } else if (matchStatus === 'proposal_accepted') {
     statusText = side === 'B' ? null : '프로필 확인 대기';
   }
 

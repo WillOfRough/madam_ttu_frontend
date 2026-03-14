@@ -53,7 +53,7 @@ describe('#3 연결 초대 생성', () => {
     const mockInvite = {
       id: 'invite-1',
       token: 'abc-123',
-      url: 'https://findmyone.com/connect/abc-123',
+      url: 'https://knotsandlinks.com/connect/abc-123',
       status: 'active',
       label: '테스트 초대',
       expiresAt: '2026-03-11T00:00:00Z',

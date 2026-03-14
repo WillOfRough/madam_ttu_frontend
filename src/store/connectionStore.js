@@ -57,9 +57,9 @@ const useConnectionStore = create((set, get) => ({
     }
   },
 
-  sendRequest: async ({ name, message }) => {
+  sendRequest: async ({ nickname, message }) => {
     try {
-      const req = await connectionService.sendRequest({ name, message });
+      const req = await connectionService.sendRequest({ nickname, message });
       set((s) => ({ sentRequests: [req, ...s.sentRequests] }));
       return req;
     } catch (err) {

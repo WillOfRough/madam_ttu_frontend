@@ -27,7 +27,7 @@ export default function Login() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.logo}>findmyone</h1>
+        <h1 className={styles.logo}>knotsandlinks</h1>
         <p className={styles.subtitle}>매니저 로그인</p>
 
         <form className={styles.form} onSubmit={handleSubmit}>

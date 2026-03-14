@@ -24,16 +24,16 @@ export async function disconnect(managerId) {
   });
 }
 
-export async function searchManager(name) {
-  return apiFetch(`/api/v1/connections/search?name=${encodeURIComponent(name)}`, {
+export async function searchManager(nickname) {
+  return apiFetch(`/api/v1/connections/search?nickname=${encodeURIComponent(nickname)}`, {
     method: 'GET',
   });
 }
 
-export async function sendRequest({ name, message }) {
+export async function sendRequest({ nickname, message }) {
   return apiFetch('/api/v1/connections/requests', {
     method: 'POST',
-    body: { name, message: message || undefined },
+    body: { nickname, message: message || undefined },
   });
 }
 

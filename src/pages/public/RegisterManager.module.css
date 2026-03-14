@@ -107,6 +107,27 @@
   background: rgba(26, 43, 75, 0.12);
 }
 
+.required {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.inputError {
+  border-color: var(--danger);
+}
+
+.inputError:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.fieldError {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--danger);
+  margin: 0;
+}
+
 .error {
   font-size: 0.84rem;
   font-weight: 500;

@@ -59,7 +59,7 @@ describe('#5 client 초대 생성', () => {
     const mockInvite = {
       id: 'inv-1',
       token: 'client-token-uuid',
-      url: 'https://findmyone.com/invite/client-token-uuid',
+      url: 'https://knotsandlinks.com/invite/client-token-uuid',
       status: 'active',
       label: '소개 희망자 초대',
       expiresAt: '2026-03-12T00:00:00Z',
