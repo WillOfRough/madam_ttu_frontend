@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import * as clientService from '../../api/clientService';
@@ -148,19 +148,14 @@ export default function ClientDetail() {
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>사진</h3>
           <div className={styles.photoGallery}>
-            {client.photoIds.map((photoId, idx) => {
-              const src = getPhotoUrl(photoId);
-              return (
-                <button
-                  key={photoId}
-                  className={styles.photoThumb}
-                  onClick={() => setLightboxUrl(src)}
-                  type="button"
-                >
-                  <img src={src} alt={`사진 ${idx + 1}`} />
-                </button>
-              );
-            })}
+            {client.photoIds.map((photoId, idx) => (
+              <PhotoThumb
+                key={photoId}
+                src={getPhotoUrl(photoId)}
+                alt={`사진 ${idx + 1}`}
+                onClick={(src) => setLightboxUrl(src)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -232,5 +227,43 @@ export default function ClientDetail() {
         </div>
       )}
     </div>
+  );
+}
+
+function PhotoThumb({ src, alt, onClick }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const imgRef = useRef(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
+
+  if (error) {
+    return (
+      <div className={styles.photoThumb}>
+        <div className={styles.photoError}>불러올 수 없음</div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      className={styles.photoThumb}
+      onClick={() => onClick(src)}
+      type="button"
+    >
+      {!loaded && <div className={styles.photoSkeleton} />}
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        className={loaded ? styles.photoLoaded : styles.photoHidden}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+      />
+    </button>
   );
 }
