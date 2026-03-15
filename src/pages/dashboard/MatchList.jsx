@@ -281,7 +281,7 @@ function CreateMatchModal({ onClose, onCreated }) {
 
   useEffect(() => {
     if (searchQuery.length >= 1) {
-      clientService.listClients({ name: searchQuery, limit: 10 }).then((res) => {
+      clientService.listClients({ name: searchQuery, limit: 10, approval: 'approved' }).then((res) => {
         const list = res.data || res.clients || res;
         setSearchResults(list);
       });
