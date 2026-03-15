@@ -306,6 +306,11 @@ export default function MatchDetail() {
                   );
                 })}
               </div>
+              <div className={styles.confirmSection}>
+                <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+                  약속 확정하기
+                </button>
+              </div>
             </div>
           )}
 
@@ -469,13 +474,12 @@ export default function MatchDetail() {
                 </div>
               );
             })}
+            <div className={styles.confirmSection}>
+              <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+                약속 확정하기
+              </button>
+            </div>
           </div>}
-
-          <div className={styles.confirmSection}>
-            <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
-              약속 확정하기
-            </button>
-          </div>
         </div>
       )}
 
