@@ -38,7 +38,7 @@ export default function ManagerOath() {
           ))}
         </div>
 
-        <label className={styles.agreeLabel}>
+        <label className={styles.agreeAllLabel}>
           <input
             type="checkbox"
             checked={agreed}
