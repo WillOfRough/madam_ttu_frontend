@@ -426,10 +426,8 @@ export default function MatchDetail() {
 function SchedulingLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const tokenA = match.clientA.proposalToken;
-  const tokenB = match.clientB.proposalToken;
-  const urlA = `${window.location.origin}/proposal/${tokenA}/available-times`;
-  const urlB = `${window.location.origin}/proposal/${tokenB}/available-times`;
+  const urlA = match.clientA.scheduleUrl || `${window.location.origin}/proposal/${match.clientA.proposalToken}/available-times`;
+  const urlB = match.clientB.scheduleUrl || `${window.location.origin}/proposal/${match.clientB.proposalToken}/available-times`;
 
   const handleCopy = async (url, key) => {
     try {
@@ -487,7 +485,7 @@ function SchedulingLinkCard({ match }) {
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
 
-  const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
+  const proposalUrl = participant.proposalUrl || `${window.location.origin}/proposal/${participant.proposalToken}`;
   const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {

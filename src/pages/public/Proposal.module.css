@@ -267,8 +267,7 @@
 }
 
 .blurredPhoto {
-  filter: blur(12px);
-  transform: scale(1.1);
+  /* blur removed — show photos clearly */
 }
 
 /* ── Caution Note ── */

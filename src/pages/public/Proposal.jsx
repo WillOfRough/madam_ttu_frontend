@@ -430,58 +430,20 @@ export default function Proposal() {
     );
   }
 
-  // ── Receiver: proposal_sent → A 응답 대기 ──
-  if (matchStatus === 'proposal_sent' && myRole === 'receiver') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
-          <div className={styles.respondedBanner}>
-            <p className={styles.respondedLabel}>매칭이 진행 중입니다</p>
-            <p className={styles.respondedStatus}>
-              상대방이 프로필을 확인 중입니다. 확인이 완료되면 안내드릴게요.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Proposer: proposal_accepted → B 응답 대기 ──
-  if (matchStatus === 'proposal_accepted' && myRole === 'proposer') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
-          <div className={styles.respondedBanner}>
-            <p className={styles.respondedLabel}>수락 완료</p>
-            <p className={styles.respondedStatus}>
-              상대방이 프로필을 확인 중입니다. 잠시만 기다려주세요.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── 이미 응답 완료 (상태 전환 전 표시) ──
+  // ── Responded banner (shown above profile when already responded) ──
+  let respondedBanner = null;
   if (responded) {
-    let label = myResponse === 'accepted' ? '수락 완료' : '응답 완료';
+    const label = myResponse === 'accepted' ? '수락 완료' : '응답 완료';
     let statusMsg = responseMessage || '다음 단계를 준비하고 있습니다.';
     if (matchStatus === 'proposal_sent') {
       statusMsg = '상대방 프로필 확인 대기 중입니다.';
     } else if (matchStatus === 'proposal_accepted') {
       statusMsg = '일정 조율이 곧 시작됩니다.';
     }
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
-          <div className={styles.respondedBanner}>
-            <p className={styles.respondedLabel}>{label}</p>
-            <p className={styles.respondedStatus}>{statusMsg}</p>
-          </div>
-        </div>
+    respondedBanner = (
+      <div className={styles.respondedBanner}>
+        <p className={styles.respondedLabel}>{label}</p>
+        <p className={styles.respondedStatus}>{statusMsg}</p>
       </div>
     );
   }
@@ -562,6 +524,7 @@ export default function Proposal() {
           <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
         )}
         {contextMessage && <p className={styles.scheduleDesc}>{contextMessage}</p>}
+        {respondedBanner}
 
         {cp.photoUrls?.length > 0 && (
           <div className={styles.card}>
@@ -572,7 +535,6 @@ export default function Proposal() {
                   <img
                     src={url}
                     alt={`사진 ${idx + 1}`}
-                    className={styles.blurredPhoto}
                   />
                 </div>
               ))}
@@ -599,25 +561,29 @@ export default function Proposal() {
           </div>
         )}
 
-        <div className={styles.cautionNote}>
-          매칭 후 취소는 상대방에게 큰 상처가 될 수 있습니다. 신중하게 선택해주세요.
-        </div>
-        <div className={styles.actions}>
-          <button
-            className={styles.acceptBtn}
-            onClick={() => handleRespond('accepted')}
-            disabled={submitting}
-          >
-            {submitting ? '처리 중...' : '만나볼래요!'}
-          </button>
-          <button
-            className={styles.rejectBtn}
-            onClick={() => handleRespond('rejected')}
-            disabled={submitting}
-          >
-            정중히 거절할게요
-          </button>
-        </div>
+        {!responded && (
+          <>
+            <div className={styles.cautionNote}>
+              매칭 후 취소는 상대방에게 큰 상처가 될 수 있습니다. 신중하게 선택해주세요.
+            </div>
+            <div className={styles.actions}>
+              <button
+                className={styles.acceptBtn}
+                onClick={() => handleRespond('accepted')}
+                disabled={submitting}
+              >
+                {submitting ? '처리 중...' : '만나볼래요!'}
+              </button>
+              <button
+                className={styles.rejectBtn}
+                onClick={() => handleRespond('rejected')}
+                disabled={submitting}
+              >
+                정중히 거절할게요
+              </button>
+            </div>
+          </>
+        )}
 
         {error && data && (
           <div

@@ -124,7 +124,7 @@ export default function ClientList() {
                 <span>{client.occupation || '-'}</span>
                 <span className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
                   {client.ownerManager
-                    ? <><span>{client.ownerManager.name}</span><span className={styles.ownerEmail}>{client.ownerManager.email}</span></>
+                    ? client.ownerManager.name
                     : (client.isOwner ? '나' : '-')}
                 </span>
                 <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>

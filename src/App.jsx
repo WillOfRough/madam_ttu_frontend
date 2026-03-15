@@ -77,6 +77,7 @@ export default function App() {
         <Route path="/apply/complete" element={<ApplyComplete />} />
         <Route path="/expired" element={<ExpiredLink />} />
         <Route path="/proposal/:token" element={<Proposal />} />
+        <Route path="/proposal/:token/available-times" element={<Proposal />} />
 
         {/* Dashboard (auth required) */}
         <Route element={<RequireAuth />}>
