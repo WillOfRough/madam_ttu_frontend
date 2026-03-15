@@ -501,7 +501,9 @@ export default function Proposal() {
   const fields = [
     { label: '별명', value: cp.nickname },
     { label: '나이', value: cp.age ? `${cp.age}세` : null },
+    { label: '키', value: cp.height ? `${cp.height}cm` : null },
     { label: '직업', value: cp.occupation },
+    { label: '학력', value: cp.education },
     { label: '거주지', value: cp.location },
     { label: 'MBTI', value: cp.mbti },
     { label: '취미', value: cp.hobbies },
