@@ -9,7 +9,6 @@ import { SkeletonLine } from '../../components/Skeleton';
 import styles from './MatchDetail.module.css';
 
 const RESPONSE_MAP = {
-  pending: { label: '대기', className: 'responsePending' },
   accepted: { label: '수락', className: 'responseAccepted' },
   rejected: { label: '거절', className: 'responseRejected' },
 };
@@ -500,7 +499,7 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
     }
   };
 
-  const responseInfo = participant.response
+  const responseInfo = participant.response && participant.response !== 'pending'
     ? RESPONSE_MAP[participant.response] || { label: participant.response, className: '' }
     : null;
 
