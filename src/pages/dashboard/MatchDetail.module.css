@@ -744,6 +744,62 @@
   gap: var(--space-md);
 }
 
+/* ── No Common Times Warning ── */
+.noCommonBanner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #fbbf24;
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(251, 191, 36, 0.1);
+}
+
+.noCommonContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: #92400e;
+  margin-bottom: 16px;
+}
+
+.noCommonTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 4px;
+}
+
+.noCommonDesc {
+  font-size: 0.78rem;
+  color: #a16207;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rescheduleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 20px;
+  background: #f59e0b;
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.rescheduleBtn:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+.rescheduleBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Common Times Card ── */
 .commonTimesCard {
   background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);

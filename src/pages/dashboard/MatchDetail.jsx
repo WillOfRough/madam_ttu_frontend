@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -146,6 +146,18 @@ export default function MatchDetail() {
     setSelectedTimeId(null);
   };
 
+  const handleReschedule = async () => {
+    setActionLoading(true);
+    try {
+      await matchService.rescheduleMatch(matchId);
+      toast.success('가용시간 재등록이 요청되었습니다.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '재등록 요청에 실패했습니다.');
+    }
+    setActionLoading(false);
+  };
+
   const handleCompleteMatch = async () => {
     setActionLoading(true);
     try {
@@ -240,6 +252,27 @@ export default function MatchDetail() {
       {/* Arranging: Manager confirms time + venue */}
       {match.status === 'arranging' && allTimes.length > 0 && (
         <div className={styles.arrangingContainer}>
+          {/* No Common Times Warning */}
+          {commonKeys.size === 0 && (
+            <div className={styles.noCommonBanner}>
+              <div className={styles.noCommonContent}>
+                <AlertTriangle size={18} />
+                <div>
+                  <p className={styles.noCommonTitle}>겹치는 가용시간이 없습니다</p>
+                  <p className={styles.noCommonDesc}>양쪽 Client에게 가용시간을 다시 등록하도록 요청할 수 있습니다.</p>
+                </div>
+              </div>
+              <button
+                className={styles.rescheduleBtn}
+                onClick={handleReschedule}
+                disabled={actionLoading}
+              >
+                <RefreshCw size={14} />
+                {actionLoading ? '요청 중...' : '가용시간 재등록 요청'}
+              </button>
+            </div>
+          )}
+
           {/* Section A: Common Available Times */}
           {commonKeys.size > 0 && (
             <div className={styles.commonTimesCard}>

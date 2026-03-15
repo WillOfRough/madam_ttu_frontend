@@ -65,3 +65,9 @@ export async function completeMatch(matchId) {
     method: 'POST',
   });
 }
+
+export async function rescheduleMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/reschedule`, {
+    method: 'POST',
+  });
+}
