@@ -6,6 +6,7 @@ import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonLine } from '../../components/Skeleton';
+import KakaoMap from '../../components/KakaoMap';
 import styles from './MatchDetail.module.css';
 
 const RESPONSE_MAP = {
@@ -367,6 +368,31 @@ export default function MatchDetail() {
               </div>
             </div>
           )}
+
+          {/* Section B-2: Kakao Map */}
+          {(() => {
+            const mapLocations = [];
+            if (match.clientA.clientLocation) {
+              mapLocations.push({ label: `${match.clientA.clientName} 거주지`, address: match.clientA.clientLocation, color: '#4A90D9' });
+            }
+            if (match.clientA.clientWorkLocation) {
+              mapLocations.push({ label: `${match.clientA.clientName} 회사`, address: match.clientA.clientWorkLocation, color: '#7BB3E0' });
+            }
+            if (match.clientB.clientLocation) {
+              mapLocations.push({ label: `${match.clientB.clientName} 거주지`, address: match.clientB.clientLocation, color: '#E85D75' });
+            }
+            if (match.clientB.clientWorkLocation) {
+              mapLocations.push({ label: `${match.clientB.clientName} 회사`, address: match.clientB.clientWorkLocation, color: '#F0A0B0' });
+            }
+            return mapLocations.length > 0 ? (
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>
+                  <MapPin size={16} /> 위치 지도
+                </h3>
+                <KakaoMap locations={mapLocations} />
+              </div>
+            ) : null;
+          })()}
 
           {/* Section C: Date-by-Date Comparison */}
           <div className={styles.card}>
