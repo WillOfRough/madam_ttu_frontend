@@ -222,9 +222,12 @@ function ClientSlot({ client, side, onRemove, searchQuery, onSearchChange, onFoc
       {client ? (
         <div className={styles.slotBody}>
           <div className={styles.slotAvatar}>
-            {(client.nickname || client.name || '?').charAt(0)}
+            {(client.name || client.nickname || '?').charAt(0)}
           </div>
-          <span className={styles.slotName}>{client.nickname || client.name}</span>
+          <span className={styles.slotName}>
+            {client.name || client.nickname}
+            {client.nickname && client.name && <span className={styles.slotNickname}>{client.nickname}</span>}
+          </span>
           <div className={styles.slotMeta}>
             <span className={styles.slotGender}>
               {client.gender === 'female' ? '여성' : '남성'}
@@ -250,10 +253,13 @@ function ClientSlot({ client, side, onRemove, searchQuery, onSearchChange, onFoc
                 {searchResults.filter((c) => c.id !== excludeId).map((c) => (
                   <div key={c.id} className={styles.slotDropdownItem} onClick={() => onSelect(c)}>
                     <div className={styles.dropdownAvatar}>
-                      {(c.nickname || c.name || '?').charAt(0)}
+                      {(c.name || c.nickname || '?').charAt(0)}
                     </div>
                     <div className={styles.dropdownInfo}>
-                      <span className={styles.dropdownName}>{c.nickname || c.name}</span>
+                      <span className={styles.dropdownName}>
+                        {c.name || c.nickname}
+                        {c.nickname && c.name && <span className={styles.dropdownNickname}>{c.nickname}</span>}
+                      </span>
                       <span className={styles.dropdownMeta}>
                         {c.gender === 'female' ? '여' : '남'} · {c.occupation || '-'}
                       </span>
