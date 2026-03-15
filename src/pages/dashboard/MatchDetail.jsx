@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2 } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -189,6 +189,11 @@ export default function MatchDetail() {
         />
       </div>
 
+      {/* Scheduling Link Card */}
+      {match.status === 'scheduling' && (
+        <SchedulingLinkCard match={match} />
+      )}
+
       {/* Schedule Section */}
       {(match.status === 'scheduling' || match.status === 'scheduled' || match.status === 'completed') && match.schedule && (
         <div className={styles.card}>
@@ -368,6 +373,63 @@ export default function MatchDetail() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SchedulingLinkCard({ match }) {
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const receiverToken = match.seekerB.proposalToken;
+  const proposerToken = match.seekerA.proposalToken;
+  const receiverUrl = `${window.location.origin}/proposal/${receiverToken}/available-times`;
+  const proposerUrl = `${window.location.origin}/proposal/${proposerToken}/select-time`;
+
+  const handleCopy = async (url, key) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedKey(key);
+      toast.success('링크가 복사되었습니다.');
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  return (
+    <div className={styles.schedulingLinkCard}>
+      <h3 className={styles.schedulingLinkTitle}>
+        <Link2 size={16} /> 일정 조율 링크
+      </h3>
+      <p className={styles.schedulingLinkHint}>아래 링크를 각 Seeker에게 전달해주세요</p>
+      <div className={styles.schedulingLinkRows}>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>B</span>
+            <span>{match.seekerB.seekerName} — 가용시간 등록</span>
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{receiverUrl}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(receiverUrl, 'receiver')}>
+              {copiedKey === 'receiver' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'receiver' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>A</span>
+            <span>{match.seekerA.seekerName} — 시간 선택</span>
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{proposerUrl}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(proposerUrl, 'proposer')}>
+              {copiedKey === 'proposer' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'proposer' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

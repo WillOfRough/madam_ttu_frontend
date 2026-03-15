@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, Plus, Search, X } from 'lucide-react';
+import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
@@ -30,6 +30,7 @@ export default function MatchList() {
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
     fetchMatches();
@@ -56,6 +57,65 @@ export default function MatchList() {
         <button className={styles.createBtn} onClick={() => setShowCreate(true)}>
           <Plus size={16} /> 새 매칭
         </button>
+      </div>
+
+      <div className={styles.guideSection}>
+        <button
+          className={styles.guideToggle}
+          onClick={() => setShowGuide((v) => !v)}
+          type="button"
+        >
+          <span>매칭 프로세스 안내</span>
+          {showGuide ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {showGuide && (
+          <div className={styles.guideContent}>
+            <div className={styles.guideSteps}>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>1</span>
+                <div>
+                  <strong>매칭 생성</strong>
+                  <p>Seeker A, B를 선택하여 매칭을 만듭니다.</p>
+                </div>
+              </div>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>2</span>
+                <div>
+                  <strong>제안 발송</strong>
+                  <p>B에게 프로포절 링크가 전달됩니다. B가 상대 프로필을 확인하고 수락/거절합니다.</p>
+                </div>
+              </div>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>3</span>
+                <div>
+                  <strong>상대 수락</strong>
+                  <p>B가 수락하면 A에게도 프로포절 링크가 전달됩니다. A가 확인 후 수락/거절합니다.</p>
+                </div>
+              </div>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>4</span>
+                <div>
+                  <strong>일정 조율</strong>
+                  <p>양쪽 모두 수락 시 B가 가용시간을 등록하고, A가 시간을 선택합니다.</p>
+                </div>
+              </div>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>5</span>
+                <div>
+                  <strong>약속 확정</strong>
+                  <p>매니저가 장소를 입력하면 약속이 확정됩니다. 양측에 안내가 전달됩니다.</p>
+                </div>
+              </div>
+              <div className={styles.guideStep}>
+                <span className={styles.guideNum}>6</span>
+                <div>
+                  <strong>미팅 완료</strong>
+                  <p>만남 후 매니저가 완료 처리합니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={styles.filters}>
@@ -215,6 +275,7 @@ function CreateMatchModal({ onClose, onCreated }) {
   const [searchResults, setSearchResults] = useState([]);
   const [selectingFor, setSelectingFor] = useState('A');
   const [submitting, setSubmitting] = useState(false);
+  const [duplicateMatch, setDuplicateMatch] = useState(null);
 
   useEffect(() => {
     if (searchQuery.length >= 1) {
@@ -226,6 +287,30 @@ function CreateMatchModal({ onClose, onCreated }) {
       setSearchResults([]);
     }
   }, [searchQuery]);
+
+  // Check for duplicate match when both seekers are selected
+  useEffect(() => {
+    if (!seekerA || !seekerB) {
+      setDuplicateMatch(null);
+      return;
+    }
+    let cancelled = false;
+    matchService.listMatches({ size: 200 }).then((res) => {
+      if (cancelled) return;
+      const list = res.data || res.matches || [];
+      const dup = list.find((m) => {
+        if (m.status === 'cancelled') return false;
+        const ids = [m.seekerA.seekerId, m.seekerB.seekerId];
+        return (
+          (ids.includes(seekerA.id) && ids.includes(seekerB.id))
+        );
+      });
+      setDuplicateMatch(dup || null);
+    }).catch(() => {
+      if (!cancelled) setDuplicateMatch(null);
+    });
+    return () => { cancelled = true; };
+  }, [seekerA, seekerB]);
 
   const handleSelect = (client) => {
     if (selectingFor === 'A') {
@@ -239,7 +324,7 @@ function CreateMatchModal({ onClose, onCreated }) {
   };
 
   const handleSubmit = async () => {
-    if (!seekerA || !seekerB) return;
+    if (!seekerA || !seekerB || duplicateMatch) return;
     setSubmitting(true);
     try {
       await matchService.createMatch({ seekerAId: seekerA.id, seekerBId: seekerB.id, note });
@@ -305,6 +390,16 @@ function CreateMatchModal({ onClose, onCreated }) {
           />
         </div>
 
+        {/* Duplicate Warning */}
+        {duplicateMatch && (
+          <div className={styles.duplicateWarn}>
+            <AlertTriangle size={15} />
+            <span>
+              이미 매칭된 적이 있는 Seeker입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
+            </span>
+          </div>
+        )}
+
         {/* Note */}
         <div className={styles.noteSection}>
           <label className={styles.noteLabel}>메모 (선택)</label>
@@ -323,7 +418,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           <button
             className={styles.submitBtn}
             onClick={handleSubmit}
-            disabled={!seekerA || !seekerB || submitting}
+            disabled={!seekerA || !seekerB || submitting || !!duplicateMatch}
             type="button"
           >
             {submitting ? (
