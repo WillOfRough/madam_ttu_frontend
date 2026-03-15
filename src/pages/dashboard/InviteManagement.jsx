@@ -4,25 +4,27 @@ import useInviteStore from '../../store/inviteStore';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
+import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
 export default function InviteManagement() {
-  const { invites, isLoading, fetchInvites, createInvite, revokeInvite } = useInviteStore();
+  const { invites, isLoading, page, totalPages, fetchInvites, createInvite, revokeInvite } = useInviteStore();
   const [label, setLabel] = useState('');
-  const [hours, setHours] = useState(24);
+  const [hours, setHours] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideInviteDesc') !== '1');
 
   useEffect(() => {
-    fetchInvites();
+    fetchInvites({ page: 1 });
   }, [fetchInvites]);
 
   const handleCreate = async () => {
     try {
       await createInvite({ expiresInHours: hours, label: label || undefined });
       setLabel('');
+      fetchInvites({ page: 1 });
       toast.success('초대 링크가 생성되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 생성에 실패했습니다.');
@@ -84,6 +86,7 @@ export default function InviteManagement() {
             value={hours}
             onChange={(e) => setHours(Number(e.target.value))}
           >
+            <option value={0}>무제한</option>
             <option value={1}>1시간</option>
             <option value={24}>24시간</option>
             <option value={48}>48시간</option>
@@ -116,7 +119,7 @@ export default function InviteManagement() {
                 </div>
                 <span className={styles.cardMeta}>
                   생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
-                  {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
+                  {invite.expiresAt ? ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}` : ' · 무제한'}
                   {invite.useCount != null && ` · 등록 ${invite.useCount}명`}
                 </span>
               </div>
@@ -139,6 +142,7 @@ export default function InviteManagement() {
             </div>
           ))}
         </div>
+        <Pagination page={page} totalPages={totalPages} onPageChange={(p) => fetchInvites({ page: p })} />
       )}
 
       {revokeTarget && (

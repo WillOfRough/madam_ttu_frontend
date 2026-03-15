@@ -7,8 +7,9 @@ export async function createInvite({ expiresInHours = 24, label } = {}) {
   });
 }
 
-export async function getMyInvites() {
-  return apiFetch('/api/v1/invites', { method: 'GET' });
+export async function getMyInvites({ page = 1, limit = 20 } = {}) {
+  const params = new URLSearchParams({ page, limit });
+  return apiFetch(`/api/v1/invites?${params}`, { method: 'GET' });
 }
 
 export async function validateToken(token) {

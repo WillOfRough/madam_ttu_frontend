@@ -82,8 +82,9 @@ export default function Connections() {
     if (!searchResult) return;
     setSendingRequest(true);
     try {
-      await sendRequest({ email: searchResult.email, message: requestMessage });
-      toast.success(`'${searchResult.email}' 님에게 연결 요청을 보냈습니다.`);
+      const targetEmail = searchResult.email || searchEmail;
+      await sendRequest({ email: targetEmail, message: requestMessage });
+      toast.success(`'${targetEmail}' 님에게 연결 요청을 보냈습니다.`);
       setSearchResult(null);
       setSearchEmail('');
       setRequestMessage('');
@@ -179,7 +180,7 @@ export default function Connections() {
                 <span className={styles.searchResultName}>
                   {searchResult.name || searchResult.nickname || '이름 없음'}
                 </span>
-                <span className={styles.searchResultEmail}>{searchEmail}</span>
+                <span className={styles.searchResultEmail}>{searchResult.email || searchEmail}</span>
               </div>
             </div>
             <div className={styles.requestForm}>
