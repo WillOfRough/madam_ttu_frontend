@@ -329,7 +329,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientA.clientLocation}</span>
-                      <MapLinks address={match.clientA.clientLocation} pairAddress={match.clientB.clientLocation} />
+                      <MapLinks address={match.clientA.clientLocation} />
                     </div>
                   )}
                   {match.clientA.clientCompany && (
@@ -342,7 +342,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientA.clientWorkLocation}</span>
-                      <MapLinks address={match.clientA.clientWorkLocation} pairAddress={match.clientB.clientWorkLocation} />
+                      <MapLinks address={match.clientA.clientWorkLocation} />
                     </div>
                   )}
                 </div>
@@ -356,7 +356,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientB.clientLocation}</span>
-                      <MapLinks address={match.clientB.clientLocation} pairAddress={match.clientA.clientLocation} />
+                      <MapLinks address={match.clientB.clientLocation} />
                     </div>
                   )}
                   {match.clientB.clientCompany && (
@@ -369,7 +369,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientB.clientWorkLocation}</span>
-                      <MapLinks address={match.clientB.clientWorkLocation} pairAddress={match.clientA.clientWorkLocation} />
+                      <MapLinks address={match.clientB.clientWorkLocation} />
                     </div>
                   )}
                 </div>
@@ -874,17 +874,10 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   );
 }
 
-function MapLinks({ address, pairAddress }) {
+function MapLinks({ address }) {
   const encoded = encodeURIComponent(address);
-  const encodedPair = pairAddress ? encodeURIComponent(pairAddress) : null;
-
-  const naverUrl = encodedPair
-    ? `https://map.naver.com/v5/directions/-/-/-/transit?c=15,0,0,0,dh&query=${encoded},${encodedPair}`
-    : `https://map.naver.com/v5/search/${encoded}`;
-  const kakaoUrl = encodedPair
-    ? `https://map.kakao.com/?sName=${encoded}&eName=${encodedPair}`
-    : `https://map.kakao.com/?q=${encoded}`;
-
+  const naverUrl = `https://map.naver.com/v5/search/${encoded}`;
+  const kakaoUrl = `https://map.kakao.com/?q=${encoded}`;
   return (
     <span className={styles.mapLinks}>
       <a href={naverUrl} target="_blank" rel="noopener noreferrer" className={styles.mapLink}>N</a>
