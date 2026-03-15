@@ -8,11 +8,12 @@ const useInviteStore = create((set) => ({
   page: 1,
   totalPages: 1,
   totalCount: 0,
+  statusFilter: '',
 
-  fetchInvites: async ({ page = 1, limit = 20 } = {}) => {
+  fetchInvites: async ({ page = 1, limit = 20, status } = {}) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await inviteService.getMyInvites({ page, limit });
+      const result = await inviteService.getMyInvites({ page, limit, status });
       const invites = result.data || result.invites || result;
       const pagination = result.pagination || {};
       set({
@@ -55,7 +56,8 @@ const useInviteStore = create((set) => ({
     }
   },
 
-  reset: () => set({ invites: [], error: null }),
+  setStatusFilter: (status) => set({ statusFilter: status }),
+  reset: () => set({ invites: [], error: null, statusFilter: '' }),
 }));
 
 export default useInviteStore;

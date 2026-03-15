@@ -94,29 +94,6 @@
   box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
-.hoursSelect {
-  padding: 9px 14px;
-  padding-right: 32px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.84rem;
-  font-weight: 500;
-  background: var(--white);
-  color: var(--charcoal);
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  transition: border-color var(--duration-fast) var(--ease-out);
-}
-
-.hoursSelect:focus {
-  border-color: var(--navy);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--navy-glow);
-}
-
 .createBtn {
   display: flex;
   align-items: center;
@@ -136,6 +113,40 @@
   background: var(--navy-light);
   transform: translateY(-1px);
   box-shadow: 0 3px 8px rgba(26, 43, 75, 0.2);
+}
+
+.filterTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--space-lg);
+}
+
+.filterTab {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--charcoal-light);
+  background: var(--bg);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.filterTab:hover {
+  background: var(--bg-dark);
+  color: var(--charcoal);
+}
+
+.filterTabActive {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.filterTabActive:hover {
+  background: var(--navy-light);
+  color: var(--white);
 }
 
 .loading, .empty {
