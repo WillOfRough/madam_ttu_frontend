@@ -745,6 +745,28 @@ function enrichClient(c) {
   };
 }
 
+function enrichParticipant(participant) {
+  const client = clients.find((c) => c.id === participant.clientId);
+  if (!client) return participant;
+  const birthYear = client.birthDate ? new Date(client.birthDate).getFullYear() : null;
+  const age = birthYear ? new Date().getFullYear() - birthYear : null;
+  return {
+    ...participant,
+    clientAge: age,
+    clientHeight: client.height,
+    clientOccupation: client.occupation,
+    clientCompany: client.company,
+    clientEducation: client.education,
+    clientLocation: client.location,
+    clientReligion: client.religion,
+    clientMbti: client.mbti,
+    clientHobbies: client.hobbies,
+    clientIntroduction: client.introduction,
+    clientIdealType: client.idealType,
+    clientPhotoUrls: (client.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
+  };
+}
+
 // ── Dashboard Summary ──────────────────────────────────
 const dashboardSummary = {
   myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
@@ -979,24 +1001,27 @@ export async function mockFetch(path, options = {}) {
     const id = pathname.split('/').pop();
     const found = matches.find((m) => m.matchId === id);
     if (!found) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    // Build schedule object from both sides' availableTimes
     const tokenA = found.clientA.proposalToken;
     const tokenB = found.clientB.proposalToken;
-    const timesA = availableTimes[tokenA] || [];
-    const timesB = availableTimes[tokenB] || [];
-    const allTimes = [...timesA, ...timesB];
-    const pickedTime = allTimes.find((t) => t.selected);
-    const schedule = allTimes.length > 0 ? {
-      proposedBy: allTimes.length > 0 ? 'both' : null,
-      timeSlots: allTimes.map((t) => ({ id: t.timeId, date: t.date, time: t.startTime.slice(0, 5), clientName: t.clientName })),
-      pickedSlot: pickedTime ? { id: pickedTime.timeId, date: pickedTime.date, time: pickedTime.startTime.slice(0, 5) } : null,
-      venue: found.location || null,
-      confirmedAt: found.confirmedAt || null,
+    const rawTimesA = availableTimes[tokenA] || [];
+    const rawTimesB = availableTimes[tokenB] || [];
+    // Build availableTimes with clientId
+    const enrichedTimesA = rawTimesA.map((t) => ({ ...t, clientId: found.clientA.clientId }));
+    const enrichedTimesB = rawTimesB.map((t) => ({ ...t, clientId: found.clientB.clientId }));
+    const allAvailableTimes = [...enrichedTimesA, ...enrichedTimesB];
+    // Build confirmedSchedule
+    const pickedTime = allAvailableTimes.find((t) => t.selected);
+    const confirmedSchedule = found.confirmedAt ? {
+      date: pickedTime?.date || null,
+      startTime: pickedTime?.startTime || null,
+      location: found.location || null,
+      endTime: found.endTime || null,
+      confirmedAt: found.confirmedAt,
     } : null;
-    // Add availableTimesSubmitted to client summaries
-    const clientA = { ...found.clientA, availableTimesSubmitted: timesA.length > 0 };
-    const clientB = { ...found.clientB, availableTimesSubmitted: timesB.length > 0 };
-    return { ...found, clientA, clientB, schedule };
+    // Enrich participants with client details
+    const clientA = { ...enrichParticipant(found.clientA), availableTimesSubmitted: rawTimesA.length > 0 };
+    const clientB = { ...enrichParticipant(found.clientB), availableTimesSubmitted: rawTimesB.length > 0 };
+    return { ...found, clientA, clientB, availableTimes: allAvailableTimes, confirmedSchedule };
   }
 
   // GET /api/v1/matches (list)

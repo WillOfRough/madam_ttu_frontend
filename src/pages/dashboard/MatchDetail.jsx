@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2 } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -47,7 +47,20 @@ function formatSlotDisplay(slot) {
   if (!slot) return '-';
   const d = new Date(slot.date + 'T00:00:00');
   const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getMonth() + 1}/${d.getDate()} (${dayNames[d.getDay()]}) ${slot.time}`;
+  const time = slot.startTime ? slot.startTime.slice(0, 5) : slot.time;
+  return `${d.getMonth() + 1}/${d.getDate()} (${dayNames[d.getDay()]}) ${time}`;
+}
+
+function formatTimeOnly(startTime) {
+  if (!startTime) return '-';
+  return startTime.slice(0, 5);
+}
+
+function formatDateHeader(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr + 'T00:00:00');
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${d.getMonth() + 1}/${d.getDate()} (${dayNames[d.getDay()]})`;
 }
 
 function getRefundStatus(meetingDate) {
@@ -145,6 +158,30 @@ export default function MatchDetail() {
     setActionLoading(false);
   };
 
+  // Compute available times and groupings for arranging
+  const allTimes = match.availableTimes || [];
+  const timesA = allTimes.filter((t) => t.clientId === match.clientA.clientId);
+  const timesB = allTimes.filter((t) => t.clientId === match.clientB.clientId);
+
+  // Find common date+startTime combinations
+  const commonKeys = new Set();
+  timesA.forEach((a) => {
+    timesB.forEach((b) => {
+      if (a.date === b.date && formatTimeOnly(a.startTime) === formatTimeOnly(b.startTime)) {
+        commonKeys.add(`${a.date}_${formatTimeOnly(a.startTime)}`);
+      }
+    });
+  });
+
+  // All unique dates sorted
+  const allDates = [...new Set(allTimes.map((t) => t.date))].sort();
+
+  // Selected time for modal display
+  const selectedSlot = allTimes.find((t) => t.timeId === selectedTimeId);
+
+  // confirmedSchedule (new format) with fallback
+  const confirmedSchedule = match.confirmedSchedule || null;
+
   return (
     <div className={styles.page}>
       <button className={styles.back} onClick={() => navigate('/dashboard/matches')}>
@@ -201,79 +238,195 @@ export default function MatchDetail() {
       )}
 
       {/* Arranging: Manager confirms time + venue */}
-      {match.status === 'arranging' && match.schedule && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <Calendar size={16} /> 가용시간 목록
-          </h3>
-          {(() => {
-            // Group by clientName
-            const grouped = {};
-            (match.schedule.timeSlots || []).forEach((slot) => {
-              const name = slot.clientName || '알 수 없음';
-              if (!grouped[name]) grouped[name] = [];
-              grouped[name].push(slot);
-            });
-            return Object.entries(grouped).map(([name, slots]) => (
-              <div key={name} style={{ marginBottom: 16 }}>
-                <p className={styles.fieldLabel} style={{ marginBottom: 6 }}>{name}</p>
-                <div className={styles.slotTags}>
-                  {slots.map((slot) => (
+      {match.status === 'arranging' && allTimes.length > 0 && (
+        <div className={styles.arrangingContainer}>
+          {/* Section A: Common Available Times */}
+          {commonKeys.size > 0 && (
+            <div className={styles.commonTimesCard}>
+              <h3 className={styles.cardTitle}>
+                <Calendar size={16} /> 공통 가용시간
+              </h3>
+              <p className={styles.commonTimesHint}>양쪽 Client가 모두 가능한 시간입니다</p>
+              <div className={styles.slotTags}>
+                {allTimes
+                  .filter((t) => commonKeys.has(`${t.date}_${formatTimeOnly(t.startTime)}`))
+                  .map((slot) => (
                     <label
-                      key={slot.id}
-                      className={`${styles.slotTag} ${selectedTimeId === slot.id ? styles.slotTagPicked : ''}`}
+                      key={slot.timeId}
+                      className={`${styles.slotTag} ${styles.slotTagCommon} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
                       style={{ cursor: 'pointer' }}
                     >
                       <input
                         type="radio"
                         name="confirmTime"
-                        value={slot.id}
-                        checked={selectedTimeId === slot.id}
-                        onChange={() => setSelectedTimeId(slot.id)}
+                        value={slot.timeId}
+                        checked={selectedTimeId === slot.timeId}
+                        onChange={() => setSelectedTimeId(slot.timeId)}
                         style={{ display: 'none' }}
                       />
                       {formatSlotDisplay(slot)}
+                      <span className={styles.slotClientName}>{slot.clientName}</span>
                     </label>
                   ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section B: Location Comparison */}
+          {(match.clientA.clientLocation || match.clientB.clientLocation) && (
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <MapPin size={16} /> 위치 정보
+              </h3>
+              <div className={styles.locationCompare}>
+                <div className={styles.locationCol}>
+                  <div className={styles.locationColHeader}>
+                    <span className={styles.schedulingRoleBadge}>A</span>
+                    <span>{match.clientA.clientName}</span>
+                  </div>
+                  {match.clientA.clientLocation && (
+                    <div className={styles.locationItem}>
+                      <MapPin size={13} />
+                      <span>{match.clientA.clientLocation}</span>
+                    </div>
+                  )}
+                  {match.clientA.clientCompany && (
+                    <div className={styles.locationItem}>
+                      <Briefcase size={13} />
+                      <span>{match.clientA.clientCompany}</span>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.locationDivider} />
+                <div className={styles.locationCol}>
+                  <div className={styles.locationColHeader}>
+                    <span className={styles.schedulingRoleBadge}>B</span>
+                    <span>{match.clientB.clientName}</span>
+                  </div>
+                  {match.clientB.clientLocation && (
+                    <div className={styles.locationItem}>
+                      <MapPin size={13} />
+                      <span>{match.clientB.clientLocation}</span>
+                    </div>
+                  )}
+                  {match.clientB.clientCompany && (
+                    <div className={styles.locationItem}>
+                      <Briefcase size={13} />
+                      <span>{match.clientB.clientCompany}</span>
+                    </div>
+                  )}
                 </div>
               </div>
-            ));
-          })()}
-          <div className={styles.confirmSection}>
-            <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
-              약속 확정하기
-            </button>
+            </div>
+          )}
+
+          {/* Section C: Date-by-Date Comparison */}
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>
+              <Clock size={16} /> 날짜별 가용시간
+            </h3>
+            <div className={styles.dateCompareHeader}>
+              <span className={styles.dateCompareLabel} />
+              <span className={styles.dateCompareSide}>{match.clientA.clientName} (A)</span>
+              <span className={styles.dateCompareSide}>{match.clientB.clientName} (B)</span>
+            </div>
+            {allDates.map((date) => {
+              const aTimes = timesA.filter((t) => t.date === date);
+              const bTimes = timesB.filter((t) => t.date === date);
+              return (
+                <div key={date} className={styles.dateRow}>
+                  <div className={styles.dateLabel}>{formatDateHeader(date)}</div>
+                  <div className={styles.dateSlotsCompare}>
+                    <div className={styles.dateSlotsCol}>
+                      {aTimes.length > 0
+                        ? aTimes.map((slot) => {
+                            const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
+                            return (
+                              <label
+                                key={slot.timeId}
+                                className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="confirmTime"
+                                  value={slot.timeId}
+                                  checked={selectedTimeId === slot.timeId}
+                                  onChange={() => setSelectedTimeId(slot.timeId)}
+                                  style={{ display: 'none' }}
+                                />
+                                {isCommon && <span className={styles.commonDot} />}
+                                {formatTimeOnly(slot.startTime)}
+                              </label>
+                            );
+                          })
+                        : <span className={styles.noSlot}>-</span>}
+                    </div>
+                    <div className={styles.dateSlotsCol}>
+                      {bTimes.length > 0
+                        ? bTimes.map((slot) => {
+                            const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
+                            return (
+                              <label
+                                key={slot.timeId}
+                                className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="confirmTime"
+                                  value={slot.timeId}
+                                  checked={selectedTimeId === slot.timeId}
+                                  onChange={() => setSelectedTimeId(slot.timeId)}
+                                  style={{ display: 'none' }}
+                                />
+                                {isCommon && <span className={styles.commonDot} />}
+                                {formatTimeOnly(slot.startTime)}
+                              </label>
+                            );
+                          })
+                        : <span className={styles.noSlot}>-</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <div className={styles.confirmSection}>
+              <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+                약속 확정하기
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Schedule Section (scheduled / completed) */}
-      {(match.status === 'scheduled' || match.status === 'completed') && match.schedule && (
+      {(match.status === 'scheduled' || match.status === 'completed') && confirmedSchedule && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 정보
           </h3>
           <div className={styles.scheduleInfo}>
-            {match.schedule.pickedSlot && (
+            {confirmedSchedule.date && (
               <div className={styles.scheduleField}>
                 <span className={styles.fieldLabel}>확정된 시간</span>
                 <span className={styles.fieldValue}>
-                  <Clock size={14} /> {formatSlotDisplay(match.schedule.pickedSlot)}
+                  <Clock size={14} /> {formatSlotDisplay(confirmedSchedule)}
                 </span>
               </div>
             )}
-            {match.schedule.venue && (
+            {confirmedSchedule.location && (
               <div className={styles.scheduleField}>
                 <span className={styles.fieldLabel}>장소</span>
                 <span className={styles.fieldValue}>
-                  <MapPin size={14} /> {match.schedule.venue}
+                  <MapPin size={14} /> {confirmedSchedule.location}
                 </span>
               </div>
             )}
-            {match.schedule.confirmedAt && (
+            {confirmedSchedule.confirmedAt && (
               <div className={styles.scheduleField}>
                 <span className={styles.fieldLabel}>확정일</span>
-                <span className={styles.fieldValue}>{formatDate(match.schedule.confirmedAt)}</span>
+                <span className={styles.fieldValue}>{formatDate(confirmedSchedule.confirmedAt)}</span>
               </div>
             )}
           </div>
@@ -382,9 +535,9 @@ export default function MatchDetail() {
         <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>약속 확정</h3>
-            {selectedTimeId && match.schedule?.timeSlots && (
+            {selectedSlot && (
               <p className={styles.modalDesc}>
-                선택된 시간: {formatSlotDisplay(match.schedule.timeSlots.find((s) => s.id === selectedTimeId))}
+                선택된 시간: {formatSlotDisplay(selectedSlot)}
               </p>
             )}
             <div className={styles.modalField}>
@@ -483,6 +636,7 @@ function SchedulingLinkCard({ match }) {
 
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
   const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
@@ -510,6 +664,9 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   } else if (matchStatus === 'proposal_accepted') {
     statusText = side === 'A' ? null : '프로필 확인 대기';
   }
+
+  const hasProfile = participant.clientAge || participant.clientOccupation || participant.clientLocation;
+  const photos = participant.clientPhotoUrls || [];
 
   return (
     <div className={styles.participantCard}>
@@ -543,6 +700,104 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
           </div>
         )}
       </div>
+
+      {/* Profile Toggle */}
+      {hasProfile && (
+        <>
+          <button className={styles.profileToggle} onClick={() => setProfileOpen(!profileOpen)}>
+            <User size={14} />
+            {profileOpen ? '프로필 접기' : '프로필 상세 보기'}
+            {profileOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+
+          {profileOpen && (
+            <div className={styles.profileDetail}>
+              {/* Photos */}
+              {photos.length > 0 && (
+                <div className={styles.profilePhotos}>
+                  {photos.map((url, i) => (
+                    <img key={i} src={url} alt="" className={styles.profilePhoto} />
+                  ))}
+                </div>
+              )}
+
+              {/* Fields Grid */}
+              <div className={styles.profileFields}>
+                {participant.clientAge && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>나이</span>
+                    <span className={styles.profileFieldValue}>{participant.clientAge}세</span>
+                  </div>
+                )}
+                {participant.clientHeight && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>키</span>
+                    <span className={styles.profileFieldValue}>{participant.clientHeight}cm</span>
+                  </div>
+                )}
+                {participant.clientOccupation && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>직업</span>
+                    <span className={styles.profileFieldValue}>{participant.clientOccupation}</span>
+                  </div>
+                )}
+                {participant.clientCompany && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>회사</span>
+                    <span className={styles.profileFieldValue}>{participant.clientCompany}</span>
+                  </div>
+                )}
+                {participant.clientEducation && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>학력</span>
+                    <span className={styles.profileFieldValue}>{participant.clientEducation}</span>
+                  </div>
+                )}
+                {participant.clientLocation && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>거주지</span>
+                    <span className={styles.profileFieldValue}>{participant.clientLocation}</span>
+                  </div>
+                )}
+                {participant.clientMbti && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>MBTI</span>
+                    <span className={styles.profileFieldValue}>{participant.clientMbti}</span>
+                  </div>
+                )}
+                {participant.clientHobbies && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>취미</span>
+                    <span className={styles.profileFieldValue}>{participant.clientHobbies}</span>
+                  </div>
+                )}
+                {participant.clientReligion && (
+                  <div className={styles.profileFieldItem}>
+                    <span className={styles.profileFieldLabel}>종교</span>
+                    <span className={styles.profileFieldValue}>{participant.clientReligion}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Introduction */}
+              {participant.clientIntroduction && (
+                <div className={styles.profileTextSection}>
+                  <span className={styles.profileTextLabel}>자기소개</span>
+                  <p className={styles.profileTextContent}>{participant.clientIntroduction}</p>
+                </div>
+              )}
+
+              {/* Ideal Type */}
+              {participant.clientIdealType && (
+                <div className={styles.profileTextSection}>
+                  <span className={styles.profileTextLabel}>이상형</span>
+                  <p className={styles.profileTextContent}>{participant.clientIdealType}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
 
       <div className={styles.tokenSection}>
         <div className={styles.tokenLabel}>프로포절 링크</div>

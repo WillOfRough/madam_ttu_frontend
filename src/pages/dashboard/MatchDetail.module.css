@@ -637,6 +637,252 @@
   margin-top: 4px;
 }
 
+/* ── Profile Toggle & Detail ── */
+.profileToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-md);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--navy-glow);
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+
+.profileToggle:hover {
+  background: #dde4f0;
+}
+
+.profileDetail {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-light);
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.profilePhotos {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: var(--space-md);
+  scrollbar-width: thin;
+}
+
+.profilePhoto {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-warm);
+  border: 1px solid var(--border-light);
+}
+
+.profileFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px var(--space-xl);
+  margin-bottom: var(--space-md);
+}
+
+.profileFieldItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profileFieldLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profileFieldValue {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  line-height: 1.4;
+}
+
+.profileTextSection {
+  margin-bottom: var(--space-sm);
+}
+
+.profileTextLabel {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.profileTextContent {
+  font-size: 0.82rem;
+  color: var(--charcoal);
+  line-height: 1.7;
+  background: var(--bg);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
+/* ── Arranging Container ── */
+.arrangingContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ── Common Times Card ── */
+.commonTimesCard {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.08);
+}
+
+.commonTimesHint {
+  font-size: 0.78rem;
+  color: #16a34a;
+  font-weight: 500;
+  margin-bottom: var(--space-md);
+}
+
+.slotTagCommon {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+.slotClientName {
+  font-size: 0.68rem;
+  color: #16a34a;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.commonDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: #22c55e;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Location Compare ── */
+.locationCompare {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.locationCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.locationColHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--charcoal);
+  margin-bottom: 10px;
+}
+
+.locationItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  margin-bottom: 6px;
+}
+
+.locationDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-light);
+  flex-shrink: 0;
+}
+
+/* ── Date Compare ── */
+.dateCompareHeader {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.dateCompareLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+}
+
+.dateCompareSide {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+}
+
+.dateRow {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bg);
+  align-items: center;
+}
+
+.dateRow:last-of-type {
+  border-bottom: none;
+}
+
+.dateLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  white-space: nowrap;
+}
+
+.dateSlotsCompare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dateSlotsCol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.noSlot {
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  font-style: italic;
+}
+
 /* ── Confirm Schedule Modal ── */
 .overlay {
   position: fixed;
@@ -803,5 +1049,38 @@
 
   .modal {
     padding: 20px;
+  }
+
+  .profileFields {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .locationCompare {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .locationDivider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .dateCompareHeader {
+    grid-template-columns: 60px 1fr 1fr;
+    gap: 8px;
+  }
+
+  .dateRow {
+    grid-template-columns: 60px 1fr;
+    gap: 8px;
+  }
+
+  .dateLabel {
+    font-size: 0.75rem;
+  }
+
+  .commonTimesCard {
+    padding: 18px;
   }
 }
