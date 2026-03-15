@@ -206,6 +206,7 @@
   line-height: 1.6;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  width: fit-content;
   background: var(--pending-light);
   color: #8a5e00;
 }
@@ -220,6 +221,7 @@
   line-height: 1.6;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  width: fit-content;
   background: var(--success-light);
   color: #1a7a3a;
 }
@@ -234,6 +236,7 @@
   line-height: 1.6;
   letter-spacing: 0.02em;
   white-space: nowrap;
+  width: fit-content;
   background: var(--danger-light);
   color: #b71c2c;
 }
