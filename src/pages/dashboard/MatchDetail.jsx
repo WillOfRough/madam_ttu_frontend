@@ -281,26 +281,29 @@ export default function MatchDetail() {
               </h3>
               <p className={styles.commonTimesHint}>양쪽 Client가 모두 가능한 시간입니다</p>
               <div className={styles.slotTags}>
-                {allTimes
-                  .filter((t) => commonKeys.has(`${t.date}_${formatTimeOnly(t.startTime)}`))
-                  .map((slot) => (
+                {[...commonKeys].sort().map((key) => {
+                  const [date, time] = key.split('_');
+                  const matchingSlots = allTimes.filter((t) => t.date === date && formatTimeOnly(t.startTime) === time);
+                  const firstSlot = matchingSlots[0];
+                  const isSelected = matchingSlots.some((s) => s.timeId === selectedTimeId);
+                  return (
                     <label
-                      key={slot.timeId}
-                      className={`${styles.slotTag} ${styles.slotTagCommon} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
+                      key={key}
+                      className={`${styles.slotTag} ${styles.slotTagCommon} ${isSelected ? styles.slotTagPicked : ''}`}
                       style={{ cursor: 'pointer' }}
                     >
                       <input
                         type="radio"
                         name="confirmTime"
-                        value={slot.timeId}
-                        checked={selectedTimeId === slot.timeId}
-                        onChange={() => setSelectedTimeId(slot.timeId)}
+                        value={firstSlot.timeId}
+                        checked={isSelected}
+                        onChange={() => setSelectedTimeId(firstSlot.timeId)}
                         style={{ display: 'none' }}
                       />
-                      {formatSlotDisplay(slot)}
-                      <span className={styles.slotClientName}>{slot.clientName}</span>
+                      {formatDateHeader(date)} {time}
                     </label>
-                  ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -319,14 +322,20 @@ export default function MatchDetail() {
                   </div>
                   {match.clientA.clientLocation && (
                     <div className={styles.locationItem}>
-                      <MapPin size={13} />
+                      <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientA.clientLocation}</span>
                     </div>
                   )}
                   {match.clientA.clientCompany && (
                     <div className={styles.locationItem}>
-                      <Briefcase size={13} />
+                      <span className={styles.locationLabel}>회사</span>
                       <span>{match.clientA.clientCompany}</span>
+                    </div>
+                  )}
+                  {match.clientA.clientWorkLocation && (
+                    <div className={styles.locationItem}>
+                      <span className={styles.locationLabel}>회사 위치</span>
+                      <span>{match.clientA.clientWorkLocation}</span>
                     </div>
                   )}
                 </div>
@@ -338,14 +347,20 @@ export default function MatchDetail() {
                   </div>
                   {match.clientB.clientLocation && (
                     <div className={styles.locationItem}>
-                      <MapPin size={13} />
+                      <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientB.clientLocation}</span>
                     </div>
                   )}
                   {match.clientB.clientCompany && (
                     <div className={styles.locationItem}>
-                      <Briefcase size={13} />
+                      <span className={styles.locationLabel}>회사</span>
                       <span>{match.clientB.clientCompany}</span>
+                    </div>
+                  )}
+                  {match.clientB.clientWorkLocation && (
+                    <div className={styles.locationItem}>
+                      <span className={styles.locationLabel}>회사 위치</span>
+                      <span>{match.clientB.clientWorkLocation}</span>
                     </div>
                   )}
                 </div>

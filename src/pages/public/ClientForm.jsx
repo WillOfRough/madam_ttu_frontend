@@ -77,6 +77,9 @@ function validateStep(step, form) {
     if (!form.company) {
       errors.company = '회사명을 입력해주세요.';
     }
+    if (!form.companyLocation || !form.companyLocation.trim()) {
+      errors.companyLocation = '회사 위치를 입력해주세요.';
+    }
     if (!form.education) {
       errors.education = '학력을 선택해주세요.';
     }
@@ -174,7 +177,7 @@ export default function ClientForm() {
   const handleNext = () => {
     const stepFields = {
       0: ['name', 'gender', 'birthYear', 'phone', 'location'],
-      1: ['occupation', 'height', 'company', 'education', 'school'],
+      1: ['occupation', 'height', 'company', 'companyLocation', 'education', 'school'],
       2: ['religion', 'mbti', 'hobbies'],
       3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'photos'],
     };
@@ -345,10 +348,12 @@ export default function ClientForm() {
               />
               <TextField
                 label="회사 위치"
+                hint="만남 장소를 정할 때 참고되니 구/동 단위로 적어주세요."
                 value={form.companyLocation}
-                onChange={(v) => setField('companyLocation', v)}
-                placeholder="예) 서울 강남, 판교"
-                required={false}
+                onChange={(v) => { setField('companyLocation', v); markTouched('companyLocation'); }}
+                placeholder="예) 서울 강남구 역삼동, 경기 성남시 판교"
+                required
+                error={getError('companyLocation')}
               />
               <SelectField
                 label="최종 학력이 어떻게 되시나요?"

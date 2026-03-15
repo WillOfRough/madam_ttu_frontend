@@ -864,10 +864,18 @@
 .locationItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.82rem;
-  color: var(--charcoal-light);
+  color: var(--charcoal);
   margin-bottom: 6px;
+}
+
+.locationLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  min-width: 48px;
+  flex-shrink: 0;
 }
 
 .locationDivider {

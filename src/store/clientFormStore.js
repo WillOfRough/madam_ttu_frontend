@@ -125,6 +125,7 @@ const useClientFormStore = create((set, get) => ({
       height: form.height ? Number(form.height) : undefined,
       occupation: form.occupation,
       company: form.company || undefined,
+      workLocation: form.companyLocation || undefined,
       education: form.education || undefined,
       religion: form.religion || undefined,
       mbti: (form.mbti && form.mbti.length <= 4) ? form.mbti : undefined,

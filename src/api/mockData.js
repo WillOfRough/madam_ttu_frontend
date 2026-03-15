@@ -23,6 +23,7 @@ const clients = [
     phone: '010-9876-5432',
 
     location: '서울 강남구',
+    workLocation: '서울 용산구',
     height: 165,
     occupation: '브랜드 마케터',
     company: '아모레퍼시픽',
@@ -49,6 +50,7 @@ const clients = [
     phone: '010-1234-5678',
 
     location: '서울 서초구',
+    workLocation: '경기 성남시 분당구',
     height: 180,
     occupation: '소프트웨어 엔지니어',
     company: '네이버',
@@ -75,6 +77,7 @@ const clients = [
     phone: '010-5555-1234',
 
     location: '서울 마포구',
+    workLocation: '서울 강남구',
     height: 162,
     occupation: 'UX 디자이너',
     company: '토스',
@@ -101,6 +104,7 @@ const clients = [
     phone: '010-7777-8888',
 
     location: '서울 용산구',
+    workLocation: '서울 서초구',
     height: 178,
     occupation: '변호사',
     company: '김앤장 법률사무소',
@@ -127,6 +131,7 @@ const clients = [
     phone: '010-3333-4444',
 
     location: '서울 성동구',
+    workLocation: '서울 성동구',
     height: 170,
     occupation: '프리랜서 포토그래퍼',
     company: '',
@@ -153,6 +158,7 @@ const clients = [
     phone: '010-2222-9999',
 
     location: '서울 강남구',
+    workLocation: '서울 강남구 일원동',
     height: 183,
     occupation: '외과 전문의',
     company: '삼성서울병원',
@@ -179,6 +185,7 @@ const clients = [
     phone: '010-8888-1111',
 
     location: '서울 송파구',
+    workLocation: '서울 서초구',
     height: 168,
     occupation: '금융 애널리스트',
     company: '삼성증권',
@@ -205,6 +212,7 @@ const clients = [
     phone: '010-6666-5555',
 
     location: '서울 영등포구',
+    workLocation: '서울 마포구 상암동',
     height: 176,
     occupation: 'PD',
     company: 'CJ ENM',
@@ -231,6 +239,7 @@ const clients = [
     phone: '010-4444-7777',
 
     location: '서울 중구',
+    workLocation: '서울 중구',
     height: 163,
     occupation: '호텔리어',
     company: '조선팰리스',
@@ -257,6 +266,7 @@ const clients = [
     phone: '010-1111-2222',
 
     location: '서울 강남구',
+    workLocation: '서울 강남구 역삼동',
     height: 185,
     occupation: '스타트업 대표',
     company: '(주)브릿지랩',
@@ -282,6 +292,7 @@ const clients = [
     birthDate: '1994-05-20',
     phone: '010-3333-1111',
     location: '서울 강남구',
+    workLocation: '경기 성남시 판교',
     height: 167,
     occupation: '마케팅 팀장',
     company: '카카오',
@@ -305,6 +316,7 @@ const clients = [
     birthDate: '1991-11-15',
     phone: '010-7777-2222',
     location: '서울 서초구',
+    workLocation: '서울 영등포구 여의도',
     height: 181,
     occupation: '투자심사역',
     company: 'KB인베스트먼트',
@@ -328,6 +340,7 @@ const clients = [
     birthDate: '1996-03-08',
     phone: '010-5555-9999',
     location: '서울 마포구',
+    workLocation: '서울 서초구',
     height: 164,
     occupation: '오케스트라 단원',
     company: '서울시립교향악단',
@@ -351,6 +364,7 @@ const clients = [
     birthDate: '1992-08-25',
     phone: '010-2222-8888',
     location: '서울 용산구',
+    workLocation: '서울 강남구',
     height: 179,
     occupation: '건축가',
     company: '삼우종합건축사사무소',
@@ -763,6 +777,7 @@ function enrichParticipant(participant) {
     clientHobbies: client.hobbies,
     clientIntroduction: client.introduction,
     clientIdealType: client.idealType,
+    clientWorkLocation: client.workLocation || null,
     clientPhotoUrls: (client.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
   };
 }
