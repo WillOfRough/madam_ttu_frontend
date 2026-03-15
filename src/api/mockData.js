@@ -739,7 +739,7 @@ function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
   return {
     nickname: c.nickname || null,
-    photoIds: c.photoIds || [],
+    photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     ownerManager: owner,
     isOwner: c.ownerManagerId === MANAGER_ID,
   };
@@ -1091,7 +1091,7 @@ export async function mockFetch(path, options = {}) {
         mbti: cp.mbti,
         hobbies: cp.hobbies,
         introduction: cp.introduction,
-        photoUrls: (cp.photoIds || []).map((id) => `https://picsum.photos/seed/${id}/400/400`),
+        photoUrls: (cp.photoIds || []).map((id) => `/api/v1/proposals/${token}/photos/${id}`),
       } : null,
     };
   }

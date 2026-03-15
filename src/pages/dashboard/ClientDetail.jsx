@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import * as clientService from '../../api/clientService';
-import { getPhotoUrl } from '../../api/config';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -144,14 +143,14 @@ export default function ClientDetail() {
         </div>
       </div>
 
-      {client.photoIds?.length > 0 && (
+      {client.photoUrls?.length > 0 && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>사진</h3>
           <div className={styles.photoGallery}>
-            {client.photoIds.map((photoId, idx) => (
+            {client.photoUrls.map((url, idx) => (
               <PhotoThumb
-                key={photoId}
-                src={getPhotoUrl(photoId)}
+                key={idx}
+                src={url}
                 alt={`사진 ${idx + 1}`}
                 onClick={(src) => setLightboxUrl(src)}
               />
