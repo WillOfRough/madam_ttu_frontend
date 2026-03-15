@@ -86,20 +86,16 @@ export default function InviteManagement() {
         </div>
       </div>
 
-      <div className={styles.filterTabs}>
-        {[
-          { value: '', label: '전체' },
-          { value: 'active', label: '활성' },
-          { value: 'revoked', label: '폐기' },
-        ].map((tab) => (
-          <button
-            key={tab.value}
-            className={`${styles.filterTab} ${statusFilter === tab.value ? styles.filterTabActive : ''}`}
-            onClick={() => setStatusFilter(tab.value)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className={styles.filters}>
+        <select
+          className={styles.filterSelect}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">상태 전체</option>
+          <option value="active">활성</option>
+          <option value="revoked">폐기</option>
+        </select>
       </div>
 
       {isLoading ? (
