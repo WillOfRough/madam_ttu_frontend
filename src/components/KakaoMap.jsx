@@ -13,7 +13,7 @@ function createMarkerSvg(color, label) {
 
 export default function KakaoMap({ locations }) {
   const mapRef = useRef(null);
-  const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error'
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
     if (!window.kakao || !window.kakao.maps) {
@@ -76,6 +76,7 @@ export default function KakaoMap({ locations }) {
 
           if (resolved === locations.length) {
             if (successCount > 0) {
+              map.relayout();
               map.setBounds(bounds, 80, 80, 80, 80);
               setStatus('ready');
             } else {
@@ -94,16 +95,12 @@ export default function KakaoMap({ locations }) {
   return (
     <div className={styles.mapContainer}>
       {status === 'loading' && (
-        <div className={styles.loadingMessage}>지도를 불러오는 중...</div>
+        <div className={styles.loadingOverlay}>지도를 불러오는 중...</div>
       )}
       {status === 'error' && (
-        <div className={styles.loadingMessage}>주소를 지도에 표시할 수 없습니다</div>
+        <div className={styles.loadingOverlay}>주소를 지도에 표시할 수 없습니다</div>
       )}
-      <div
-        ref={mapRef}
-        className={styles.mapElement}
-        style={{ display: status === 'ready' ? 'block' : 'none' }}
-      />
+      <div ref={mapRef} className={styles.mapElement} />
       {status === 'ready' && (
         <div className={styles.legend}>
           {locations.map((loc, i) => (

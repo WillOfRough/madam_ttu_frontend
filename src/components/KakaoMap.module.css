@@ -1,4 +1,5 @@
 .mapContainer {
+  position: relative;
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
@@ -39,11 +40,15 @@
   white-space: nowrap;
 }
 
-.loadingMessage {
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 320px;
+  background: #f8f9fa;
   color: #888;
   font-size: 14px;
+  z-index: 1;
+  border-radius: 12px;
 }
