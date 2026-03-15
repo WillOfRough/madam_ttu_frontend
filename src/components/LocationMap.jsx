@@ -16,16 +16,24 @@ function createIcon(color) {
   });
 }
 
-async function geocode(address) {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&countrycodes=kr&limit=1`,
-    { headers: { 'Accept-Language': 'ko' } }
-  );
-  const data = await res.json();
-  if (data.length > 0) {
-    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-  }
-  return null;
+function geocodeKakao(geocoder, address) {
+  return new Promise((resolve) => {
+    geocoder.addressSearch(address, (result, status) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        resolve([parseFloat(result[0].y), parseFloat(result[0].x)]);
+      } else {
+        // 주소 검색 실패 시 키워드 검색 시도
+        const ps = new window.kakao.maps.services.Places();
+        ps.keywordSearch(address, (data, psStatus) => {
+          if (psStatus === window.kakao.maps.services.Status.OK && data.length > 0) {
+            resolve([parseFloat(data[0].y), parseFloat(data[0].x)]);
+          } else {
+            resolve(null);
+          }
+        });
+      }
+    });
+  });
 }
 
 export default function LocationMap({ locations }) {
@@ -35,58 +43,69 @@ export default function LocationMap({ locations }) {
   const [failedAddresses, setFailedAddresses] = useState([]);
 
   useEffect(() => {
-    if (mapInstance.current) {
-      mapInstance.current.remove();
-      mapInstance.current = null;
+    if (!window.kakao || !window.kakao.maps) {
+      setStatus('error');
+      return;
     }
 
-    const map = L.map(mapRef.current, {
-      scrollWheelZoom: false,
-      attributionControl: false,
-    }).setView([37.5665, 126.978], 11);
+    window.kakao.maps.load(() => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
 
-    mapInstance.current = map;
+      const map = L.map(mapRef.current, {
+        scrollWheelZoom: false,
+        keyboard: false,
+        attributionControl: false,
+      }).setView([37.5665, 126.978], 11);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap',
-    }).addTo(map);
+      mapInstance.current = map;
 
-    L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+      }).addTo(map);
 
-    const failed = [];
-    let resolved = 0;
-    const bounds = L.latLngBounds();
-    let hasMarker = false;
+      L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
 
-    locations.forEach((loc) => {
-      geocode(loc.address).then((coords) => {
-        resolved++;
-        if (coords) {
-          hasMarker = true;
-          bounds.extend(coords);
-          const marker = L.marker(coords, { icon: createIcon(loc.color) }).addTo(map);
-          marker.bindPopup(
-            `<div style="font-size:13px;line-height:1.4;"><strong>${loc.label}</strong><br/><span style="color:#666">${loc.address}</span></div>`
-          );
-        } else {
-          failed.push(loc.label);
-        }
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      const failed = [];
+      let resolved = 0;
+      const bounds = L.latLngBounds();
+      let hasMarker = false;
 
-        if (resolved === locations.length) {
-          if (hasMarker) {
-            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
-            setStatus('ready');
+      locations.forEach((loc) => {
+        geocodeKakao(geocoder, loc.address).then((coords) => {
+          resolved++;
+          if (coords) {
+            hasMarker = true;
+            bounds.extend(coords);
+            const marker = L.marker(coords, { icon: createIcon(loc.color) }).addTo(map);
+            marker.bindPopup(
+              `<div style="font-size:13px;line-height:1.4;"><strong>${loc.label}</strong><br/><span style="color:#666">${loc.address}</span></div>`
+            );
           } else {
-            setStatus('error');
+            failed.push(loc.label);
           }
-          setFailedAddresses(failed);
-        }
+
+          if (resolved === locations.length) {
+            if (hasMarker) {
+              map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+              setStatus('ready');
+            } else {
+              setStatus('error');
+            }
+            setFailedAddresses(failed);
+          }
+        });
       });
     });
 
     return () => {
-      map.remove();
-      mapInstance.current = null;
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
     };
   }, [locations]);
 
