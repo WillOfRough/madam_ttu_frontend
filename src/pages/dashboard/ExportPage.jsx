@@ -29,7 +29,7 @@ export default function ExportPage() {
       });
       const clientList = result.data || result.clients || result;
       exportClientsToExcel(clientList);
-      toast.success(`${clientList.length}건의 Seeker 데이터를 내보냈습니다.`);
+      toast.success(`${clientList.length}건의 Client 데이터를 내보냈습니다.`);
     } catch (err) {
       toast.error(err.message || '내보내기에 실패했습니다.');
     }
@@ -43,8 +43,8 @@ export default function ExportPage() {
       <div className={styles.exportCard}>
         <FileSpreadsheet size={32} className={styles.exportIcon} />
         <div className={styles.exportInfo}>
-          <h3>승인된 Seeker 엑셀 다운로드</h3>
-          <p>승인된 모든 Seeker의 프로필을 엑셀 파일로 내보냅니다.</p>
+          <h3>승인된 Client 엑셀 다운로드</h3>
+          <p>승인된 모든 Client의 프로필을 엑셀 파일로 내보냅니다.</p>
         </div>
         <button
           className={styles.exportBtn}

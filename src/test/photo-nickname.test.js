@@ -61,7 +61,7 @@ describe('clientService: createClient FormData 변환', () => {
 // ──────────────────────────────────────────────
 describe('mockData: nickname, photoIds 필드', () => {
   it('client 목록에 nickname, photoIds 필드가 존재해야 한다', async () => {
-    const result = await mockFetch('/api/v1/seekers', { method: 'GET' });
+    const result = await mockFetch('/api/v1/clients', { method: 'GET' });
     const clients = result.data;
 
     expect(clients.length).toBeGreaterThan(0);
@@ -76,7 +76,7 @@ describe('mockData: nickname, photoIds 필드', () => {
   });
 
   it('일부 client는 nickname이 있고 일부는 null이어야 한다', async () => {
-    const result = await mockFetch('/api/v1/seekers', { method: 'GET' });
+    const result = await mockFetch('/api/v1/clients', { method: 'GET' });
     const clients = result.data;
     const withNickname = clients.filter((c) => c.nickname);
     const withoutNickname = clients.filter((c) => !c.nickname);
@@ -86,13 +86,13 @@ describe('mockData: nickname, photoIds 필드', () => {
   });
 
   it('client 상세 조회에도 nickname, photoIds가 포함되어야 한다', async () => {
-    const detail = await mockFetch('/api/v1/seekers/s001', { method: 'GET' });
+    const detail = await mockFetch('/api/v1/clients/s001', { method: 'GET' });
     expect(detail.nickname).toBe('반짝이는 서연');
     expect(detail.photoIds).toHaveLength(2);
   });
 
   it('photoIds 값은 UUID 형식이어야 한다', async () => {
-    const detail = await mockFetch('/api/v1/seekers/s001', { method: 'GET' });
+    const detail = await mockFetch('/api/v1/clients/s001', { method: 'GET' });
     const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     for (const id of detail.photoIds) {
       expect(id).toMatch(uuidPattern);
@@ -100,14 +100,14 @@ describe('mockData: nickname, photoIds 필드', () => {
   });
 
   it('photoUrls 필드는 더 이상 존재하지 않아야 한다 (목록)', async () => {
-    const result = await mockFetch('/api/v1/seekers', { method: 'GET' });
+    const result = await mockFetch('/api/v1/clients', { method: 'GET' });
     for (const client of result.data) {
       expect(client).not.toHaveProperty('photoUrls');
     }
   });
 
   it('photoUrls 필드는 더 이상 존재하지 않아야 한다 (상세)', async () => {
-    const detail = await mockFetch('/api/v1/seekers/s001', { method: 'GET' });
+    const detail = await mockFetch('/api/v1/clients/s001', { method: 'GET' });
     expect(detail).not.toHaveProperty('photoUrls');
   });
 
@@ -122,8 +122,8 @@ describe('mockData: nickname, photoIds 필드', () => {
     }
   });
 
-  it('POST /api/v1/seekers는 FormData body를 무시하고 성공을 반환해야 한다', async () => {
-    const result = await mockFetch('/api/v1/seekers', {
+  it('POST /api/v1/clients는 FormData body를 무시하고 성공을 반환해야 한다', async () => {
+    const result = await mockFetch('/api/v1/clients', {
       method: 'POST',
       body: new FormData(),
     });
@@ -361,7 +361,7 @@ describe('getPhotoUrl: 사진 프록시 URL 생성', () => {
   }
 
   function getPhotoUrlProd(photoId, apiBase = '') {
-    return `${apiBase}/api/v1/seekers/photos/${photoId}`;
+    return `${apiBase}/api/v1/clients/photos/${photoId}`;
   }
 
   it('DEV mock 모드에서는 picsum placeholder URL 형식이어야 한다', () => {
@@ -377,11 +377,11 @@ describe('getPhotoUrl: 사진 프록시 URL 생성', () => {
     expect(getPhotoUrlProd(photoId)).toContain(photoId);
   });
 
-  it('프로덕션 환경에서는 /api/v1/seekers/photos/{photoId} 형식이어야 한다', () => {
+  it('프로덕션 환경에서는 /api/v1/clients/photos/{photoId} 형식이어야 한다', () => {
     const photoId = 'cd3c38a7-8465-4a6a-81a3-73c91799c001';
-    expect(getPhotoUrlProd(photoId)).toBe(`/api/v1/seekers/photos/${photoId}`);
+    expect(getPhotoUrlProd(photoId)).toBe(`/api/v1/clients/photos/${photoId}`);
     expect(getPhotoUrlProd(photoId, 'https://api.example.com')).toBe(
-      `https://api.example.com/api/v1/seekers/photos/${photoId}`
+      `https://api.example.com/api/v1/clients/photos/${photoId}`
     );
   });
 

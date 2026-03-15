@@ -102,7 +102,7 @@ export default function ClientDetail() {
             <StatusBadge status={client.approvalStatus || 'pending'} />
             {client.ownerManager && (
               <span className={client.isOwner ? styles.ownerBadgeMe : styles.ownerBadgeOther}>
-                {client.isOwner ? '내 Seeker' : `${client.ownerManager.name}의 Seeker`}
+                {client.isOwner ? '내 Client' : `${client.ownerManager.name}의 Client`}
               </span>
             )}
           </div>
@@ -128,7 +128,7 @@ export default function ClientDetail() {
 
       {!client.isOwner && (
         <div className={styles.readonlyNotice}>
-          이 Seeker는 {client.ownerManager?.name || '다른 매니저'}님이 관리하는 프로필입니다. 열람만 가능합니다.
+          이 Client는 {client.ownerManager?.name || '다른 매니저'}님이 관리하는 프로필입니다. 열람만 가능합니다.
         </div>
       )}
 
@@ -206,7 +206,7 @@ export default function ClientDetail() {
 
       {modal === 'approve' && (
         <ConfirmModal
-          title="Seeker 승인"
+          title="Client 승인"
           message={`${client.name}님을 승인하시겠습니까?`}
           confirmLabel="승인"
           onConfirm={() => handleApproval('approved')}
@@ -216,7 +216,7 @@ export default function ClientDetail() {
 
       {modal === 'reject' && (
         <ConfirmModal
-          title="Seeker 거절"
+          title="Client 거절"
           message={`${client.name}님을 거절하시겠습니까?`}
           confirmLabel="거절"
           danger

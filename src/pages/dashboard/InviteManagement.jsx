@@ -56,7 +56,7 @@ export default function InviteManagement() {
       {showDesc && (
         <div className={styles.descBox}>
           <div className={styles.descHeader}>
-            <p className={styles.descTitle}>Seeker 초대란?</p>
+            <p className={styles.descTitle}>Client 초대란?</p>
             <button
               className={styles.descClose}
               onClick={() => { setShowDesc(false); localStorage.setItem('hideInviteDesc', '1'); }}
@@ -65,7 +65,7 @@ export default function InviteManagement() {
             </button>
           </div>
           <p className={styles.descText}>
-            소개를 희망하는 분(Seeker)에게 초대 링크를 전달하면, 상대방이 프로필을 직접 등록할 수 있습니다.
+            소개를 희망하는 분(Client)에게 초대 링크를 전달하면, 상대방이 프로필을 직접 등록할 수 있습니다.
             라벨을 붙여 어떤 용도로 생성한 링크인지 관리하고, 만료 시간을 설정하여 보안을 유지하세요.
           </p>
         </div>

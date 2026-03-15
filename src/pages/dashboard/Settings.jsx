@@ -48,7 +48,7 @@ export default function Settings() {
           )}
           {info?.myClientCount != null && (
             <div className={styles.field}>
-              <span className={styles.fieldLabel}>내 Seeker</span>
+              <span className={styles.fieldLabel}>내 Client</span>
               <span className={styles.fieldValue}>{info.myClientCount}명</span>
             </div>
           )}

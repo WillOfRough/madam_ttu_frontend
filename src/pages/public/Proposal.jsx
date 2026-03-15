@@ -196,7 +196,7 @@ export default function Proposal() {
   // ══════════════════════════════════════════
   if (matchStatus === 'scheduling') {
     // Check if I already submitted (my name appears in availableTimes)
-    const alreadySubmitted = timesSubmitted || availableTimes.some((t) => t.seekerName === myName);
+    const alreadySubmitted = timesSubmitted || availableTimes.some((t) => t.clientName === myName);
 
     if (alreadySubmitted) {
       return (

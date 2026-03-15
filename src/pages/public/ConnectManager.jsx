@@ -48,7 +48,7 @@ export default function ConnectManager() {
           <>
             <h1 className={styles.title}>매니저 연결 초대</h1>
             <p className={styles.message}>
-              이 초대를 수락하면 상대 매니저와 Seeker 풀을 공유하게 됩니다.
+              이 초대를 수락하면 상대 매니저와 Client 풀을 공유하게 됩니다.
             </p>
 
             {error && <p className={styles.error}>{error}</p>}

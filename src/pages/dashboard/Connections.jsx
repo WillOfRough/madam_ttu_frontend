@@ -132,8 +132,8 @@ export default function Connections() {
             </button>
           </div>
           <p className={styles.descText}>
-            다른 매니저와 연결하면 서로의 Seeker 풀을 공유할 수 있습니다.
-            연결된 매니저가 등록한 Seeker를 열람할 수 있고, 상대방도 나의 Seeker를 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
+            다른 매니저와 연결하면 서로의 Client 풀을 공유할 수 있습니다.
+            연결된 매니저가 등록한 Client를 열람할 수 있고, 상대방도 나의 Client를 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
           </p>
         </div>
       )}
@@ -274,7 +274,7 @@ export default function Connections() {
                   <div>
                     <span className={styles.connName}>{conn.name || conn.email}</span>
                     <span className={styles.connMeta}>
-                      Seeker {conn.clientCount ?? 0}명
+                      Client {conn.clientCount ?? 0}명
                     </span>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ export default function Connections() {
       {disconnectTarget && (
         <ConfirmModal
           title="연결 해제"
-          message={`${disconnectTarget.name || disconnectTarget.email}님과의 연결을 해제하시겠습니까? 서로의 Seeker를 더 이상 공유하지 않게 됩니다.`}
+          message={`${disconnectTarget.name || disconnectTarget.email}님과의 연결을 해제하시겠습니까? 서로의 Client를 더 이상 공유하지 않게 됩니다.`}
           confirmLabel="해제"
           danger
           onConfirm={handleDisconnect}

@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 
 const GENDER_LABEL = { male: '남성', female: '여성' };
 
-export function exportClientsToExcel(clients, filename = 'knotsandlinks_Seeker목록') {
+export function exportClientsToExcel(clients, filename = 'knotsandlinks_Client목록') {
   const rows = clients.map((c) => ({
     이름: c.name,
     성별: GENDER_LABEL[c.gender] || c.gender,
@@ -46,6 +46,6 @@ export function exportClientsToExcel(clients, filename = 'knotsandlinks_Seeker�
   ];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Seekers');
+  XLSX.utils.book_append_sheet(wb, ws, 'Clients');
   XLSX.writeFile(wb, `${filename}.xlsx`);
 }

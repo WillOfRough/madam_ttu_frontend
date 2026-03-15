@@ -43,8 +43,8 @@ export default function MatchList() {
     ? matches.filter((m) => {
         const q = searchQuery.trim().toLowerCase();
         return (
-          m.seekerA.seekerName?.toLowerCase().includes(q) ||
-          m.seekerB.seekerName?.toLowerCase().includes(q) ||
+          m.clientA.clientName?.toLowerCase().includes(q) ||
+          m.clientB.clientName?.toLowerCase().includes(q) ||
           m.note?.toLowerCase().includes(q) ||
           (STATUS_STEP_LABELS[m.status] || '').includes(q)
         );
@@ -76,7 +76,7 @@ export default function MatchList() {
                 <span className={styles.guideNum}>1</span>
                 <div>
                   <strong>매칭 생성</strong>
-                  <p>Seeker A, B를 선택하여 매칭을 만듭니다.</p>
+                  <p>Client A, B를 선택하여 매칭을 만듭니다.</p>
                 </div>
               </div>
               <div className={styles.guideStep}>
@@ -171,16 +171,16 @@ export default function MatchList() {
                 <div className={styles.cardTop}>
                   <div className={styles.matchPair}>
                     <span>
-                      {m.seekerA.seekerName}
+                      {m.clientA.clientName}
                       <span className={styles.genderTag}>
-                        {m.seekerA.seekerGender === 'female' ? '여' : '남'}
+                        {m.clientA.clientGender === 'female' ? '여' : '남'}
                       </span>
                     </span>
                     <span className={styles.arrow}><ArrowRight size={16} /></span>
                     <span>
-                      {m.seekerB.seekerName}
+                      {m.clientB.clientName}
                       <span className={styles.genderTag}>
-                        {m.seekerB.seekerGender === 'female' ? '여' : '남'}
+                        {m.clientB.clientGender === 'female' ? '여' : '남'}
                       </span>
                     </span>
                   </div>
@@ -205,31 +205,31 @@ export default function MatchList() {
   );
 }
 
-function SeekerSlot({ seeker, side, onRemove, searchQuery, onSearchChange, onFocus, searchResults, onSelect, excludeId }) {
+function ClientSlot({ client, side, onRemove, searchQuery, onSearchChange, onFocus, searchResults, onSelect, excludeId }) {
   const sideLabel = side === 'A' ? 'A' : 'B';
 
   return (
-    <div className={`${styles.seekerSlot} ${seeker ? styles.seekerSlotFilled : ''}`}>
+    <div className={`${styles.clientSlot} ${client ? styles.clientSlotFilled : ''}`}>
       <div className={styles.slotHeader}>
         <span className={styles.slotBadge}>{sideLabel}</span>
-        {seeker && (
+        {client && (
           <button className={styles.slotRemove} onClick={onRemove} type="button" aria-label="제거">
             <X size={14} />
           </button>
         )}
       </div>
 
-      {seeker ? (
+      {client ? (
         <div className={styles.slotBody}>
           <div className={styles.slotAvatar}>
-            {(seeker.nickname || seeker.name || '?').charAt(0)}
+            {(client.nickname || client.name || '?').charAt(0)}
           </div>
-          <span className={styles.slotName}>{seeker.nickname || seeker.name}</span>
+          <span className={styles.slotName}>{client.nickname || client.name}</span>
           <div className={styles.slotMeta}>
             <span className={styles.slotGender}>
-              {seeker.gender === 'female' ? '여성' : '남성'}
+              {client.gender === 'female' ? '여성' : '남성'}
             </span>
-            {seeker.occupation && <span className={styles.slotOccupation}>{seeker.occupation}</span>}
+            {client.occupation && <span className={styles.slotOccupation}>{client.occupation}</span>}
           </div>
         </div>
       ) : (
@@ -270,8 +270,8 @@ function SeekerSlot({ seeker, side, onRemove, searchQuery, onSearchChange, onFoc
 }
 
 function CreateMatchModal({ onClose, onCreated }) {
-  const [seekerA, setSeekerA] = useState(null);
-  const [seekerB, setSeekerB] = useState(null);
+  const [clientA, setClientA] = useState(null);
+  const [clientB, setClientB] = useState(null);
   const [note, setNote] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -290,9 +290,9 @@ function CreateMatchModal({ onClose, onCreated }) {
     }
   }, [searchQuery]);
 
-  // Check for duplicate match when both seekers are selected
+  // Check for duplicate match when both clients are selected
   useEffect(() => {
-    if (!seekerA || !seekerB) {
+    if (!clientA || !clientB) {
       setDuplicateMatch(null);
       return;
     }
@@ -302,9 +302,9 @@ function CreateMatchModal({ onClose, onCreated }) {
       const list = res.data || res.matches || [];
       const dup = list.find((m) => {
         if (m.status === 'cancelled') return false;
-        const ids = [m.seekerA.seekerId, m.seekerB.seekerId];
+        const ids = [m.clientA.clientId, m.clientB.clientId];
         return (
-          (ids.includes(seekerA.id) && ids.includes(seekerB.id))
+          (ids.includes(clientA.id) && ids.includes(clientB.id))
         );
       });
       setDuplicateMatch(dup || null);
@@ -312,24 +312,24 @@ function CreateMatchModal({ onClose, onCreated }) {
       if (!cancelled) setDuplicateMatch(null);
     });
     return () => { cancelled = true; };
-  }, [seekerA, seekerB]);
+  }, [clientA, clientB]);
 
   const handleSelect = (client) => {
     if (selectingFor === 'A') {
-      setSeekerA(client);
+      setClientA(client);
       setSelectingFor('B');
     } else {
-      setSeekerB(client);
+      setClientB(client);
     }
     setSearchQuery('');
     setSearchResults([]);
   };
 
   const handleSubmit = async () => {
-    if (!seekerA || !seekerB || duplicateMatch) return;
+    if (!clientA || !clientB || duplicateMatch) return;
     setSubmitting(true);
     try {
-      await matchService.createMatch({ seekerAId: seekerA.id, seekerBId: seekerB.id, note });
+      await matchService.createMatch({ clientAId: clientA.id, clientBId: clientB.id, note });
       toast.success('매칭이 생성되었습니다.');
       onCreated();
     } catch (err) {
@@ -338,7 +338,7 @@ function CreateMatchModal({ onClose, onCreated }) {
     setSubmitting(false);
   };
 
-  const bothSelected = seekerA && seekerB;
+  const bothSelected = clientA && clientB;
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -350,7 +350,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           </div>
           <div>
             <h3 className={styles.modalTitle}>새 매칭 생성</h3>
-            <p className={styles.modalSubtitle}>두 Seeker를 선택하여 매칭을 만들어보세요</p>
+            <p className={styles.modalSubtitle}>두 Client를 선택하여 매칭을 만들어보세요</p>
           </div>
           <button className={styles.modalClose} onClick={onClose} type="button">
             <X size={18} />
@@ -359,16 +359,16 @@ function CreateMatchModal({ onClose, onCreated }) {
 
         {/* Pairing Area */}
         <div className={styles.pairingArea}>
-          <SeekerSlot
-            seeker={seekerA}
+          <ClientSlot
+            client={clientA}
             side="A"
-            onRemove={() => setSeekerA(null)}
+            onRemove={() => setClientA(null)}
             searchQuery={selectingFor === 'A' ? searchQuery : ''}
             onSearchChange={(e) => { setSelectingFor('A'); setSearchQuery(e.target.value); }}
             onFocus={() => setSelectingFor('A')}
             searchResults={selectingFor === 'A' ? searchResults : []}
             onSelect={handleSelect}
-            excludeId={seekerB?.id}
+            excludeId={clientB?.id}
           />
 
           <div className={styles.pairingConnector}>
@@ -379,16 +379,16 @@ function CreateMatchModal({ onClose, onCreated }) {
             <div className={`${styles.connectorLine} ${bothSelected ? styles.connectorLineActive : ''}`} />
           </div>
 
-          <SeekerSlot
-            seeker={seekerB}
+          <ClientSlot
+            client={clientB}
             side="B"
-            onRemove={() => setSeekerB(null)}
+            onRemove={() => setClientB(null)}
             searchQuery={selectingFor === 'B' ? searchQuery : ''}
             onSearchChange={(e) => { setSelectingFor('B'); setSearchQuery(e.target.value); }}
             onFocus={() => setSelectingFor('B')}
             searchResults={selectingFor === 'B' ? searchResults : []}
             onSelect={handleSelect}
-            excludeId={seekerA?.id}
+            excludeId={clientA?.id}
           />
         </div>
 
@@ -397,7 +397,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           <div className={styles.duplicateWarn}>
             <AlertTriangle size={15} />
             <span>
-              이미 매칭된 적이 있는 Seeker입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
+              이미 매칭된 적이 있는 Client입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
             </span>
           </div>
         )}
@@ -420,7 +420,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           <button
             className={styles.submitBtn}
             onClick={handleSubmit}
-            disabled={!seekerA || !seekerB || submitting || !!duplicateMatch}
+            disabled={!clientA || !clientB || submitting || !!duplicateMatch}
             type="button"
           >
             {submitting ? (

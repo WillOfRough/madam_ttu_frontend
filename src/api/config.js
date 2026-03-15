@@ -16,7 +16,7 @@ export function getPhotoUrl(photoId) {
   if (DEV && !API_BASE) {
     return `https://picsum.photos/seed/${photoId}/400/400`;
   }
-  return `${API_BASE}/api/v1/seekers/photos/${photoId}`;
+  return `${API_BASE}/api/v1/clients/photos/${photoId}`;
 }
 
 export async function apiFetch(path, options = {}) {

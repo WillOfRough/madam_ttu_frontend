@@ -61,7 +61,7 @@ export async function createClient(data, photos = []) {
   const compressed = await Promise.all(photos.map(compressImage));
   compressed.forEach((file) => formData.append('photos', file));
 
-  return apiFetch('/api/v1/seekers', {
+  return apiFetch('/api/v1/clients', {
     method: 'POST',
     body: formData,
   });
@@ -79,22 +79,22 @@ export async function listClients(params = {}) {
   if (params.limit) query.set('limit', String(params.limit));
 
   const qs = query.toString();
-  return apiFetch(`/api/v1/seekers${qs ? `?${qs}` : ''}`, { method: 'GET' });
+  return apiFetch(`/api/v1/clients${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
 export async function getClientDetail(clientId) {
-  return apiFetch(`/api/v1/seekers/${clientId}`, { method: 'GET' });
+  return apiFetch(`/api/v1/clients/${clientId}`, { method: 'GET' });
 }
 
 export async function updateApproval(clientId, status) {
-  return apiFetch(`/api/v1/seekers/${clientId}/approval`, {
+  return apiFetch(`/api/v1/clients/${clientId}/approval`, {
     method: 'PATCH',
     body: { status },
   });
 }
 
 export async function updateNote(clientId, note) {
-  return apiFetch(`/api/v1/seekers/${clientId}/note`, {
+  return apiFetch(`/api/v1/clients/${clientId}/note`, {
     method: 'PATCH',
     body: { note },
   });

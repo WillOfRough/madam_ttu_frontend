@@ -1,9 +1,9 @@
 import { apiFetch } from './config';
 
-export async function createMatch({ seekerAId, seekerBId, type, note }) {
+export async function createMatch({ clientAId, clientBId, type, note }) {
   return apiFetch('/api/v1/matches', {
     method: 'POST',
-    body: { seekerAId, seekerBId, type, note },
+    body: { clientAId, clientBId, type, note },
   });
 }
 

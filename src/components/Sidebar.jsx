@@ -5,7 +5,7 @@ import styles from './Sidebar.module.css';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: Home, label: '홈', end: true },
-  { to: '/dashboard/clients', icon: Users, label: 'Seeker' },
+  { to: '/dashboard/clients', icon: Users, label: 'Client' },
   { to: '/dashboard/matches', icon: Heart, label: '매칭' },
   { to: '/dashboard/connections', icon: Link2, label: '연결' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },

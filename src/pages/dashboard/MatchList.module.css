@@ -384,8 +384,8 @@
   padding: 24px 28px;
 }
 
-/* ── Seeker Slot ── */
-.seekerSlot {
+/* ── Client Slot ── */
+.clientSlot {
   flex: 1;
   min-width: 0;
   background: var(--bg);
@@ -396,7 +396,7 @@
   position: relative;
 }
 
-.seekerSlotFilled {
+.clientSlotFilled {
   background: var(--white);
   border: 2px solid var(--border-light);
   box-shadow: var(--shadow-card);
@@ -829,7 +829,7 @@
     padding: 16px 20px;
   }
 
-  .seekerSlot {
+  .clientSlot {
     padding: 14px;
   }
 

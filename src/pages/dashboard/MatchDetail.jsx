@@ -154,7 +154,7 @@ export default function MatchDetail() {
 
       <div className={styles.header}>
         <h1 className={styles.title}>
-          {match.seekerA.seekerName} &harr; {match.seekerB.seekerName}
+          {match.clientA.clientName} &harr; {match.clientB.clientName}
         </h1>
         <StatusBadge status={match.status} />
       </div>
@@ -183,14 +183,14 @@ export default function MatchDetail() {
       {/* Participants */}
       <div className={styles.participants}>
         <ParticipantCard
-          participant={match.seekerA}
-          label="Seeker A"
+          participant={match.clientA}
+          label="Client A"
           matchStatus={match.status}
           side="A"
         />
         <ParticipantCard
-          participant={match.seekerB}
-          label="Seeker B"
+          participant={match.clientB}
+          label="Client B"
           matchStatus={match.status}
           side="B"
         />
@@ -208,10 +208,10 @@ export default function MatchDetail() {
             <Calendar size={16} /> 가용시간 목록
           </h3>
           {(() => {
-            // Group by seekerName
+            // Group by clientName
             const grouped = {};
             (match.schedule.timeSlots || []).forEach((slot) => {
-              const name = slot.seekerName || '알 수 없음';
+              const name = slot.clientName || '알 수 없음';
               if (!grouped[name]) grouped[name] = [];
               grouped[name].push(slot);
             });
@@ -287,7 +287,7 @@ export default function MatchDetail() {
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
           </h3>
-          <p className={styles.waitingText}>양쪽 Seeker의 가용시간 등록을 기다리고 있습니다.</p>
+          <p className={styles.waitingText}>양쪽 Client의 가용시간 등록을 기다리고 있습니다.</p>
         </div>
       )}
 
@@ -426,8 +426,8 @@ export default function MatchDetail() {
 function SchedulingLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const tokenA = match.seekerA.proposalToken;
-  const tokenB = match.seekerB.proposalToken;
+  const tokenA = match.clientA.proposalToken;
+  const tokenB = match.clientB.proposalToken;
   const urlA = `${window.location.origin}/proposal/${tokenA}/available-times`;
   const urlB = `${window.location.origin}/proposal/${tokenB}/available-times`;
 
@@ -447,14 +447,14 @@ function SchedulingLinkCard({ match }) {
       <h3 className={styles.schedulingLinkTitle}>
         <Link2 size={16} /> 일정 조율 링크
       </h3>
-      <p className={styles.schedulingLinkHint}>아래 링크를 각 Seeker에게 전달해주세요</p>
+      <p className={styles.schedulingLinkHint}>아래 링크를 각 Client에게 전달해주세요</p>
       <div className={styles.schedulingLinkRows}>
         <div className={styles.schedulingLinkRow}>
           <div className={styles.schedulingLinkLabel}>
             <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.seekerA.seekerName} — 가용시간 등록</span>
-            {match.seekerA.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
-            {match.seekerA.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
+            <span>{match.clientA.clientName} — 가용시간 등록</span>
+            {match.clientA.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
+            {match.clientA.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
           </div>
           <div className={styles.schedulingLinkUrl}>
             <span className={styles.schedulingLinkValue}>{urlA}</span>
@@ -467,9 +467,9 @@ function SchedulingLinkCard({ match }) {
         <div className={styles.schedulingLinkRow}>
           <div className={styles.schedulingLinkLabel}>
             <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.seekerB.seekerName} — 가용시간 등록</span>
-            {match.seekerB.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
-            {match.seekerB.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
+            <span>{match.clientB.clientName} — 가용시간 등록</span>
+            {match.clientB.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
+            {match.clientB.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
           </div>
           <div className={styles.schedulingLinkUrl}>
             <span className={styles.schedulingLinkValue}>{urlB}</span>
@@ -517,10 +517,10 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   return (
     <div className={styles.participantCard}>
       <div className={styles.participantHeader}>
-        <span className={styles.participantName}>{participant.seekerName}</span>
+        <span className={styles.participantName}>{participant.clientName}</span>
         <span className={styles.participantLabel}>{label}</span>
         <span className={styles.participantGender}>
-          {participant.seekerGender === 'female' ? '여성' : '남성'}
+          {participant.clientGender === 'female' ? '여성' : '남성'}
         </span>
       </div>
 
