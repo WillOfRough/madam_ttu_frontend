@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Link2 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import * as connectionService from '../../api/connectionService';
@@ -11,6 +11,11 @@ export default function ConnectManager() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [error, setError] = useState(null);
+
+  // 미로그인 시 바로 회원가입 페이지로 이동
+  if (!isLoggedIn) {
+    return <Navigate to={`/register/${token}`} replace />;
+  }
 
   const handleConnect = async () => {
     setStatus('loading');
@@ -43,37 +48,18 @@ export default function ConnectManager() {
           <>
             <h1 className={styles.title}>매니저 연결 초대</h1>
             <p className={styles.message}>
-              {isLoggedIn
-                ? '이 초대를 수락하면 상대 매니저와 Seeker 풀을 공유하게 됩니다.'
-                : '연결을 수락하려면 로그인 또는 회원가입이 필요합니다.'}
+              이 초대를 수락하면 상대 매니저와 Seeker 풀을 공유하게 됩니다.
             </p>
 
             {error && <p className={styles.error}>{error}</p>}
 
-            {isLoggedIn ? (
-              <button
-                className={styles.btn}
-                onClick={handleConnect}
-                disabled={status === 'loading'}
-              >
-                {status === 'loading' ? '연결 중...' : '연결 수락'}
-              </button>
-            ) : (
-              <>
-                <button
-                  className={styles.btn}
-                  onClick={() => navigate('/login', { state: { from: `/connect/${token}` } })}
-                >
-                  로그인하고 연결
-                </button>
-                <button
-                  className={styles.btnSecondary}
-                  onClick={() => navigate(`/register/${token}`)}
-                >
-                  회원가입하고 연결
-                </button>
-              </>
-            )}
+            <button
+              className={styles.btn}
+              onClick={handleConnect}
+              disabled={status === 'loading'}
+            >
+              {status === 'loading' ? '연결 중...' : '연결 수락'}
+            </button>
           </>
         )}
       </div>

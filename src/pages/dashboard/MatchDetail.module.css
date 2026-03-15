@@ -182,21 +182,59 @@
 }
 
 .responseWaiting {
-  color: var(--pending);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
   font-weight: 600;
-  font-size: 0.88rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--pending-light);
+  color: #8a5e00;
+}
+
+.responsePending {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--pending-light);
+  color: #8a5e00;
 }
 
 .responseAccepted {
-  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
   font-weight: 600;
-  font-size: 0.88rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--success-light);
+  color: #1a7a3a;
 }
 
 .responseRejected {
-  color: var(--danger);
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
   font-weight: 600;
-  font-size: 0.88rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--danger-light);
+  color: #b71c2c;
 }
 
 .tokenSection {

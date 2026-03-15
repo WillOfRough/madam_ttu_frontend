@@ -9,6 +9,7 @@ import { SkeletonLine } from '../../components/Skeleton';
 import styles from './MatchDetail.module.css';
 
 const RESPONSE_MAP = {
+  pending: { label: '대기', className: 'responsePending' },
   accepted: { label: '수락', className: 'responseAccepted' },
   rejected: { label: '거절', className: 'responseRejected' },
 };

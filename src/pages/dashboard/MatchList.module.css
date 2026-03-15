@@ -42,6 +42,45 @@
   gap: 10px;
   margin-bottom: var(--space-lg);
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--charcoal-pale);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 9px 14px 9px 34px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  background: var(--white);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.searchInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.searchInput::placeholder {
+  color: var(--charcoal-pale);
 }
 
 .filterSelect {
@@ -166,128 +205,399 @@
 }
 
 /* ── Create Modal ───────────────────────── */
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes connectorPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(15, 26, 46, 0.55);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 24px;
+  animation: modalOverlayIn var(--duration-normal) var(--ease-out) both;
 }
 
 .modal {
   background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+  border-radius: var(--radius-xl);
+  padding: 0;
   width: 100%;
-  max-width: 480px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  max-width: 540px;
+  box-shadow: var(--shadow-float);
+  animation: modalSlideIn var(--duration-slow) var(--ease-out) both;
+  overflow: hidden;
+}
+
+/* ── Modal Header ── */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, rgba(26, 43, 75, 0.03) 0%, rgba(255, 126, 103, 0.03) 100%);
+}
+
+.modalHeaderIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-light) 100%);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 126, 103, 0.3);
 }
 
 .modalTitle {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--charcoal);
-  margin-bottom: var(--space-lg);
   letter-spacing: -0.02em;
+  line-height: 1.3;
 }
 
-.modalField {
-  margin-bottom: var(--space-md);
-}
-
-.modalLabel {
-  display: block;
+.modalSubtitle {
   font-size: 0.78rem;
-  font-weight: 600;
   color: var(--charcoal-pale);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
-.seekerSearch {
-  display: flex;
-  gap: 8px;
-}
-
-.seekerInput {
-  flex: 1;
-  padding: 9px 14px;
-  border: 1.5px solid var(--border);
+.modalClose {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
-  font-size: 0.84rem;
-  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--charcoal-pale);
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.modalClose:hover {
+  background: var(--bg-warm);
   color: var(--charcoal);
 }
 
-.seekerInput:focus {
-  border-color: var(--navy);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--navy-glow);
+/* ── Pairing Area ── */
+.pairingArea {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 24px 28px;
 }
 
-.seekerResults {
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  max-height: 160px;
-  overflow-y: auto;
-  margin-top: 6px;
+/* ── Seeker Slot ── */
+.seekerSlot {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
 }
 
-.seekerOption {
+.seekerSlotFilled {
+  background: var(--white);
+  border: 2px solid var(--border-light);
+  box-shadow: var(--shadow-card);
+}
+
+.slotHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  font-size: 0.84rem;
-  cursor: pointer;
-  transition: background var(--duration-fast);
+  margin-bottom: 12px;
 }
 
-.seekerOption:hover {
-  background: var(--navy-glow);
-}
-
-.seekerOptionMeta {
-  font-size: 0.75rem;
-  color: var(--charcoal-pale);
-}
-
-.selectedSeeker {
+.slotBadge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--navy);
+  color: var(--white);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.slotRemove {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--charcoal-pale);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.slotRemove:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.slotBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.slotAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(26, 43, 75, 0.2);
+}
+
+.slotAvatarEmpty {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slotName {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.01em;
+}
+
+.slotMeta {
+  display: flex;
+  align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  background: var(--navy-glow);
-  border-radius: var(--radius-sm);
-  font-size: 0.84rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.slotGender {
+  font-size: 0.68rem;
   font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: #f0f4ff;
   color: var(--navy);
 }
 
-.removeSeeker {
-  cursor: pointer;
-  color: var(--charcoal-pale);
-  font-size: 1rem;
-  line-height: 1;
+.slotOccupation {
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warm);
+  color: var(--charcoal-light);
 }
 
-.removeSeeker:hover {
-  color: var(--danger);
+.slotSearchWrap {
+  width: 100%;
+  position: relative;
+}
+
+.slotSearchInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  background: var(--white);
+  text-align: center;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.slotSearchInput::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.slotSearchInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+  text-align: left;
+}
+
+.slotDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: -16px;
+  right: -16px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 10;
+  animation: slideDown var(--duration-fast) var(--ease-out) both;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slotDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.slotDropdownItem:hover {
+  background: var(--navy-glow);
+}
+
+.slotDropdownItem:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.dropdownAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warm);
+  color: var(--charcoal-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dropdownInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dropdownName {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.dropdownMeta {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+  font-weight: 500;
+}
+
+/* ── Pairing Connector ── */
+.pairingConnector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  flex-shrink: 0;
+  gap: 0;
+  padding: 0 4px;
+}
+
+.connectorLine {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+.connectorLineActive {
+  background: var(--coral-light);
+}
+
+.connectorHeart {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--bg-warm);
+  color: var(--charcoal-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.connectorHeartActive {
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-light) 100%);
+  color: var(--white);
+  box-shadow: 0 4px 16px rgba(255, 126, 103, 0.35);
+  animation: connectorPulse 2s var(--ease-smooth) infinite;
+}
+
+/* ── Note Section ── */
+.noteSection {
+  padding: 0 28px 24px;
+}
+
+.noteLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--charcoal-pale);
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
 }
 
 .noteInput {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
   resize: vertical;
   font-family: var(--font-sans);
   min-height: 60px;
+  color: var(--charcoal);
+  transition: all var(--duration-fast) var(--ease-out);
+  line-height: 1.6;
+}
+
+.noteInput::placeholder {
+  color: var(--charcoal-pale);
 }
 
 .noteInput:focus {
@@ -296,46 +606,69 @@
   box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
+/* ── Modal Actions ── */
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: var(--space-lg);
+  padding: 18px 28px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg);
 }
 
 .cancelBtn {
-  padding: 9px 18px;
+  padding: 10px 20px;
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--charcoal-light);
-  background: var(--bg);
+  background: var(--white);
+  border: 1px solid var(--border);
   transition: all var(--duration-fast) var(--ease-out);
 }
 
 .cancelBtn:hover {
-  background: var(--border-light);
+  background: var(--bg-warm);
+  border-color: var(--charcoal-pale);
 }
 
 .submitBtn {
-  padding: 9px 22px;
-  background: var(--navy);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
   color: var(--white);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
-  font-weight: 650;
+  font-weight: 700;
   transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 4px 12px rgba(26, 43, 75, 0.25);
 }
 
-.submitBtn:hover {
-  background: var(--navy-light);
+.submitBtn:hover:not(:disabled) {
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(26, 43, 75, 0.3);
 }
 
 .submitBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
+}
+
+.submitSpinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--white);
+  border-radius: var(--radius-full);
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 640px) {
@@ -357,6 +690,47 @@
   }
 
   .modal {
+    max-width: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .modalHeader {
+    padding: 20px 20px 16px;
+  }
+
+  .pairingArea {
+    flex-direction: column;
     padding: 20px;
+    gap: 0;
+  }
+
+  .pairingConnector {
+    flex-direction: row;
+    width: 100%;
+    height: 40px;
+    padding: 4px 0;
+  }
+
+  .connectorLine {
+    width: auto;
+    height: 2px;
+    flex: 1;
+  }
+
+  .noteSection {
+    padding: 0 20px 20px;
+  }
+
+  .modalActions {
+    padding: 16px 20px;
+  }
+
+  .seekerSlot {
+    padding: 14px;
+  }
+
+  .slotDropdown {
+    left: -14px;
+    right: -14px;
   }
 }

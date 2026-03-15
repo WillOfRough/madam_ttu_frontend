@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, Plus } from 'lucide-react';
+import { Heart, ArrowRight, Plus, Search, X } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
@@ -29,12 +29,25 @@ export default function MatchList() {
     useMatchStore();
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchMatches();
   }, [page, filters, fetchMatches]);
 
   const totalPages = Math.ceil(totalCount / size);
+
+  const filteredMatches = searchQuery.trim()
+    ? matches.filter((m) => {
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          m.seekerA.seekerName?.toLowerCase().includes(q) ||
+          m.seekerB.seekerName?.toLowerCase().includes(q) ||
+          m.note?.toLowerCase().includes(q) ||
+          (STATUS_STEP_LABELS[m.status] || '').includes(q)
+        );
+      })
+    : matches;
 
   return (
     <div className={styles.page}>
@@ -46,6 +59,16 @@ export default function MatchList() {
       </div>
 
       <div className={styles.filters}>
+        <div className={styles.searchBox}>
+          <Search size={15} className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="이름, 메모로 검색..."
+          />
+        </div>
         <select
           className={styles.filterSelect}
           value={filters.status || ''}
@@ -69,15 +92,15 @@ export default function MatchList() {
 
       {isLoading ? (
         <SkeletonTable rows={4} columns={3} />
-      ) : matches.length === 0 && !error ? (
+      ) : filteredMatches.length === 0 && !error ? (
         <div className={styles.empty}>
           <Heart size={40} strokeWidth={1} />
-          <p>매칭 내역이 없습니다.</p>
+          <p>{searchQuery ? '검색 결과가 없습니다.' : '매칭 내역이 없습니다.'}</p>
         </div>
       ) : (
         <>
           <div className={styles.cardGrid}>
-            {matches.map((m) => (
+            {filteredMatches.map((m) => (
               <div
                 key={m.matchId}
                 className={styles.matchCard}
@@ -115,6 +138,70 @@ export default function MatchList() {
 
       {showCreate && (
         <CreateMatchModal onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); fetchMatches(); }} />
+      )}
+    </div>
+  );
+}
+
+function SeekerSlot({ seeker, side, onRemove, searchQuery, onSearchChange, onFocus, searchResults, onSelect, excludeId }) {
+  const sideLabel = side === 'A' ? 'A' : 'B';
+
+  return (
+    <div className={`${styles.seekerSlot} ${seeker ? styles.seekerSlotFilled : ''}`}>
+      <div className={styles.slotHeader}>
+        <span className={styles.slotBadge}>{sideLabel}</span>
+        {seeker && (
+          <button className={styles.slotRemove} onClick={onRemove} type="button" aria-label="제거">
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {seeker ? (
+        <div className={styles.slotBody}>
+          <div className={styles.slotAvatar}>
+            {(seeker.nickname || seeker.name || '?').charAt(0)}
+          </div>
+          <span className={styles.slotName}>{seeker.nickname || seeker.name}</span>
+          <div className={styles.slotMeta}>
+            <span className={styles.slotGender}>
+              {seeker.gender === 'female' ? '여성' : '남성'}
+            </span>
+            {seeker.occupation && <span className={styles.slotOccupation}>{seeker.occupation}</span>}
+          </div>
+        </div>
+      ) : (
+        <div className={styles.slotBody}>
+          <div className={styles.slotAvatarEmpty}>
+            <Search size={18} />
+          </div>
+          <div className={styles.slotSearchWrap}>
+            <input
+              className={styles.slotSearchInput}
+              value={searchQuery}
+              onChange={onSearchChange}
+              onFocus={onFocus}
+              placeholder="이름으로 검색..."
+            />
+            {searchResults.length > 0 && (
+              <div className={styles.slotDropdown}>
+                {searchResults.filter((c) => c.id !== excludeId).map((c) => (
+                  <div key={c.id} className={styles.slotDropdownItem} onClick={() => onSelect(c)}>
+                    <div className={styles.dropdownAvatar}>
+                      {(c.nickname || c.name || '?').charAt(0)}
+                    </div>
+                    <div className={styles.dropdownInfo}>
+                      <span className={styles.dropdownName}>{c.nickname || c.name}</span>
+                      <span className={styles.dropdownMeta}>
+                        {c.gender === 'female' ? '여' : '남'} · {c.occupation || '-'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -164,89 +251,86 @@ function CreateMatchModal({ onClose, onCreated }) {
     setSubmitting(false);
   };
 
+  const bothSelected = seekerA && seekerB;
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.modalTitle}>새 매칭 생성</h3>
-
-        <div className={styles.modalField}>
-          <span className={styles.modalLabel}>Seeker A</span>
-          {seekerA ? (
-            <div className={styles.selectedSeeker}>
-              {seekerA.nickname || seekerA.name} ({seekerA.gender === 'female' ? '여' : '남'})
-              <span className={styles.removeSeeker} onClick={() => setSeekerA(null)}>&times;</span>
-            </div>
-          ) : (
-            <>
-              <input
-                className={styles.seekerInput}
-                value={selectingFor === 'A' ? searchQuery : ''}
-                onChange={(e) => { setSelectingFor('A'); setSearchQuery(e.target.value); }}
-                onFocus={() => setSelectingFor('A')}
-                placeholder="이름으로 검색..."
-              />
-              {selectingFor === 'A' && searchResults.length > 0 && (
-                <div className={styles.seekerResults}>
-                  {searchResults.filter((c) => c.id !== seekerB?.id).map((c) => (
-                    <div key={c.id} className={styles.seekerOption} onClick={() => handleSelect(c)}>
-                      <span>{c.nickname || c.name}</span>
-                      <span className={styles.seekerOptionMeta}>
-                        {c.gender === 'female' ? '여' : '남'} · {c.occupation || '-'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+        {/* Header */}
+        <div className={styles.modalHeader}>
+          <div className={styles.modalHeaderIcon}>
+            <Heart size={18} />
+          </div>
+          <div>
+            <h3 className={styles.modalTitle}>새 매칭 생성</h3>
+            <p className={styles.modalSubtitle}>두 Seeker를 선택하여 매칭을 만들어보세요</p>
+          </div>
+          <button className={styles.modalClose} onClick={onClose} type="button">
+            <X size={18} />
+          </button>
         </div>
 
-        <div className={styles.modalField}>
-          <span className={styles.modalLabel}>Seeker B</span>
-          {seekerB ? (
-            <div className={styles.selectedSeeker}>
-              {seekerB.nickname || seekerB.name} ({seekerB.gender === 'female' ? '여' : '남'})
-              <span className={styles.removeSeeker} onClick={() => setSeekerB(null)}>&times;</span>
+        {/* Pairing Area */}
+        <div className={styles.pairingArea}>
+          <SeekerSlot
+            seeker={seekerA}
+            side="A"
+            onRemove={() => setSeekerA(null)}
+            searchQuery={selectingFor === 'A' ? searchQuery : ''}
+            onSearchChange={(e) => { setSelectingFor('A'); setSearchQuery(e.target.value); }}
+            onFocus={() => setSelectingFor('A')}
+            searchResults={selectingFor === 'A' ? searchResults : []}
+            onSelect={handleSelect}
+            excludeId={seekerB?.id}
+          />
+
+          <div className={styles.pairingConnector}>
+            <div className={`${styles.connectorLine} ${bothSelected ? styles.connectorLineActive : ''}`} />
+            <div className={`${styles.connectorHeart} ${bothSelected ? styles.connectorHeartActive : ''}`}>
+              <Heart size={14} />
             </div>
-          ) : (
-            <>
-              <input
-                className={styles.seekerInput}
-                value={selectingFor === 'B' ? searchQuery : ''}
-                onChange={(e) => { setSelectingFor('B'); setSearchQuery(e.target.value); }}
-                onFocus={() => setSelectingFor('B')}
-                placeholder="이름으로 검색..."
-              />
-              {selectingFor === 'B' && searchResults.length > 0 && (
-                <div className={styles.seekerResults}>
-                  {searchResults.filter((c) => c.id !== seekerA?.id).map((c) => (
-                    <div key={c.id} className={styles.seekerOption} onClick={() => handleSelect(c)}>
-                      <span>{c.nickname || c.name}</span>
-                      <span className={styles.seekerOptionMeta}>
-                        {c.gender === 'female' ? '여' : '남'} · {c.occupation || '-'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+            <div className={`${styles.connectorLine} ${bothSelected ? styles.connectorLineActive : ''}`} />
+          </div>
+
+          <SeekerSlot
+            seeker={seekerB}
+            side="B"
+            onRemove={() => setSeekerB(null)}
+            searchQuery={selectingFor === 'B' ? searchQuery : ''}
+            onSearchChange={(e) => { setSelectingFor('B'); setSearchQuery(e.target.value); }}
+            onFocus={() => setSelectingFor('B')}
+            searchResults={selectingFor === 'B' ? searchResults : []}
+            onSelect={handleSelect}
+            excludeId={seekerA?.id}
+          />
         </div>
 
-        <div className={styles.modalField}>
-          <span className={styles.modalLabel}>메모 (선택)</span>
+        {/* Note */}
+        <div className={styles.noteSection}>
+          <label className={styles.noteLabel}>메모 (선택)</label>
           <textarea
             className={styles.noteInput}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="매칭 메모를 입력하세요..."
+            placeholder="이 매칭에 대한 메모를 남겨보세요..."
             rows={3}
           />
         </div>
 
+        {/* Actions */}
         <div className={styles.modalActions}>
-          <button className={styles.cancelBtn} onClick={onClose}>취소</button>
-          <button className={styles.submitBtn} onClick={handleSubmit} disabled={!seekerA || !seekerB || submitting}>
+          <button className={styles.cancelBtn} onClick={onClose} type="button">취소</button>
+          <button
+            className={styles.submitBtn}
+            onClick={handleSubmit}
+            disabled={!seekerA || !seekerB || submitting}
+            type="button"
+          >
+            {submitting ? (
+              <span className={styles.submitSpinner} />
+            ) : (
+              <Heart size={15} />
+            )}
             {submitting ? '생성 중...' : '매칭 생성'}
           </button>
         </div>
