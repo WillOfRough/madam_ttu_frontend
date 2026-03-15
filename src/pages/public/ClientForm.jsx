@@ -107,8 +107,6 @@ function validateStep(step, form) {
     if (!form.photos || form.photos.length === 0) {
       errors.photos = '사진을 최소 1장 등록해주세요.';
     }
-    if (!form.consentPrivacy) errors.consentPrivacy = '개인정보 수집 동의가 필요합니다.';
-    if (!form.consentThirdParty) errors.consentThirdParty = '정보 제공 동의가 필요합니다.';
   }
   return errors;
 }
@@ -126,7 +124,6 @@ export default function ClientForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState({});
-  const [showTerms, setShowTerms] = useState(false);
   const [loadedPhotos, setLoadedPhotos] = useState({});
 
   useEffect(() => {
@@ -179,7 +176,7 @@ export default function ClientForm() {
       0: ['name', 'gender', 'birthYear', 'phone', 'location'],
       1: ['occupation', 'height', 'company', 'education', 'school'],
       2: ['religion', 'mbti', 'hobbies'],
-      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'photos', 'consentPrivacy', 'consentThirdParty'],
+      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'photos'],
     };
     const fields = stepFields[step] || [];
     const newTouched = { ...touched };
@@ -193,7 +190,7 @@ export default function ClientForm() {
   };
 
   const handleSubmitClick = () => {
-    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, photos: true, consentPrivacy: true, consentThirdParty: true });
+    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, photos: true });
     if (!hasErrors) {
       handleSubmit();
     }
@@ -546,63 +543,6 @@ export default function ClientForm() {
                 {photoError && <p className={styles.fieldError}>{photoError}</p>}
                 {getError('photos') && <p className={styles.fieldError}>{getError('photos')}</p>}
               </div>
-
-              <div className={styles.consents}>
-                <label className={styles.consentLabel}>
-                  <input
-                    type="checkbox"
-                    checked={form.consentPrivacy}
-                    onChange={(e) => { setField('consentPrivacy', e.target.checked); markTouched('consentPrivacy'); }}
-                    className={styles.consentCheckbox}
-                  />
-                  <span>개인정보 수집 및 이용 동의 <em>(필수)</em></span>
-                </label>
-                <label className={styles.consentLabel}>
-                  <input
-                    type="checkbox"
-                    checked={form.consentThirdParty}
-                    onChange={(e) => { setField('consentThirdParty', e.target.checked); markTouched('consentThirdParty'); }}
-                    className={styles.consentCheckbox}
-                  />
-                  <span>매니저 및 매칭 상대 정보 제공 동의 <em>(필수)</em></span>
-                </label>
-                <button
-                  type="button"
-                  className={styles.termsLink}
-                  onClick={() => setShowTerms(true)}
-                >
-                  약관 보기
-                </button>
-              </div>
-
-              {showTerms && (
-                <div className={styles.termsOverlay} onClick={() => setShowTerms(false)}>
-                  <div className={styles.termsModal} onClick={(e) => e.stopPropagation()}>
-                    <div className={styles.termsHeader}>
-                      <h3 className={styles.termsTitle}>이용약관 및 개인정보 처리방침</h3>
-                      <button className={styles.termsClose} onClick={() => setShowTerms(false)}>×</button>
-                    </div>
-                    <div className={styles.termsBody}>
-                      <h4>1. 개인정보 수집 및 이용 동의</h4>
-                      <p>수집 항목: 이름, 별명, 성별, 출생연도, 연락처, 거주지역, 키, 직업, 회사, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
-                      <p>수집 목적: 매칭 서비스 제공 및 회원 관리</p>
-                      <p>보유 기간: 서비스 이용 종료 시까지 (탈퇴 요청 시 즉시 파기)</p>
-
-                      <h4>2. 제3자 정보 제공 동의</h4>
-                      <p>제공 대상: 매칭 매니저 및 매칭 상대방</p>
-                      <p>제공 항목: 별명, 성별, 나이, 거주지역, 키, 직업, 학력, 종교, MBTI, 취미, 자기소개, 이상형</p>
-                      <p>제공 목적: 매칭 서비스 진행</p>
-                      <p>연락처는 매칭 성사 후 양측 동의 시에만 상대방에게 공유됩니다.</p>
-
-                      <h4>3. 동의 거부 권리</h4>
-                      <p>위 동의를 거부할 권리가 있으며, 동의 거부 시 서비스 이용이 제한될 수 있습니다.</p>
-                    </div>
-                    <button className={styles.termsConfirmBtn} onClick={() => setShowTerms(false)}>
-                      확인
-                    </button>
-                  </div>
-                </div>
-              )}
 
               {error && <p className={styles.error}>{error}</p>}
             </div>
