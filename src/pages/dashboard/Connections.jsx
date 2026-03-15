@@ -159,20 +159,28 @@ export default function Connections() {
             value={searchEmail}
             onChange={(e) => setSearchEmail(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="매니저 이메일을 입력하세요"
+            placeholder="이메일 전체를 입력하세요 (예: name@example.com)"
           />
           <button className={styles.searchBtn} onClick={handleSearch} disabled={searching || !searchEmail.trim()}>
             <Search size={14} /> {searching ? '검색 중...' : '검색'}
           </button>
         </div>
+        <p className={styles.searchHint}>정확한 이메일 주소를 입력해야 검색됩니다 (부분 검색 불가)</p>
 
         {searchError && <p className={styles.searchError}>{searchError}</p>}
 
         {searchResult && (
           <div className={styles.searchResultCard}>
             <div className={styles.searchResultInfo}>
-              <div className={styles.avatar}>{(searchResult.email || '?').charAt(0)}</div>
-              <span className={styles.searchResultName}>{searchResult.email}</span>
+              <div className={styles.avatar}>
+                {(searchResult.name || searchResult.nickname || searchEmail).charAt(0)}
+              </div>
+              <div className={styles.searchResultText}>
+                <span className={styles.searchResultName}>
+                  {searchResult.name || searchResult.nickname || '이름 없음'}
+                </span>
+                <span className={styles.searchResultEmail}>{searchEmail}</span>
+              </div>
             </div>
             <div className={styles.requestForm}>
               <input
