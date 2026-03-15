@@ -15,9 +15,10 @@ const RESPONSE_MAP = {
 };
 
 const STEPS = [
-  { key: 'proposal_sent', label: 'B확인' },
-  { key: 'proposal_accepted', label: 'A확인' },
+  { key: 'proposal_sent', label: 'A확인' },
+  { key: 'proposal_accepted', label: 'B확인' },
   { key: 'scheduling', label: '일정조율' },
+  { key: 'arranging', label: '매니저확정' },
   { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
 ];
@@ -26,8 +27,9 @@ function getStepIndex(status) {
   if (status === 'proposal_sent') return 0;
   if (status === 'proposal_accepted') return 1;
   if (status === 'scheduling') return 2;
-  if (status === 'scheduled') return 3;
-  if (status === 'completed') return 4;
+  if (status === 'arranging') return 3;
+  if (status === 'scheduled') return 4;
+  if (status === 'completed') return 5;
   return -1; // cancelled
 }
 
@@ -66,6 +68,8 @@ export default function MatchDetail() {
   const [showCancel, setShowCancel] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [venue, setVenue] = useState('');
+  const [endTimeInput, setEndTimeInput] = useState('');
+  const [selectedTimeId, setSelectedTimeId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const reload = () => {
@@ -114,9 +118,10 @@ export default function MatchDetail() {
   };
 
   const handleConfirmSchedule = async () => {
+    if (!selectedTimeId) return;
     setActionLoading(true);
     try {
-      await matchService.confirmMatch(matchId, { location: venue, endTime: null });
+      await matchService.confirmMatch(matchId, { timeId: selectedTimeId, location: venue, endTime: endTimeInput || null });
       toast.success('약속이 확정되었습니다.');
       reload();
     } catch (err) {
@@ -125,6 +130,8 @@ export default function MatchDetail() {
     setActionLoading(false);
     setShowConfirm(false);
     setVenue('');
+    setEndTimeInput('');
+    setSelectedTimeId(null);
   };
 
   const handleCompleteMatch = async () => {
@@ -194,73 +201,93 @@ export default function MatchDetail() {
         <SchedulingLinkCard match={match} />
       )}
 
-      {/* Schedule Section */}
-      {(match.status === 'scheduling' || match.status === 'scheduled' || match.status === 'completed') && match.schedule && (
+      {/* Arranging: Manager confirms time + venue */}
+      {match.status === 'arranging' && match.schedule && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <Calendar size={16} /> 가용시간 목록
+          </h3>
+          {(() => {
+            // Group by seekerName
+            const grouped = {};
+            (match.schedule.timeSlots || []).forEach((slot) => {
+              const name = slot.seekerName || '알 수 없음';
+              if (!grouped[name]) grouped[name] = [];
+              grouped[name].push(slot);
+            });
+            return Object.entries(grouped).map(([name, slots]) => (
+              <div key={name} style={{ marginBottom: 16 }}>
+                <p className={styles.fieldLabel} style={{ marginBottom: 6 }}>{name}</p>
+                <div className={styles.slotTags}>
+                  {slots.map((slot) => (
+                    <label
+                      key={slot.id}
+                      className={`${styles.slotTag} ${selectedTimeId === slot.id ? styles.slotTagPicked : ''}`}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <input
+                        type="radio"
+                        name="confirmTime"
+                        value={slot.id}
+                        checked={selectedTimeId === slot.id}
+                        onChange={() => setSelectedTimeId(slot.id)}
+                        style={{ display: 'none' }}
+                      />
+                      {formatSlotDisplay(slot)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ));
+          })()}
+          <div className={styles.confirmSection}>
+            <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+              약속 확정하기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Section (scheduled / completed) */}
+      {(match.status === 'scheduled' || match.status === 'completed') && match.schedule && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <Calendar size={16} /> 일정 정보
+          </h3>
+          <div className={styles.scheduleInfo}>
+            {match.schedule.pickedSlot && (
+              <div className={styles.scheduleField}>
+                <span className={styles.fieldLabel}>확정된 시간</span>
+                <span className={styles.fieldValue}>
+                  <Clock size={14} /> {formatSlotDisplay(match.schedule.pickedSlot)}
+                </span>
+              </div>
+            )}
+            {match.schedule.venue && (
+              <div className={styles.scheduleField}>
+                <span className={styles.fieldLabel}>장소</span>
+                <span className={styles.fieldValue}>
+                  <MapPin size={14} /> {match.schedule.venue}
+                </span>
+              </div>
+            )}
+            {match.schedule.confirmedAt && (
+              <div className={styles.scheduleField}>
+                <span className={styles.fieldLabel}>확정일</span>
+                <span className={styles.fieldValue}>{formatDate(match.schedule.confirmedAt)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Scheduling: waiting for available times */}
+      {match.status === 'scheduling' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
           </h3>
-
-          {match.schedule.proposedBy && (
-            <div className={styles.scheduleInfo}>
-              <div className={styles.scheduleField}>
-                <span className={styles.fieldLabel}>제안 시간</span>
-                <div className={styles.slotTags}>
-                  {match.schedule.timeSlots.map((slot) => (
-                    <span
-                      key={slot.id}
-                      className={`${styles.slotTag} ${match.schedule.pickedSlot?.id === slot.id ? styles.slotTagPicked : ''}`}
-                    >
-                      {formatSlotDisplay(slot)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {match.schedule.pickedSlot && (
-                <div className={styles.scheduleField}>
-                  <span className={styles.fieldLabel}>선택된 시간</span>
-                  <span className={styles.fieldValue}>
-                    <Clock size={14} /> {formatSlotDisplay(match.schedule.pickedSlot)}
-                  </span>
-                </div>
-              )}
-
-              {match.schedule.venue && (
-                <div className={styles.scheduleField}>
-                  <span className={styles.fieldLabel}>장소</span>
-                  <span className={styles.fieldValue}>
-                    <MapPin size={14} /> {match.schedule.venue}
-                  </span>
-                </div>
-              )}
-
-              {match.schedule.confirmedAt && (
-                <div className={styles.scheduleField}>
-                  <span className={styles.fieldLabel}>확정일</span>
-                  <span className={styles.fieldValue}>{formatDate(match.schedule.confirmedAt)}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {match.status === 'scheduling' && !match.schedule.proposedBy && (
-            <p className={styles.waitingText}>가용시간 등록을 기다리고 있습니다.</p>
-          )}
-
-          {match.status === 'scheduling' && !match.schedule.pickedSlot && (
-            <p className={styles.waitingText}>상대방의 시간 선택을 기다리고 있습니다.</p>
-          )}
-
-          {/* Manager: confirm schedule with venue */}
-          {match.status === 'scheduling' && match.schedule.pickedSlot && !match.schedule.confirmedAt && (
-            <div className={styles.confirmSection}>
-              <p className={styles.confirmHint}>시간이 선택되었습니다. 장소를 입력하고 약속을 확정해주세요.</p>
-              <button className={styles.actionBtn} onClick={() => setShowConfirm(true)}>
-                약속 확정하기
-              </button>
-            </div>
-          )}
+          <p className={styles.waitingText}>양쪽 Seeker의 가용시간 등록을 기다리고 있습니다.</p>
         </div>
       )}
 
@@ -311,7 +338,7 @@ export default function MatchDetail() {
             </button>
           </>
         )}
-        {match.status === 'scheduling' && (
+        {(match.status === 'scheduling' || match.status === 'arranging') && (
           <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
             매칭 취소
           </button>
@@ -319,10 +346,18 @@ export default function MatchDetail() {
       </div>
 
       {/* Cancelled info */}
-      {isCancelled && match.cancelReason && (
+      {isCancelled && (match.cancelReason || match.cancelledByName) && (
         <div className={styles.cancelledBanner}>
           <p className={styles.cancelledTitle}>매칭 종료</p>
-          <p className={styles.cancelledReason}>{match.cancelReason}</p>
+          {match.cancelledByName && (
+            <p className={styles.cancelledReason}>취소자: {match.cancelledByName}</p>
+          )}
+          {match.cancelledAt && (
+            <p className={styles.cancelledReason}>취소일: {formatDate(match.cancelledAt)}</p>
+          )}
+          {match.cancelReason && (
+            <p className={styles.cancelledReason}>{match.cancelReason}</p>
+          )}
         </div>
       )}
 
@@ -348,9 +383,11 @@ export default function MatchDetail() {
         <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>약속 확정</h3>
-            <p className={styles.modalDesc}>
-              선택된 시간: {formatSlotDisplay(match.schedule.pickedSlot)}
-            </p>
+            {selectedTimeId && match.schedule?.timeSlots && (
+              <p className={styles.modalDesc}>
+                선택된 시간: {formatSlotDisplay(match.schedule.timeSlots.find((s) => s.id === selectedTimeId))}
+              </p>
+            )}
             <div className={styles.modalField}>
               <label className={styles.modalLabel}>장소</label>
               <input
@@ -360,12 +397,21 @@ export default function MatchDetail() {
                 placeholder="예: 청담동 르카페"
               />
             </div>
+            <div className={styles.modalField}>
+              <label className={styles.modalLabel}>종료 시간 (선택)</label>
+              <input
+                className={styles.modalInput}
+                value={endTimeInput}
+                onChange={(e) => setEndTimeInput(e.target.value)}
+                placeholder="예: 21:00"
+              />
+            </div>
             <div className={styles.modalActions}>
               <button className={styles.cancelModalBtn} onClick={() => setShowConfirm(false)}>취소</button>
               <button
                 className={styles.confirmModalBtn}
                 onClick={handleConfirmSchedule}
-                disabled={actionLoading}
+                disabled={actionLoading || !selectedTimeId}
               >
                 {actionLoading ? '확정 중...' : '약속 확정'}
               </button>
@@ -380,10 +426,10 @@ export default function MatchDetail() {
 function SchedulingLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const receiverToken = match.seekerB.proposalToken;
-  const proposerToken = match.seekerA.proposalToken;
-  const receiverUrl = `${window.location.origin}/proposal/${receiverToken}/available-times`;
-  const proposerUrl = `${window.location.origin}/proposal/${proposerToken}/select-time`;
+  const tokenA = match.seekerA.proposalToken;
+  const tokenB = match.seekerB.proposalToken;
+  const urlA = `${window.location.origin}/proposal/${tokenA}/available-times`;
+  const urlB = `${window.location.origin}/proposal/${tokenB}/available-times`;
 
   const handleCopy = async (url, key) => {
     try {
@@ -405,27 +451,31 @@ function SchedulingLinkCard({ match }) {
       <div className={styles.schedulingLinkRows}>
         <div className={styles.schedulingLinkRow}>
           <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.seekerB.seekerName} — 가용시간 등록</span>
+            <span className={styles.schedulingRoleBadge}>A</span>
+            <span>{match.seekerA.seekerName} — 가용시간 등록</span>
+            {match.seekerA.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
+            {match.seekerA.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
           </div>
           <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{receiverUrl}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(receiverUrl, 'receiver')}>
-              {copiedKey === 'receiver' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'receiver' ? '복사됨' : '복사'}
+            <span className={styles.schedulingLinkValue}>{urlA}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
+              {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'A' ? '복사됨' : '복사'}
             </button>
           </div>
         </div>
         <div className={styles.schedulingLinkRow}>
           <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.seekerA.seekerName} — 시간 선택</span>
+            <span className={styles.schedulingRoleBadge}>B</span>
+            <span>{match.seekerB.seekerName} — 가용시간 등록</span>
+            {match.seekerB.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
+            {match.seekerB.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
           </div>
           <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{proposerUrl}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(proposerUrl, 'proposer')}>
-              {copiedKey === 'proposer' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'proposer' ? '복사됨' : '복사'}
+            <span className={styles.schedulingLinkValue}>{urlB}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
+              {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'B' ? '복사됨' : '복사'}
             </button>
           </div>
         </div>
@@ -438,7 +488,7 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
-  const isLinkActive = side === 'B' || matchStatus !== 'proposal_sent';
+  const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {
     if (!isLinkActive) return;
@@ -459,9 +509,9 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   // Sequential status text
   let statusText = null;
   if (matchStatus === 'proposal_sent') {
-    statusText = side === 'B' ? '프로필 확인 대기' : 'B 확인 후 전달 예정';
+    statusText = side === 'A' ? '프로필 확인 대기' : 'A 확인 후 전달 예정';
   } else if (matchStatus === 'proposal_accepted') {
-    statusText = side === 'B' ? null : '프로필 확인 대기';
+    statusText = side === 'A' ? null : '프로필 확인 대기';
   }
 
   return (
@@ -508,7 +558,7 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
             </button>
           </div>
         ) : (
-          <div className={styles.tokenInactive}>B 수락 후 활성화</div>
+          <div className={styles.tokenInactive}>A 수락 후 활성화</div>
         )}
       </div>
     </div>

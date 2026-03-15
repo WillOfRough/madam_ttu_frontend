@@ -355,14 +355,14 @@ const sentRequests = [
 ];
 
 const searchableManagers = [
-  { id: 'm004', name: '김태희', nickname: '태희매니저' },
-  { id: 'm005', name: '정재영', nickname: '재영매니저' },
-  { id: 'm006', name: '최유리', nickname: '유리매니저' },
-  { id: 'm007', name: '홍길동', nickname: '길동매니저' },
+  { id: 'm004', name: '김태희', email: 'taehee@knotsandlinks.kr' },
+  { id: 'm005', name: '정재영', email: 'jaeyoung@knotsandlinks.kr' },
+  { id: 'm006', name: '최유리', email: 'yuri@knotsandlinks.kr' },
+  { id: 'm007', name: '홍길동', email: 'gildong@knotsandlinks.kr' },
 ];
 
 // ── Matches (순차 공개 프로세스) ────────────────────
-// 가용시간 저장소 (proposal token → times)
+// 가용시간 저장소 (proposal token → times with seekerName)
 const availableTimes = {};
 
 const matches = [
@@ -406,11 +406,11 @@ const matches = [
     },
     createdAt: '2026-03-07T11:00:00Z',
   },
-  // 3) scheduling — 양쪽 수락, 일정 조율 중 (B가 가용시간 등록 완료)
+  // 3) arranging — 양쪽 수락, 양쪽 가용시간 등록 완료 → 매니저 확정 대기
   {
     matchId: 'match003',
     type: '1:1 소개팅',
-    status: 'scheduling',
+    status: 'arranging',
     note: '운동 좋아하는 두 분.',
     seekerA: {
       seekerId: 's007', seekerName: '윤예은', seekerGender: 'female',
@@ -477,6 +477,8 @@ const matches = [
     status: 'cancelled',
     note: '',
     cancelReason: 'B가 프로필 확인 후 거절',
+    cancelledByName: '최민수',
+    cancelledAt: '2026-03-06T12:00:00Z',
     seekerA: {
       seekerId: 's003', seekerName: '박지민', seekerGender: 'female',
       managerName: 'Manager', role: 'proposer',
@@ -493,13 +495,17 @@ const matches = [
   },
 ];
 
-// match003: B(receiver)가 가용시간 등록 완료 상태
+// match003: 양쪽 가용시간 등록 완료 (arranging 상태)
+availableTimes['PrTk07yZ9aB7'] = [
+  { timeId: 'time-a01', date: '2026-03-20', startTime: '14:00:00', seekerName: '윤예은', selected: false },
+  { timeId: 'time-a02', date: '2026-03-21', startTime: '12:00:00', seekerName: '윤예은', selected: false },
+  { timeId: 'time-a03', date: '2026-03-22', startTime: '14:00:00', seekerName: '윤예은', selected: false },
+];
 availableTimes['PrTk08cD0eF8'] = [
-  { timeId: 'time-001', date: '2026-03-20', startTime: '14:00:00', selected: false },
-  { timeId: 'time-002', date: '2026-03-20', startTime: '18:00:00', selected: false },
-  { timeId: 'time-003', date: '2026-03-21', startTime: '12:00:00', selected: false },
-  { timeId: 'time-004', date: '2026-03-21', startTime: '19:00:00', selected: false },
-  { timeId: 'time-005', date: '2026-03-22', startTime: '14:00:00', selected: false },
+  { timeId: 'time-b01', date: '2026-03-20', startTime: '14:00:00', seekerName: '정우진', selected: false },
+  { timeId: 'time-b02', date: '2026-03-20', startTime: '18:00:00', seekerName: '정우진', selected: false },
+  { timeId: 'time-b03', date: '2026-03-21', startTime: '19:00:00', seekerName: '정우진', selected: false },
+  { timeId: 'time-b04', date: '2026-03-22', startTime: '14:00:00', seekerName: '정우진', selected: false },
 ];
 
 // Build proposal lookup from matches
@@ -688,10 +694,10 @@ export async function mockFetch(path, options = {}) {
     return { success: true };
   }
 
-  // GET /api/v1/connections/search?nickname=
+  // GET /api/v1/connections/search?email=
   if (method === 'GET' && pathname === '/api/v1/connections/search') {
-    const nickname = params.get('nickname');
-    const found = searchableManagers.find((m) => m.nickname === nickname);
+    const email = params.get('email');
+    const found = searchableManagers.find((m) => m.email === email);
     if (found) return found;
     throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
   }
@@ -704,9 +710,9 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/connections/requests (send)
   if (method === 'POST' && pathname === '/api/v1/connections/requests') {
     const body = options.body || {};
-    const target = searchableManagers.find((m) => m.nickname === body.name);
+    const target = searchableManagers.find((m) => m.email === body.name);
     if (!target) throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
-    const newReq = { id: `req${Date.now()}`, managerId: target.id, managerName: target.nickname, status: 'pending', message: body.message || '', createdAt: new Date().toISOString() };
+    const newReq = { id: `req${Date.now()}`, managerId: target.id, managerName: target.name, status: 'pending', message: body.message || '', createdAt: new Date().toISOString() };
     sentRequests.unshift(newReq);
     return newReq;
   }
@@ -774,18 +780,24 @@ export async function mockFetch(path, options = {}) {
     const id = pathname.split('/').pop();
     const found = matches.find((m) => m.matchId === id);
     if (!found) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    // Build schedule object from availableTimes
-    const recToken = getReceiverToken(found);
-    const times = availableTimes[recToken] || [];
-    const pickedTime = times.find((t) => t.selected);
-    const schedule = times.length > 0 ? {
-      proposedBy: recToken,
-      timeSlots: times.map((t) => ({ id: t.timeId, date: t.date, time: t.startTime.slice(0, 5) })),
+    // Build schedule object from both sides' availableTimes
+    const tokenA = found.seekerA.proposalToken;
+    const tokenB = found.seekerB.proposalToken;
+    const timesA = availableTimes[tokenA] || [];
+    const timesB = availableTimes[tokenB] || [];
+    const allTimes = [...timesA, ...timesB];
+    const pickedTime = allTimes.find((t) => t.selected);
+    const schedule = allTimes.length > 0 ? {
+      proposedBy: allTimes.length > 0 ? 'both' : null,
+      timeSlots: allTimes.map((t) => ({ id: t.timeId, date: t.date, time: t.startTime.slice(0, 5), seekerName: t.seekerName })),
       pickedSlot: pickedTime ? { id: pickedTime.timeId, date: pickedTime.date, time: pickedTime.startTime.slice(0, 5) } : null,
       venue: found.location || null,
       confirmedAt: found.confirmedAt || null,
     } : null;
-    return { ...found, schedule };
+    // Add availableTimesSubmitted to seeker summaries
+    const seekerA = { ...found.seekerA, availableTimesSubmitted: timesA.length > 0 };
+    const seekerB = { ...found.seekerB, availableTimesSubmitted: timesB.length > 0 };
+    return { ...found, seekerA, seekerB, schedule };
   }
 
   // GET /api/v1/matches (list)
@@ -797,20 +809,24 @@ export async function mockFetch(path, options = {}) {
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
   }
 
-  // POST /api/v1/matches/:matchId/confirm (매니저 일정 확정)
+  // POST /api/v1/matches/:matchId/confirm (매니저 일정 확정 — arranging 상태에서만)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/confirm$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    // Find selected time
-    const recToken = getReceiverToken(m);
-    const times = availableTimes[recToken] || [];
-    const selected = times.find((t) => t.selected);
+    if (m.status !== 'arranging') throw Object.assign(new Error('arranging 상태에서만 확정할 수 있습니다.'), { status: 400 });
+    // Find selected time by timeId from combined available times
+    const timesA = availableTimes[m.seekerA.proposalToken] || [];
+    const timesB = availableTimes[m.seekerB.proposalToken] || [];
+    const allTimes = [...timesA, ...timesB];
+    const selected = allTimes.find((t) => t.timeId === body.timeId);
+    if (!selected) throw Object.assign(new Error('해당 가용 시간을 찾을 수 없습니다.'), { status: 404 });
+    selected.selected = true;
     m.location = body.location || '';
     m.endTime = body.endTime || '';
     m.confirmedAt = new Date().toISOString();
-    if (selected) m.meetingDate = `${selected.date}T${selected.startTime}`;
+    m.meetingDate = `${selected.date}T${selected.startTime}`;
     m.status = 'scheduled';
     return { success: true, message: '일정이 확정되었습니다.' };
   }
@@ -823,6 +839,8 @@ export async function mockFetch(path, options = {}) {
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
     m.status = 'cancelled';
     m.cancelReason = body.reason || '';
+    m.cancelledByName = 'Manager';
+    m.cancelledAt = new Date().toISOString();
     return { success: true, message: '매칭이 취소되었습니다.' };
   }
 
@@ -846,8 +864,8 @@ export async function mockFetch(path, options = {}) {
     const myRole = participant.role; // 'proposer' or 'receiver'
     const myResponse = participant.response || 'pending';
 
-    // Access control: proposal_sent → receiver만 조회 가능
-    if (m.status === 'proposal_sent' && myRole === 'proposer') {
+    // Access control: proposal_sent → proposer만 조회 가능 (A가 먼저 확인)
+    if (m.status === 'proposal_sent' && myRole === 'receiver') {
       throw Object.assign(new Error('아직 상대방 응답을 기다리고 있습니다.'), { status: 403, body: { error: '9.005' } });
     }
     if (m.status === 'cancelled' || m.status === 'completed') {
@@ -898,12 +916,12 @@ export async function mockFetch(path, options = {}) {
     }
 
     // accepted
-    if (proposal.participant.role === 'receiver') {
-      // receiver 수락 → proposal_accepted
+    if (proposal.participant.role === 'proposer') {
+      // proposer(A) 수락 → proposal_accepted
       m.status = 'proposal_accepted';
       return { success: true, message: '응답이 등록되었습니다.' };
     } else {
-      // proposer 수락 → scheduling
+      // receiver(B) 수락 → scheduling
       m.status = 'scheduling';
       return { success: true, message: '응답이 등록되었습니다.' };
     }
@@ -914,41 +932,35 @@ export async function mockFetch(path, options = {}) {
     const token = pathname.split('/').slice(-2, -1)[0];
     const result = findMatchByProposalToken(token);
     if (!result) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
-    // Return the receiver's available times
-    const recToken = getReceiverToken(result.match);
-    return { times: availableTimes[recToken] || [] };
+    // Return combined times from both sides
+    const m = result.match;
+    const timesA = availableTimes[m.seekerA.proposalToken] || [];
+    const timesB = availableTimes[m.seekerB.proposalToken] || [];
+    return { times: [...timesA, ...timesB] };
   }
 
-  // POST /api/v1/proposals/:token/available-times (receiver registers)
+  // POST /api/v1/proposals/:token/available-times (both sides register)
   if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/available-times$/.test(pathname)) {
     const token = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
     const result = findMatchByProposalToken(token);
     if (!result) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
-    const recToken = getReceiverToken(result.match);
-    availableTimes[recToken] = (body.times || []).map((t, i) => ({
+    const m = result.match;
+    const participant = result.side === 'A' ? m.seekerA : m.seekerB;
+    const seekerName = participant.seekerName;
+    availableTimes[token] = (body.times || []).map((t, i) => ({
       timeId: `time-${Date.now()}-${i}`,
       date: t.date,
       startTime: t.startTime,
+      seekerName,
       selected: false,
     }));
+    // Auto-transition to arranging if both sides have submitted
+    const otherToken = result.side === 'A' ? m.seekerB.proposalToken : m.seekerA.proposalToken;
+    if ((availableTimes[otherToken] || []).length > 0 && m.status === 'scheduling') {
+      m.status = 'arranging';
+    }
     return { success: true, message: '가용시간이 등록되었습니다.' };
-  }
-
-  // POST /api/v1/proposals/:token/select-time (proposer selects)
-  if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/select-time$/.test(pathname)) {
-    const token = pathname.split('/').slice(-2, -1)[0];
-    const body = options.body || {};
-    const result = findMatchByProposalToken(token);
-    if (!result) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
-    const recToken = getReceiverToken(result.match);
-    const times = availableTimes[recToken] || [];
-    const already = times.find((t) => t.selected);
-    if (already) throw Object.assign(new Error('이미 시간이 선택된 매칭입니다.'), { status: 400, body: { error: '9.010' } });
-    const slot = times.find((t) => t.timeId === body.timeId);
-    if (!slot) throw Object.assign(new Error('해당 가용 시간을 찾을 수 없습니다.'), { status: 404, body: { error: '9.008' } });
-    slot.selected = true;
-    return { success: true, message: '시간이 선택되었습니다.' };
   }
 
   // fallback

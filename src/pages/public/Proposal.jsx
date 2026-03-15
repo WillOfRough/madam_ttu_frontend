@@ -64,15 +64,13 @@ export default function Proposal() {
   const [oathAgreed, setOathAgreed] = useState(false);
   const [oathPassed, setOathPassed] = useState(false);
 
-  // Scheduling: receiver (Calendar + Time Slot design)
+  // Scheduling: calendar + time slot design (both sides)
   const [selectedDates, setSelectedDates] = useState(new Set());
   const [dateSlots, setDateSlots] = useState({});
   const [timesSubmitted, setTimesSubmitted] = useState(false);
 
-  // Scheduling: proposer
+  // Available times from server
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [pickedTimeId, setPickedTimeId] = useState(null);
-  const [timeSubmitted, setTimeSubmitted] = useState(false);
 
   const dateRange = useMemo(() => generateDateRange(), []);
   const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
@@ -81,19 +79,6 @@ export default function Proposal() {
     () => Object.values(dateSlots).reduce((sum, slots) => sum + slots.size, 0),
     [dateSlots],
   );
-
-  // Group available times by date for proposer view
-  const timesByDate = useMemo(() => {
-    const groups = {};
-    availableTimes.forEach((slot) => {
-      if (!groups[slot.date]) groups[slot.date] = [];
-      groups[slot.date].push(slot);
-    });
-    Object.values(groups).forEach((slots) =>
-      slots.sort((a, b) => a.startTime.localeCompare(b.startTime)),
-    );
-    return groups;
-  }, [availableTimes]);
 
   useEffect(() => {
     matchService
@@ -199,18 +184,6 @@ export default function Proposal() {
     setSubmitting(false);
   };
 
-  const handleSelectTime = async () => {
-    if (!pickedTimeId) return;
-    setSubmitting(true);
-    try {
-      await matchService.selectTime(token, { timeId: pickedTimeId });
-      setTimeSubmitted(true);
-    } catch (err) {
-      setError(err.message || '시간 선택에 실패했습니다.');
-    }
-    setSubmitting(false);
-  };
-
   if (loading) return <div className={styles.loadingPage}>프로포절을 불러오는 중...</div>;
   if (error && !data) return <div className={styles.errorPage}><p>{error}</p></div>;
   if (!data) return <div className={styles.errorPage}><p>프로필 정보를 찾을 수 없습니다.</p></div>;
@@ -219,24 +192,21 @@ export default function Proposal() {
   const responded = myResponse !== 'pending';
 
   // ══════════════════════════════════════════
-  // ── Scheduling: Receiver 가용시간 등록 ──
+  // ── Scheduling: 양쪽 가용시간 등록 ──
   // ══════════════════════════════════════════
-  if (matchStatus === 'scheduling' && myRole === 'receiver') {
-    // Already submitted
-    if (timesSubmitted || availableTimes.length > 0) {
-      const hasSelected = availableTimes.some((t) => t.selected);
+  if (matchStatus === 'scheduling') {
+    // Check if I already submitted (my name appears in availableTimes)
+    const alreadySubmitted = timesSubmitted || availableTimes.some((t) => t.seekerName === myName);
+
+    if (alreadySubmitted) {
       return (
         <div className={styles.page}>
           <div className={styles.container}>
             <h1 className={styles.logo}>knotsandlinks</h1>
             <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>
-                {hasSelected ? '시간이 선택되었습니다' : '가용시간을 전달했습니다'}
-              </p>
+              <p className={styles.respondedLabel}>가용시간을 전달했습니다</p>
               <p className={styles.respondedStatus}>
-                {hasSelected
-                  ? '매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.'
-                  : '상대방의 시간 선택을 기다리고 있어요.'}
+                상대방도 시간을 등록 중입니다. 등록이 완료되면 안내드릴게요.
               </p>
             </div>
           </div>
@@ -443,136 +413,6 @@ export default function Proposal() {
     );
   }
 
-  // ══════════════════════════════════════════
-  // ── Scheduling: Proposer 시간 선택 ──
-  // ══════════════════════════════════════════
-  if (matchStatus === 'scheduling' && myRole === 'proposer') {
-    if (timeSubmitted) {
-      return (
-        <div className={styles.page}>
-          <div className={styles.container}>
-            <h1 className={styles.logo}>knotsandlinks</h1>
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>시간이 선택되었습니다</p>
-              <p className={styles.respondedStatus}>
-                매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (availableTimes.length === 0) {
-      return (
-        <div className={styles.page}>
-          <div className={styles.container}>
-            <h1 className={styles.logo}>knotsandlinks</h1>
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
-              <p className={styles.respondedStatus}>
-                상대방이 가능한 시간을 등록 중입니다. 등록이 완료되면 안내드릴게요.
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    const alreadySelected = availableTimes.find((t) => t.selected);
-    if (alreadySelected) {
-      return (
-        <div className={styles.page}>
-          <div className={styles.container}>
-            <h1 className={styles.logo}>knotsandlinks</h1>
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>시간이 선택되었습니다</p>
-              <p className={styles.respondedStatus}>
-                {formatTimeDisplay(alreadySelected)}
-              </p>
-              <p className={styles.respondedStatus}>
-                매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Proposer selects from available times, grouped by date
-    const sortedDates = Object.keys(timesByDate).sort();
-
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
-
-          <div className={styles.schedulingHeader}>
-            <h2 className={styles.schedulingTitle}>매칭이 성사되었습니다!</h2>
-            <p className={styles.schedulingDesc}>
-              {myName ? `${myName}님, ` : ''}만남 시간을 정해주세요
-            </p>
-            <span className={styles.schedulingBadge}>
-              상대방이 가능한 시간이에요
-            </span>
-          </div>
-
-          <div className={styles.proposerSection}>
-            {sortedDates.map((dateKey) => {
-              const d = new Date(dateKey + 'T00:00:00');
-              const slots = timesByDate[dateKey];
-              return (
-                <div key={dateKey} className={styles.proposerDateGroup}>
-                  <div className={styles.proposerDateLabel}>
-                    {formatDateLabel(d)}
-                  </div>
-                  <div className={styles.proposerSlots}>
-                    {slots.map((slot) => (
-                      <label
-                        key={slot.timeId}
-                        className={`${styles.proposerSlot} ${pickedTimeId === slot.timeId ? styles.proposerSlotActive : ''}`}
-                      >
-                        <input
-                          type="radio"
-                          name="timeSlot"
-                          value={slot.timeId}
-                          checked={pickedTimeId === slot.timeId}
-                          onChange={() => setPickedTimeId(slot.timeId)}
-                          className={styles.proposerRadio}
-                        />
-                        <span className={styles.proposerTime}>
-                          {slot.startTime.slice(0, 5)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className={styles.policyNote}>
-            <strong>약속 안내</strong>
-            <ul>
-              <li>확정일 3일 전까지: 전액 환불 가능</li>
-              <li>약속 24시간 전까지: 일정 변경 가능</li>
-              <li>24시간 미만: 취소 시 환불 불가</li>
-            </ul>
-          </div>
-
-          <button
-            className={styles.ctaBtn}
-            onClick={handleSelectTime}
-            disabled={!pickedTimeId || submitting}
-            type="button"
-          >
-            {submitting ? '확정 중...' : '이 시간으로 확정'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ── Scheduled: 약속 확정됨 ──
   if (matchStatus === 'scheduled') {
     return (
@@ -590,8 +430,8 @@ export default function Proposal() {
     );
   }
 
-  // ── Proposer: proposal_sent → B 응답 대기 ──
-  if (matchStatus === 'proposal_sent' && myRole === 'proposer') {
+  // ── Receiver: proposal_sent → A 응답 대기 ──
+  if (matchStatus === 'proposal_sent' && myRole === 'receiver') {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
@@ -607,8 +447,8 @@ export default function Proposal() {
     );
   }
 
-  // ── Receiver: proposal_accepted → A 응답 대기 ──
-  if (matchStatus === 'proposal_accepted' && myRole === 'receiver') {
+  // ── Proposer: proposal_accepted → B 응답 대기 ──
+  if (matchStatus === 'proposal_accepted' && myRole === 'proposer') {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
@@ -707,9 +547,9 @@ export default function Proposal() {
   ].filter((f) => f.value);
 
   let contextMessage = null;
-  if (matchStatus === 'proposal_sent' && myRole === 'receiver') {
+  if (matchStatus === 'proposal_sent' && myRole === 'proposer') {
     contextMessage = '상대방 프로필을 확인하고 수락/거절해주세요.';
-  } else if (matchStatus === 'proposal_accepted' && myRole === 'proposer') {
+  } else if (matchStatus === 'proposal_accepted' && myRole === 'receiver') {
     contextMessage = '상대방이 수락했습니다! 프로필을 확인하고 수락/거절해주세요.';
   }
 

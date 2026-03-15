@@ -41,6 +41,11 @@
   color: #7b1fa2;
 }
 
+.arranging {
+  background: #e8eaf6;
+  color: #283593;
+}
+
 .scheduled {
   background: var(--success-light);
   color: #1a7a3a;

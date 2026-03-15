@@ -20,8 +20,8 @@ export default function Connections() {
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideConnectionDesc') !== '1');
 
   // Search state
-  const [searchNickname, setSearchNickname] = useState('');
-  const [searchResult, setSearchResult] = useState(null); // { id, name, nickname } or null
+  const [searchEmail, setSearchEmail] = useState('');
+  const [searchResult, setSearchResult] = useState(null); // { id, name, email } or null
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
@@ -65,12 +65,12 @@ export default function Connections() {
   };
 
   const handleSearch = async () => {
-    if (!searchNickname.trim()) return;
+    if (!searchEmail.trim()) return;
     setSearching(true);
     setSearchError('');
     setSearchResult(null);
     try {
-      const result = await searchManager(searchNickname.trim());
+      const result = await searchManager(searchEmail.trim());
       setSearchResult(result);
     } catch (err) {
       setSearchError(err.message || '해당 매니저를 찾을 수 없습니다.');
@@ -82,10 +82,10 @@ export default function Connections() {
     if (!searchResult) return;
     setSendingRequest(true);
     try {
-      await sendRequest({ name: searchResult.nickname, message: requestMessage });
-      toast.success(`'${searchResult.nickname}' 님에게 연결 요청을 보냈습니다.`);
+      await sendRequest({ name: searchResult.email, message: requestMessage });
+      toast.success(`'${searchResult.email}' 님에게 연결 요청을 보냈습니다.`);
       setSearchResult(null);
-      setSearchNickname('');
+      setSearchEmail('');
       setRequestMessage('');
     } catch (err) {
       toast.error(err.message || '연결 요청에 실패했습니다.');
@@ -156,12 +156,12 @@ export default function Connections() {
         <div className={styles.searchRow}>
           <input
             className={styles.searchInput}
-            value={searchNickname}
-            onChange={(e) => setSearchNickname(e.target.value)}
+            value={searchEmail}
+            onChange={(e) => setSearchEmail(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="매니저 별명을 정확히 입력하세요"
+            placeholder="매니저 이메일을 입력하세요"
           />
-          <button className={styles.searchBtn} onClick={handleSearch} disabled={searching || !searchNickname.trim()}>
+          <button className={styles.searchBtn} onClick={handleSearch} disabled={searching || !searchEmail.trim()}>
             <Search size={14} /> {searching ? '검색 중...' : '검색'}
           </button>
         </div>
@@ -171,8 +171,8 @@ export default function Connections() {
         {searchResult && (
           <div className={styles.searchResultCard}>
             <div className={styles.searchResultInfo}>
-              <div className={styles.avatar}>{searchResult.nickname.charAt(0)}</div>
-              <span className={styles.searchResultName}>{searchResult.nickname}</span>
+              <div className={styles.avatar}>{(searchResult.email || '?').charAt(0)}</div>
+              <span className={styles.searchResultName}>{searchResult.email}</span>
             </div>
             <div className={styles.requestForm}>
               <input

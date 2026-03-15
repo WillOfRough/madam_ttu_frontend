@@ -10,6 +10,7 @@ const LABELS = {
   proposal_sent: '제안발송',
   proposal_accepted: '상대수락',
   scheduling: '일정조율',
+  arranging: '조율확정',
   scheduled: '약속확정',
   completed: '완료',
   cancelled: '취소',

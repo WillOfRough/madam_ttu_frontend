@@ -11,9 +11,10 @@ import { toast } from '../../store/toastStore';
 import styles from './MatchList.module.css';
 
 const STATUS_STEP_LABELS = {
-  proposal_sent: 'B 프로필 확인 대기',
-  proposal_accepted: 'A 프로필 확인 대기',
+  proposal_sent: 'A 프로필 확인 대기',
+  proposal_accepted: 'B 프로필 확인 대기',
   scheduling: '일정 조율 중',
+  arranging: '매니저 확정 대기',
   scheduled: '약속 확정됨',
   completed: '미팅 완료',
   cancelled: '매칭 종료',
@@ -138,6 +139,7 @@ export default function MatchList() {
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
           <option value="scheduling">일정조율</option>
+          <option value="arranging">조율확정</option>
           <option value="scheduled">약속확정</option>
           <option value="completed">완료</option>
           <option value="cancelled">취소</option>

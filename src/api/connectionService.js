@@ -24,8 +24,8 @@ export async function disconnect(managerId) {
   });
 }
 
-export async function searchManager(nickname) {
-  return apiFetch(`/api/v1/connections/search?nickname=${encodeURIComponent(nickname)}`, {
+export async function searchManager(email) {
+  return apiFetch(`/api/v1/connections/search?email=${encodeURIComponent(email)}`, {
     method: 'GET',
   });
 }

@@ -44,19 +44,12 @@ export async function registerAvailableTimes(token, { times }) {
   });
 }
 
-export async function selectTime(token, { timeId }) {
-  return apiFetch(`/api/v1/proposals/${token}/select-time`, {
-    method: 'POST',
-    body: { timeId },
-  });
-}
-
 // ── Manager APIs (인증 필요) ──
 
-export async function confirmMatch(matchId, { location, endTime }) {
+export async function confirmMatch(matchId, { timeId, location, endTime }) {
   return apiFetch(`/api/v1/matches/${matchId}/confirm`, {
     method: 'POST',
-    body: { location, endTime },
+    body: { timeId, location, endTime },
   });
 }
 
