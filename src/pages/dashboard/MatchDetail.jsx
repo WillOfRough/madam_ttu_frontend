@@ -6,7 +6,6 @@ import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonLine } from '../../components/Skeleton';
-import KakaoMap from '../../components/KakaoMap';
 import styles from './MatchDetail.module.css';
 
 const RESPONSE_MAP = {
@@ -325,6 +324,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientA.clientLocation}</span>
+                      <MapLinks address={match.clientA.clientLocation} />
                     </div>
                   )}
                   {match.clientA.clientCompany && (
@@ -337,6 +337,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientA.clientWorkLocation}</span>
+                      <MapLinks address={match.clientA.clientWorkLocation} />
                     </div>
                   )}
                 </div>
@@ -350,6 +351,7 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>거주지</span>
                       <span>{match.clientB.clientLocation}</span>
+                      <MapLinks address={match.clientB.clientLocation} />
                     </div>
                   )}
                   {match.clientB.clientCompany && (
@@ -362,37 +364,13 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientB.clientWorkLocation}</span>
+                      <MapLinks address={match.clientB.clientWorkLocation} />
                     </div>
                   )}
                 </div>
               </div>
             </div>
           )}
-
-          {/* Section B-2: Kakao Map */}
-          {(() => {
-            const mapLocations = [];
-            if (match.clientA.clientLocation) {
-              mapLocations.push({ label: `${match.clientA.clientName} 거주지`, address: match.clientA.clientLocation, color: '#4A90D9' });
-            }
-            if (match.clientA.clientWorkLocation) {
-              mapLocations.push({ label: `${match.clientA.clientName} 회사`, address: match.clientA.clientWorkLocation, color: '#7BB3E0' });
-            }
-            if (match.clientB.clientLocation) {
-              mapLocations.push({ label: `${match.clientB.clientName} 거주지`, address: match.clientB.clientLocation, color: '#E85D75' });
-            }
-            if (match.clientB.clientWorkLocation) {
-              mapLocations.push({ label: `${match.clientB.clientName} 회사`, address: match.clientB.clientWorkLocation, color: '#F0A0B0' });
-            }
-            return mapLocations.length > 0 ? (
-              <div className={styles.card}>
-                <h3 className={styles.cardTitle}>
-                  <MapPin size={16} /> 위치 지도
-                </h3>
-                <KakaoMap locations={mapLocations} />
-              </div>
-            ) : null;
-          })()}
 
           {/* Section C: Date-by-Date Comparison (공통 시간 없을 때만) */}
           {commonKeys.size === 0 && <div className={styles.card}>
@@ -889,5 +867,17 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
         )}
       </div>
     </div>
+  );
+}
+
+function MapLinks({ address }) {
+  const encoded = encodeURIComponent(address);
+  const naverUrl = `https://map.naver.com/v5/search/${encoded}`;
+  const kakaoUrl = `https://map.kakao.com/?q=${encoded}`;
+  return (
+    <span className={styles.mapLinks}>
+      <a href={naverUrl} target="_blank" rel="noopener noreferrer" className={styles.mapLink}>N</a>
+      <a href={kakaoUrl} target="_blank" rel="noopener noreferrer" className={styles.mapLink}>K</a>
+    </span>
   );
 }
