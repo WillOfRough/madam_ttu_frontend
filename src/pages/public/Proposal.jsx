@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import styles from './Proposal.module.css';
@@ -54,6 +54,8 @@ function formatTimeDisplay(slot) {
 
 export default function Proposal() {
   const { token } = useParams();
+  const location = useLocation();
+  const isSchedulingRoute = location.pathname.endsWith('/available-times');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -194,7 +196,24 @@ export default function Proposal() {
   // ══════════════════════════════════════════
   // ── Scheduling: 양쪽 가용시간 등록 ──
   // ══════════════════════════════════════════
-  if (matchStatus === 'scheduling') {
+  // 매니저가 보낸 /available-times 링크로 접근했을 때만 일정조율 UI 표시
+  if (matchStatus === 'scheduling' && !isSchedulingRoute) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <h1 className={styles.logo}>knotsandlinks</h1>
+          <div className={styles.respondedBanner}>
+            <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
+            <p className={styles.respondedStatus}>
+              매니저가 일정 조율 링크를 보내드릴 예정입니다. 잠시만 기다려주세요.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (matchStatus === 'scheduling' && isSchedulingRoute) {
     // Check if I already submitted (my name appears in availableTimes)
     const alreadySubmitted = timesSubmitted || availableTimes.some((t) => t.clientName === myName);
 
