@@ -394,8 +394,8 @@ export default function MatchDetail() {
             ) : null;
           })()}
 
-          {/* Section C: Date-by-Date Comparison */}
-          <div className={styles.card}>
+          {/* Section C: Date-by-Date Comparison (공통 시간 없을 때만) */}
+          {commonKeys.size === 0 && <div className={styles.card}>
             <h3 className={styles.cardTitle}>
               <Clock size={16} /> 날짜별 가용시간
             </h3>
@@ -465,11 +465,12 @@ export default function MatchDetail() {
                 </div>
               );
             })}
-            <div className={styles.confirmSection}>
-              <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
-                약속 확정하기
-              </button>
-            </div>
+          </div>}
+
+          <div className={styles.confirmSection}>
+            <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+              약속 확정하기
+            </button>
           </div>
         </div>
       )}
