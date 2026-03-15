@@ -913,6 +913,21 @@
   opacity: 0.8;
 }
 
+.dualMapRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-light);
+}
+
+.dualMapLabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--charcoal-pale);
+}
+
 .locationDivider {
   width: 1px;
   align-self: stretch;
