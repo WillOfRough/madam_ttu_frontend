@@ -30,10 +30,10 @@ export async function searchManager(nickname) {
   });
 }
 
-export async function sendRequest({ nickname, message }) {
+export async function sendRequest({ name, message }) {
   return apiFetch('/api/v1/connections/requests', {
     method: 'POST',
-    body: { nickname, message: message || undefined },
+    body: { name, message: message || undefined },
   });
 }
 

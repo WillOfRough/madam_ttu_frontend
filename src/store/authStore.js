@@ -76,6 +76,36 @@ const useAuthStore = create(
         }
       },
 
+      signup: async ({ email, password, name, nickname, inviteCode }) => {
+        set({ isLoading: true, error: null });
+        try {
+          const data = await authService.signup({ email, password, name, nickname, inviteCode });
+          await authService.login({ email, password });
+          const mgr = data.manager || data;
+          set({
+            isLoggedIn: true,
+            managerId: mgr.id || data.id,
+            email,
+            name,
+            isLoading: false,
+          });
+          return data;
+        } catch (err) {
+          if (DEV) {
+            set({
+              isLoggedIn: true,
+              managerId: MOCK_MANAGER_ID,
+              email,
+              name,
+              isLoading: false,
+            });
+            return { managerId: MOCK_MANAGER_ID, email, name };
+          }
+          set({ isLoading: false, error: err.message });
+          throw err;
+        }
+      },
+
       logout: async () => {
         set({
           isLoggedIn: false,

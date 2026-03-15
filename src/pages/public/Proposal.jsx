@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import * as matchService from '../../api/matchService';
@@ -10,17 +10,30 @@ const OATH_ITEMS = [
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
-const TIME_SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
+
+const TIME_SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
 
 function generateDateRange() {
   const dates = [];
   const now = new Date();
-  for (let i = 1; i <= 14; i++) {
+  for (let i = 0; i <= 14; i++) {
     const d = new Date(now);
     d.setDate(d.getDate() + i);
     dates.push(d);
   }
   return dates;
+}
+
+function generateCalendarWeeks(dates) {
+  if (dates.length === 0) return [];
+  const firstDayOfWeek = dates[0].getDay();
+  const cells = [];
+  for (let i = 0; i < firstDayOfWeek; i++) cells.push(null);
+  dates.forEach((d) => cells.push(d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return weeks;
 }
 
 function formatDateLabel(date) {
@@ -51,16 +64,36 @@ export default function Proposal() {
   const [oathAgreed, setOathAgreed] = useState(false);
   const [oathPassed, setOathPassed] = useState(false);
 
-  // Scheduling: receiver registers times
-  const [selectedSlots, setSelectedSlots] = useState(new Set());
+  // Scheduling: receiver (Calendar + Time Slot design)
+  const [selectedDates, setSelectedDates] = useState(new Set());
+  const [dateSlots, setDateSlots] = useState({});
   const [timesSubmitted, setTimesSubmitted] = useState(false);
 
-  // Scheduling: proposer picks time
+  // Scheduling: proposer
   const [availableTimes, setAvailableTimes] = useState([]);
   const [pickedTimeId, setPickedTimeId] = useState(null);
   const [timeSubmitted, setTimeSubmitted] = useState(false);
 
   const dateRange = useMemo(() => generateDateRange(), []);
+  const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
+  const sortedSelectedDates = useMemo(() => Array.from(selectedDates).sort(), [selectedDates]);
+  const totalSlotCount = useMemo(
+    () => Object.values(dateSlots).reduce((sum, slots) => sum + slots.size, 0),
+    [dateSlots],
+  );
+
+  // Group available times by date for proposer view
+  const timesByDate = useMemo(() => {
+    const groups = {};
+    availableTimes.forEach((slot) => {
+      if (!groups[slot.date]) groups[slot.date] = [];
+      groups[slot.date].push(slot);
+    });
+    Object.values(groups).forEach((slots) =>
+      slots.sort((a, b) => a.startTime.localeCompare(b.startTime)),
+    );
+    return groups;
+  }, [availableTimes]);
 
   useEffect(() => {
     matchService
@@ -70,12 +103,12 @@ export default function Proposal() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Load available times when in scheduling state
   useEffect(() => {
     if (data?.matchStatus === 'scheduling') {
-      matchService.getAvailableTimes(token).then((res) => {
-        setAvailableTimes(res.times || []);
-      }).catch(() => {});
+      matchService
+        .getAvailableTimes(token)
+        .then((res) => setAvailableTimes(res.times || []))
+        .catch(() => {});
     }
   }, [data?.matchStatus, token]);
 
@@ -84,7 +117,6 @@ export default function Proposal() {
     try {
       const result = await matchService.respondProposal(token, response);
       setResponseMessage(result.message || '응답이 완료되었습니다.');
-      // Reload data to get updated state
       const updated = await matchService.getProposal(token).catch(() => null);
       if (updated) setData(updated);
       else setData((d) => ({ ...d, myResponse: response }));
@@ -94,14 +126,71 @@ export default function Proposal() {
     setSubmitting(false);
   };
 
+  // ── Receiver scheduling helpers ──
+
+  const toggleDate = useCallback((dateStr) => {
+    setSelectedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) {
+        next.delete(dateStr);
+        setDateSlots((ds) => {
+          const copy = { ...ds };
+          delete copy[dateStr];
+          return copy;
+        });
+      } else {
+        next.add(dateStr);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSlot = useCallback((dateStr, time) => {
+    setDateSlots((prev) => {
+      const slots = new Set(prev[dateStr] || []);
+      if (slots.has(time)) slots.delete(time);
+      else slots.add(time);
+      return { ...prev, [dateStr]: slots };
+    });
+  }, []);
+
+  const copyFromPrevious = useCallback((fromDateStr, toDateStr) => {
+    setDateSlots((prev) => ({
+      ...prev,
+      [toDateStr]: new Set(prev[fromDateStr] || []),
+    }));
+  }, []);
+
+  const selectWeekends = useCallback(() => {
+    const weekendSet = new Set(
+      dateRange
+        .filter((d) => d.getDay() === 0 || d.getDay() === 6)
+        .map((d) => formatDateISO(d)),
+    );
+    setSelectedDates(weekendSet);
+    setDateSlots((prev) => {
+      const copy = {};
+      for (const [k, v] of Object.entries(prev)) {
+        if (weekendSet.has(k)) copy[k] = v;
+      }
+      return copy;
+    });
+  }, [dateRange]);
+
+  const selectAllDates = useCallback(() => {
+    setSelectedDates(new Set(dateRange.map((d) => formatDateISO(d))));
+  }, [dateRange]);
+
   const handleRegisterTimes = async () => {
-    if (selectedSlots.size === 0) return;
+    const times = [];
+    for (const [date, slots] of Object.entries(dateSlots)) {
+      for (const time of slots) {
+        times.push({ date, startTime: time });
+      }
+    }
+    if (times.length === 0) return;
     setSubmitting(true);
     try {
-      const times = Array.from(selectedSlots).map((key) => {
-        const [date, time] = key.split('|');
-        return { date, startTime: time };
-      });
       await matchService.registerAvailableTimes(token, { times });
       setTimesSubmitted(true);
     } catch (err) {
@@ -129,8 +218,11 @@ export default function Proposal() {
   const { myName, myRole, myResponse, matchStatus, counterpart: cp } = data;
   const responded = myResponse !== 'pending';
 
+  // ══════════════════════════════════════════
   // ── Scheduling: Receiver 가용시간 등록 ──
+  // ══════════════════════════════════════════
   if (matchStatus === 'scheduling' && myRole === 'receiver') {
+    // Already submitted
     if (timesSubmitted || availableTimes.length > 0) {
       const hasSelected = availableTimes.some((t) => t.selected);
       return (
@@ -152,62 +244,208 @@ export default function Proposal() {
       );
     }
 
-    const toggleSlot = (key) => {
-      setSelectedSlots((prev) => {
-        const next = new Set(prev);
-        if (next.has(key)) next.delete(key);
-        else next.add(key);
-        return next;
-      });
-    };
-
+    // ── Calendar + Time Chip UI ──
     return (
       <div className={styles.page}>
         <div className={styles.container}>
           <h1 className={styles.logo}>knotsandlinks</h1>
-          <p className={styles.subtitle}>매칭이 성사되었습니다!</p>
-          {myName && <p className={styles.greeting}>{myName}님, 만남 가능 시간을 알려주세요.</p>}
-          <p className={styles.scheduleDesc}>1~2주 내 가능한 시간을 최대한 많이 선택해주세요.</p>
 
-          <div className={styles.dateList}>
-            {dateRange.map((date) => {
-              const dateStr = formatDateISO(date);
-              return (
-                <div key={dateStr} className={styles.dateGroup}>
-                  <div className={styles.dateLabel}>{formatDateLabel(date)}</div>
-                  <div className={styles.timeGrid}>
-                    {TIME_SLOTS.map((time) => {
-                      const key = `${dateStr}|${time}`;
-                      const isSelected = selectedSlots.has(key);
-                      return (
-                        <button
-                          key={key}
-                          className={`${styles.timeSlot} ${isSelected ? styles.timeSlotSelected : ''}`}
-                          onClick={() => toggleSlot(key)}
-                        >
-                          {time}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+          {/* Header */}
+          <div className={styles.schedulingHeader}>
+            <div className={styles.schedulingCelebration}>
+              <span className={styles.celebrationDot} />
+              <span className={styles.celebrationDot} />
+              <span className={styles.celebrationDot} />
+            </div>
+            <h2 className={styles.schedulingTitle}>매칭이 성사되었습니다!</h2>
+            <p className={styles.schedulingDesc}>
+              {cp?.nickname ? `${cp.nickname}님과 ` : ''}만나기 편한 시간을
+              <br />
+              모두 골라주세요
+            </p>
+            <span className={styles.schedulingBadge}>최소 3개 이상 권장</span>
           </div>
 
-          <button
-            className={styles.oathBtn}
-            onClick={handleRegisterTimes}
-            disabled={selectedSlots.size === 0 || submitting}
-          >
-            {submitting ? '전송 중...' : `선택 완료 (${selectedSlots.size}개 선택됨)`}
-          </button>
+          {/* Quick Actions */}
+          <div className={styles.quickActions}>
+            <button className={styles.quickBtn} onClick={selectWeekends} type="button">
+              주말만 선택
+            </button>
+            <button className={styles.quickBtn} onClick={selectAllDates} type="button">
+              전체 선택
+            </button>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className={styles.calendarCard}>
+            <div className={styles.calendarDayNames}>
+              {DAY_NAMES.map((name, i) => (
+                <span
+                  key={name}
+                  className={[
+                    styles.calendarDayName,
+                    i === 0 ? styles.calendarSunLabel : '',
+                    i === 6 ? styles.calendarSatLabel : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+            {calendarWeeks.map((week, wi) => (
+              <div key={wi} className={styles.calendarRow}>
+                {week.map((date, di) => {
+                  if (!date) return <div key={di} className={styles.calendarCellEmpty} />;
+                  const dateStr = formatDateISO(date);
+                  const isActive = selectedDates.has(dateStr);
+                  const hasSlots = (dateSlots[dateStr]?.size || 0) > 0;
+                  return (
+                    <button
+                      key={di}
+                      type="button"
+                      className={[
+                        styles.calendarCell,
+                        isActive ? styles.calendarCellActive : '',
+                        di === 0 ? styles.calendarSun : '',
+                        di === 6 ? styles.calendarSat : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      onClick={() => toggleDate(dateStr)}
+                    >
+                      <span className={styles.calendarDateNum}>{date.getDate()}</span>
+                      {hasSlots && <span className={styles.calendarDot} />}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Time Chips for selected dates */}
+          {sortedSelectedDates.length > 0 && (
+            <div className={styles.chipSection}>
+              <p className={styles.chipSectionTitle}>시간대를 선택해주세요</p>
+              {sortedSelectedDates.map((dateStr, idx) => {
+                const date = new Date(dateStr + 'T00:00:00');
+                const slots = dateSlots[dateStr] || new Set();
+                const prevDateStr = idx > 0 ? sortedSelectedDates[idx - 1] : null;
+                const prevHasSlots =
+                  prevDateStr && (dateSlots[prevDateStr]?.size || 0) > 0;
+
+                // 당일이면 현재 시각 +1시간 이후 슬롯만 표시
+                const todayStr = formatDateISO(new Date());
+                const isToday = dateStr === todayStr;
+                const availableSlots = isToday
+                  ? TIME_SLOTS.filter((t) => {
+                      const hour = parseInt(t.split(':')[0], 10);
+                      return hour > new Date().getHours();
+                    })
+                  : TIME_SLOTS;
+
+                if (availableSlots.length === 0) {
+                  return (
+                    <div key={dateStr} className={styles.chipDateRow}>
+                      <div className={styles.chipDateHeader}>
+                        <span className={styles.chipDateLabel}>
+                          {formatDateLabel(date)}
+                        </span>
+                      </div>
+                      <p className={styles.noSlots}>
+                        선택 가능한 시간이 없습니다
+                      </p>
+                    </div>
+                  );
+                }
+
+                const allSelected = availableSlots.every((t) => slots.has(t));
+
+                return (
+                  <div key={dateStr} className={styles.chipDateRow}>
+                    <div className={styles.chipDateHeader}>
+                      <span className={styles.chipDateLabel}>
+                        {formatDateLabel(date)}
+                      </span>
+                      <div className={styles.chipDateActions}>
+                        {prevHasSlots && (
+                          <button
+                            type="button"
+                            className={styles.copyBtn}
+                            onClick={() => copyFromPrevious(prevDateStr, dateStr)}
+                          >
+                            이전과 동일
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className={styles.copyBtn}
+                          onClick={() =>
+                            setDateSlots((prev) => ({
+                              ...prev,
+                              [dateStr]: allSelected
+                                ? new Set()
+                                : new Set(availableSlots),
+                            }))
+                          }
+                        >
+                          {allSelected ? '전체 해제' : '전체 선택'}
+                        </button>
+                      </div>
+                    </div>
+                    <div className={styles.timeSlotGrid}>
+                      {availableSlots.map((time) => {
+                        const isOn = slots.has(time);
+                        return (
+                          <button
+                            key={time}
+                            type="button"
+                            className={`${styles.timeSlot} ${isOn ? styles.timeSlotSelected : ''}`}
+                            onClick={() => toggleSlot(dateStr, time)}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className={styles.ctaSection}>
+            {totalSlotCount > 0 && (
+              <p className={styles.ctaInfo}>
+                {totalSlotCount}개 시간대 선택됨
+                {totalSlotCount < 3 && (
+                  <span className={styles.ctaWarn}> · 최소 3개 권장</span>
+                )}
+              </p>
+            )}
+            <button
+              className={styles.ctaBtn}
+              onClick={handleRegisterTimes}
+              disabled={totalSlotCount === 0 || submitting}
+              type="button"
+            >
+              {submitting
+                ? '전송 중...'
+                : totalSlotCount === 0
+                  ? '날짜와 시간대를 선택해주세요'
+                  : '이 시간대면 언제든 좋아요'}
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ══════════════════════════════════════════
   // ── Scheduling: Proposer 시간 선택 ──
+  // ══════════════════════════════════════════
   if (matchStatus === 'scheduling' && myRole === 'proposer') {
     if (timeSubmitted) {
       return (
@@ -216,7 +454,9 @@ export default function Proposal() {
             <h1 className={styles.logo}>knotsandlinks</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>시간이 선택되었습니다</p>
-              <p className={styles.respondedStatus}>매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.</p>
+              <p className={styles.respondedStatus}>
+                매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.
+              </p>
             </div>
           </div>
         </div>
@@ -230,7 +470,9 @@ export default function Proposal() {
             <h1 className={styles.logo}>knotsandlinks</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
-              <p className={styles.respondedStatus}>상대방이 가능한 시간을 등록 중입니다. 등록이 완료되면 안내드릴게요.</p>
+              <p className={styles.respondedStatus}>
+                상대방이 가능한 시간을 등록 중입니다. 등록이 완료되면 안내드릴게요.
+              </p>
             </div>
           </div>
         </div>
@@ -245,39 +487,68 @@ export default function Proposal() {
             <h1 className={styles.logo}>knotsandlinks</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>시간이 선택되었습니다</p>
-              <p className={styles.respondedStatus}>{formatTimeDisplay(alreadySelected)}</p>
-              <p className={styles.respondedStatus}>매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.</p>
+              <p className={styles.respondedStatus}>
+                {formatTimeDisplay(alreadySelected)}
+              </p>
+              <p className={styles.respondedStatus}>
+                매니저가 최종 확정 중입니다. 확정되면 안내드릴게요.
+              </p>
             </div>
           </div>
         </div>
       );
     }
 
+    // Proposer selects from available times, grouped by date
+    const sortedDates = Object.keys(timesByDate).sort();
+
     return (
       <div className={styles.page}>
         <div className={styles.container}>
           <h1 className={styles.logo}>knotsandlinks</h1>
-          <p className={styles.subtitle}>매칭이 성사되었습니다!</p>
-          {myName && <p className={styles.greeting}>{myName}님, 만남 시간을 정해주세요.</p>}
-          <p className={styles.scheduleDesc}>상대방이 가능한 시간입니다. 하나를 골라주세요.</p>
 
-          <div className={styles.slotList}>
-            {availableTimes.map((slot) => (
-              <label
-                key={slot.timeId}
-                className={`${styles.slotOption} ${pickedTimeId === slot.timeId ? styles.slotOptionSelected : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="slot"
-                  value={slot.timeId}
-                  checked={pickedTimeId === slot.timeId}
-                  onChange={() => setPickedTimeId(slot.timeId)}
-                  className={styles.slotRadio}
-                />
-                <span className={styles.slotLabel}>{formatTimeDisplay(slot)}</span>
-              </label>
-            ))}
+          <div className={styles.schedulingHeader}>
+            <h2 className={styles.schedulingTitle}>매칭이 성사되었습니다!</h2>
+            <p className={styles.schedulingDesc}>
+              {myName ? `${myName}님, ` : ''}만남 시간을 정해주세요
+            </p>
+            <span className={styles.schedulingBadge}>
+              상대방이 가능한 시간이에요
+            </span>
+          </div>
+
+          <div className={styles.proposerSection}>
+            {sortedDates.map((dateKey) => {
+              const d = new Date(dateKey + 'T00:00:00');
+              const slots = timesByDate[dateKey];
+              return (
+                <div key={dateKey} className={styles.proposerDateGroup}>
+                  <div className={styles.proposerDateLabel}>
+                    {formatDateLabel(d)}
+                  </div>
+                  <div className={styles.proposerSlots}>
+                    {slots.map((slot) => (
+                      <label
+                        key={slot.timeId}
+                        className={`${styles.proposerSlot} ${pickedTimeId === slot.timeId ? styles.proposerSlotActive : ''}`}
+                      >
+                        <input
+                          type="radio"
+                          name="timeSlot"
+                          value={slot.timeId}
+                          checked={pickedTimeId === slot.timeId}
+                          onChange={() => setPickedTimeId(slot.timeId)}
+                          className={styles.proposerRadio}
+                        />
+                        <span className={styles.proposerTime}>
+                          {slot.startTime.slice(0, 5)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className={styles.policyNote}>
@@ -290,9 +561,10 @@ export default function Proposal() {
           </div>
 
           <button
-            className={styles.oathBtn}
+            className={styles.ctaBtn}
             onClick={handleSelectTime}
             disabled={!pickedTimeId || submitting}
+            type="button"
           >
             {submitting ? '확정 중...' : '이 시간으로 확정'}
           </button>
@@ -309,7 +581,9 @@ export default function Proposal() {
           <h1 className={styles.logo}>knotsandlinks</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>약속이 확정되었습니다!</p>
-            <p className={styles.respondedStatus}>매니저로부터 장소 안내를 확인해주세요.</p>
+            <p className={styles.respondedStatus}>
+              매니저로부터 장소 안내를 확인해주세요.
+            </p>
           </div>
         </div>
       </div>
@@ -324,7 +598,9 @@ export default function Proposal() {
           <h1 className={styles.logo}>knotsandlinks</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>매칭이 진행 중입니다</p>
-            <p className={styles.respondedStatus}>상대방이 프로필을 확인 중입니다. 확인이 완료되면 안내드릴게요.</p>
+            <p className={styles.respondedStatus}>
+              상대방이 프로필을 확인 중입니다. 확인이 완료되면 안내드릴게요.
+            </p>
           </div>
         </div>
       </div>
@@ -339,7 +615,9 @@ export default function Proposal() {
           <h1 className={styles.logo}>knotsandlinks</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>수락 완료</p>
-            <p className={styles.respondedStatus}>상대방이 프로필을 확인 중입니다. 잠시만 기다려주세요.</p>
+            <p className={styles.respondedStatus}>
+              상대방이 프로필을 확인 중입니다. 잠시만 기다려주세요.
+            </p>
           </div>
         </div>
       </div>
@@ -368,7 +646,12 @@ export default function Proposal() {
     );
   }
 
-  if (!cp) return <div className={styles.errorPage}><p>프로필 정보를 찾을 수 없습니다.</p></div>;
+  if (!cp)
+    return (
+      <div className={styles.errorPage}>
+        <p>프로필 정보를 찾을 수 없습니다.</p>
+      </div>
+    );
 
   // ── Oath Screen ──
   if (!oathPassed) {
@@ -377,7 +660,9 @@ export default function Proposal() {
         <div className={styles.container}>
           <h1 className={styles.logo}>knotsandlinks</h1>
           <div className={styles.oathCard}>
-            <div className={styles.oathIcon}><Lock size={32} /></div>
+            <div className={styles.oathIcon}>
+              <Lock size={32} />
+            </div>
             <h2 className={styles.oathTitle}>소중한 정보입니다</h2>
             <p className={styles.oathSubtitle}>프로필 열람 전 서약이 필요합니다</p>
             <div className={styles.oathItems}>
@@ -389,10 +674,19 @@ export default function Proposal() {
               ))}
             </div>
             <label className={styles.agreeLabel}>
-              <input type="checkbox" checked={oathAgreed} onChange={(e) => setOathAgreed(e.target.checked)} className={styles.checkbox} />
+              <input
+                type="checkbox"
+                checked={oathAgreed}
+                onChange={(e) => setOathAgreed(e.target.checked)}
+                className={styles.checkbox}
+              />
               <span>위 내용을 숙지했으며 서약합니다.</span>
             </label>
-            <button className={styles.oathBtn} onClick={() => setOathPassed(true)} disabled={!oathAgreed}>
+            <button
+              className={styles.oathBtn}
+              onClick={() => setOathPassed(true)}
+              disabled={!oathAgreed}
+            >
               동의하고 프로필 확인하기
             </button>
           </div>
@@ -412,7 +706,6 @@ export default function Proposal() {
     { label: '종교', value: cp.religion },
   ].filter((f) => f.value);
 
-  // Context message based on role & status
   let contextMessage = null;
   if (matchStatus === 'proposal_sent' && myRole === 'receiver') {
     contextMessage = '상대방 프로필을 확인하고 수락/거절해주세요.';
@@ -425,7 +718,9 @@ export default function Proposal() {
       <div className={styles.container}>
         <h1 className={styles.logo}>knotsandlinks</h1>
         <p className={styles.subtitle}>당신을 위한 매칭 제안</p>
-        {myName && <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>}
+        {myName && (
+          <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
+        )}
         {contextMessage && <p className={styles.scheduleDesc}>{contextMessage}</p>}
 
         {cp.photoUrls?.length > 0 && (
@@ -434,7 +729,11 @@ export default function Proposal() {
             <div className={styles.photoGallery}>
               {cp.photoUrls.map((url, idx) => (
                 <div key={idx} className={styles.photoThumb}>
-                  <img src={url} alt={`사진 ${idx + 1}`} className={styles.blurredPhoto} />
+                  <img
+                    src={url}
+                    alt={`사진 ${idx + 1}`}
+                    className={styles.blurredPhoto}
+                  />
                 </div>
               ))}
             </div>
@@ -464,16 +763,27 @@ export default function Proposal() {
           매칭 후 취소는 상대방에게 큰 상처가 될 수 있습니다. 신중하게 선택해주세요.
         </div>
         <div className={styles.actions}>
-          <button className={styles.acceptBtn} onClick={() => handleRespond('accepted')} disabled={submitting}>
+          <button
+            className={styles.acceptBtn}
+            onClick={() => handleRespond('accepted')}
+            disabled={submitting}
+          >
             {submitting ? '처리 중...' : '만나볼래요!'}
           </button>
-          <button className={styles.rejectBtn} onClick={() => handleRespond('rejected')} disabled={submitting}>
+          <button
+            className={styles.rejectBtn}
+            onClick={() => handleRespond('rejected')}
+            disabled={submitting}
+          >
             정중히 거절할게요
           </button>
         </div>
 
         {error && data && (
-          <div className={styles.errorPage} style={{ minHeight: 'auto', padding: '12px 0' }}>
+          <div
+            className={styles.errorPage}
+            style={{ minHeight: 'auto', padding: '12px 0' }}
+          >
             <p>{error}</p>
           </div>
         )}

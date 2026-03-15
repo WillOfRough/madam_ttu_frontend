@@ -21,7 +21,7 @@ export default function Connections() {
 
   // Search state
   const [searchNickname, setSearchNickname] = useState('');
-  const [searchResult, setSearchResult] = useState(null); // { id, nickname } or null
+  const [searchResult, setSearchResult] = useState(null); // { id, name, nickname } or null
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
@@ -82,7 +82,7 @@ export default function Connections() {
     if (!searchResult) return;
     setSendingRequest(true);
     try {
-      await sendRequest({ nickname: searchResult.nickname, message: requestMessage });
+      await sendRequest({ name: searchResult.nickname, message: requestMessage });
       toast.success(`'${searchResult.nickname}' 님에게 연결 요청을 보냈습니다.`);
       setSearchResult(null);
       setSearchNickname('');

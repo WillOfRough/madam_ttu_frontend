@@ -158,3 +158,20 @@
 
 .submitBtn:active:not(:disabled) { transform: translateY(0); }
 .submitBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.loginLink {
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--charcoal-light);
+  margin-top: 4px;
+}
+
+.loginLink a {
+  color: var(--navy);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}

@@ -363,46 +363,312 @@
   line-height: 1.6;
 }
 
-/* ── Receiver: Date Groups (시간 제안) ── */
-.dateList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+/* ══════════════════════════════════════════════
+   ── NEW: Scheduling Header ──
+   ══════════════════════════════════════════════ */
+.schedulingHeader {
+  text-align: center;
   margin-bottom: var(--space-lg);
+  padding: 28px 0 20px;
 }
 
-.dateGroup {
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  box-shadow: var(--shadow-card);
+.schedulingCelebration {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.dateLabel {
-  font-size: 0.88rem;
-  font-weight: 700;
+.celebrationDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--navy);
+  animation: celebratePulse 1.4s ease-in-out infinite;
+}
+
+.celebrationDot:nth-child(2) {
+  animation-delay: 0.15s;
+  background: var(--coral);
+}
+
+.celebrationDot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes celebratePulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 1; }
+}
+
+.schedulingTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
   color: var(--charcoal);
-  margin-bottom: 12px;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+.schedulingDesc {
+  font-size: 1rem;
+  color: var(--charcoal-mid);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.schedulingBadge {
+  display: inline-block;
+  padding: 5px 14px;
+  background: var(--navy-glow);
+  color: var(--navy);
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 
-.timeGrid {
+/* ── Quick Actions ── */
+.quickActions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: var(--space-md);
+}
+
+.quickBtn {
+  padding: 8px 18px;
+  background: var(--white);
+  color: var(--charcoal-mid);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.quickBtn:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  background: var(--navy-glow);
+}
+
+.quickBtn:active {
+  transform: scale(0.96);
+}
+
+/* ══════════════════════════════════════════════
+   ── NEW: Calendar Grid ──
+   ══════════════════════════════════════════════ */
+.calendarCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-light);
+}
+
+.calendarDayNames {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.calendarDayName {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.calendarSunLabel {
+  color: var(--coral);
+}
+
+.calendarSatLabel {
+  color: #4a7dff;
+}
+
+.calendarRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.calendarCell {
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
+  border: 2px solid transparent;
+  gap: 2px;
+}
+
+.calendarCell:hover {
+  background: var(--bg);
+}
+
+.calendarSun {
+  color: var(--coral);
+}
+
+.calendarSat {
+  color: #4a7dff;
+}
+
+.calendarCellActive {
+  background: var(--navy);
+  color: var(--white) !important;
+  border-color: var(--navy);
+  box-shadow: 0 2px 8px rgba(26, 26, 64, 0.2);
+}
+
+.calendarCellActive:hover {
+  background: var(--navy-light);
+  border-color: var(--navy-light);
+}
+
+.calendarCellActive .calendarDateNum {
+  color: var(--white);
+}
+
+.calendarDateNum {
+  line-height: 1;
+}
+
+.calendarDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--coral);
+  position: absolute;
+  bottom: 6px;
+}
+
+.calendarCellActive .calendarDot {
+  background: var(--white);
+}
+
+.calendarCellEmpty {
+  visibility: hidden;
+}
+
+/* ══════════════════════════════════════════════
+   ── NEW: Time Chip Section ──
+   ══════════════════════════════════════════════ */
+.chipSection {
+  margin-bottom: var(--space-lg);
+  animation: fadeSlideUp var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chipSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-md);
+}
+
+.chipDateRow {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-card);
+  animation: fadeSlideUp var(--duration-normal) var(--ease-out) both;
+}
+
+.chipDateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.chipDateActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.noSlots {
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+  text-align: center;
+  padding: 8px 0 2px;
+}
+
+.chipDateLabel {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.01em;
+}
+
+.copyBtn {
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--navy);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.copyBtn:hover {
+  background: var(--navy-glow);
+}
+
+.copyBtn:active {
+  transform: scale(0.95);
+}
+
+.timeSlotGrid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .timeSlot {
-  padding: 8px 14px;
+  padding: 10px 16px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: var(--charcoal);
   background: var(--white);
-  transition: all var(--duration-fast) var(--ease-out);
   cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .timeSlot:hover {
@@ -410,10 +676,15 @@
   color: var(--navy);
 }
 
+.timeSlot:active {
+  transform: scale(0.96);
+}
+
 .timeSlotSelected {
   background: var(--navy);
   color: var(--white);
   border-color: var(--navy);
+  box-shadow: 0 2px 8px rgba(26, 26, 64, 0.2);
 }
 
 .timeSlotSelected:hover {
@@ -422,44 +693,123 @@
   border-color: var(--navy-light);
 }
 
-/* ── Proposer: Slot List (시간 선택) ── */
-.slotList {
+/* ══════════════════════════════════════════════
+   ── NEW: CTA Section ──
+   ══════════════════════════════════════════════ */
+.ctaSection {
+  position: sticky;
+  bottom: 0;
+  padding: 16px 0 8px;
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  margin-top: var(--space-md);
+}
+
+.ctaInfo {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal-mid);
+  margin-bottom: 10px;
+}
+
+.ctaWarn {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.ctaBtn {
+  width: 100%;
+  padding: 18px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 4px 16px rgba(26, 26, 64, 0.2);
+}
+
+.ctaBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 26, 64, 0.3);
+}
+
+.ctaBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ctaBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ══════════════════════════════════════════════
+   ── NEW: Proposer Grouped View ──
+   ══════════════════════════════════════════════ */
+.proposerSection {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: var(--space-lg);
 }
 
-.slotOption {
+.proposerDateGroup {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.proposerDateLabel {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+
+.proposerSlots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.proposerSlot {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
-  background: var(--white);
-  border: 1.5px solid var(--border);
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--bg);
+  border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
 }
 
-.slotOption:hover {
+.proposerSlot:hover {
   border-color: var(--navy);
 }
 
-.slotOptionSelected {
+.proposerSlotActive {
   border-color: var(--navy);
   background: var(--navy-glow);
+  box-shadow: 0 2px 8px rgba(26, 26, 64, 0.12);
 }
 
-.slotRadio {
-  width: 20px;
-  height: 20px;
+.proposerRadio {
+  width: 18px;
+  height: 18px;
   accent-color: var(--navy);
   flex-shrink: 0;
 }
 
-.slotLabel {
-  font-size: 0.95rem;
+.proposerTime {
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--charcoal);
 }
@@ -513,6 +863,7 @@
   gap: var(--space-md);
 }
 
+/* ── Responsive ── */
 @media (max-width: 640px) {
   .fields {
     grid-template-columns: 1fr;
@@ -531,16 +882,51 @@
     padding: 36px 20px 32px;
   }
 
-  .dateGroup {
-    padding: 14px 16px;
+  .schedulingHeader {
+    padding: 20px 0 16px;
   }
 
-  .timeGrid {
+  .schedulingTitle {
+    font-size: 1.15rem;
+  }
+
+  .schedulingDesc {
+    font-size: 0.92rem;
+  }
+
+  .calendarCard {
+    padding: 16px 10px;
+  }
+
+  .calendarCell {
+    font-size: 0.82rem;
+  }
+
+  .calendarDot {
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+  }
+
+  .timeSlotGrid {
     gap: 6px;
   }
 
   .timeSlot {
-    padding: 7px 11px;
+    padding: 8px 12px;
     font-size: 0.78rem;
+  }
+
+  .chipDateRow {
+    padding: 14px 14px;
+  }
+
+  .proposerSlot {
+    padding: 10px 14px;
+  }
+
+  .ctaBtn {
+    padding: 16px;
+    font-size: 1rem;
   }
 }

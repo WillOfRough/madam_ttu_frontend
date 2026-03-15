@@ -355,10 +355,10 @@ const sentRequests = [
 ];
 
 const searchableManagers = [
-  { id: 'm004', nickname: '김태희' },
-  { id: 'm005', nickname: '정재영' },
-  { id: 'm006', nickname: '최유리' },
-  { id: 'm007', nickname: '홍길동' },
+  { id: 'm004', name: '김태희', nickname: '태희매니저' },
+  { id: 'm005', name: '정재영', nickname: '재영매니저' },
+  { id: 'm006', name: '최유리', nickname: '유리매니저' },
+  { id: 'm007', name: '홍길동', nickname: '길동매니저' },
 ];
 
 // ── Matches (순차 공개 프로세스) ────────────────────
@@ -586,7 +586,7 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/auth/login
   if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};
-    return { manager: { id: MANAGER_ID, email: body.email || 'manager@knotsandlinks.kr', name: (body.email || 'manager').split('@')[0], nickname: 'Manager' } };
+    return { manager: { id: MANAGER_ID, email: body.email || 'manager@knotsandlinks.kr', name: (body.email || 'manager').split('@')[0] } };
   }
 
   // GET /api/v1/auth/me
@@ -704,7 +704,7 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/connections/requests (send)
   if (method === 'POST' && pathname === '/api/v1/connections/requests') {
     const body = options.body || {};
-    const target = searchableManagers.find((m) => m.nickname === body.nickname);
+    const target = searchableManagers.find((m) => m.nickname === body.name);
     if (!target) throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
     const newReq = { id: `req${Date.now()}`, managerId: target.id, managerName: target.nickname, status: 'pending', message: body.message || '', createdAt: new Date().toISOString() };
     sentRequests.unshift(newReq);

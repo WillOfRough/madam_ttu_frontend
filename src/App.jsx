@@ -9,6 +9,7 @@ import RequireAuth from './components/RequireAuth';
 // Public pages
 import Login from './pages/public/Login';
 import RegisterManager from './pages/public/RegisterManager';
+import Signup from './pages/public/Signup';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
 import ClientOath from './pages/public/ClientOath';
@@ -67,6 +68,7 @@ export default function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/register/:token" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
         <Route path="/invite/:token" element={<InviteValidation />} />
