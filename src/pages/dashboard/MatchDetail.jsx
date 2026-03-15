@@ -342,7 +342,6 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientA.clientWorkLocation}</span>
-                      <MapLinks address={match.clientA.clientWorkLocation} />
                     </div>
                   )}
                 </div>
@@ -369,7 +368,6 @@ export default function MatchDetail() {
                     <div className={styles.locationItem}>
                       <span className={styles.locationLabel}>회사 위치</span>
                       <span>{match.clientB.clientWorkLocation}</span>
-                      <MapLinks address={match.clientB.clientWorkLocation} />
                     </div>
                   )}
                 </div>

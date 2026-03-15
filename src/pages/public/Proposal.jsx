@@ -11,7 +11,7 @@ const OATH_ITEMS = [
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
-const TIME_SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+const TIME_SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
 function generateDateRange() {
   const dates = [];
@@ -252,7 +252,7 @@ export default function Proposal() {
               <br />
               모두 골라주세요
             </p>
-            <span className={styles.schedulingBadge}>최소 3개 이상 권장</span>
+            <span className={styles.schedulingBadge}>최대한 많이 선택해 주셔야 만남의 성사율이 높아요</span>
           </div>
 
           {/* Quick Actions */}
