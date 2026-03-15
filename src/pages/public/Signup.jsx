@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname } from '../../data/constants';
@@ -7,6 +7,7 @@ import styles from './RegisterManager.module.css';
 
 export default function Signup() {
   const navigate = useNavigate();
+  const location = useLocation();
   const signup = useAuthStore((s) => s.signup);
   const isLoading = useAuthStore((s) => s.isLoading);
   const initialNickname = useMemo(() => generateNickname(), []);
@@ -21,6 +22,10 @@ export default function Signup() {
   const [error, setError] = useState(null);
 
   const NAME_REGEX = /^[가-힣a-zA-Z]{2,20}$/;
+
+  if (!location.state?.oathAgreed) {
+    return <Navigate to="/signup/oath" replace />;
+  }
 
   const handleNameChange = (value) => {
     setName(value);

@@ -13,6 +13,7 @@ import Signup from './pages/public/Signup';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
 import ClientOath from './pages/public/ClientOath';
+import ManagerOath from './pages/public/ManagerOath';
 import ClientForm from './pages/public/ClientForm';
 import ApplyComplete from './pages/public/ApplyComplete';
 import ExpiredLink from './pages/public/ExpiredLink';
@@ -68,6 +69,7 @@ export default function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup/oath" element={<ManagerOath />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/register/:token" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
