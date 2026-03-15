@@ -30,10 +30,10 @@ export async function searchManager(email) {
   });
 }
 
-export async function sendRequest({ name, message }) {
+export async function sendRequest({ email, message }) {
   return apiFetch('/api/v1/connections/requests', {
     method: 'POST',
-    body: { name, message: message || undefined },
+    body: { email, message: message || undefined },
   });
 }
 

@@ -82,7 +82,7 @@ export default function Connections() {
     if (!searchResult) return;
     setSendingRequest(true);
     try {
-      await sendRequest({ name: searchResult.email, message: requestMessage });
+      await sendRequest({ email: searchResult.email, message: requestMessage });
       toast.success(`'${searchResult.email}' 님에게 연결 요청을 보냈습니다.`);
       setSearchResult(null);
       setSearchEmail('');

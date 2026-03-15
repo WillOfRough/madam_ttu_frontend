@@ -909,7 +909,7 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/connections/requests (send)
   if (method === 'POST' && pathname === '/api/v1/connections/requests') {
     const body = options.body || {};
-    const target = searchableManagers.find((m) => m.email === body.name);
+    const target = searchableManagers.find((m) => m.email === body.email);
     if (!target) throw Object.assign(new Error('해당 매니저를 찾을 수 없습니다.'), { status: 404 });
     const newReq = { id: `req${Date.now()}`, managerId: target.id, managerName: target.name, status: 'pending', message: body.message || '', createdAt: new Date().toISOString() };
     sentRequests.unshift(newReq);
