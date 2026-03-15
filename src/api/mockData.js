@@ -273,6 +273,98 @@ const clients = [
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-10T15:00:00Z',
   },
+  {
+    id: 's011',
+    name: '송하은',
+    nickname: '요가하는 하은',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c011', 'ef1b2c3d-1234-5678-9abc-def012345011'],
+    gender: 'female',
+    birthDate: '1994-05-20',
+    phone: '010-3333-1111',
+    location: '서울 강남구',
+    height: 167,
+    occupation: '마케팅 팀장',
+    company: '카카오',
+    education: '연세대학교 경영학과',
+    religion: '무교',
+    mbti: 'ENFJ',
+    hobbies: '요가, 독서, 브런치 카페',
+    introduction: '카카오에서 마케팅 팀장으로 일하고 있어요. 바쁜 하루 끝에 요가로 마음을 정리하는 걸 좋아합니다.',
+    idealType: '함께 성장하면서 서로를 응원할 수 있는 분. 대화가 잘 통하는 게 제일 중요해요.',
+    approvalStatus: 'approved',
+    managerNote: '커리어 우먼. 매너 좋음.',
+    ownerManagerId: MANAGER_ID,
+    createdAt: '2026-02-08T11:00:00Z',
+  },
+  {
+    id: 's012',
+    name: '배진우',
+    nickname: null,
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c012'],
+    gender: 'male',
+    birthDate: '1991-11-15',
+    phone: '010-7777-2222',
+    location: '서울 서초구',
+    height: 181,
+    occupation: '투자심사역',
+    company: 'KB인베스트먼트',
+    education: '고려대학교 경영학과',
+    religion: '무교',
+    mbti: 'ISTJ',
+    hobbies: '골프, 와인, 재즈',
+    introduction: 'VC에서 투자심사역으로 일하고 있습니다. 안정적이면서도 도전적인 삶을 추구해요.',
+    idealType: '밝고 긍정적인 분. 서로 다른 일상을 공유하면서 함께 쉴 수 있는 사람이면 좋겠습니다.',
+    approvalStatus: 'approved',
+    managerNote: '금융맨. 안정적이고 매너 좋음.',
+    ownerManagerId: 'm002',
+    createdAt: '2026-02-05T09:30:00Z',
+  },
+  {
+    id: 's013',
+    name: '장예린',
+    nickname: '플루트 예린',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c013', 'ef1b2c3d-1234-5678-9abc-def012345013'],
+    gender: 'female',
+    birthDate: '1996-03-08',
+    phone: '010-5555-9999',
+    location: '서울 마포구',
+    height: 164,
+    occupation: '오케스트라 단원',
+    company: '서울시립교향악단',
+    education: '서울대학교 음악대학',
+    religion: '기독교',
+    mbti: 'INFJ',
+    hobbies: '플루트, 산책, 요리',
+    introduction: '오케스트라에서 플루트를 연주하고 있어요. 음악만큼이나 일상의 소소한 행복을 중요하게 생각합니다.',
+    idealType: '차분하고 따뜻한 분. 예술에 관심이 없어도 서로의 세계를 존중할 수 있는 분이면 좋겠어요.',
+    approvalStatus: 'approved',
+    managerNote: '감성적이고 진중한 분위기.',
+    ownerManagerId: 'm003',
+    createdAt: '2026-02-12T14:00:00Z',
+  },
+  {
+    id: 's014',
+    name: '권도현',
+    nickname: '서핑보이',
+    photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c014', 'ef1b2c3d-1234-5678-9abc-def012345014', 'ab2d3e4f-5678-9abc-def0-123456789014'],
+    gender: 'male',
+    birthDate: '1992-08-25',
+    phone: '010-2222-8888',
+    location: '서울 용산구',
+    height: 179,
+    occupation: '건축가',
+    company: '삼우종합건축사사무소',
+    education: '한양대학교 건축학과',
+    religion: '무교',
+    mbti: 'ISFP',
+    hobbies: '서핑, 사진, 건축 여행',
+    introduction: '건축가로 일하면서 공간이 주는 감동에 매일 설레요. 주말엔 양양에서 서핑을 즐깁니다.',
+    idealType: '자기만의 취미가 있고, 서로 독립적이면서도 함께하는 시간을 소중히 여기는 분.',
+    approvalStatus: 'approved',
+    managerNote: '감각적이고 매력적. 비주얼 좋음.',
+    ownerManagerId: MANAGER_ID,
+    createdAt: '2026-02-15T10:00:00Z',
+  },
 ];
 
 // ── Connections (연결된 매니저) ─────────────────────────
@@ -355,6 +447,7 @@ const sentRequests = [
 ];
 
 const searchableManagers = [
+  { id: 'admin001', name: '관리자', email: 'admin@admin.com' },
   { id: 'm004', name: '김태희', email: 'taehee@knotsandlinks.kr' },
   { id: 'm005', name: '정재영', email: 'jaeyoung@knotsandlinks.kr' },
   { id: 'm006', name: '최유리', email: 'yuri@knotsandlinks.kr' },
@@ -374,13 +467,13 @@ const matches = [
     note: '성격 잘 맞을 것 같아서 매칭합니다.',
     clientA: {
       clientId: 's001', clientName: '김서연', clientGender: 'female',
-      managerName: 'Manager', role: 'proposer',
+      managerName: '김성중', role: 'proposer',
       response: null, respondedAt: null,
       proposalToken: 'PrTk01aB3cD1',
     },
     clientB: {
       clientId: 's002', clientName: '이준혁', clientGender: 'male',
-      managerName: 'Manager', role: 'receiver',
+      managerName: '김성중', role: 'receiver',
       response: null, respondedAt: null,
       proposalToken: 'PrTk02eF4gH2',
     },
@@ -400,7 +493,7 @@ const matches = [
     },
     clientB: {
       clientId: 's010', clientName: '오태양', clientGender: 'male',
-      managerName: 'Manager', role: 'receiver',
+      managerName: '김성중', role: 'receiver',
       response: 'accepted', respondedAt: '2026-03-08T14:00:00Z',
       proposalToken: 'PrTk04mN6oP4',
     },
@@ -414,7 +507,7 @@ const matches = [
     note: '운동 좋아하는 두 분.',
     clientA: {
       clientId: 's007', clientName: '윤예은', clientGender: 'female',
-      managerName: 'Manager', role: 'proposer',
+      managerName: '김성중', role: 'proposer',
       response: 'accepted', respondedAt: '2026-03-09T18:00:00Z',
       proposalToken: 'PrTk07yZ9aB7',
     },
@@ -440,7 +533,7 @@ const matches = [
     },
     clientB: {
       clientId: 's008', clientName: '강도윤', clientGender: 'male',
-      managerName: 'Manager', role: 'receiver',
+      managerName: '김성중', role: 'receiver',
       response: 'accepted', respondedAt: '2026-03-02T14:00:00Z',
       proposalToken: 'PrTk10kL2mN0',
     },
@@ -458,19 +551,107 @@ const matches = [
     note: '새로 매칭된 두 분. 일정 조율 시작.',
     clientA: {
       clientId: 's010', clientName: '오태양', clientGender: 'male',
-      managerName: 'Manager', role: 'proposer',
+      managerName: '김성중', role: 'proposer',
       response: 'accepted', respondedAt: '2026-03-13T16:00:00Z',
       proposalToken: 'PrTk11aNewA6',
     },
     clientB: {
       clientId: 's001', clientName: '김서연', clientGender: 'female',
-      managerName: 'Manager', role: 'receiver',
+      managerName: '김성중', role: 'receiver',
       response: 'accepted', respondedAt: '2026-03-13T12:00:00Z',
       proposalToken: 'PrTk12bNewB6',
     },
     createdAt: '2026-03-12T10:00:00Z',
   },
-  // 5) cancelled — 취소된 매칭
+  // 6) completed — 미팅 완료
+  {
+    matchId: 'match007',
+    type: '1:1 소개팅',
+    status: 'completed',
+    note: '둘 다 카페 좋아하는 분들.',
+    clientA: {
+      clientId: 's011', clientName: '송하은', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-02-20T10:00:00Z',
+      proposalToken: 'PrTk13cMp7A1',
+    },
+    clientB: {
+      clientId: 's012', clientName: '배진우', clientGender: 'male',
+      managerName: '박소영', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-02-20T15:00:00Z',
+      proposalToken: 'PrTk14dNq8B2',
+    },
+    meetingDate: '2026-03-01T18:00:00Z',
+    location: '압구정 블루보틀',
+    endTime: '20:00',
+    confirmedAt: '2026-02-25T11:00:00Z',
+    completedAt: '2026-03-02T10:00:00Z',
+    createdAt: '2026-02-18T09:00:00Z',
+  },
+  // 7) proposal_sent — 또 다른 제안 발송 건
+  {
+    matchId: 'match008',
+    type: '1:1 소개팅',
+    status: 'proposal_sent',
+    note: '예술 감각 있는 두 분 매칭.',
+    clientA: {
+      clientId: 's013', clientName: '장예린', clientGender: 'female',
+      managerName: '이현우', role: 'proposer',
+      response: null, respondedAt: null,
+      proposalToken: 'PrTk15eOr9C3',
+    },
+    clientB: {
+      clientId: 's014', clientName: '권도현', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: null, respondedAt: null,
+      proposalToken: 'PrTk16fPs0D4',
+    },
+    createdAt: '2026-03-14T10:00:00Z',
+  },
+  // 8) scheduling — A만 가용시간 등록 완료, B 미등록
+  {
+    matchId: 'match009',
+    type: '1:1 소개팅',
+    status: 'scheduling',
+    note: '크로스핏 + 건축 조합.',
+    clientA: {
+      clientId: 's007', clientName: '윤예은', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-03-12T11:00:00Z',
+      proposalToken: 'PrTk17gQt1E5',
+    },
+    clientB: {
+      clientId: 's014', clientName: '권도현', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-03-12T16:00:00Z',
+      proposalToken: 'PrTk18hRu2F6',
+    },
+    createdAt: '2026-03-11T09:00:00Z',
+  },
+  // 9) cancelled — 매니저에 의해 취소
+  {
+    matchId: 'match010',
+    type: '1:1 소개팅',
+    status: 'cancelled',
+    note: '일정이 안 맞아서 취소.',
+    cancelReason: '양측 일정 조율 실패',
+    cancelledByName: '김성중',
+    cancelledAt: '2026-03-08T16:00:00Z',
+    clientA: {
+      clientId: 's011', clientName: '송하은', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-03-06T10:00:00Z',
+      proposalToken: 'PrTk19iSv3G7',
+    },
+    clientB: {
+      clientId: 's006', clientName: '정우진', clientGender: 'male',
+      managerName: '박소영', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-03-06T14:00:00Z',
+      proposalToken: 'PrTk20jTw4H8',
+    },
+    createdAt: '2026-03-05T09:00:00Z',
+  },
+  // 10) cancelled — B가 거절
   {
     matchId: 'match005',
     type: null,
@@ -481,13 +662,13 @@ const matches = [
     cancelledAt: '2026-03-06T12:00:00Z',
     clientA: {
       clientId: 's003', clientName: '박지민', clientGender: 'female',
-      managerName: 'Manager', role: 'proposer',
+      managerName: '김성중', role: 'proposer',
       response: null, respondedAt: null,
       proposalToken: 'PrTk05qR7sT5',
     },
     clientB: {
       clientId: 's004', clientName: '최민수', clientGender: 'male',
-      managerName: 'Manager', role: 'receiver',
+      managerName: '김성중', role: 'receiver',
       response: 'rejected', respondedAt: '2026-03-06T12:00:00Z',
       proposalToken: 'PrTk06uV8wX6',
     },
@@ -506,6 +687,23 @@ availableTimes['PrTk08cD0eF8'] = [
   { timeId: 'time-b02', date: '2026-03-20', startTime: '18:00:00', clientName: '정우진', selected: false },
   { timeId: 'time-b03', date: '2026-03-21', startTime: '19:00:00', clientName: '정우진', selected: false },
   { timeId: 'time-b04', date: '2026-03-22', startTime: '14:00:00', clientName: '정우진', selected: false },
+];
+
+// match009: A만 가용시간 등록 완료 (scheduling 상태 — B 미등록)
+availableTimes['PrTk17gQt1E5'] = [
+  { timeId: 'time-c01', date: '2026-03-22', startTime: '14:00:00', clientName: '윤예은', selected: false },
+  { timeId: 'time-c02', date: '2026-03-22', startTime: '18:00:00', clientName: '윤예은', selected: false },
+  { timeId: 'time-c03', date: '2026-03-23', startTime: '13:00:00', clientName: '윤예은', selected: false },
+];
+
+// match007: completed — 양쪽 가용시간 + 선택 완료
+availableTimes['PrTk13cMp7A1'] = [
+  { timeId: 'time-d01', date: '2026-03-01', startTime: '18:00:00', clientName: '송하은', selected: true },
+  { timeId: 'time-d02', date: '2026-03-02', startTime: '14:00:00', clientName: '송하은', selected: false },
+];
+availableTimes['PrTk14dNq8B2'] = [
+  { timeId: 'time-e01', date: '2026-03-01', startTime: '18:00:00', clientName: '배진우', selected: false },
+  { timeId: 'time-e02', date: '2026-03-01', startTime: '19:00:00', clientName: '배진우', selected: false },
 ];
 
 // Build proposal lookup from matches
@@ -531,9 +729,10 @@ const exportLogs = [
 
 // ── Manager lookup map ────────────────────────────────
 const managerMap = {
-  [MANAGER_ID]: { id: MANAGER_ID, name: '나' },
-  'm002': { id: 'm002', name: '박소영' },
-  'm003': { id: 'm003', name: '이현우' },
+  [MANAGER_ID]: { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com' },
+  'm002': { id: 'm002', name: '박소영', email: 'soyoung@knotsandlinks.kr' },
+  'm003': { id: 'm003', name: '이현우', email: 'hyunwoo@knotsandlinks.kr' },
+  'admin001': { id: 'admin001', name: '관리자', email: 'admin@admin.com' },
 };
 
 function enrichClient(c) {
@@ -559,7 +758,7 @@ const dashboardSummary = {
     .map((c) => ({ ...c, ...enrichClient(c) })),
 };
 
-const managerInfo = { id: MANAGER_ID, name: 'Manager', email: 'manager@knotsandlinks.kr' };
+const managerInfo = { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com' };
 
 // ── Route Matcher ──────────────────────────────────────
 
@@ -592,13 +791,13 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/auth/login
   if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};
-    return { manager: { id: MANAGER_ID, email: body.email || 'manager@knotsandlinks.kr', name: (body.email || 'manager').split('@')[0] } };
+    return { manager: { id: MANAGER_ID, email: body.email || 'sungjoong.kim@hancom.com', name: '김성중' } };
   }
 
   // GET /api/v1/auth/me
   if (method === 'GET' && pathname === '/api/v1/auth/me') {
     return {
-      id: MANAGER_ID, email: 'manager@knotsandlinks.kr', name: 'Manager',
+      id: MANAGER_ID, email: 'sungjoong.kim@hancom.com', name: '김성중',
       connections: connections.map((c) => ({ managerId: c.managerId, name: c.name, clientCount: c.clientCount, connectedAt: c.connectedAt })),
       myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
       createdAt: '2026-01-01T00:00:00Z',
@@ -610,15 +809,15 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
-    return { managerId: MANAGER_ID, success: true, nickname: body.nickname || null };
+    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
   }
   // POST /api/v1/managers/register
   if (method === 'POST' && pathname === '/api/v1/managers/register') {
     const body = options.body || {};
-    return { managerId: MANAGER_ID, success: true, nickname: body.nickname || null };
+    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
   }
   // GET /api/v1/invites/{token}/validate
-  if (method === 'GET' && pathname.match(/^\/api\/v1\/invites\/[^/]+\/validate$/)) return { valid: true, managerName: 'Manager' };
+  if (method === 'GET' && pathname.match(/^\/api\/v1\/invites\/[^/]+\/validate$/)) return { valid: true, managerName: '김성중' };
   // POST /api/v1/clients
   if (method === 'POST' && pathname === '/api/v1/clients') return { success: true, message: '프로필이 성공적으로 등록되었습니다.' };
   // POST /api/v1/connections/join
@@ -839,7 +1038,7 @@ export async function mockFetch(path, options = {}) {
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
     m.status = 'cancelled';
     m.cancelReason = body.reason || '';
-    m.cancelledByName = 'Manager';
+    m.cancelledByName = '김성중';
     m.cancelledAt = new Date().toISOString();
     return { success: true, message: '매칭이 취소되었습니다.' };
   }

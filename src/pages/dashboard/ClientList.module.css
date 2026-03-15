@@ -141,21 +141,28 @@
 }
 
 .ownerMe {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--navy);
 }
 
 .ownerOther {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--charcoal-pale);
+  color: var(--charcoal-mid);
 }
 
 .ownerEmail {
   font-size: 0.72rem;
   font-weight: 400;
   color: var(--charcoal-pale);
+  word-break: break-all;
 }
 
 .tableRow:hover {

@@ -97,7 +97,7 @@ export default function MatchList() {
                 <span className={styles.guideNum}>4</span>
                 <div>
                   <strong>일정 조율</strong>
-                  <p>양쪽 모두 수락 시 B가 가용시간을 등록하고, A가 시간을 선택합니다.</p>
+                  <p>양쪽 모두 수락 시 A, B 각각에게 가용시간 등록 링크가 전달됩니다. 양쪽 모두 등록하면 매니저가 시간을 확정합니다.</p>
                 </div>
               </div>
               <div className={styles.guideStep}>
