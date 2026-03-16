@@ -1,4 +1,4 @@
-/* knotsandlinks — 상수 정의 */
+/* Knots & Links — 상수 정의 */
 
 export const GENDER_OPTIONS = [
   { value: 'male', label: '남성' },
@@ -11,6 +11,67 @@ export const EDUCATION_OPTIONS = [
   { value: '대학교 졸업', label: '대학교 졸업' },
   { value: '석사', label: '석사' },
   { value: '박사', label: '박사' },
+];
+
+export const SCHOOL_OPTIONS = [
+  // 서울 주요 대학
+  { value: '서울대학교', label: '서울대학교' },
+  { value: '연세대학교', label: '연세대학교' },
+  { value: '고려대학교', label: '고려대학교' },
+  { value: '성균관대학교', label: '성균관대학교' },
+  { value: '한양대학교', label: '한양대학교' },
+  { value: '서강대학교', label: '서강대학교' },
+  { value: '중앙대학교', label: '중앙대학교' },
+  { value: '경희대학교', label: '경희대학교' },
+  { value: '한국외국어대학교', label: '한국외국어대학교' },
+  { value: '서울시립대학교', label: '서울시립대학교' },
+  { value: '건국대학교', label: '건국대학교' },
+  { value: '동국대학교', label: '동국대학교' },
+  { value: '홍익대학교', label: '홍익대학교' },
+  { value: '국민대학교', label: '국민대학교' },
+  { value: '숭실대학교', label: '숭실대학교' },
+  { value: '세종대학교', label: '세종대학교' },
+  { value: '광운대학교', label: '광운대학교' },
+  { value: '명지대학교', label: '명지대학교' },
+  { value: '상명대학교', label: '상명대학교' },
+  // 여대
+  { value: '이화여자대학교', label: '이화여자대학교' },
+  { value: '숙명여자대학교', label: '숙명여자대학교' },
+  { value: '덕성여자대학교', label: '덕성여자대학교' },
+  { value: '서울여자대학교', label: '서울여자대학교' },
+  // 과학기술 특성화
+  { value: 'KAIST', label: 'KAIST' },
+  { value: 'POSTECH', label: 'POSTECH' },
+  { value: 'GIST', label: 'GIST' },
+  { value: 'UNIST', label: 'UNIST' },
+  { value: '한국과학기술원', label: '한국과학기술원' },
+  // 수도권
+  { value: '인하대학교', label: '인하대학교' },
+  { value: '아주대학교', label: '아주대학교' },
+  { value: '가천대학교', label: '가천대학교' },
+  { value: '단국대학교', label: '단국대학교' },
+  { value: '경기대학교', label: '경기대학교' },
+  { value: '한국항공대학교', label: '한국항공대학교' },
+  { value: '한국산업기술대학교', label: '한국산업기술대학교' },
+  // 지방 거점 국립대
+  { value: '부산대학교', label: '부산대학교' },
+  { value: '경북대학교', label: '경북대학교' },
+  { value: '전남대학교', label: '전남대학교' },
+  { value: '전북대학교', label: '전북대학교' },
+  { value: '충남대학교', label: '충남대학교' },
+  { value: '충북대학교', label: '충북대학교' },
+  { value: '강원대학교', label: '강원대학교' },
+  { value: '제주대학교', label: '제주대학교' },
+  // 기타 주요 사립대
+  { value: '한림대학교', label: '한림대학교' },
+  { value: '울산대학교', label: '울산대학교' },
+  { value: '동아대학교', label: '동아대학교' },
+  { value: '영남대학교', label: '영남대학교' },
+  { value: '계명대학교', label: '계명대학교' },
+  { value: '조선대학교', label: '조선대학교' },
+  { value: '원광대학교', label: '원광대학교' },
+  // 직접 입력
+  { value: '__other__', label: '기타 (직접 입력)' },
 ];
 
 export const RELIGION_OPTIONS = [

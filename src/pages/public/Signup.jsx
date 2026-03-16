@@ -68,7 +68,7 @@ export default function Signup() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.logo}>knotsandlinks</h1>
+        <h1 className={styles.logo}>Knots & Links</h1>
         <p className={styles.subtitle}>매니저 회원가입</p>
 
         <form className={styles.form} onSubmit={handleSubmit}>

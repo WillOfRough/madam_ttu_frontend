@@ -17,6 +17,7 @@ const INITIAL_FORM = {
   companyLocation: '',
   education: '',
   school: '',
+  schoolCustom: '',
   // Step 3: 취향
   religion: '',
   mbti: '',
@@ -126,7 +127,12 @@ const useClientFormStore = create((set, get) => ({
       occupation: form.occupation,
       company: form.company || undefined,
       workLocation: form.companyLocation || undefined,
-      education: form.education || undefined,
+      education: (() => {
+        const schoolName = form.school === '__other__' ? (form.schoolCustom || '').trim() : form.school;
+        if (schoolName && form.education) return `${schoolName} ${form.education}`;
+        if (form.education) return form.education;
+        return undefined;
+      })(),
       religion: form.religion || undefined,
       mbti: (form.mbti && form.mbti.length <= 4) ? form.mbti : undefined,
       hobbies: form.hobbies.length > 0 ? form.hobbies.join(', ') : undefined,

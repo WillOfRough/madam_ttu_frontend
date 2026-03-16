@@ -253,7 +253,7 @@ export default function Proposal() {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
+          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
             <p className={styles.respondedStatus}>
@@ -273,7 +273,7 @@ export default function Proposal() {
       return (
         <div className={styles.page}>
           <div className={styles.container}>
-            <h1 className={styles.logo}>knotsandlinks</h1>
+            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>가용시간을 전달했습니다</p>
               <p className={styles.respondedStatus}>
@@ -289,7 +289,7 @@ export default function Proposal() {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
+          <h1 className={styles.logo}>Knots & Links</h1>
 
           {/* Header */}
           <div className={styles.schedulingHeader}>
@@ -489,7 +489,7 @@ export default function Proposal() {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
+          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>약속이 확정되었습니다!</p>
             <p className={styles.respondedStatus}>
@@ -520,7 +520,7 @@ export default function Proposal() {
       return (
         <div className={styles.page}>
           <div className={styles.container}>
-            <h1 className={styles.logo}>knotsandlinks</h1>
+            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.afterSuccessBanner}>
               <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
               <p className={styles.respondedStatus}>상대방의 연락처와 프로필입니다.</p>
@@ -583,7 +583,7 @@ export default function Proposal() {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
+          <h1 className={styles.logo}>Knots & Links</h1>
 
           {afterError && (
             <div className={styles.respondedBanner}>
@@ -689,7 +689,7 @@ export default function Proposal() {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
-          <h1 className={styles.logo}>knotsandlinks</h1>
+          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.oathCard}>
             <div className={styles.oathIcon}>
               <Lock size={32} />
@@ -749,7 +749,7 @@ export default function Proposal() {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <h1 className={styles.logo}>knotsandlinks</h1>
+        <h1 className={styles.logo}>Knots & Links</h1>
         <p className={styles.subtitle}>당신을 위한 매칭 제안</p>
         {myName && (
           <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
