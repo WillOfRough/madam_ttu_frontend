@@ -218,19 +218,19 @@
   color: var(--charcoal);
   margin-bottom: 16px;
   padding: 16px 20px;
-  border: 2px dashed var(--border);
+  border: 2px dashed var(--coral);
   border-radius: var(--radius-md);
   transition: all var(--duration-fast) var(--ease-out);
 }
 
 .agreeAllLabel:hover {
-  border-color: var(--charcoal-pale);
+  border-color: var(--coral-dark, #e5654a);
 }
 
 .agreeAllLabel:has(.checkbox:checked) {
-  border-color: var(--navy);
+  border-color: var(--coral);
   border-style: solid;
-  background: var(--navy-glow);
+  background: rgba(255, 126, 103, 0.08);
 }
 
 .checkbox {
