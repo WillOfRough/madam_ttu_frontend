@@ -576,14 +576,14 @@ export default function MatchDetail() {
                     <span className={styles.schedulingRoleBadge}>A</span>
                     <span>{match.clientA.clientName}</span>
                     <span className={styles[`afterResp_${match.afterResponses.A || 'pending'}`]}>
-                      {match.afterResponses.A === 'accepted' ? '수락' : match.afterResponses.A === 'rejected' ? '거절' : '대기'}
+                      {match.afterResponses.A === 'accepted' ? '만나볼래요' : match.afterResponses.A === 'rejected' ? '괜찮아요' : '대기 중'}
                     </span>
                   </div>
                   <div className={styles.afterResponseItem}>
                     <span className={styles.schedulingRoleBadge}>B</span>
                     <span>{match.clientB.clientName}</span>
                     <span className={styles[`afterResp_${match.afterResponses.B || 'pending'}`]}>
-                      {match.afterResponses.B === 'accepted' ? '수락' : match.afterResponses.B === 'rejected' ? '거절' : '대기'}
+                      {match.afterResponses.B === 'accepted' ? '만나볼래요' : match.afterResponses.B === 'rejected' ? '괜찮아요' : '대기 중'}
                     </span>
                   </div>
                 </div>
