@@ -9,19 +9,9 @@ import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
-const EXPIRY_OPTIONS = [
-  { value: 1, label: '1시간' },
-  { value: 24, label: '24시간' },
-  { value: 48, label: '48시간' },
-  { value: 72, label: '72시간' },
-  { value: 168, label: '7일' },
-  { value: 0, label: '무제한' },
-];
-
 export default function InviteManagement() {
   const { invites, isLoading, page, totalPages, statusFilter, quota, fetchInvites, fetchQuota, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
   const [label, setLabel] = useState('');
-  const [expiresInHours, setExpiresInHours] = useState(48);
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
   const [showCreateConfirm, setShowCreateConfirm] = useState(false);
@@ -41,7 +31,7 @@ export default function InviteManagement() {
   const handleCreateConfirm = async () => {
     setShowCreateConfirm(false);
     try {
-      await createInvite({ label: label || undefined, expiresInHours: expiresInHours || undefined });
+      await createInvite({ label: label || undefined });
       setLabel('');
       fetchInvites({ page: 1, status: statusFilter || undefined });
       fetchQuota();
@@ -93,8 +83,6 @@ export default function InviteManagement() {
     if (e.key === 'Escape') setEditingId(null);
   };
 
-  const selectedExpiryLabel = EXPIRY_OPTIONS.find((o) => o.value === expiresInHours)?.label || '48시간';
-
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>초대 관리</h1>
@@ -125,15 +113,6 @@ export default function InviteManagement() {
             onChange={(e) => setLabel(e.target.value)}
             placeholder="라벨 (선택, 예: 홍길동 소개용)"
           />
-          <select
-            className={styles.expirySelect}
-            value={expiresInHours}
-            onChange={(e) => setExpiresInHours(Number(e.target.value))}
-          >
-            {EXPIRY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
           <button className={styles.createBtn} onClick={handleCreateClick}>
             <Plus size={16} /> 생성
           </button>
@@ -225,7 +204,7 @@ export default function InviteManagement() {
       {showCreateConfirm && (
         <ConfirmModal
           title="초대 링크 생성"
-          message={`초대 링크 1개를 생성하시겠습니까?\n유효기간: ${selectedExpiryLabel}${quota ? `\n남은 초대: ${quota.remaining}개` : ''}`}
+          message={`초대 링크 1개를 생성하시겠습니까?${quota ? `\n남은 초대: ${quota.remaining}개` : ''}`}
           confirmLabel="생성"
           onConfirm={handleCreateConfirm}
           onCancel={() => setShowCreateConfirm(false)}
