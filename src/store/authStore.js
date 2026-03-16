@@ -12,6 +12,7 @@ const useAuthStore = create(
       managerId: null,
       email: null,
       name: null,
+      managerInviteQuota: null,
       isLoading: false,
       error: null,
 
@@ -112,6 +113,7 @@ const useAuthStore = create(
           managerId: null,
           email: null,
           name: null,
+          managerInviteQuota: null,
           error: null,
         });
       },
@@ -124,6 +126,7 @@ const useAuthStore = create(
             managerId: data.id,
             email: data.email,
             name: data.name || null,
+            managerInviteQuota: data.managerInviteQuota || null,
           });
           return true;
         } catch {
@@ -132,6 +135,7 @@ const useAuthStore = create(
             managerId: null,
             email: null,
             name: null,
+            managerInviteQuota: null,
           });
           return false;
         }
@@ -146,6 +150,7 @@ const useAuthStore = create(
         managerId: state.managerId,
         email: state.email,
         name: state.name,
+        managerInviteQuota: state.managerInviteQuota,
       }),
     },
   ),

@@ -22,3 +22,11 @@ export async function revokeInvite(inviteId) {
     method: 'DELETE',
   });
 }
+
+export async function getManagerInvites({ status, page = 1, limit = 20 } = {}) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+  return apiFetch(`/api/v1/invites/manager?${params}`, { method: 'GET' });
+}
