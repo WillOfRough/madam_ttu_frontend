@@ -1113,55 +1113,82 @@
 .afterResponses {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+}
+
+.afterTableHeader {
+  display: grid;
+  grid-template-columns: 28px 1fr 80px 80px;
+  gap: 10px;
+  padding: 6px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.02em;
+}
+
+.afterTableCol {
+  text-align: center;
+}
+
+.afterTableCol:nth-child(2) {
+  text-align: left;
 }
 
 .afterResponseItem {
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 1fr 80px 80px;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   background: var(--bg);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
   font-weight: 500;
   color: var(--charcoal);
+  margin-bottom: 4px;
+}
+
+.afterName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .afterResp_pending {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 10px;
   border-radius: var(--radius-full);
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--pending-light);
   color: #8a5e00;
-  margin-left: auto;
 }
 
 .afterResp_accepted {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 10px;
   border-radius: var(--radius-full);
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--success-light);
   color: #1a7a3a;
-  margin-left: auto;
 }
 
 .afterResp_rejected {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 10px;
   border-radius: var(--radius-full);
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--danger-light);
   color: #b71c2c;
-  margin-left: auto;
 }
 
 @media (max-width: 640px) {

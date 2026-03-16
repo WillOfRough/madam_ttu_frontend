@@ -570,24 +570,34 @@ export default function MatchDetail() {
                 <span className={styles.fieldLabel}>에프터 상태</span>
                 <StatusBadge status={`after_${match.afterStatus}`} />
               </div>
-              {match.afterResponses && (
-                <div className={styles.afterResponses}>
-                  <div className={styles.afterResponseItem}>
-                    <span className={styles.schedulingRoleBadge}>A</span>
-                    <span>{match.clientA.clientName}</span>
-                    <span className={styles[`afterResp_${match.afterResponses.A || 'pending'}`]}>
-                      {match.afterResponses.A === 'accepted' ? '만나볼래요' : match.afterResponses.A === 'rejected' ? '괜찮아요' : '대기 중'}
-                    </span>
-                  </div>
-                  <div className={styles.afterResponseItem}>
-                    <span className={styles.schedulingRoleBadge}>B</span>
-                    <span>{match.clientB.clientName}</span>
-                    <span className={styles[`afterResp_${match.afterResponses.B || 'pending'}`]}>
-                      {match.afterResponses.B === 'accepted' ? '만나볼래요' : match.afterResponses.B === 'rejected' ? '괜찮아요' : '대기 중'}
-                    </span>
-                  </div>
+              <div className={styles.afterResponses}>
+                <div className={styles.afterTableHeader}>
+                  <span className={styles.afterTableCol} />
+                  <span className={styles.afterTableCol}>회원</span>
+                  <span className={styles.afterTableCol}>매칭 응답</span>
+                  <span className={styles.afterTableCol}>에프터 응답</span>
                 </div>
-              )}
+                <div className={styles.afterResponseItem}>
+                  <span className={styles.schedulingRoleBadge}>A</span>
+                  <span className={styles.afterName}>{match.clientA.clientName}</span>
+                  <span className={styles[RESPONSE_MAP[match.clientA.response]?.className || 'responseWaiting']}>
+                    {RESPONSE_MAP[match.clientA.response]?.label || '대기'}
+                  </span>
+                  <span className={styles[`afterResp_${match.afterResponses?.A || 'pending'}`]}>
+                    {match.afterResponses?.A === 'accepted' ? '만나볼래요' : match.afterResponses?.A === 'rejected' ? '괜찮아요' : '대기 중'}
+                  </span>
+                </div>
+                <div className={styles.afterResponseItem}>
+                  <span className={styles.schedulingRoleBadge}>B</span>
+                  <span className={styles.afterName}>{match.clientB.clientName}</span>
+                  <span className={styles[RESPONSE_MAP[match.clientB.response]?.className || 'responseWaiting']}>
+                    {RESPONSE_MAP[match.clientB.response]?.label || '대기'}
+                  </span>
+                  <span className={styles[`afterResp_${match.afterResponses?.B || 'pending'}`]}>
+                    {match.afterResponses?.B === 'accepted' ? '만나볼래요' : match.afterResponses?.B === 'rejected' ? '괜찮아요' : '대기 중'}
+                  </span>
+                </div>
+              </div>
               <button
                 className={styles.actionBtn}
                 onClick={() => { setAfterOverrideValue(match.afterStatus); setShowAfterOverride(true); }}
