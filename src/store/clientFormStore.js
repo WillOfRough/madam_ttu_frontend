@@ -17,7 +17,6 @@ const INITIAL_FORM = {
   companyLocation: '',
   education: '',
   school: '',
-  schoolCustom: '',
   // Step 3: 취향
   religion: '',
   mbti: '',
@@ -128,7 +127,7 @@ const useClientFormStore = create((set, get) => ({
       company: form.company || undefined,
       workLocation: form.companyLocation || undefined,
       education: (() => {
-        const schoolName = form.school === '__other__' ? (form.schoolCustom || '').trim() : form.school;
+        const schoolName = (form.school || '').trim();
         if (schoolName && form.education) return `${schoolName} ${form.education}`;
         if (form.education) return form.education;
         return undefined;

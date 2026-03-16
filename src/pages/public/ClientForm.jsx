@@ -12,7 +12,6 @@ import KeywordTagInput from '../../components/KeywordTagInput';
 import {
   GENDER_OPTIONS,
   EDUCATION_OPTIONS,
-  SCHOOL_OPTIONS,
   RELIGION_OPTIONS,
   MBTI_OPTIONS,
   HOBBY_KEYWORDS,
@@ -83,11 +82,6 @@ function validateStep(step, form) {
     }
     if (!form.education) {
       errors.education = '학력을 선택해주세요.';
-    }
-    if (!form.school || !form.school.trim()) {
-      errors.school = '학교를 선택해주세요.';
-    } else if (form.school === '__other__' && (!form.schoolCustom || !form.schoolCustom.trim())) {
-      errors.school = '학교명을 입력해주세요.';
     }
   } else if (step === 2) {
     if (!form.religion) errors.religion = '종교를 선택해주세요.';
@@ -367,32 +361,13 @@ export default function ClientForm() {
                 required
                 error={getError('education')}
               />
-              <SelectField
+              <TextField
                 label="학교"
-                value={SCHOOL_OPTIONS.some(o => o.value === form.school) ? form.school : form.school ? '__other__' : ''}
-                onChange={(v) => {
-                  if (v === '__other__') {
-                    setField('school', '__other__');
-                  } else {
-                    setField('school', v);
-                  }
-                  markTouched('school');
-                }}
-                options={SCHOOL_OPTIONS}
-                placeholder="학교를 선택해주세요"
-                required
-                error={!form.school || form.school === '__other__' ? getError('school') : undefined}
+                value={form.school}
+                onChange={(v) => { setField('school', v); markTouched('school'); }}
+                placeholder="예) OO대학교"
+                required={false}
               />
-              {form.school === '__other__' && (
-                <TextField
-                  label="학교명 직접 입력"
-                  value={form.schoolCustom || ''}
-                  onChange={(v) => { setField('schoolCustom', v); markTouched('school'); }}
-                  placeholder="학교명을 입력해주세요"
-                  required
-                  error={touched.school && !form.schoolCustom?.trim() ? '학교명을 입력해주세요.' : undefined}
-                />
-              )}
             </div>
           )}
 
