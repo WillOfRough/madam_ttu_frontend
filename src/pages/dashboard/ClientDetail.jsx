@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X } from 'lucide-react';
+import { ArrowLeft, Check, X, Heart } from 'lucide-react';
 import * as clientService from '../../api/clientService';
+import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -17,6 +18,8 @@ export default function ClientDetail() {
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [matchHistory, setMatchHistory] = useState([]);
+  const [matchLoading, setMatchLoading] = useState(false);
 
   const closeLightbox = useCallback(() => setLightboxUrl(null), []);
 
@@ -30,6 +33,19 @@ export default function ClientDetail() {
         })
         .catch(() => navigate('/dashboard/clients'))
         .finally(() => setLoading(false));
+
+      // Fetch match history for this client
+      setMatchLoading(true);
+      matchService.listMatches({ size: 100 })
+        .then((res) => {
+          const matches = (res.data || []).filter(
+            (m) => m.clientA?.clientId === clientId || m.clientB?.clientId === clientId
+          );
+          matches.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setMatchHistory(matches);
+        })
+        .catch(() => {})
+        .finally(() => setMatchLoading(false));
     }
   }, [clientId, navigate]);
 
@@ -197,6 +213,53 @@ export default function ClientDetail() {
           <p className={styles.text}>{client.managerNote}</p>
         </div>
       ) : null}
+
+      {/* Match History */}
+      <div className={styles.card}>
+        <h3 className={styles.cardTitle}>
+          <Heart size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+          매칭 히스토리
+        </h3>
+        {matchLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <SkeletonLine width="100%" height="48px" />
+            <SkeletonLine width="100%" height="48px" />
+          </div>
+        ) : matchHistory.length === 0 ? (
+          <p className={styles.emptyHistory}>매칭 이력이 없습니다.</p>
+        ) : (
+          <div className={styles.historyList}>
+            {matchHistory.map((m) => {
+              const isA = m.clientA?.clientId === clientId;
+              const partner = isA ? m.clientB : m.clientA;
+              const myResponse = isA ? m.clientA?.response : m.clientB?.response;
+              return (
+                <button
+                  key={m.matchId}
+                  className={styles.historyItem}
+                  onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
+                >
+                  <div className={styles.historyMain}>
+                    <span className={styles.historyPartner}>
+                      {partner?.clientName || '알 수 없음'}
+                    </span>
+                    <StatusBadge status={m.status} />
+                    {m.afterStatus && <StatusBadge status={`after_${m.afterStatus}`} />}
+                  </div>
+                  <div className={styles.historyMeta}>
+                    <span>{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
+                    {myResponse && myResponse !== 'pending' && (
+                      <span className={styles[`historyResp_${myResponse}`]}>
+                        {myResponse === 'accepted' ? '수락' : '거절'}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {modal === 'approve' && (
         <ConfirmModal

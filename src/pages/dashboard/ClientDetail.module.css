@@ -337,6 +337,81 @@
   font-size: 0.9rem;
 }
 
+/* ── Match History ── */
+.emptyHistory {
+  font-size: 0.84rem;
+  color: var(--charcoal-pale);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.historyItem:hover {
+  background: var(--bg-dark);
+  transform: translateX(2px);
+}
+
+.historyMain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.historyPartner {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.historyMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  color: var(--charcoal-pale);
+}
+
+.historyResp_accepted {
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--success-light);
+  color: #1a7a3a;
+}
+
+.historyResp_rejected {
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--danger-light);
+  color: #b71c2c;
+}
+
 @media (max-width: 640px) {
   .fields {
     grid-template-columns: 1fr;
