@@ -176,6 +176,13 @@ export default function MatchDetail() {
 
   const handleAfterOverride = async () => {
     if (!afterOverrideValue) return;
+    // 이미 성사된 에프터를 미성사로 변경하려는 경우 경고
+    if (match.afterStatus === 'accepted' && afterOverrideValue === 'rejected') {
+      toast.error('이미 에프터가 성사된 상태입니다. 성사(accepted)로 유지해주세요.');
+      setShowAfterOverride(false);
+      setAfterOverrideValue('');
+      return;
+    }
     setActionLoading(true);
     try {
       await matchService.overrideAfter(matchId, afterOverrideValue);
