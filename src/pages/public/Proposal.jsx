@@ -728,15 +728,12 @@ export default function Proposal() {
 
   // ── Profile View + Response ──
   const fields = [
-    { label: '별명', value: cp.nickname },
     { label: '나이', value: cp.age ? `${cp.age}세` : null },
     { label: '키', value: cp.height ? `${cp.height}cm` : null },
-    { label: '직업', value: cp.occupation },
-    { label: '학력', value: cp.education },
+    { label: '회사', value: cp.company },
     { label: '거주지', value: cp.location },
     { label: 'MBTI', value: cp.mbti },
     { label: '취미', value: cp.hobbies },
-    { label: '종교', value: cp.religion },
   ].filter((f) => f.value);
 
   let contextMessage = null;
