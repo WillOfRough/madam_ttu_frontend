@@ -86,6 +86,10 @@ export default function Proposal() {
   const [afterProfile, setAfterProfile] = useState(null);
   const [afterError, setAfterError] = useState(null);
 
+  // After feedback (거절 시 피드백)
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState('');
+
   const dateRange = useMemo(() => generateDateRange(), []);
   const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
   const sortedSelectedDates = useMemo(() => Array.from(selectedDates).sort(), [selectedDates]);
@@ -137,6 +141,15 @@ export default function Proposal() {
       setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '응답 처리에 실패했습니다.');
     }
     setSubmitting(false);
+  };
+
+  const handleAfterReject = () => {
+    setShowFeedback(true);
+  };
+
+  const handleFeedbackSubmit = async () => {
+    await handleAfterRespond('rejected');
+    setShowFeedback(false);
   };
 
   const handleViewAfterProfile = async () => {
@@ -591,32 +604,65 @@ export default function Proposal() {
             </div>
           )}
 
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && (
-            <>
-              <div className={styles.afterCard}>
-                <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
-                <p className={styles.afterDesc}>
-                  상대방을 다시 만나고 싶으시다면 에프터를 신청해주세요.
-                  <br />양쪽 모두 수락하면 연락처가 공개됩니다.
-                </p>
-                <div className={styles.afterActions}>
-                  <button
-                    className={styles.acceptBtn}
-                    onClick={() => handleAfterRespond('accepted')}
-                    disabled={submitting}
-                  >
-                    {submitting ? '처리 중...' : '다시 만나고 싶어요!'}
-                  </button>
-                  <button
-                    className={styles.rejectBtn}
-                    onClick={() => handleAfterRespond('rejected')}
-                    disabled={submitting}
-                  >
-                    괜찮습니다
-                  </button>
-                </div>
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && !showFeedback && (
+            <div className={styles.afterCard}>
+              <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
+              <p className={styles.afterDesc}>
+                상대방을 다시 만나고 싶으시다면 에프터를 신청해주세요.
+                <br />양쪽 모두 수락하면 연락처가 공개됩니다.
+              </p>
+              <div className={styles.afterActions}>
+                <button
+                  className={styles.acceptBtn}
+                  onClick={() => handleAfterRespond('accepted')}
+                  disabled={submitting}
+                >
+                  {submitting ? '처리 중...' : '다시 만나고 싶어요!'}
+                </button>
+                <button
+                  className={styles.rejectBtn}
+                  onClick={handleAfterReject}
+                  disabled={submitting}
+                >
+                  괜찮습니다
+                </button>
               </div>
-            </>
+            </div>
+          )}
+
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && showFeedback && (
+            <div className={styles.afterCard}>
+              <h2 className={styles.afterTitle}>솔직한 피드백을 들려주세요</h2>
+              <p className={styles.afterDesc}>
+                어떤 부분이 맞지 않으셨나요?
+                <br />피드백을 남겨주시면 다음 매칭에 반영하여 더 잘 맞는 분을 소개해 드리겠습니다.
+              </p>
+              <textarea
+                className={styles.feedbackTextarea}
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="예) 대화 스타일이 맞지 않았어요, 관심사가 달랐어요 등 편하게 적어주세요."
+                rows={4}
+                maxLength={500}
+              />
+              <p className={styles.feedbackCount}>{feedback.length}/500</p>
+              <div className={styles.afterActions}>
+                <button
+                  className={styles.acceptBtn}
+                  onClick={handleFeedbackSubmit}
+                  disabled={submitting}
+                >
+                  {submitting ? '처리 중...' : '피드백 제출하기'}
+                </button>
+                <button
+                  className={styles.rejectBtn}
+                  onClick={() => setShowFeedback(false)}
+                  disabled={submitting}
+                >
+                  돌아가기
+                </button>
+              </div>
+            </div>
           )}
 
           {!afterError && afterStatus === 'pending' && myAfterResponse === 'accepted' && (
