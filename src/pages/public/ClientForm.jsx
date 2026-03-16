@@ -104,8 +104,8 @@ function validateStep(step, form) {
     if (!form.idealType || !form.idealType.trim()) {
       errors.idealType = '이상형을 적어주세요.';
     }
-    if (!form.photos || form.photos.length === 0) {
-      errors.photos = '사진을 최소 1장 등록해주세요.';
+    if (!form.photos || form.photos.length < 2) {
+      errors.photos = '사진을 최소 2장 등록해주세요.';
     }
   }
   return errors;
@@ -496,7 +496,7 @@ export default function ClientForm() {
                   당신의 매력을 보여줄 사진을 올려주세요
                   <span className={styles.requiredMark}> *</span>
                 </label>
-                <p className={styles.photoHint}>최소 1장 필수, 최대 5장 (장당 10MB / JPG, PNG, WebP)</p>
+                <p className={styles.photoHint}>최소 2장 필수, 최대 5장 (장당 10MB / JPG, PNG, WebP)</p>
                 <p className={styles.photoWarning}>
                   얼굴이 잘 보이는 사진을 올려주세요. 마스크 착용, 선글라스, 과도한 필터, 옆모습·뒷모습 등 얼굴 확인이 어려운 사진은 매칭에 불이익이 있을 수 있습니다.
                 </p>
