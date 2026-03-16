@@ -146,7 +146,7 @@ export default function ClientOath() {
   const navigate = useNavigate();
   const [consents, setConsents] = useState({ collect: false, thirdParty: false });
   const [oathAgreed, setOathAgreed] = useState(false);
-  const [expanded, setExpanded] = useState({ collect: true, thirdParty: false, rights: false });
+  const [expanded, setExpanded] = useState({ collect: false, thirdParty: false, rights: false });
 
   const allRequired = consents.collect && consents.thirdParty && oathAgreed;
 
