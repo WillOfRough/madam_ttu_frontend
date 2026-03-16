@@ -164,7 +164,7 @@
 /* ── Oath Box ── */
 .oathBox {
   text-align: left;
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--coral);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 20px;
@@ -173,10 +173,10 @@
 .oathTitle {
   font-size: 0.84rem;
   font-weight: 700;
-  color: var(--charcoal);
+  color: var(--white);
   padding: 14px 18px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border-light);
+  background: var(--coral);
+  border-bottom: 1px solid var(--coral);
 }
 
 .items {
