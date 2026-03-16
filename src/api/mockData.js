@@ -601,6 +601,8 @@ const matches = [
     confirmedAt: '2026-02-25T11:00:00Z',
     completedAt: '2026-03-02T10:00:00Z',
     createdAt: '2026-02-18T09:00:00Z',
+    afterStatus: 'pending',
+    afterResponses: { A: 'pending', B: 'pending' },
   },
   // 7) proposal_sent — 또 다른 제안 발송 건
   {
@@ -735,12 +737,6 @@ function getProposalByToken(token) {
   return null;
 }
 
-// ── Export Logs ─────────────────────────────────────────
-const exportLogs = [
-  { id: 'exp001', exportType: 'Excel', recordCount: 6, createdAt: '2026-03-01T09:00:00Z' },
-  { id: 'exp002', exportType: 'Excel', recordCount: 8, createdAt: '2026-02-15T14:30:00Z' },
-];
-
 // ── Manager lookup map ────────────────────────────────
 const managerMap = {
   [MANAGER_ID]: { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com' },
@@ -795,7 +791,7 @@ const dashboardSummary = {
     .map((c) => ({ ...c, ...enrichClient(c) })),
 };
 
-const managerInfo = { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com' };
+const managerInfo = { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com', nickname: '', phone: '010-1234-5678' };
 
 // ── Route Matcher ──────────────────────────────────────
 
@@ -834,7 +830,8 @@ export async function mockFetch(path, options = {}) {
   // GET /api/v1/auth/me
   if (method === 'GET' && pathname === '/api/v1/auth/me') {
     return {
-      id: MANAGER_ID, email: 'sungjoong.kim@hancom.com', name: '김성중',
+      id: MANAGER_ID, email: 'sungjoong.kim@hancom.com', name: managerInfo.name,
+      nickname: managerInfo.nickname || '', phone: managerInfo.phone || '',
       connections: connections.map((c) => ({ managerId: c.managerId, name: c.name, clientCount: c.clientCount, connectedAt: c.connectedAt })),
       myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
       createdAt: '2026-01-01T00:00:00Z',
@@ -871,6 +868,14 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/dashboard/summary
   if (method === 'GET' && pathname === '/api/v1/dashboard/summary') return dashboardSummary;
+  // PATCH /api/v1/managers/me
+  if (method === 'PATCH' && pathname === '/api/v1/managers/me') {
+    const body = options.body || {};
+    if (body.name) managerInfo.name = body.name;
+    if (body.nickname) managerInfo.nickname = body.nickname;
+    if (body.phone) managerInfo.phone = body.phone;
+    return { success: true, message: '정보가 수정되었습니다.' };
+  }
   // GET /api/v1/managers/:id
   if (method === 'GET' && /^\/api\/v1\/managers\/[^/]+$/.test(pathname)) return managerInfo;
 
@@ -907,11 +912,13 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/connections
   if (method === 'GET' && pathname === '/api/v1/connections') return { connections };
+  // GET /api/v1/invites/manager (quota)
+  if (method === 'GET' && pathname === '/api/v1/invites/manager') {
+    const activeCount = invites.filter((i) => i.status === 'active').length;
+    return { limit: 20, used: activeCount, remaining: 20 - activeCount };
+  }
   // GET /api/v1/invites
   if (method === 'GET' && pathname === '/api/v1/invites') return invites;
-  // GET /api/v1/exports
-  if (method === 'GET' && pathname === '/api/v1/exports') return exportLogs;
-
   // POST /api/v1/invites (create)
   if (method === 'POST' && pathname === '/api/v1/invites') {
     const body = options.body || {};
@@ -919,6 +926,16 @@ export async function mockFetch(path, options = {}) {
     invites.unshift(newInvite);
     dashboardSummary.activeInviteCount = invites.filter((i) => i.status === 'active').length;
     return newInvite;
+  }
+
+  // PATCH /api/v1/invites/:id/label
+  if (method === 'PATCH' && /^\/api\/v1\/invites\/[^/]+\/label$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const inv = invites.find((i) => i.id === id);
+    if (!inv) throw Object.assign(new Error('초대를 찾을 수 없습니다.'), { status: 404 });
+    inv.label = body.label || '';
+    return { success: true };
   }
 
   // DELETE /api/v1/invites/:id
@@ -998,7 +1015,7 @@ export async function mockFetch(path, options = {}) {
     const body = options.body || {};
     const foundA = clients.find((c) => c.id === body.clientAId);
     const foundB = clients.find((c) => c.id === body.clientBId);
-    if (!foundA || !foundB) throw Object.assign(new Error('Client를 찾을 수 없습니다.'), { status: 404 });
+    if (!foundA || !foundB) throw Object.assign(new Error('회원을 찾을 수 없습니다.'), { status: 404 });
     const tokenA = randomToken();
     const tokenB = randomToken();
     const newMatch = {
@@ -1009,6 +1026,16 @@ export async function mockFetch(path, options = {}) {
     };
     matches.unshift(newMatch);
     return { matchId: newMatch.matchId, status: 'proposal_sent', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
+  }
+
+  // DELETE /api/v1/matches/:matchId
+  if (method === 'DELETE' && /^\/api\/v1\/matches\/[^/]+$/.test(pathname) && !pathname.endsWith('/matches')) {
+    const id = pathname.split('/').pop();
+    const idx = matches.findIndex((m) => m.matchId === id);
+    if (idx === -1) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    if (matches[idx].status !== 'proposal_sent') throw Object.assign(new Error('제안 발송 상태에서만 삭제할 수 있습니다.'), { status: 400 });
+    matches.splice(idx, 1);
+    return { success: true, message: '매칭이 삭제되었습니다.' };
   }
 
   // GET /api/v1/matches/:matchId (detail)
@@ -1036,7 +1063,15 @@ export async function mockFetch(path, options = {}) {
     // Enrich participants with client details
     const clientA = { ...enrichParticipant(found.clientA), availableTimesSubmitted: rawTimesA.length > 0 };
     const clientB = { ...enrichParticipant(found.clientB), availableTimesSubmitted: rawTimesB.length > 0 };
-    return { ...found, clientA, clientB, availableTimes: allAvailableTimes, confirmedSchedule };
+    return {
+      ...found,
+      clientA,
+      clientB,
+      availableTimes: allAvailableTimes,
+      confirmedSchedule,
+      afterStatus: found.afterStatus || null,
+      afterResponses: found.afterResponses || null,
+    };
   }
 
   // GET /api/v1/matches (list)
@@ -1120,7 +1155,7 @@ export async function mockFetch(path, options = {}) {
     if (m.status === 'proposal_sent' && myRole === 'receiver') {
       throw Object.assign(new Error('아직 상대방 응답을 기다리고 있습니다.'), { status: 403, body: { error: '9.005' } });
     }
-    if (m.status === 'cancelled' || m.status === 'completed') {
+    if (m.status === 'cancelled') {
       throw Object.assign(new Error('종료된 매칭입니다.'), { status: 410, body: { error: '9.003' } });
     }
 
@@ -1213,6 +1248,80 @@ export async function mockFetch(path, options = {}) {
       m.status = 'arranging';
     }
     return { success: true, message: '가용시간이 등록되었습니다.' };
+  }
+
+  // ── After APIs ──
+
+  // GET /api/v1/proposals/:token/after
+  if (method === 'GET' && /^\/api\/v1\/proposals\/[^/]+\/after$/.test(pathname)) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    const m = proposal.match;
+    if (m.status !== 'completed') throw Object.assign(new Error('미팅이 완료되지 않았습니다.'), { status: 400, body: { error: '9.007' } });
+    const side = proposal.side;
+    const myAfterResponse = m.afterResponses?.[side] || 'pending';
+    return { afterStatus: m.afterStatus || 'pending', myAfterResponse };
+  }
+
+  // POST /api/v1/proposals/:token/after (respond)
+  if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/after$/.test(pathname) && !pathname.includes('/after/')) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    const m = proposal.match;
+    if (m.status !== 'completed') throw Object.assign(new Error('미팅이 완료되지 않았습니다.'), { status: 400, body: { error: '9.007' } });
+    const side = proposal.side;
+    if (!m.afterResponses) m.afterResponses = { A: 'pending', B: 'pending' };
+    m.afterResponses[side] = body.response;
+    // Compute overall after status
+    const aResp = m.afterResponses.A;
+    const bResp = m.afterResponses.B;
+    if (aResp === 'rejected' || bResp === 'rejected') {
+      m.afterStatus = 'rejected';
+    } else if (aResp === 'accepted' && bResp === 'accepted') {
+      m.afterStatus = 'accepted';
+    } else {
+      m.afterStatus = 'pending';
+    }
+    return { success: true, afterStatus: m.afterStatus };
+  }
+
+  // GET /api/v1/proposals/:token/after/profile
+  if (method === 'GET' && /^\/api\/v1\/proposals\/[^/]+\/after\/profile$/.test(pathname)) {
+    const token = pathname.split('/').slice(-3, -2)[0];
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    const m = proposal.match;
+    if (m.afterStatus !== 'accepted') throw Object.assign(new Error('에프터가 성사되지 않았습니다.'), { status: 400, body: { error: '9.012' } });
+    const cp = proposal.counterpart;
+    if (!cp) throw Object.assign(new Error('상대 정보를 찾을 수 없습니다.'), { status: 404 });
+    return {
+      name: cp.name,
+      phone: cp.phone,
+      nickname: cp.nickname,
+      gender: cp.gender,
+      age: cp.birthDate ? new Date().getFullYear() - new Date(cp.birthDate).getFullYear() : null,
+      height: cp.height,
+      occupation: cp.occupation,
+      education: cp.education,
+      location: cp.location,
+      mbti: cp.mbti,
+      hobbies: cp.hobbies,
+      introduction: cp.introduction,
+      photoUrls: (cp.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
+    };
+  }
+
+  // POST /api/v1/matches/:matchId/after (manager override)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/after$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    m.afterStatus = body.afterStatus;
+    return { success: true, message: '에프터 상태가 변경되었습니다.' };
   }
 
   // fallback

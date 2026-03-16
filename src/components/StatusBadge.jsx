@@ -14,6 +14,9 @@ const LABELS = {
   scheduled: '약속확정',
   completed: '완료',
   cancelled: '취소',
+  after_pending: '에프터 대기',
+  after_accepted: '에프터 성사',
+  after_rejected: '에프터 미성사',
 };
 
 export default function StatusBadge({ status }) {

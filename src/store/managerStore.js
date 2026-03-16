@@ -19,6 +19,14 @@ const useManagerStore = create((set) => ({
     }
   },
 
+  updateInfo: async (data) => {
+    const result = await managerService.updateMyInfo(data);
+    // Re-fetch info after update
+    const info = await managerService.getMyInfo();
+    set({ info });
+    return result;
+  },
+
   fetchSummary: async () => {
     set({ isLoading: true, error: null });
     try {

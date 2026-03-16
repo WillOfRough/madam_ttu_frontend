@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -78,11 +78,14 @@ export default function MatchDetail() {
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCancel, setShowCancel] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [venue, setVenue] = useState('');
   const [endTimeInput, setEndTimeInput] = useState('');
   const [selectedTimeId, setSelectedTimeId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showAfterOverride, setShowAfterOverride] = useState(false);
+  const [afterOverrideValue, setAfterOverrideValue] = useState('');
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
@@ -129,6 +132,19 @@ export default function MatchDetail() {
     setShowCancel(false);
   };
 
+  const handleDelete = async () => {
+    setActionLoading(true);
+    try {
+      await matchService.deleteMatch(matchId);
+      toast.success('매칭이 삭제되었습니다.');
+      navigate('/dashboard/matches');
+    } catch (err) {
+      toast.error(err.message || '삭제에 실패했습니다.');
+    }
+    setActionLoading(false);
+    setShowDelete(false);
+  };
+
   const handleConfirmSchedule = async () => {
     if (!selectedTimeId) return;
     setActionLoading(true);
@@ -156,6 +172,21 @@ export default function MatchDetail() {
       toast.error(err.message || '재등록 요청에 실패했습니다.');
     }
     setActionLoading(false);
+  };
+
+  const handleAfterOverride = async () => {
+    if (!afterOverrideValue) return;
+    setActionLoading(true);
+    try {
+      await matchService.overrideAfter(matchId, afterOverrideValue);
+      toast.success('에프터 상태가 변경되었습니다.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '에프터 상태 변경에 실패했습니다.');
+    }
+    setActionLoading(false);
+    setShowAfterOverride(false);
+    setAfterOverrideValue('');
   };
 
   const handleCompleteMatch = async () => {
@@ -232,13 +263,13 @@ export default function MatchDetail() {
       <div className={styles.participants}>
         <ParticipantCard
           participant={match.clientA}
-          label="Client A"
+          label="회원 A"
           matchStatus={match.status}
           side="A"
         />
         <ParticipantCard
           participant={match.clientB}
-          label="Client B"
+          label="회원 B"
           matchStatus={match.status}
           side="B"
         />
@@ -259,7 +290,7 @@ export default function MatchDetail() {
                 <AlertTriangle size={18} />
                 <div>
                   <p className={styles.noCommonTitle}>겹치는 가용시간이 없습니다</p>
-                  <p className={styles.noCommonDesc}>양쪽 Client에게 가용시간을 다시 등록하도록 요청할 수 있습니다.</p>
+                  <p className={styles.noCommonDesc}>양쪽 회원에게 가용시간을 다시 등록하도록 요청할 수 있습니다.</p>
                 </div>
               </div>
               <button
@@ -279,7 +310,7 @@ export default function MatchDetail() {
               <h3 className={styles.cardTitle}>
                 <Calendar size={16} /> 공통 가용시간
               </h3>
-              <p className={styles.commonTimesHint}>양쪽 Client가 모두 가능한 시간입니다</p>
+              <p className={styles.commonTimesHint}>양쪽 회원이 모두 가능한 시간입니다</p>
               <div className={styles.slotTags}>
                 {[...commonKeys].sort().map((key) => {
                   const [date, time] = key.split('_');
@@ -494,7 +525,7 @@ export default function MatchDetail() {
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
           </h3>
-          <p className={styles.waitingText}>양쪽 Client의 가용시간 등록을 기다리고 있습니다.</p>
+          <p className={styles.waitingText}>양쪽 회원의 가용시간 등록을 기다리고 있습니다.</p>
         </div>
       )}
 
@@ -520,6 +551,50 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* After Status Card (completed only) */}
+      {match.status === 'completed' && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <Heart size={16} /> 에프터 현황
+          </h3>
+          {match.afterStatus ? (
+            <>
+              <div className={styles.afterStatusRow}>
+                <span className={styles.fieldLabel}>에프터 상태</span>
+                <StatusBadge status={`after_${match.afterStatus}`} />
+              </div>
+              {match.afterResponses && (
+                <div className={styles.afterResponses}>
+                  <div className={styles.afterResponseItem}>
+                    <span className={styles.schedulingRoleBadge}>A</span>
+                    <span>{match.clientA.clientName}</span>
+                    <span className={styles[`afterResp_${match.afterResponses.A || 'pending'}`]}>
+                      {match.afterResponses.A === 'accepted' ? '수락' : match.afterResponses.A === 'rejected' ? '거절' : '대기'}
+                    </span>
+                  </div>
+                  <div className={styles.afterResponseItem}>
+                    <span className={styles.schedulingRoleBadge}>B</span>
+                    <span>{match.clientB.clientName}</span>
+                    <span className={styles[`afterResp_${match.afterResponses.B || 'pending'}`]}>
+                      {match.afterResponses.B === 'accepted' ? '수락' : match.afterResponses.B === 'rejected' ? '거절' : '대기'}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <button
+                className={styles.actionBtn}
+                onClick={() => { setAfterOverrideValue(match.afterStatus); setShowAfterOverride(true); }}
+                style={{ marginTop: 12 }}
+              >
+                에프터 상태 변경
+              </button>
+            </>
+          ) : (
+            <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
+          )}
+        </div>
+      )}
+
       {match.note && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>매니저 메모</h3>
@@ -535,6 +610,11 @@ export default function MatchDetail() {
 
       {/* Manager Action Buttons */}
       <div className={styles.actionBar}>
+        {match.status === 'proposal_sent' && (
+          <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
+            <Trash2 size={14} /> 매칭 삭제
+          </button>
+        )}
         {match.status === 'scheduled' && (
           <>
             <button className={styles.actionBtn} onClick={handleCompleteMatch} disabled={actionLoading}>
@@ -568,6 +648,19 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* Delete Modal */}
+      {showDelete && (
+        <ConfirmModal
+          title="매칭 삭제"
+          message="이 매칭을 삭제하시겠습니까? 삭제된 매칭은 복구할 수 없습니다."
+          confirmLabel="삭제"
+          cancelLabel="돌아가기"
+          danger
+          onConfirm={handleDelete}
+          onCancel={() => setShowDelete(false)}
+        />
+      )}
+
       {/* Cancel Modal */}
       {showCancel && (
         <ConfirmModal
@@ -583,6 +676,38 @@ export default function MatchDetail() {
           onConfirm={handleCancel}
           onCancel={() => setShowCancel(false)}
         />
+      )}
+
+      {/* After Override Modal */}
+      {showAfterOverride && (
+        <div className={styles.overlay} onClick={() => setShowAfterOverride(false)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>에프터 상태 변경</h3>
+            <p className={styles.modalDesc}>매니저가 에프터 상태를 직접 변경합니다.</p>
+            <div className={styles.modalField}>
+              <label className={styles.modalLabel}>상태</label>
+              <select
+                className={styles.modalInput}
+                value={afterOverrideValue}
+                onChange={(e) => setAfterOverrideValue(e.target.value)}
+              >
+                <option value="pending">대기</option>
+                <option value="accepted">성사</option>
+                <option value="rejected">미성사</option>
+              </select>
+            </div>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelModalBtn} onClick={() => setShowAfterOverride(false)}>취소</button>
+              <button
+                className={styles.confirmModalBtn}
+                onClick={handleAfterOverride}
+                disabled={actionLoading || !afterOverrideValue}
+              >
+                {actionLoading ? '변경 중...' : '상태 변경'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Confirm Schedule Modal */}
@@ -652,7 +777,7 @@ function SchedulingLinkCard({ match }) {
       <h3 className={styles.schedulingLinkTitle}>
         <Link2 size={16} /> 일정 조율 링크
       </h3>
-      <p className={styles.schedulingLinkHint}>아래 링크를 각 Client에게 전달해주세요</p>
+      <p className={styles.schedulingLinkHint}>아래 링크를 각 회원에게 전달해주세요</p>
       <div className={styles.schedulingLinkRows}>
         <div className={styles.schedulingLinkRow}>
           <div className={styles.schedulingLinkLabel}>

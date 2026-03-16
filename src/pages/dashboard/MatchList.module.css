@@ -236,6 +236,12 @@
   margin-bottom: 14px;
 }
 
+.badgeGroup {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .matchPair {
   display: flex;
   align-items: center;

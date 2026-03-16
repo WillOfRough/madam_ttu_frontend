@@ -1,10 +1,14 @@
 import { apiFetch } from './config';
 
-export async function createInvite({ label } = {}) {
+export async function createInvite({ label, expiresInHours } = {}) {
   return apiFetch('/api/v1/invites', {
     method: 'POST',
-    body: { label },
+    body: { label, expiresInHours },
   });
+}
+
+export async function getInviteQuota() {
+  return apiFetch('/api/v1/invites/manager', { method: 'GET' });
 }
 
 export async function getMyInvites({ page = 1, limit = 20, status } = {}) {
@@ -29,4 +33,11 @@ export async function getManagerInvites({ status, page = 1, limit = 20 } = {}) {
   params.set('page', String(page));
   params.set('limit', String(limit));
   return apiFetch(`/api/v1/invites/manager?${params}`, { method: 'GET' });
+}
+
+export async function updateInviteLabel(inviteId, label) {
+  return apiFetch(`/api/v1/invites/${inviteId}/label`, {
+    method: 'PATCH',
+    body: { label },
+  });
 }

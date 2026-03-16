@@ -23,10 +23,33 @@
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: space-between;
   padding: 18px 24px;
   border-bottom: 1px solid var(--border-light);
   color: var(--charcoal);
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: var(--bg);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.editBtn:hover {
+  background: var(--navy-glow);
 }
 
 .cardHeader h3 {
@@ -60,6 +83,97 @@
   font-weight: 600;
   color: var(--charcoal);
   text-align: right;
+}
+
+.editForm {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 0.78rem;
+  color: var(--charcoal-light);
+  font-weight: 600;
+}
+
+.formInput {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.formInput:focus {
+  border-color: var(--navy);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.formInput::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.formReadonly {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  padding: 10px 0;
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.saveBtn:disabled {
+  opacity: 0.6;
+}
+
+.cancelBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--bg);
+  color: var(--charcoal-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: var(--bg-dark);
 }
 
 .logoutBtn {

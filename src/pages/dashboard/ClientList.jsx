@@ -23,7 +23,7 @@ export default function ClientList() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>Client 관리</h1>
+      <h1 className={styles.title}>회원 관리</h1>
 
       <div className={styles.searchRow}>
         <input
@@ -47,7 +47,7 @@ export default function ClientList() {
           onChange={(e) => setFilter('owner', e.target.value)}
         >
           <option value="all">전체</option>
-          <option value="me">내 Client</option>
+          <option value="me">내 회원</option>
           {connections.map((conn) => (
             <option key={conn.managerId || conn.id} value={conn.managerId || conn.id}>
               {conn.name || conn.email}
@@ -98,7 +98,7 @@ export default function ClientList() {
       ) : clients.length === 0 && !error ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />
-          <p>등록된 Client가 없습니다.</p>
+          <p>등록된 회원이 없습니다.</p>
         </div>
       ) : (
         <>

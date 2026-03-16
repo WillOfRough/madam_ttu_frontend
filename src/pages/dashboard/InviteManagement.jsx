@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Plus, Copy, Trash2, Mail, X } from 'lucide-react';
+import { Plus, Copy, Trash2, Mail, X, Pencil } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
+import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -8,22 +9,42 @@ import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
+const EXPIRY_OPTIONS = [
+  { value: 1, label: '1시간' },
+  { value: 24, label: '24시간' },
+  { value: 48, label: '48시간' },
+  { value: 72, label: '72시간' },
+  { value: 168, label: '7일' },
+  { value: 0, label: '무제한' },
+];
+
 export default function InviteManagement() {
-  const { invites, isLoading, page, totalPages, statusFilter, fetchInvites, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
+  const { invites, isLoading, page, totalPages, statusFilter, quota, fetchInvites, fetchQuota, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
   const [label, setLabel] = useState('');
+  const [expiresInHours, setExpiresInHours] = useState(48);
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingLabel, setEditingLabel] = useState('');
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideInviteDesc') !== '1');
 
   useEffect(() => {
     fetchInvites({ page: 1, status: statusFilter || undefined });
-  }, [fetchInvites, statusFilter]);
+    fetchQuota();
+  }, [fetchInvites, fetchQuota, statusFilter]);
 
-  const handleCreate = async () => {
+  const handleCreateClick = () => {
+    setShowCreateConfirm(true);
+  };
+
+  const handleCreateConfirm = async () => {
+    setShowCreateConfirm(false);
     try {
-      await createInvite({ label: label || undefined });
+      await createInvite({ label: label || undefined, expiresInHours: expiresInHours || undefined });
       setLabel('');
       fetchInvites({ page: 1, status: statusFilter || undefined });
+      fetchQuota();
       toast.success('초대 링크가 생성되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 생성에 실패했습니다.');
@@ -43,12 +64,36 @@ export default function InviteManagement() {
     if (!revokeTarget) return;
     try {
       await revokeInvite(revokeTarget.id);
+      fetchQuota();
       toast.success('초대 링크가 폐기되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 폐기에 실패했습니다.');
     }
     setRevokeTarget(null);
   };
+
+  const handleStartEdit = (invite) => {
+    setEditingId(invite.id);
+    setEditingLabel(invite.label || '');
+  };
+
+  const handleSaveLabel = async (inviteId) => {
+    try {
+      await updateInviteLabel(inviteId, editingLabel);
+      toast.success('라벨이 수정되었습니다.');
+      fetchInvites({ page, status: statusFilter || undefined });
+    } catch (err) {
+      toast.error(err.message || '라벨 수정에 실패했습니다.');
+    }
+    setEditingId(null);
+  };
+
+  const handleLabelKeyDown = (e, inviteId) => {
+    if (e.key === 'Enter') handleSaveLabel(inviteId);
+    if (e.key === 'Escape') setEditingId(null);
+  };
+
+  const selectedExpiryLabel = EXPIRY_OPTIONS.find((o) => o.value === expiresInHours)?.label || '48시간';
 
   return (
     <div className={styles.page}>
@@ -57,7 +102,7 @@ export default function InviteManagement() {
       {showDesc && (
         <div className={styles.descBox}>
           <div className={styles.descHeader}>
-            <p className={styles.descTitle}>Client 초대란?</p>
+            <p className={styles.descTitle}>회원 초대란?</p>
             <button
               className={styles.descClose}
               onClick={() => { setShowDesc(false); localStorage.setItem('hideInviteDesc', '1'); }}
@@ -66,7 +111,7 @@ export default function InviteManagement() {
             </button>
           </div>
           <p className={styles.descText}>
-            소개를 희망하는 분(Client)에게 초대 링크를 전달하면, 상대방이 프로필을 직접 등록할 수 있습니다.
+            소개를 희망하는 분(회원)에게 초대 링크를 전달하면, 상대방이 프로필을 직접 등록할 수 있습니다.
             라벨을 붙여 어떤 용도로 생성한 링크인지 관리하고, 더 이상 필요 없는 링크는 폐기하세요.
           </p>
         </div>
@@ -80,10 +125,24 @@ export default function InviteManagement() {
             onChange={(e) => setLabel(e.target.value)}
             placeholder="라벨 (선택, 예: 홍길동 소개용)"
           />
-          <button className={styles.createBtn} onClick={handleCreate}>
+          <select
+            className={styles.expirySelect}
+            value={expiresInHours}
+            onChange={(e) => setExpiresInHours(Number(e.target.value))}
+          >
+            {EXPIRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <button className={styles.createBtn} onClick={handleCreateClick}>
             <Plus size={16} /> 생성
           </button>
         </div>
+        {quota && (
+          <p className={styles.quotaHint}>
+            남은 초대: <strong>{quota.remaining}</strong>개 (총 {quota.limit}개 중 {quota.used}개 사용)
+          </p>
+        )}
       </div>
 
       <div className={styles.filters}>
@@ -112,9 +171,27 @@ export default function InviteManagement() {
               <div key={invite.id} className={styles.card}>
                 <div className={styles.cardMain}>
                   <div className={styles.cardInfo}>
-                    <span className={styles.inviteLabel}>
-                      {invite.label || '라벨 없음'}
-                    </span>
+                    {editingId === invite.id ? (
+                      <input
+                        className={styles.labelEditInput}
+                        value={editingLabel}
+                        onChange={(e) => setEditingLabel(e.target.value)}
+                        onBlur={() => handleSaveLabel(invite.id)}
+                        onKeyDown={(e) => handleLabelKeyDown(e, invite.id)}
+                        autoFocus
+                        placeholder="라벨 입력..."
+                      />
+                    ) : (
+                      <span
+                        className={styles.inviteLabel}
+                        onClick={() => invite.status === 'active' && handleStartEdit(invite)}
+                        title={invite.status === 'active' ? '클릭하여 수정' : ''}
+                        style={invite.status === 'active' ? { cursor: 'pointer' } : {}}
+                      >
+                        {invite.label || '라벨 없음'}
+                        {invite.status === 'active' && <Pencil size={12} className={styles.editIcon} />}
+                      </span>
+                    )}
                     <StatusBadge status={invite.status} />
                   </div>
                   <span className={styles.cardMeta}>
@@ -143,6 +220,16 @@ export default function InviteManagement() {
           </div>
           <Pagination page={page} totalPages={totalPages} onPageChange={(p) => fetchInvites({ page: p, status: statusFilter || undefined })} />
         </>
+      )}
+
+      {showCreateConfirm && (
+        <ConfirmModal
+          title="초대 링크 생성"
+          message={`초대 링크 1개를 생성하시겠습니까?\n유효기간: ${selectedExpiryLabel}${quota ? `\n남은 초대: ${quota.remaining}개` : ''}`}
+          confirmLabel="생성"
+          onConfirm={handleCreateConfirm}
+          onCancel={() => setShowCreateConfirm(false)}
+        />
       )}
 
       {revokeTarget && (

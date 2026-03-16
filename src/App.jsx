@@ -26,7 +26,6 @@ import ClientList from './pages/dashboard/ClientList';
 import ClientDetail from './pages/dashboard/ClientDetail';
 import Connections from './pages/dashboard/Connections';
 import InviteManagement from './pages/dashboard/InviteManagement';
-import ExportPage from './pages/dashboard/ExportPage';
 import Settings from './pages/dashboard/Settings';
 import MatchList from './pages/dashboard/MatchList';
 import MatchDetail from './pages/dashboard/MatchDetail';
@@ -89,7 +88,6 @@ export default function App() {
             <Route path="/dashboard/clients/:clientId" element={<ClientDetail />} />
             <Route path="/dashboard/connections" element={<Connections />} />
             <Route path="/dashboard/invites" element={<InviteManagement />} />
-            <Route path="/dashboard/export" element={<ExportPage />} />
             <Route path="/dashboard/matches" element={<MatchList />} />
             <Route path="/dashboard/matches/:matchId" element={<MatchDetail />} />
             <Route path="/dashboard/settings" element={<Settings />} />

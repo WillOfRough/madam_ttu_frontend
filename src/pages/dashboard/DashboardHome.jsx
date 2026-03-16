@@ -18,9 +18,9 @@ export default function DashboardHome() {
   }, [fetchSummary]);
 
   const cards = [
-    { icon: Users, label: '내 Client', value: summary?.myClientCount ?? '-', color: 'navy' },
+    { icon: Users, label: '내 회원', value: summary?.myClientCount ?? '-', color: 'navy' },
     { icon: Clock, label: '승인 대기', value: summary?.pendingCount ?? '-', color: 'pending' },
-    { icon: Link2, label: '연결된 매니저', value: summary?.connectedManagerCount ?? '-', color: 'success' },
+    { icon: Link2, label: '네트워크', value: summary?.connectedManagerCount ?? '-', color: 'success' },
     { icon: Mail, label: '활성 초대링크', value: summary?.activeInviteCount ?? '-', color: 'coral' },
   ];
 
@@ -57,7 +57,7 @@ export default function DashboardHome() {
         </div>
 
         {pendingClients.length === 0 ? (
-          <div className={styles.empty}>승인 대기중인 Client가 없습니다.</div>
+          <div className={styles.empty}>승인 대기중인 회원이 없습니다.</div>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>

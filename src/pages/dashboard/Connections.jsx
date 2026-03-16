@@ -59,7 +59,7 @@ export default function Connections() {
       const token = result.token || result.id;
       setInviteUrl(`${window.location.origin}/connect/${token}`);
       setCopied(false);
-      toast.success('연결 초대 링크가 생성되었습니다.');
+      toast.success('네트워크 초대 링크가 생성되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 생성에 실패했습니다.');
     }
@@ -78,9 +78,9 @@ export default function Connections() {
     if (!disconnectTarget) return;
     try {
       await disconnect(disconnectTarget.managerId || disconnectTarget.id);
-      toast.success('연결이 해제되었습니다.');
+      toast.success('네트워크가 해제되었습니다.');
     } catch (err) {
-      toast.error(err.message || '연결 해제에 실패했습니다.');
+      toast.error(err.message || '네트워크 해제에 실패했습니다.');
     }
     setDisconnectTarget(null);
   };
@@ -105,12 +105,12 @@ export default function Connections() {
     try {
       const targetEmail = searchResult.email || searchEmail;
       await sendRequest({ email: targetEmail, message: requestMessage });
-      toast.success(`'${targetEmail}' 님에게 연결 요청을 보냈습니다.`);
+      toast.success(`'${targetEmail}' 님에게 네트워크 요청을 보냈습니다.`);
       setSearchResult(null);
       setSearchEmail('');
       setRequestMessage('');
     } catch (err) {
-      toast.error(err.message || '연결 요청에 실패했습니다.');
+      toast.error(err.message || '네트워크 요청에 실패했습니다.');
     }
     setSendingRequest(false);
   };
@@ -118,7 +118,7 @@ export default function Connections() {
   const handleAccept = async (req) => {
     try {
       const result = await acceptRequest(req.id);
-      toast.success(result.message || `'${req.managerName}' 님과 연결되었습니다.`);
+      toast.success(result.message || `'${req.managerName}' 님과 네트워크가 연결되었습니다.`);
     } catch (err) {
       toast.error(err.message || '수락에 실패했습니다.');
     }
@@ -127,7 +127,7 @@ export default function Connections() {
   const handleReject = async (req) => {
     try {
       await rejectRequest(req.id);
-      toast.success('연결 요청을 거절했습니다.');
+      toast.success('네트워크 요청을 거절했습니다.');
     } catch (err) {
       toast.error(err.message || '거절에 실패했습니다.');
     }
@@ -146,10 +146,10 @@ export default function Connections() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>연결 관리</h1>
+        <h1 className={styles.title}>매니저 네트워크</h1>
         {tab === 'connections' && (
           <button className={styles.createBtn} onClick={handleCreateInvite}>
-            <Plus size={16} /> 연결 초대
+            <Plus size={16} /> 초대 링크
           </button>
         )}
       </div>
@@ -159,7 +159,7 @@ export default function Connections() {
           className={`${styles.tabBtn} ${tab === 'connections' ? styles.tabActive : ''}`}
           onClick={() => setTab('connections')}
         >
-          <Link2 size={16} /> 연결 목록
+          <Link2 size={16} /> 네트워크 목록
         </button>
         <button
           className={`${styles.tabBtn} ${tab === 'manager-invites' ? styles.tabActive : ''}`}
@@ -174,7 +174,7 @@ export default function Connections() {
           {showDesc && (
             <div className={styles.descBox}>
               <div className={styles.descHeader}>
-                <p className={styles.descTitle}>연결이란?</p>
+                <p className={styles.descTitle}>매니저 네트워크란?</p>
                 <button
                   className={styles.descClose}
                   onClick={() => { setShowDesc(false); localStorage.setItem('hideConnectionDesc', '1'); }}
@@ -183,15 +183,15 @@ export default function Connections() {
                 </button>
               </div>
               <p className={styles.descText}>
-                다른 매니저와 연결하면 서로의 Client 풀을 공유할 수 있습니다.
-                연결된 매니저가 등록한 Client를 열람할 수 있고, 상대방도 나의 Client를 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
+                다른 매니저와 네트워크를 맺으면 서로의 회원 풀을 공유할 수 있습니다.
+                네트워크 매니저가 등록한 회원을 열람할 수 있고, 상대방도 나의 회원을 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
               </p>
             </div>
           )}
 
           {inviteUrl && (
             <div className={styles.inviteBox}>
-              <p className={styles.inviteLabel}>연결 초대 링크가 생성되었습니다:</p>
+              <p className={styles.inviteLabel}>네트워크 초대 링크가 생성되었습니다:</p>
               <div className={styles.inviteUrlRow}>
                 <input className={styles.inviteInput} value={inviteUrl} readOnly />
                 <button className={styles.copyBtn} onClick={handleCopy}>
@@ -245,7 +245,7 @@ export default function Connections() {
                     onClick={handleSendRequest}
                     disabled={sendingRequest}
                   >
-                    <UserPlus size={14} /> {sendingRequest ? '전송 중...' : '연결 요청'}
+                    <UserPlus size={14} /> {sendingRequest ? '전송 중...' : '네트워크 요청'}
                   </button>
                 </div>
               </div>
@@ -313,14 +313,14 @@ export default function Connections() {
 
           {/* Existing Connections */}
           <div className={styles.connectionSection}>
-            <h2 className={styles.sectionTitle}>연결된 매니저</h2>
+            <h2 className={styles.sectionTitle}>네트워크 매니저</h2>
             {isLoading ? (
               <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
             ) : connections.length === 0 ? (
               <div className={styles.empty}>
                 <Link2 size={40} strokeWidth={1} />
-                <p>연결된 매니저가 없습니다.</p>
-                <p className={styles.emptyHint}>초대 링크를 생성하거나 이름으로 검색하여 연결하세요.</p>
+                <p>네트워크 매니저가 없습니다.</p>
+                <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
               </div>
             ) : (
               <div className={styles.list}>
@@ -333,7 +333,7 @@ export default function Connections() {
                       <div>
                         <span className={styles.connName}>{conn.name || conn.email}</span>
                         <span className={styles.connMeta}>
-                          Client {conn.clientCount ?? 0}명
+                          회원 {conn.clientCount ?? 0}명
                         </span>
                       </div>
                     </div>
@@ -442,8 +442,8 @@ export default function Connections() {
 
       {disconnectTarget && (
         <ConfirmModal
-          title="연결 해제"
-          message={`${disconnectTarget.name || disconnectTarget.email}님과의 연결을 해제하시겠습니까? 서로의 Client를 더 이상 공유하지 않게 됩니다.`}
+          title="네트워크 해제"
+          message={`${disconnectTarget.name || disconnectTarget.email}님과의 네트워크를 해제하시겠습니까? 서로의 회원을 더 이상 공유하지 않게 됩니다.`}
           confirmLabel="해제"
           danger
           onConfirm={handleDisconnect}

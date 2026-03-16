@@ -71,3 +71,33 @@ export async function rescheduleMatch(matchId) {
     method: 'POST',
   });
 }
+
+export async function deleteMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── After APIs ──
+
+export async function getAfterStatus(token) {
+  return apiFetch(`/api/v1/proposals/${token}/after`, { method: 'GET' });
+}
+
+export async function respondAfter(token, response) {
+  return apiFetch(`/api/v1/proposals/${token}/after`, {
+    method: 'POST',
+    body: { response },
+  });
+}
+
+export async function getAfterProfile(token) {
+  return apiFetch(`/api/v1/proposals/${token}/after/profile`, { method: 'GET' });
+}
+
+export async function overrideAfter(matchId, afterStatus) {
+  return apiFetch(`/api/v1/matches/${matchId}/after`, {
+    method: 'POST',
+    body: { afterStatus },
+  });
+}

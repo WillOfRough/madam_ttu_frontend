@@ -76,7 +76,7 @@ export default function MatchList() {
                 <span className={styles.guideNum}>1</span>
                 <div>
                   <strong>매칭 생성</strong>
-                  <p>Client A, B를 선택하여 매칭을 만듭니다.</p>
+                  <p>회원 A, B를 선택하여 매칭을 만듭니다.</p>
                 </div>
               </div>
               <div className={styles.guideStep}>
@@ -184,7 +184,12 @@ export default function MatchList() {
                       </span>
                     </span>
                   </div>
-                  <StatusBadge status={m.status} />
+                  <div className={styles.badgeGroup}>
+                    <StatusBadge status={m.status} />
+                    {m.status === 'completed' && m.afterStatus && (
+                      <StatusBadge status={`after_${m.afterStatus}`} />
+                    )}
+                  </div>
                 </div>
                 <div className={styles.cardMeta}>
                   <span>{formatDate(m.createdAt)}</span>
@@ -356,7 +361,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           </div>
           <div>
             <h3 className={styles.modalTitle}>새 매칭 생성</h3>
-            <p className={styles.modalSubtitle}>두 Client를 선택하여 매칭을 만들어보세요</p>
+            <p className={styles.modalSubtitle}>두 회원을 선택하여 매칭을 만들어보세요</p>
           </div>
           <button className={styles.modalClose} onClick={onClose} type="button">
             <X size={18} />
@@ -403,7 +408,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           <div className={styles.duplicateWarn}>
             <AlertTriangle size={15} />
             <span>
-              이미 매칭된 적이 있는 Client입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
+              이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
             </span>
           </div>
         )}

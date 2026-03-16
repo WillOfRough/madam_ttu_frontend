@@ -60,3 +60,19 @@
   background: var(--danger-light);
   color: #b71c2c;
 }
+
+/* ── After statuses ── */
+.after_pending {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.after_accepted {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.after_rejected {
+  background: #fef2f2;
+  color: #991b1b;
+}

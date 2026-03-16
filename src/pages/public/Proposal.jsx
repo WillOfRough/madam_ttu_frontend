@@ -1,8 +1,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Lock } from 'lucide-react';
+import { Lock, Phone, User } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import styles from './Proposal.module.css';
+
+const AFTER_ERROR_MESSAGES = {
+  '9.007': '미팅이 아직 완료되지 않았습니다.',
+  '9.012': '에프터가 성사되지 않았습니다.',
+  '9.013': '연락처 조회 기간(24시간)이 만료되었습니다.',
+};
 
 const OATH_ITEMS = [
   '프로필 정보를 캡처, 저장, 제3자에게 공유하지 않겠습니다.',
@@ -74,6 +80,12 @@ export default function Proposal() {
   // Available times from server
   const [availableTimes, setAvailableTimes] = useState([]);
 
+  // After
+  const [afterStatus, setAfterStatus] = useState(null);
+  const [myAfterResponse, setMyAfterResponse] = useState(null);
+  const [afterProfile, setAfterProfile] = useState(null);
+  const [afterError, setAfterError] = useState(null);
+
   const dateRange = useMemo(() => generateDateRange(), []);
   const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
   const sortedSelectedDates = useMemo(() => Array.from(selectedDates).sort(), [selectedDates]);
@@ -98,6 +110,46 @@ export default function Proposal() {
         .catch(() => {});
     }
   }, [data?.matchStatus, token]);
+
+  useEffect(() => {
+    if (data?.matchStatus === 'completed') {
+      matchService
+        .getAfterStatus(token)
+        .then((res) => {
+          setAfterStatus(res.afterStatus);
+          setMyAfterResponse(res.myAfterResponse);
+        })
+        .catch((err) => {
+          const code = err.body?.error;
+          setAfterError(AFTER_ERROR_MESSAGES[code] || err.message);
+        });
+    }
+  }, [data?.matchStatus, token]);
+
+  const handleAfterRespond = async (response) => {
+    setSubmitting(true);
+    try {
+      const result = await matchService.respondAfter(token, response);
+      setMyAfterResponse(response);
+      setAfterStatus(result.afterStatus);
+    } catch (err) {
+      const code = err.body?.error;
+      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '응답 처리에 실패했습니다.');
+    }
+    setSubmitting(false);
+  };
+
+  const handleViewAfterProfile = async () => {
+    setSubmitting(true);
+    try {
+      const profile = await matchService.getAfterProfile(token);
+      setAfterProfile(profile);
+    } catch (err) {
+      const code = err.body?.error;
+      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '프로필 조회에 실패했습니다.');
+    }
+    setSubmitting(false);
+  };
 
   const handleRespond = async (response) => {
     setSubmitting(true);
@@ -444,6 +496,164 @@ export default function Proposal() {
               매니저로부터 장소 안내를 확인해주세요.
             </p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Completed: After Flow ──
+  if (matchStatus === 'completed') {
+    // After profile view
+    if (afterProfile) {
+      const profileFields = [
+        { label: '이름', value: afterProfile.name },
+        { label: '전화번호', value: afterProfile.phone },
+        { label: '나이', value: afterProfile.age ? `${afterProfile.age}세` : null },
+        { label: '키', value: afterProfile.height ? `${afterProfile.height}cm` : null },
+        { label: '직업', value: afterProfile.occupation },
+        { label: '학력', value: afterProfile.education },
+        { label: '거주지', value: afterProfile.location },
+        { label: 'MBTI', value: afterProfile.mbti },
+        { label: '취미', value: afterProfile.hobbies },
+      ].filter((f) => f.value);
+
+      return (
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <h1 className={styles.logo}>knotsandlinks</h1>
+            <div className={styles.afterSuccessBanner}>
+              <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
+              <p className={styles.respondedStatus}>상대방의 연락처와 프로필입니다.</p>
+            </div>
+
+            {afterProfile.photoUrls?.length > 0 && (
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>사진</h3>
+                <div className={styles.photoGallery}>
+                  {afterProfile.photoUrls.map((url, idx) => (
+                    <div key={idx} className={styles.photoThumb}>
+                      <img src={url} alt={`사진 ${idx + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <Phone size={16} /> 연락처 정보
+              </h3>
+              <div className={styles.fields}>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>이름</span>
+                  <span className={styles.fieldValue}>{afterProfile.name}</span>
+                </div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>전화번호</span>
+                  <span className={styles.fieldValue}>{afterProfile.phone}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <User size={16} /> 프로필
+              </h3>
+              <div className={styles.fields}>
+                {profileFields.filter((f) => f.label !== '이름' && f.label !== '전화번호').map(({ label, value }) => (
+                  <div key={label} className={styles.field}>
+                    <span className={styles.fieldLabel}>{label}</span>
+                    <span className={styles.fieldValue}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {afterProfile.introduction && (
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>자기소개</h3>
+                <p className={styles.text}>{afterProfile.introduction}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <h1 className={styles.logo}>knotsandlinks</h1>
+
+          {afterError && (
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>알림</p>
+              <p className={styles.respondedStatus}>{afterError}</p>
+            </div>
+          )}
+
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && (
+            <>
+              <div className={styles.afterCard}>
+                <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
+                <p className={styles.afterDesc}>
+                  상대방을 다시 만나고 싶으시다면 에프터를 신청해주세요.
+                  <br />양쪽 모두 수락하면 연락처가 공개됩니다.
+                </p>
+                <div className={styles.afterActions}>
+                  <button
+                    className={styles.acceptBtn}
+                    onClick={() => handleAfterRespond('accepted')}
+                    disabled={submitting}
+                  >
+                    {submitting ? '처리 중...' : '다시 만나고 싶어요!'}
+                  </button>
+                  <button
+                    className={styles.rejectBtn}
+                    onClick={() => handleAfterRespond('rejected')}
+                    disabled={submitting}
+                  >
+                    괜찮습니다
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'accepted' && (
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>에프터를 신청했습니다</p>
+              <p className={styles.respondedStatus}>상대방의 응답을 기다리고 있습니다.</p>
+            </div>
+          )}
+
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'rejected' && (
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>응답 완료</p>
+              <p className={styles.respondedStatus}>소중한 시간 감사합니다.</p>
+            </div>
+          )}
+
+          {!afterError && afterStatus === 'rejected' && (
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
+              <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
+            </div>
+          )}
+
+          {!afterError && afterStatus === 'accepted' && (
+            <div className={styles.afterSuccessBanner}>
+              <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
+              <p className={styles.respondedStatus}>양쪽 모두 다시 만나고 싶어합니다.</p>
+              <button
+                className={styles.afterProfileBtn}
+                onClick={handleViewAfterProfile}
+                disabled={submitting}
+              >
+                {submitting ? '조회 중...' : '상대 연락처 보기'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );

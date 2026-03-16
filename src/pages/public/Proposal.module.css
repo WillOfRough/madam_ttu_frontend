@@ -841,6 +841,68 @@
   margin-bottom: 2px;
 }
 
+/* ── After Flow ── */
+.afterCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 40px 32px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  margin-top: var(--space-xl);
+}
+
+.afterTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+.afterDesc {
+  font-size: 0.92rem;
+  color: var(--charcoal-pale);
+  line-height: 1.65;
+  margin-bottom: 28px;
+}
+
+.afterActions {
+  display: flex;
+  gap: 12px;
+}
+
+.afterSuccessBanner {
+  text-align: center;
+  padding: var(--space-lg);
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1.5px solid #86efac;
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-lg);
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.08);
+}
+
+.afterProfileBtn {
+  margin-top: var(--space-md);
+  padding: 14px 28px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.afterProfileBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.afterProfileBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Loading & Error ── */
 .loadingPage {
   min-height: 100vh;
