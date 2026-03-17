@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Lock, Phone, User } from 'lucide-react';
 import * as matchService from '../../api/matchService';
+import { toast } from '../../store/toastStore';
 import styles from './Proposal.module.css';
 
 const AFTER_ERROR_MESSAGES = {
@@ -155,8 +156,9 @@ export default function Proposal() {
       });
       setMeetingFeedback(result);
       setEditingMeetingFeedback(false);
+      toast.success('소중한 피드백 감사합니다!');
     } catch {
-      setAfterError('피드백 제출에 실패했습니다.');
+      toast.error('피드백 제출에 실패했습니다.');
     }
     setSubmitting(false);
   };
