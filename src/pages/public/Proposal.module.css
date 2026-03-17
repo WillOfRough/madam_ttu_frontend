@@ -956,6 +956,7 @@
 }
 
 .editFeedbackBtn {
+  margin-top: var(--space-md);
   padding: 10px 24px;
   background: var(--navy-glow);
   color: var(--navy);

@@ -552,13 +552,13 @@ export default function Proposal() {
                 소중한 의견 감사합니다.
                 <br />다음에는 꼭 맞는 분을 찾아드릴게요.
               </p>
+              <button
+                className={styles.editFeedbackBtn}
+                onClick={() => setEditingMeetingFeedback(true)}
+              >
+                피드백 수정하기
+              </button>
             </div>
-            <button
-              className={styles.editFeedbackBtn}
-              onClick={() => setEditingMeetingFeedback(true)}
-            >
-              피드백 수정하기
-            </button>
           </div>
         </div>
       );
