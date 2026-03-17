@@ -86,15 +86,10 @@ export default function Proposal() {
   const [afterProfile, setAfterProfile] = useState(null);
   const [afterError, setAfterError] = useState(null);
 
-  // After feedback (거절 시 피드백)
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState('');
-
   // Meeting feedback (에프터 불성사 후 만남 피드백)
   const [meetingFeedback, setMeetingFeedback] = useState(null);
   const [meetingFeedbackLoading, setMeetingFeedbackLoading] = useState(false);
   const [editingMeetingFeedback, setEditingMeetingFeedback] = useState(false);
-  const [meetingRating, setMeetingRating] = useState(null);
   const [meetingComment, setMeetingComment] = useState('');
 
   const dateRange = useMemo(() => generateDateRange(), []);
@@ -144,7 +139,6 @@ export default function Proposal() {
         .then((res) => {
           setMeetingFeedback(res);
           if (res.feedbackAt) {
-            setMeetingRating(res.rating);
             setMeetingComment(res.comment || '');
           }
         })
@@ -157,7 +151,6 @@ export default function Proposal() {
     setSubmitting(true);
     try {
       const result = await matchService.submitFeedback(token, {
-        rating: meetingRating || null,
         comment: meetingComment || null,
       });
       setMeetingFeedback(result);
@@ -179,15 +172,6 @@ export default function Proposal() {
       setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '응답 처리에 실패했습니다.');
     }
     setSubmitting(false);
-  };
-
-  const handleAfterReject = () => {
-    setShowFeedback(true);
-  };
-
-  const handleFeedbackSubmit = async () => {
-    await handleAfterRespond('rejected');
-    setShowFeedback(false);
   };
 
   const handleViewAfterProfile = async () => {
@@ -642,7 +626,7 @@ export default function Proposal() {
             </div>
           )}
 
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && !showFeedback && (
+          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && (
             <div className={styles.afterCard}>
               <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
               <p className={styles.afterDesc}>
@@ -659,45 +643,10 @@ export default function Proposal() {
                 </button>
                 <button
                   className={styles.rejectBtn}
-                  onClick={handleAfterReject}
+                  onClick={() => handleAfterRespond('rejected')}
                   disabled={submitting}
                 >
                   괜찮습니다
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && showFeedback && (
-            <div className={styles.afterCard}>
-              <h2 className={styles.afterTitle}>솔직한 피드백을 들려주세요</h2>
-              <p className={styles.afterDesc}>
-                어떤 부분이 맞지 않으셨나요?
-                <br />피드백을 남겨주시면 다음 매칭에 반영하여 더 잘 맞는 분을 소개해 드리겠습니다.
-              </p>
-              <textarea
-                className={styles.feedbackTextarea}
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="예) 대화 스타일이 맞지 않았어요, 관심사가 달랐어요 등 편하게 적어주세요."
-                rows={4}
-                maxLength={500}
-              />
-              <p className={styles.feedbackCount}>{feedback.length}/500</p>
-              <div className={styles.afterActions}>
-                <button
-                  className={styles.acceptBtn}
-                  onClick={handleFeedbackSubmit}
-                  disabled={submitting}
-                >
-                  {submitting ? '처리 중...' : '피드백 제출하기'}
-                </button>
-                <button
-                  className={styles.rejectBtn}
-                  onClick={() => setShowFeedback(false)}
-                  disabled={submitting}
-                >
-                  돌아가기
                 </button>
               </div>
             </div>
@@ -729,30 +678,18 @@ export default function Proposal() {
                   {/* 피드백 작성 폼 */}
                   {(!meetingFeedback?.feedbackAt || editingMeetingFeedback) && (
                     <div className={styles.afterCard}>
-                      <h2 className={styles.afterTitle}>만남은 어떠셨나요?</h2>
                       <p className={styles.afterDesc}>
-                        피드백을 남겨주시면 다음 매칭에 반영됩니다.
+                        인연에도 &lsquo;결&rsquo;이 있다고 합니다.
+                        <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
+                        <br />
+                        <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
+                        <br />다음에는 꼭 맞는 분을 찾아드릴게요.
                       </p>
-                      <div className={styles.ratingSection}>
-                        <p className={styles.ratingLabel}>평점</p>
-                        <div className={styles.ratingButtons}>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                            <button
-                              key={n}
-                              type="button"
-                              className={`${styles.ratingBtn} ${meetingRating === n ? styles.ratingBtnActive : ''}`}
-                              onClick={() => setMeetingRating(n)}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
                       <textarea
                         className={styles.feedbackTextarea}
                         value={meetingComment}
                         onChange={(e) => setMeetingComment(e.target.value)}
-                        placeholder="만남에 대한 솔직한 피드백을 남겨주세요."
+                        placeholder="예) 대화 스타일이 조금 달랐어요, 관심사가 달라서 아쉬웠어요 등"
                         rows={4}
                         maxLength={1000}
                       />
@@ -761,16 +698,15 @@ export default function Proposal() {
                         <button
                           className={styles.acceptBtn}
                           onClick={handleMeetingFeedbackSubmit}
-                          disabled={submitting || (!meetingRating && !meetingComment)}
+                          disabled={submitting || !meetingComment}
                         >
-                          {submitting ? '제출 중...' : '피드백 제출하기'}
+                          {submitting ? '제출 중...' : '피드백 남기기'}
                         </button>
                         {editingMeetingFeedback && (
                           <button
                             className={styles.rejectBtn}
                             onClick={() => {
                               setEditingMeetingFeedback(false);
-                              setMeetingRating(meetingFeedback?.rating || null);
                               setMeetingComment(meetingFeedback?.comment || '');
                             }}
                           >
@@ -784,13 +720,7 @@ export default function Proposal() {
                   {/* 작성한 피드백 표시 */}
                   {meetingFeedback?.feedbackAt && !editingMeetingFeedback && (
                     <div className={styles.afterCard}>
-                      <h2 className={styles.afterTitle}>작성한 피드백</h2>
-                      {meetingFeedback.rating != null && (
-                        <div className={styles.submittedRating}>
-                          <span className={styles.submittedRatingLabel}>평점</span>
-                          <span className={styles.submittedRatingValue}>{meetingFeedback.rating}/10</span>
-                        </div>
-                      )}
+                      <h2 className={styles.afterTitle}>남겨주신 피드백</h2>
                       {meetingFeedback.comment && (
                         <p className={styles.submittedComment}>
                           &ldquo;{meetingFeedback.comment}&rdquo;
