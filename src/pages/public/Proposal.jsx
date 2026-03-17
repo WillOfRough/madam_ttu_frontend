@@ -167,9 +167,16 @@ export default function Proposal() {
   const handleAfterRespond = async (response) => {
     setSubmitting(true);
     try {
-      const result = await matchService.respondAfter(token, response);
+      await matchService.respondAfter(token, response);
       setMyAfterResponse(response);
-      setAfterStatus(result.afterStatus);
+      // 응답 후 최신 상태를 서버에서 다시 조회
+      try {
+        const status = await matchService.getAfterStatus(token);
+        setAfterStatus(status.afterStatus);
+      } catch {
+        // 조회 실패 시 안전한 기본값
+        setAfterStatus('pending');
+      }
     } catch (err) {
       const code = err.body?.error;
       setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '응답 처리에 실패했습니다.');
