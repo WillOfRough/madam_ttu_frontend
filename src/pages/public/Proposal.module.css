@@ -904,6 +904,26 @@
   margin-bottom: 20px;
 }
 
+.feedbackToggleBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: var(--space-sm);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--charcoal-light);
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.feedbackToggleBtn:hover {
+  border-color: var(--coral);
+  color: var(--coral);
+  background: rgba(255, 127, 80, 0.04);
+}
+
 .afterSuccessBanner {
   text-align: center;
   padding: var(--space-lg);

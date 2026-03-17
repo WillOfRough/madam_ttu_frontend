@@ -92,6 +92,7 @@ export default function Proposal() {
   const [meetingFeedbackLoading, setMeetingFeedbackLoading] = useState(false);
   const [editingMeetingFeedback, setEditingMeetingFeedback] = useState(false);
   const [meetingComment, setMeetingComment] = useState('');
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
   const dateRange = useMemo(() => generateDateRange(), []);
   const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
@@ -702,8 +703,12 @@ export default function Proposal() {
                 <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
                 <p className={styles.respondedStatus}>아쉽지만 상대방이 다른 결정을 내렸어요. 더 좋은 인연이 기다리고 있을 거예요.</p>
               </div>
-
-              {!meetingFeedbackLoading && (
+              {!showFeedbackForm && !meetingFeedbackLoading && (
+                <button className={styles.feedbackToggleBtn} onClick={() => setShowFeedbackForm(true)}>
+                  이번 만남에 대한 피드백 남기기
+                </button>
+              )}
+              {showFeedbackForm && !meetingFeedbackLoading && (
                 <div className={styles.afterCard}>
                   <p className={styles.afterDesc}>
                     괜찮으시다면 이번 만남에 대한 소감을 편하게 들려주세요.
@@ -727,19 +732,14 @@ export default function Proposal() {
                       onClick={handleMeetingFeedbackSubmit}
                       disabled={submitting || !meetingComment}
                     >
-                      {submitting ? '제출 중...' : '피드백 남기기'}
+                      {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
-                    {editingMeetingFeedback && (
-                      <button
-                        className={styles.rejectBtn}
-                        onClick={() => {
-                          setEditingMeetingFeedback(false);
-                          setMeetingComment(meetingFeedback?.comment || '');
-                        }}
-                      >
-                        취소
-                      </button>
-                    )}
+                    <button
+                      className={styles.rejectBtn}
+                      onClick={() => setShowFeedbackForm(false)}
+                    >
+                      닫기
+                    </button>
                   </div>
                 </div>
               )}
@@ -753,14 +753,15 @@ export default function Proposal() {
                 <p className={styles.respondedLabel}>응답이 완료되었습니다</p>
                 <p className={styles.respondedStatus}>소중한 시간 감사합니다. 더 좋은 인연을 찾아드릴게요.</p>
               </div>
-
-              {!meetingFeedbackLoading && (
+              {!showFeedbackForm && !meetingFeedbackLoading && (
+                <button className={styles.feedbackToggleBtn} onClick={() => setShowFeedbackForm(true)}>
+                  이번 만남에 대한 피드백 남기기
+                </button>
+              )}
+              {showFeedbackForm && !meetingFeedbackLoading && (
                 <div className={styles.afterCard}>
                   <p className={styles.afterDesc}>
-                    인연에도 &lsquo;결&rsquo;이 있다고 합니다.
-                    <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
-                    <br />
-                    <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
+                    괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
                     <br />다음에는 꼭 맞는 분을 찾아드릴게요.
                   </p>
                   <textarea
@@ -781,19 +782,14 @@ export default function Proposal() {
                       onClick={handleMeetingFeedbackSubmit}
                       disabled={submitting || !meetingComment}
                     >
-                      {submitting ? '제출 중...' : '피드백 남기기'}
+                      {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
-                    {editingMeetingFeedback && (
-                      <button
-                        className={styles.rejectBtn}
-                        onClick={() => {
-                          setEditingMeetingFeedback(false);
-                          setMeetingComment(meetingFeedback?.comment || '');
-                        }}
-                      >
-                        취소
-                      </button>
-                    )}
+                    <button
+                      className={styles.rejectBtn}
+                      onClick={() => setShowFeedbackForm(false)}
+                    >
+                      닫기
+                    </button>
                   </div>
                 </div>
               )}
