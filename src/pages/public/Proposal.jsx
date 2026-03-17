@@ -670,15 +670,31 @@ export default function Proposal() {
 
           {!afterError && afterStatus === 'rejected' && (
             <>
-              <div className={styles.respondedBanner}>
-                <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
-                <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
-              </div>
-
-              {!meetingFeedbackLoading && (
+              {/* 피드백 제출 완료 화면 */}
+              {meetingFeedback?.feedbackAt && !editingMeetingFeedback ? (
                 <>
-                  {/* 피드백 작성 폼 */}
-                  {(!meetingFeedback?.feedbackAt || editingMeetingFeedback) && (
+                  <div className={styles.respondedBanner}>
+                    <p className={styles.respondedLabel}>피드백을 남겨주셨습니다</p>
+                    <p className={styles.respondedStatus}>
+                      소중한 의견 감사합니다.
+                      <br />다음에는 꼭 맞는 분을 찾아드릴게요.
+                    </p>
+                  </div>
+                  <button
+                    className={styles.editFeedbackBtn}
+                    onClick={() => setEditingMeetingFeedback(true)}
+                  >
+                    피드백 수정하기
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className={styles.respondedBanner}>
+                    <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
+                    <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
+                  </div>
+
+                  {!meetingFeedbackLoading && (
                     <div className={styles.afterCard}>
                       <p className={styles.afterDesc}>
                         인연에도 &lsquo;결&rsquo;이 있다고 합니다.
@@ -716,27 +732,6 @@ export default function Proposal() {
                           </button>
                         )}
                       </div>
-                    </div>
-                  )}
-
-                  {/* 작성한 피드백 표시 */}
-                  {meetingFeedback?.feedbackAt && !editingMeetingFeedback && (
-                    <div className={styles.afterCard}>
-                      <h2 className={styles.afterTitle}>남겨주신 피드백</h2>
-                      {meetingFeedback.comment && (
-                        <p className={styles.submittedComment}>
-                          &ldquo;{meetingFeedback.comment}&rdquo;
-                        </p>
-                      )}
-                      <p className={styles.submittedDate}>
-                        작성일: {new Date(meetingFeedback.feedbackAt).toLocaleDateString('ko-KR')}
-                      </p>
-                      <button
-                        className={styles.editFeedbackBtn}
-                        onClick={() => setEditingMeetingFeedback(true)}
-                      >
-                        수정하기
-                      </button>
                     </div>
                   )}
                 </>
