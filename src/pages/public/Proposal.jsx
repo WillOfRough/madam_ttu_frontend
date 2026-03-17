@@ -540,6 +540,30 @@ export default function Proposal() {
 
   // ── Completed: After Flow ──
   if (matchStatus === 'completed') {
+    // 피드백 제출 완료 화면 (별도 페이지)
+    if (afterStatus === 'rejected' && meetingFeedback?.feedbackAt && !editingMeetingFeedback) {
+      return (
+        <div className={styles.page}>
+          <div className={styles.container} key="feedback-done">
+            <h1 className={styles.logo}>Knots & Links</h1>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>피드백을 남겨주셨습니다</p>
+              <p className={styles.respondedStatus}>
+                소중한 의견 감사합니다.
+                <br />다음에는 꼭 맞는 분을 찾아드릴게요.
+              </p>
+            </div>
+            <button
+              className={styles.editFeedbackBtn}
+              onClick={() => setEditingMeetingFeedback(true)}
+            >
+              피드백 수정하기
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     // After profile view
     if (afterProfile) {
       const profileFields = [
@@ -670,71 +694,50 @@ export default function Proposal() {
 
           {!afterError && afterStatus === 'rejected' && (
             <>
-              {/* 피드백 제출 완료 화면 */}
-              {meetingFeedback?.feedbackAt && !editingMeetingFeedback ? (
-                <>
-                  <div className={styles.respondedBanner}>
-                    <p className={styles.respondedLabel}>피드백을 남겨주셨습니다</p>
-                    <p className={styles.respondedStatus}>
-                      소중한 의견 감사합니다.
-                      <br />다음에는 꼭 맞는 분을 찾아드릴게요.
-                    </p>
-                  </div>
-                  <button
-                    className={styles.editFeedbackBtn}
-                    onClick={() => setEditingMeetingFeedback(true)}
-                  >
-                    피드백 수정하기
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className={styles.respondedBanner}>
-                    <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
-                    <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
-                  </div>
+              <div className={styles.respondedBanner}>
+                <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
+                <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
+              </div>
 
-                  {!meetingFeedbackLoading && (
-                    <div className={styles.afterCard}>
-                      <p className={styles.afterDesc}>
-                        인연에도 &lsquo;결&rsquo;이 있다고 합니다.
-                        <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
-                        <br />
-                        <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
-                        <br />다음에는 꼭 맞는 분을 찾아드릴게요.
-                      </p>
-                      <textarea
-                        className={styles.feedbackTextarea}
-                        value={meetingComment}
-                        onChange={(e) => setMeetingComment(e.target.value)}
-                        placeholder="예) 대화 스타일이 조금 달랐어요, 관심사가 달라서 아쉬웠어요 등"
-                        rows={4}
-                        maxLength={1000}
-                      />
-                      <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
-                      <div className={styles.afterActions}>
-                        <button
-                          className={styles.acceptBtn}
-                          onClick={handleMeetingFeedbackSubmit}
-                          disabled={submitting || !meetingComment}
-                        >
-                          {submitting ? '제출 중...' : '피드백 남기기'}
-                        </button>
-                        {editingMeetingFeedback && (
-                          <button
-                            className={styles.rejectBtn}
-                            onClick={() => {
-                              setEditingMeetingFeedback(false);
-                              setMeetingComment(meetingFeedback?.comment || '');
-                            }}
-                          >
-                            취소
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
+              {!meetingFeedbackLoading && (
+                <div className={styles.afterCard}>
+                  <p className={styles.afterDesc}>
+                    인연에도 &lsquo;결&rsquo;이 있다고 합니다.
+                    <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
+                    <br />
+                    <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
+                    <br />다음에는 꼭 맞는 분을 찾아드릴게요.
+                  </p>
+                  <textarea
+                    className={styles.feedbackTextarea}
+                    value={meetingComment}
+                    onChange={(e) => setMeetingComment(e.target.value)}
+                    placeholder="예) 대화 스타일이 조금 달랐어요, 관심사가 달라서 아쉬웠어요 등"
+                    rows={4}
+                    maxLength={1000}
+                  />
+                  <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+                  <div className={styles.afterActions}>
+                    <button
+                      className={styles.acceptBtn}
+                      onClick={handleMeetingFeedbackSubmit}
+                      disabled={submitting || !meetingComment}
+                    >
+                      {submitting ? '제출 중...' : '피드백 남기기'}
+                    </button>
+                    {editingMeetingFeedback && (
+                      <button
+                        className={styles.rejectBtn}
+                        onClick={() => {
+                          setEditingMeetingFeedback(false);
+                          setMeetingComment(meetingFeedback?.comment || '');
+                        }}
+                      >
+                        취소
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
             </>
           )}
