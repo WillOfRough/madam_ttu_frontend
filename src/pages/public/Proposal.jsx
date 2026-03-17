@@ -715,8 +715,11 @@ export default function Proposal() {
                     placeholder="예) 대화 스타일이 조금 달랐어요, 관심사가 달라서 아쉬웠어요 등"
                     rows={4}
                     maxLength={1000}
+                    disabled={submitting}
                   />
-                  <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+                  {!submitting && (
+                    <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+                  )}
                   <div className={styles.afterActions}>
                     <button
                       className={styles.acceptBtn}
