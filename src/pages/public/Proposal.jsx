@@ -90,6 +90,13 @@ export default function Proposal() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState('');
 
+  // Meeting feedback (에프터 불성사 후 만남 피드백)
+  const [meetingFeedback, setMeetingFeedback] = useState(null);
+  const [meetingFeedbackLoading, setMeetingFeedbackLoading] = useState(false);
+  const [editingMeetingFeedback, setEditingMeetingFeedback] = useState(false);
+  const [meetingRating, setMeetingRating] = useState(null);
+  const [meetingComment, setMeetingComment] = useState('');
+
   const dateRange = useMemo(() => generateDateRange(), []);
   const calendarWeeks = useMemo(() => generateCalendarWeeks(dateRange), [dateRange]);
   const sortedSelectedDates = useMemo(() => Array.from(selectedDates).sort(), [selectedDates]);
@@ -129,6 +136,37 @@ export default function Proposal() {
         });
     }
   }, [data?.matchStatus, token]);
+
+  useEffect(() => {
+    if (afterStatus === 'rejected') {
+      setMeetingFeedbackLoading(true);
+      matchService.getFeedback(token)
+        .then((res) => {
+          setMeetingFeedback(res);
+          if (res.feedbackAt) {
+            setMeetingRating(res.rating);
+            setMeetingComment(res.comment || '');
+          }
+        })
+        .catch(() => {})
+        .finally(() => setMeetingFeedbackLoading(false));
+    }
+  }, [afterStatus, token]);
+
+  const handleMeetingFeedbackSubmit = async () => {
+    setSubmitting(true);
+    try {
+      const result = await matchService.submitFeedback(token, {
+        rating: meetingRating || null,
+        comment: meetingComment || null,
+      });
+      setMeetingFeedback(result);
+      setEditingMeetingFeedback(false);
+    } catch {
+      setAfterError('피드백 제출에 실패했습니다.');
+    }
+    setSubmitting(false);
+  };
 
   const handleAfterRespond = async (response) => {
     setSubmitting(true);
@@ -680,10 +718,98 @@ export default function Proposal() {
           )}
 
           {!afterError && afterStatus === 'rejected' && (
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
-              <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
-            </div>
+            <>
+              <div className={styles.respondedBanner}>
+                <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
+                <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
+              </div>
+
+              {!meetingFeedbackLoading && (
+                <>
+                  {/* 피드백 작성 폼 */}
+                  {(!meetingFeedback?.feedbackAt || editingMeetingFeedback) && (
+                    <div className={styles.afterCard}>
+                      <h2 className={styles.afterTitle}>만남은 어떠셨나요?</h2>
+                      <p className={styles.afterDesc}>
+                        피드백을 남겨주시면 다음 매칭에 반영됩니다.
+                      </p>
+                      <div className={styles.ratingSection}>
+                        <p className={styles.ratingLabel}>평점</p>
+                        <div className={styles.ratingButtons}>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              className={`${styles.ratingBtn} ${meetingRating === n ? styles.ratingBtnActive : ''}`}
+                              onClick={() => setMeetingRating(n)}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <textarea
+                        className={styles.feedbackTextarea}
+                        value={meetingComment}
+                        onChange={(e) => setMeetingComment(e.target.value)}
+                        placeholder="만남에 대한 솔직한 피드백을 남겨주세요."
+                        rows={4}
+                        maxLength={1000}
+                      />
+                      <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+                      <div className={styles.afterActions}>
+                        <button
+                          className={styles.acceptBtn}
+                          onClick={handleMeetingFeedbackSubmit}
+                          disabled={submitting || (!meetingRating && !meetingComment)}
+                        >
+                          {submitting ? '제출 중...' : '피드백 제출하기'}
+                        </button>
+                        {editingMeetingFeedback && (
+                          <button
+                            className={styles.rejectBtn}
+                            onClick={() => {
+                              setEditingMeetingFeedback(false);
+                              setMeetingRating(meetingFeedback?.rating || null);
+                              setMeetingComment(meetingFeedback?.comment || '');
+                            }}
+                          >
+                            취소
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 작성한 피드백 표시 */}
+                  {meetingFeedback?.feedbackAt && !editingMeetingFeedback && (
+                    <div className={styles.afterCard}>
+                      <h2 className={styles.afterTitle}>작성한 피드백</h2>
+                      {meetingFeedback.rating != null && (
+                        <div className={styles.submittedRating}>
+                          <span className={styles.submittedRatingLabel}>평점</span>
+                          <span className={styles.submittedRatingValue}>{meetingFeedback.rating}/10</span>
+                        </div>
+                      )}
+                      {meetingFeedback.comment && (
+                        <p className={styles.submittedComment}>
+                          &ldquo;{meetingFeedback.comment}&rdquo;
+                        </p>
+                      )}
+                      <p className={styles.submittedDate}>
+                        작성일: {new Date(meetingFeedback.feedbackAt).toLocaleDateString('ko-KR')}
+                      </p>
+                      <button
+                        className={styles.editFeedbackBtn}
+                        onClick={() => setEditingMeetingFeedback(true)}
+                      >
+                        수정하기
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
           )}
 
           {!afterError && afterStatus === 'accepted' && (

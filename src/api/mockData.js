@@ -468,6 +468,9 @@ const searchableManagers = [
   { id: 'm007', name: '홍길동', email: 'gildong@knotsandlinks.kr' },
 ];
 
+// ── Feedback 저장소 (proposal token → { rating, comment, feedbackAt }) ──
+const feedbacks = {};
+
 // ── Matches (순차 공개 프로세스) ────────────────────
 // 가용시간 저장소 (proposal token → times with clientName)
 const availableTimes = {};
@@ -553,6 +556,7 @@ const matches = [
     },
     meetingDate: '2026-03-18T19:00:00Z',
     location: '청담동 르카페',
+    locationLink: 'https://naver.me/5abc123',
     endTime: '21:00',
     confirmedAt: '2026-03-05T10:00:00Z',
     createdAt: '2026-03-01T09:00:00Z',
@@ -668,7 +672,35 @@ const matches = [
     },
     createdAt: '2026-03-05T09:00:00Z',
   },
-  // 10) cancelled — B가 거절
+  // 10) completed + after rejected — 피드백 테스트용
+  {
+    matchId: 'match011',
+    type: '1:1 소개팅',
+    status: 'completed',
+    note: '활동적인 두 분 매칭.',
+    clientA: {
+      clientId: 's005', clientName: '한소희', clientGender: 'female',
+      managerName: '박소영', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-03-01T10:00:00Z',
+      proposalToken: 'PrTk21kLm5I9',
+    },
+    clientB: {
+      clientId: 's002', clientName: '이준혁', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-03-01T15:00:00Z',
+      proposalToken: 'PrTk22nOp6J0',
+    },
+    meetingDate: '2026-03-10T18:00:00Z',
+    location: '이태원 클라우드',
+    endTime: '20:00',
+    confirmedAt: '2026-03-05T11:00:00Z',
+    completedAt: '2026-03-11T10:00:00Z',
+    createdAt: '2026-02-28T09:00:00Z',
+    afterStatus: 'rejected',
+    afterResponses: { A: 'rejected', B: 'accepted' },
+    afterRespondedAts: { A: '2026-03-11T15:00:00Z', B: '2026-03-11T16:00:00Z' },
+  },
+  // 11) cancelled — B가 거절
   {
     matchId: 'match005',
     type: null,
@@ -712,6 +744,9 @@ availableTimes['PrTk17gQt1E5'] = [
   { timeId: 'time-c02', date: '2026-03-22', startTime: '18:00:00', clientName: '윤예은', selected: false },
   { timeId: 'time-c03', date: '2026-03-23', startTime: '13:00:00', clientName: '윤예은', selected: false },
 ];
+
+// match011: A쪽 피드백 작성 완료
+feedbacks['PrTk21kLm5I9'] = { rating: 6, comment: '대화는 좋았지만 취미가 너무 달랐어요.', feedbackAt: '2026-03-12T10:00:00Z' };
 
 // match007: completed — 양쪽 가용시간 + 선택 완료
 availableTimes['PrTk13cMp7A1'] = [
@@ -1055,12 +1090,27 @@ export async function mockFetch(path, options = {}) {
       date: pickedTime?.date || null,
       startTime: pickedTime?.startTime || null,
       location: found.location || null,
+      locationLink: found.locationLink || null,
       endTime: found.endTime || null,
       confirmedAt: found.confirmedAt,
     } : null;
-    // Enrich participants with client details
-    const clientA = { ...enrichParticipant(found.clientA), availableTimesSubmitted: rawTimesA.length > 0 };
-    const clientB = { ...enrichParticipant(found.clientB), availableTimesSubmitted: rawTimesB.length > 0 };
+    // Enrich participants with client details + feedback
+    const fbA = feedbacks[found.clientA.proposalToken];
+    const fbB = feedbacks[found.clientB.proposalToken];
+    const clientA = {
+      ...enrichParticipant(found.clientA),
+      availableTimesSubmitted: rawTimesA.length > 0,
+      feedbackRating: fbA?.rating || null, feedbackComment: fbA?.comment || null, feedbackAt: fbA?.feedbackAt || null,
+      afterResponse: found.afterResponses?.A || null,
+      afterRespondedAt: found.afterRespondedAts?.A || null,
+    };
+    const clientB = {
+      ...enrichParticipant(found.clientB),
+      availableTimesSubmitted: rawTimesB.length > 0,
+      feedbackRating: fbB?.rating || null, feedbackComment: fbB?.comment || null, feedbackAt: fbB?.feedbackAt || null,
+      afterResponse: found.afterResponses?.B || null,
+      afterRespondedAt: found.afterRespondedAts?.B || null,
+    };
     return {
       ...found,
       clientA,
@@ -1095,6 +1145,7 @@ export async function mockFetch(path, options = {}) {
     if (!selected) throw Object.assign(new Error('해당 가용 시간을 찾을 수 없습니다.'), { status: 404 });
     selected.selected = true;
     m.location = body.location || '';
+    m.locationLink = body.locationLink || null;
     m.endTime = body.endTime || '';
     m.confirmedAt = new Date().toISOString();
     m.meetingDate = `${selected.date}T${selected.startTime}`;
@@ -1134,6 +1185,8 @@ export async function mockFetch(path, options = {}) {
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
     m.status = 'completed';
+    if (!m.afterResponses) m.afterResponses = { A: 'pending', B: 'pending' };
+    if (!m.afterRespondedAts) m.afterRespondedAts = {};
     return { success: true, message: '매칭이 완료 처리되었습니다.' };
   }
 
@@ -1256,9 +1309,22 @@ export async function mockFetch(path, options = {}) {
     if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
     const m = proposal.match;
     if (m.status !== 'completed') throw Object.assign(new Error('미팅이 완료되지 않았습니다.'), { status: 400, body: { error: '9.007' } });
-    const participant = proposal.side === 'A' ? m.clientA : m.clientB;
+    const side = proposal.side;
+    const otherSide = side === 'A' ? 'B' : 'A';
+    const participant = side === 'A' ? m.clientA : m.clientB;
+    const counterpart = otherSide === 'A' ? m.clientA : m.clientB;
+    const counterpartClient = proposal.counterpart;
     const myAfterResponse = participant.afterResponse || 'pending';
-    return { afterStatus: m.afterStatus || 'pending', myAfterResponse };
+    const counterpartAfterResponse = counterpart.afterResponse || 'pending';
+    return {
+      myName: participant.clientName,
+      counterpartName: counterpartClient?.nickname || counterpartClient?.name || '',
+      matchStatus: m.status,
+      afterStatus: m.afterStatus || 'pending',
+      myAfterResponse,
+      myAfterRespondedAt: participant.afterRespondedAt || null,
+      counterpartAfterResponse,
+    };
   }
 
   // POST /api/v1/proposals/:token/after (respond)
@@ -1309,6 +1375,33 @@ export async function mockFetch(path, options = {}) {
       introduction: cp.introduction,
       photoUrls: (cp.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     };
+  }
+
+  // ── Feedback APIs ──
+
+  // GET /api/v1/proposals/:token/feedback
+  if (method === 'GET' && /^\/api\/v1\/proposals\/[^/]+\/feedback$/.test(pathname)) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404, body: { error: 'PROPOSAL_NOT_FOUND' } });
+    const m = proposal.match;
+    if (m.status !== 'completed') throw Object.assign(new Error('완료된 매칭이 아닙니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    if (m.afterStatus !== 'rejected') throw Object.assign(new Error('에프터가 rejected가 아닙니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    const fb = feedbacks[token];
+    return { rating: fb?.rating || null, comment: fb?.comment || null, feedbackAt: fb?.feedbackAt || null };
+  }
+
+  // POST /api/v1/proposals/:token/feedback
+  if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/feedback$/.test(pathname)) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404, body: { error: 'PROPOSAL_NOT_FOUND' } });
+    const m = proposal.match;
+    if (m.status !== 'completed') throw Object.assign(new Error('완료된 매칭이 아닙니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    if (m.afterStatus !== 'rejected') throw Object.assign(new Error('에프터가 rejected가 아닙니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    feedbacks[token] = { rating: body.rating ?? null, comment: body.comment ?? null, feedbackAt: new Date().toISOString() };
+    return { rating: feedbacks[token].rating, comment: feedbacks[token].comment, feedbackAt: feedbacks[token].feedbackAt };
   }
 
   // POST /api/v1/matches/:matchId/after (manager override)

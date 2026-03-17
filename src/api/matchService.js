@@ -46,10 +46,10 @@ export async function registerAvailableTimes(token, { times }) {
 
 // ── Manager APIs (인증 필요) ──
 
-export async function confirmMatch(matchId, { timeId, location, endTime }) {
+export async function confirmMatch(matchId, { timeId, location, locationLink, endTime }) {
   return apiFetch(`/api/v1/matches/${matchId}/confirm`, {
     method: 'POST',
-    body: { timeId, location, endTime },
+    body: { timeId, location, locationLink, endTime },
   });
 }
 
@@ -93,6 +93,19 @@ export async function respondAfter(token, response) {
 
 export async function getAfterProfile(token) {
   return apiFetch(`/api/v1/proposals/${token}/after/profile`, { method: 'GET' });
+}
+
+// ── Feedback APIs (공개) ──
+
+export async function getFeedback(token) {
+  return apiFetch(`/api/v1/proposals/${token}/feedback`, { method: 'GET' });
+}
+
+export async function submitFeedback(token, { rating, comment }) {
+  return apiFetch(`/api/v1/proposals/${token}/feedback`, {
+    method: 'POST',
+    body: { rating, comment },
+  });
 }
 
 export async function overrideAfter(matchId, afterStatus) {

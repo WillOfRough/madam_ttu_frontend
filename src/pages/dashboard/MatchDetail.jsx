@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -81,6 +81,7 @@ export default function MatchDetail() {
   const [showDelete, setShowDelete] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [venue, setVenue] = useState('');
+  const [locationLinkInput, setLocationLinkInput] = useState('');
   const [endTimeInput, setEndTimeInput] = useState('');
   const [selectedTimeId, setSelectedTimeId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -149,7 +150,7 @@ export default function MatchDetail() {
     if (!selectedTimeId) return;
     setActionLoading(true);
     try {
-      await matchService.confirmMatch(matchId, { timeId: selectedTimeId, location: venue, endTime: endTimeInput || null });
+      await matchService.confirmMatch(matchId, { timeId: selectedTimeId, location: venue, locationLink: locationLinkInput || null, endTime: endTimeInput || null });
       toast.success('약속이 확정되었습니다.');
       reload();
     } catch (err) {
@@ -158,6 +159,7 @@ export default function MatchDetail() {
     setActionLoading(false);
     setShowConfirm(false);
     setVenue('');
+    setLocationLinkInput('');
     setEndTimeInput('');
     setSelectedTimeId(null);
   };
@@ -516,6 +518,17 @@ export default function MatchDetail() {
                 </span>
               </div>
             )}
+            {confirmedSchedule.locationLink && (
+              <div className={styles.scheduleField}>
+                <span className={styles.fieldLabel}>장소 링크</span>
+                <span className={styles.fieldValue}>
+                  <Link2 size={14} />
+                  <a href={confirmedSchedule.locationLink} target="_blank" rel="noopener noreferrer" className={styles.locationLinkAnchor}>
+                    {confirmedSchedule.locationLink}
+                  </a>
+                </span>
+              </div>
+            )}
             {confirmedSchedule.confirmedAt && (
               <div className={styles.scheduleField}>
                 <span className={styles.fieldLabel}>확정일</span>
@@ -605,6 +618,33 @@ export default function MatchDetail() {
               >
                 에프터 상태 변경
               </button>
+
+              {/* Feedback Section - afterStatus rejected일 때 */}
+              {match.afterStatus === 'rejected' && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
+                <div className={styles.feedbackSection}>
+                  <h4 className={styles.feedbackSectionTitle}>
+                    <MessageSquare size={14} /> 만남 피드백
+                  </h4>
+                  {[
+                    { side: 'A', participant: match.clientA },
+                    { side: 'B', participant: match.clientB },
+                  ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
+                    <div key={side} className={styles.feedbackItem}>
+                      <div className={styles.feedbackItemHeader}>
+                        <span className={styles.schedulingRoleBadge}>{side}</span>
+                        <span className={styles.feedbackItemName}>{participant.clientName}</span>
+                        {participant.feedbackRating != null && (
+                          <span className={styles.feedbackRatingBadge}>{participant.feedbackRating}/10</span>
+                        )}
+                      </div>
+                      {participant.feedbackComment && (
+                        <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
+                      )}
+                      <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
             <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
@@ -744,6 +784,15 @@ export default function MatchDetail() {
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
                 placeholder="예: 청담동 르카페"
+              />
+            </div>
+            <div className={styles.modalField}>
+              <label className={styles.modalLabel}>장소 링크 (선택)</label>
+              <input
+                className={styles.modalInput}
+                value={locationLinkInput}
+                onChange={(e) => setLocationLinkInput(e.target.value)}
+                placeholder="예: https://naver.me/abc123"
               />
             </div>
             <div className={styles.modalField}>

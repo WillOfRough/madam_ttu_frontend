@@ -937,6 +937,115 @@
   cursor: not-allowed;
 }
 
+/* ── Meeting Feedback (에프터 불성사 후 피드백) ── */
+.ratingSection {
+  margin-bottom: 20px;
+}
+
+.ratingLabel {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.ratingButtons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.ratingBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--charcoal);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ratingBtn:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  background: var(--navy-glow);
+}
+
+.ratingBtnActive {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+  box-shadow: 0 2px 8px rgba(26, 26, 64, 0.2);
+}
+
+.ratingBtnActive:hover {
+  background: var(--navy-light);
+  border-color: var(--navy-light);
+  color: var(--white);
+}
+
+.submittedRating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.submittedRatingLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+}
+
+.submittedRatingValue {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.submittedComment {
+  font-size: 0.92rem;
+  color: var(--charcoal);
+  line-height: 1.7;
+  background: var(--bg);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.submittedDate {
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  margin-bottom: 16px;
+}
+
+.editFeedbackBtn {
+  padding: 10px 24px;
+  background: var(--navy-glow);
+  color: var(--navy);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 650;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.editFeedbackBtn:hover {
+  background: var(--navy);
+  color: var(--white);
+}
+
 /* ── Loading & Error ── */
 .loadingPage {
   min-height: 100vh;
