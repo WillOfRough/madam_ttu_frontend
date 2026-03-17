@@ -687,8 +687,8 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 본인이 거절한 경우 (상대방 응답 무관) */}
-          {!afterError && myAfterResponse === 'rejected' && afterStatus !== 'accepted' && (
+          {/* 본인이 거절했지만 상대방 아직 미응답 (대기 중) */}
+          {!afterError && myAfterResponse === 'rejected' && afterStatus === 'pending' && (
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>응답 완료</p>
               <p className={styles.respondedStatus}>소중한 시간 감사합니다.</p>
