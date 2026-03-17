@@ -429,6 +429,17 @@
   color: #8a5e00;
 }
 
+.rejectedSubmitBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: var(--danger-light);
+  color: #b71c2c;
+}
+
 /* ── Cards ── */
 .card {
   background: var(--white);

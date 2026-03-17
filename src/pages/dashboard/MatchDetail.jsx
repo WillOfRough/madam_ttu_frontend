@@ -571,6 +571,11 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* After Link Card (completed only) */}
+      {match.status === 'completed' && (
+        <AfterLinkCard match={match} />
+      )}
+
       {/* After Status Card (completed only) */}
       {match.status === 'completed' && (
         <div className={styles.card}>
@@ -817,6 +822,67 @@ export default function MatchDetail() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function AfterLinkCard({ match }) {
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}`;
+  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}`;
+
+  const handleCopy = async (url, key) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedKey(key);
+      toast.success('링크가 복사되었습니다.');
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  return (
+    <div className={styles.schedulingLinkCard}>
+      <h3 className={styles.schedulingLinkTitle}>
+        <Heart size={16} /> 에프터 링크
+      </h3>
+      <p className={styles.schedulingLinkHint}>미팅 후 아래 링크를 각 회원에게 전달해주세요</p>
+      <div className={styles.schedulingLinkRows}>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>A</span>
+            <span>{match.clientA.clientName} — 에프터 응답</span>
+            {match.clientA.afterResponse === 'accepted' && <span className={styles.submittedBadge}>만나볼래요</span>}
+            {match.clientA.afterResponse === 'rejected' && <span className={styles.rejectedSubmitBadge}>괜찮아요</span>}
+            {(!match.clientA.afterResponse || match.clientA.afterResponse === 'pending') && <span className={styles.pendingSubmitBadge}>미응답</span>}
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{urlA}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
+              {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'A' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>B</span>
+            <span>{match.clientB.clientName} — 에프터 응답</span>
+            {match.clientB.afterResponse === 'accepted' && <span className={styles.submittedBadge}>만나볼래요</span>}
+            {match.clientB.afterResponse === 'rejected' && <span className={styles.rejectedSubmitBadge}>괜찮아요</span>}
+            {(!match.clientB.afterResponse || match.clientB.afterResponse === 'pending') && <span className={styles.pendingSubmitBadge}>미응답</span>}
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{urlB}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
+              {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'B' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
