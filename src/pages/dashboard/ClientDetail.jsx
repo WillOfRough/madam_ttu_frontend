@@ -239,19 +239,30 @@ export default function ClientDetail() {
                   className={styles.historyItem}
                   onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
                 >
-                  <div className={styles.historyMain}>
+                  <div className={styles.historyTop}>
                     <span className={styles.historyPartner}>
                       {partner?.clientName || '알 수 없음'}
                     </span>
-                    <StatusBadge status={m.status} />
-                    {m.afterStatus && <StatusBadge status={`after_${m.afterStatus}`} />}
+                    <span className={styles.historyDate}>
+                      {new Date(m.createdAt).toLocaleDateString('ko-KR')}
+                    </span>
                   </div>
-                  <div className={styles.historyMeta}>
-                    <span>{new Date(m.createdAt).toLocaleDateString('ko-KR')}</span>
+                  <div className={styles.historyTags}>
+                    <span className={styles.historyTagLabel}>매칭</span>
+                    <StatusBadge status={m.status} />
                     {myResponse && myResponse !== 'pending' && (
-                      <span className={styles[`historyResp_${myResponse}`]}>
-                        {myResponse === 'accepted' ? '수락' : '거절'}
-                      </span>
+                      <>
+                        <span className={styles.historyTagLabel}>응답</span>
+                        <span className={styles[`historyResp_${myResponse}`]}>
+                          {myResponse === 'accepted' ? '수락' : '거절'}
+                        </span>
+                      </>
+                    )}
+                    {m.afterStatus && (
+                      <>
+                        <span className={styles.historyTagLabel}>에프터</span>
+                        <StatusBadge status={`after_${m.afterStatus}`} />
+                      </>
                     )}
                   </div>
                 </button>

@@ -348,15 +348,14 @@
 .historyList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .historyItem {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
   background: var(--bg);
   border-radius: var(--radius-sm);
   text-align: left;
@@ -369,29 +368,39 @@
   transform: translateX(2px);
 }
 
-.historyMain {
+.historyTop {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
+  justify-content: space-between;
 }
 
 .historyPartner {
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 650;
   color: var(--charcoal);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.historyMeta {
+.historyDate {
+  font-size: 0.74rem;
+  color: var(--charcoal-pale);
+}
+
+.historyTags {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  font-size: 0.76rem;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.historyTagLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--charcoal-pale);
+  letter-spacing: 0.02em;
+}
+
+.historyTagLabel:not(:first-child) {
+  margin-left: 6px;
 }
 
 .historyResp_accepted {
