@@ -57,7 +57,7 @@ export default function Connections() {
     try {
       const result = await createInvite({ expiresInHours: 48 });
       const token = result.token || result.id;
-      setInviteUrl(`${window.location.origin}/connect/${token}`);
+      setInviteUrl(`${window.location.origin}/register/${token}`);
       setCopied(false);
       toast.success('네트워크 초대 링크가 생성되었습니다.');
     } catch (err) {

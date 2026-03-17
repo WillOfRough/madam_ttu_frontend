@@ -7,13 +7,6 @@ export async function createConnectionInvite({ expiresInHours = 24, label } = {}
   });
 }
 
-export async function joinConnection(token) {
-  return apiFetch('/api/v1/connections/join', {
-    method: 'POST',
-    body: { token },
-  });
-}
-
 export async function getConnections() {
   return apiFetch('/api/v1/connections', { method: 'GET' });
 }

@@ -854,9 +854,6 @@ export async function mockFetch(path, options = {}) {
   if (method === 'GET' && pathname.match(/^\/api\/v1\/invites\/[^/]+\/validate$/)) return { valid: true, managerName: '김성중' };
   // POST /api/v1/clients
   if (method === 'POST' && pathname === '/api/v1/clients') return { success: true, message: '프로필이 성공적으로 등록되었습니다.' };
-  // POST /api/v1/connections/join
-  if (method === 'POST' && pathname === '/api/v1/connections/join') return { success: true, message: '연결되었습니다.' };
-
   // POST /api/v1/connections/disconnect
   if (method === 'POST' && pathname === '/api/v1/connections/disconnect') {
     const body = options.body || {};

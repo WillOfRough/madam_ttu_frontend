@@ -105,36 +105,6 @@ describe('#4 연결 링크 유효성', () => {
 });
 
 // ──────────────────────────────────────────────
-// #8 연결 1:1 단회용
-// ──────────────────────────────────────────────
-describe('#8 연결 1:1 단회용', () => {
-  it('연결 토큰으로 join 성공 시 success=true', async () => {
-    const mockJoin = vi.fn().mockResolvedValue({
-      success: true,
-      connection: { managerId: 'mgr-1', name: '매니저A' },
-      message: "'매니저A' 님과 연결되었습니다.",
-    });
-
-    const result = await mockJoin('valid-token');
-
-    expect(result.success).toBe(true);
-    expect(result.connection.name).toBe('매니저A');
-  });
-
-  it('이미 사용된 토큰으로 join 시 에러', async () => {
-    const mockJoin = vi.fn().mockRejectedValue(new Error('유효하지 않은 토큰입니다.'));
-
-    await expect(mockJoin('used-token')).rejects.toThrow('유효하지 않은 토큰입니다.');
-  });
-
-  it('자기 자신과의 연결 시 에러', async () => {
-    const mockJoin = vi.fn().mockRejectedValue(new Error('자기 자신과는 연결할 수 없습니다.'));
-
-    await expect(mockJoin('self-token')).rejects.toThrow('자기 자신과는 연결할 수 없습니다.');
-  });
-});
-
-// ──────────────────────────────────────────────
 // #10 연결 리스트 조회
 // ──────────────────────────────────────────────
 describe('#10 연결 리스트 조회', () => {
