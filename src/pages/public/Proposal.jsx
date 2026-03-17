@@ -652,7 +652,8 @@ export default function Proposal() {
             </div>
           )}
 
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'pending' && (
+          {/* 아직 본인이 응답 안 한 경우 → 에프터 선택 화면 (afterStatus 무관) */}
+          {!afterError && myAfterResponse === 'pending' && (
             <div className={styles.afterCard}>
               <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
               <p className={styles.afterDesc}>
@@ -678,25 +679,79 @@ export default function Proposal() {
             </div>
           )}
 
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'accepted' && (
+          {/* 본인이 수락했는데 상대방 아직 응답 안 한 경우 */}
+          {!afterError && myAfterResponse === 'accepted' && afterStatus === 'pending' && (
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>에프터를 신청했습니다</p>
               <p className={styles.respondedStatus}>상대방의 응답을 기다리고 있습니다.</p>
             </div>
           )}
 
-          {!afterError && afterStatus === 'pending' && myAfterResponse === 'rejected' && (
+          {/* 본인이 거절한 경우 (상대방 응답 무관) */}
+          {!afterError && myAfterResponse === 'rejected' && afterStatus !== 'accepted' && (
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>응답 완료</p>
               <p className={styles.respondedStatus}>소중한 시간 감사합니다.</p>
             </div>
           )}
 
-          {!afterError && afterStatus === 'rejected' && (
+          {/* 미성사: 본인이 수락했는데 상대가 거절한 경우 */}
+          {!afterError && afterStatus === 'rejected' && myAfterResponse === 'accepted' && (
             <>
               <div className={styles.respondedBanner}>
                 <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
-                <p className={styles.respondedStatus}>좋은 인연이 있을 거예요. 감사합니다.</p>
+                <p className={styles.respondedStatus}>아쉽지만 상대방이 다른 결정을 내렸어요. 더 좋은 인연이 기다리고 있을 거예요.</p>
+              </div>
+
+              {!meetingFeedbackLoading && (
+                <div className={styles.afterCard}>
+                  <p className={styles.afterDesc}>
+                    괜찮으시다면 이번 만남에 대한 소감을 편하게 들려주세요.
+                    <br />다음에는 꼭 맞는 분을 찾아드릴게요.
+                  </p>
+                  <textarea
+                    className={styles.feedbackTextarea}
+                    value={meetingComment}
+                    onChange={(e) => setMeetingComment(e.target.value)}
+                    placeholder="예) 전반적으로 좋았어요, 이런 스타일이면 더 좋을 것 같아요 등"
+                    rows={4}
+                    maxLength={1000}
+                    disabled={submitting}
+                  />
+                  {!submitting && (
+                    <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+                  )}
+                  <div className={styles.afterActions}>
+                    <button
+                      className={styles.acceptBtn}
+                      onClick={handleMeetingFeedbackSubmit}
+                      disabled={submitting || !meetingComment}
+                    >
+                      {submitting ? '제출 중...' : '피드백 남기기'}
+                    </button>
+                    {editingMeetingFeedback && (
+                      <button
+                        className={styles.rejectBtn}
+                        onClick={() => {
+                          setEditingMeetingFeedback(false);
+                          setMeetingComment(meetingFeedback?.comment || '');
+                        }}
+                      >
+                        취소
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* 미성사: 본인이 거절한 경우 */}
+          {!afterError && afterStatus === 'rejected' && myAfterResponse === 'rejected' && (
+            <>
+              <div className={styles.respondedBanner}>
+                <p className={styles.respondedLabel}>응답이 완료되었습니다</p>
+                <p className={styles.respondedStatus}>소중한 시간 감사합니다. 더 좋은 인연을 찾아드릴게요.</p>
               </div>
 
               {!meetingFeedbackLoading && (
