@@ -7,10 +7,6 @@ export async function createInvite({ label, expiresInHours } = {}) {
   });
 }
 
-export async function getInviteQuota() {
-  return apiFetch('/api/v1/invites/manager', { method: 'GET' });
-}
-
 export async function getMyInvites({ page = 1, limit = 20, status } = {}) {
   const params = new URLSearchParams({ page, limit });
   if (status) params.set('status', status);

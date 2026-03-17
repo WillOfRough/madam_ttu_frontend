@@ -588,12 +588,14 @@ const matches = [
       managerName: '김성중', role: 'proposer',
       response: 'accepted', respondedAt: '2026-02-20T10:00:00Z',
       proposalToken: 'PrTk13cMp7A1',
+      afterResponse: 'pending', afterRespondedAt: null,
     },
     clientB: {
       clientId: 's012', clientName: '배진우', clientGender: 'male',
       managerName: '박소영', role: 'receiver',
       response: 'accepted', respondedAt: '2026-02-20T15:00:00Z',
       proposalToken: 'PrTk14dNq8B2',
+      afterResponse: 'pending', afterRespondedAt: null,
     },
     meetingDate: '2026-03-01T18:00:00Z',
     location: '압구정 블루보틀',
@@ -602,7 +604,6 @@ const matches = [
     completedAt: '2026-03-02T10:00:00Z',
     createdAt: '2026-02-18T09:00:00Z',
     afterStatus: 'pending',
-    afterResponses: { A: 'pending', B: 'pending' },
   },
   // 7) proposal_sent — 또 다른 제안 발송 건
   {
@@ -909,7 +910,7 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/connections
   if (method === 'GET' && pathname === '/api/v1/connections') return { connections };
-  // GET /api/v1/invites/manager (quota)
+  // GET /api/v1/invites/manager (매니저 초대 quota)
   if (method === 'GET' && pathname === '/api/v1/invites/manager') {
     const activeCount = invites.filter((i) => i.status === 'active').length;
     return { limit: 20, used: activeCount, remaining: 20 - activeCount };
@@ -1067,7 +1068,6 @@ export async function mockFetch(path, options = {}) {
       availableTimes: allAvailableTimes,
       confirmedSchedule,
       afterStatus: found.afterStatus || null,
-      afterResponses: found.afterResponses || null,
     };
   }
 
@@ -1256,8 +1256,8 @@ export async function mockFetch(path, options = {}) {
     if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
     const m = proposal.match;
     if (m.status !== 'completed') throw Object.assign(new Error('미팅이 완료되지 않았습니다.'), { status: 400, body: { error: '9.007' } });
-    const side = proposal.side;
-    const myAfterResponse = m.afterResponses?.[side] || 'pending';
+    const participant = proposal.side === 'A' ? m.clientA : m.clientB;
+    const myAfterResponse = participant.afterResponse || 'pending';
     return { afterStatus: m.afterStatus || 'pending', myAfterResponse };
   }
 
@@ -1269,12 +1269,12 @@ export async function mockFetch(path, options = {}) {
     if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
     const m = proposal.match;
     if (m.status !== 'completed') throw Object.assign(new Error('미팅이 완료되지 않았습니다.'), { status: 400, body: { error: '9.007' } });
-    const side = proposal.side;
-    if (!m.afterResponses) m.afterResponses = { A: 'pending', B: 'pending' };
-    m.afterResponses[side] = body.response;
+    const participant = proposal.side === 'A' ? m.clientA : m.clientB;
+    participant.afterResponse = body.response;
+    participant.afterRespondedAt = new Date().toISOString();
     // Compute overall after status
-    const aResp = m.afterResponses.A;
-    const bResp = m.afterResponses.B;
+    const aResp = m.clientA.afterResponse || 'pending';
+    const bResp = m.clientB.afterResponse || 'pending';
     if (aResp === 'rejected' || bResp === 'rejected') {
       m.afterStatus = 'rejected';
     } else if (aResp === 'accepted' && bResp === 'accepted') {

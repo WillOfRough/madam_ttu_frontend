@@ -583,8 +583,8 @@ export default function MatchDetail() {
                   <span className={styles[RESPONSE_MAP[match.clientA.response]?.className || 'responseWaiting']}>
                     {RESPONSE_MAP[match.clientA.response]?.label || '대기'}
                   </span>
-                  <span className={styles[`afterResp_${match.afterResponses?.A || 'pending'}`]}>
-                    {match.afterResponses?.A === 'accepted' ? '만나볼래요' : match.afterResponses?.A === 'rejected' ? '괜찮아요' : '대기 중'}
+                  <span className={styles[`afterResp_${match.clientA.afterResponse || 'pending'}`]}>
+                    {match.clientA.afterResponse === 'accepted' ? '만나볼래요' : match.clientA.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
                   </span>
                 </div>
                 <div className={styles.afterResponseItem}>
@@ -593,8 +593,8 @@ export default function MatchDetail() {
                   <span className={styles[RESPONSE_MAP[match.clientB.response]?.className || 'responseWaiting']}>
                     {RESPONSE_MAP[match.clientB.response]?.label || '대기'}
                   </span>
-                  <span className={styles[`afterResp_${match.afterResponses?.B || 'pending'}`]}>
-                    {match.afterResponses?.B === 'accepted' ? '만나볼래요' : match.afterResponses?.B === 'rejected' ? '괜찮아요' : '대기 중'}
+                  <span className={styles[`afterResp_${match.clientB.afterResponse || 'pending'}`]}>
+                    {match.clientB.afterResponse === 'accepted' ? '만나볼래요' : match.clientB.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
                   </span>
                 </div>
               </div>

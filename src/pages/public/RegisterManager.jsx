@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname } from '../../data/constants';
@@ -8,9 +8,15 @@ import styles from './RegisterManager.module.css';
 export default function RegisterManager() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const register = useAuthStore((s) => s.register);
   const isLoading = useAuthStore((s) => s.isLoading);
   const initialNickname = useMemo(() => generateNickname(), []);
+
+  // 이미 로그인한 사용자는 대시보드로 리다이렉트
+  if (isLoggedIn) {
+    return <Navigate to="/dashboard" replace />;
+  }
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [nickname, setNickname] = useState('');

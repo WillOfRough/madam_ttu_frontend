@@ -33,6 +33,9 @@ export default function Connections() {
   const [copied, setCopied] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState(null);
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideConnectionDesc') !== '1');
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteLabel, setInviteLabel] = useState('');
+  const [creatingInvite, setCreatingInvite] = useState(false);
 
   // Search state
   const [searchEmail, setSearchEmail] = useState('');
@@ -54,15 +57,19 @@ export default function Connections() {
   }, [tab, statusFilter, fetchInvites]);
 
   const handleCreateInvite = async () => {
+    setCreatingInvite(true);
     try {
-      const result = await createInvite({ expiresInHours: 48 });
+      const result = await createInvite({ expiresInHours: 48, label: inviteLabel.trim() || undefined });
       const token = result.token || result.id;
-      setInviteUrl(`${window.location.origin}/register/${token}`);
+      setInviteUrl(`${window.location.origin}/connect/${token}`);
       setCopied(false);
+      setShowInviteForm(false);
+      setInviteLabel('');
       toast.success('네트워크 초대 링크가 생성되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 생성에 실패했습니다.');
     }
+    setCreatingInvite(false);
   };
 
   const handleCopy = () => {
@@ -148,7 +155,7 @@ export default function Connections() {
       <div className={styles.header}>
         <h1 className={styles.title}>매니저 네트워크</h1>
         {tab === 'connections' && (
-          <button className={styles.createBtn} onClick={handleCreateInvite}>
+          <button className={styles.createBtn} onClick={() => setShowInviteForm((v) => !v)}>
             <Plus size={16} /> 초대 링크
           </button>
         )}
@@ -186,6 +193,28 @@ export default function Connections() {
                 다른 매니저와 네트워크를 맺으면 서로의 회원 풀을 공유할 수 있습니다.
                 네트워크 매니저가 등록한 회원을 열람할 수 있고, 상대방도 나의 회원을 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
               </p>
+            </div>
+          )}
+
+          {showInviteForm && (
+            <div className={styles.inviteFormBox}>
+              <p className={styles.inviteFormTitle}>초대 링크 생성</p>
+              <div className={styles.inviteFormRow}>
+                <input
+                  className={styles.inviteFormInput}
+                  value={inviteLabel}
+                  onChange={(e) => setInviteLabel(e.target.value.slice(0, 50))}
+                  placeholder="라벨 (선택, 예: 홍길동 소개용)"
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateInvite()}
+                />
+                <button
+                  className={styles.createBtn}
+                  onClick={handleCreateInvite}
+                  disabled={creatingInvite}
+                >
+                  {creatingInvite ? '생성 중...' : '생성'}
+                </button>
+              </div>
             </div>
           )}
 

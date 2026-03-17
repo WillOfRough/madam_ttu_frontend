@@ -9,17 +9,6 @@ const useInviteStore = create((set) => ({
   totalPages: 1,
   totalCount: 0,
   statusFilter: '',
-  quota: null,
-
-  fetchQuota: async () => {
-    try {
-      const quota = await inviteService.getInviteQuota();
-      set({ quota });
-      return quota;
-    } catch {
-      // quota not available, ignore
-    }
-  },
 
   fetchInvites: async ({ page = 1, limit = 20, status } = {}) => {
     set({ isLoading: true, error: null });

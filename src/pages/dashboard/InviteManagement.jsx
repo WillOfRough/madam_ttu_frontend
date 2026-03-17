@@ -10,7 +10,7 @@ import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
 export default function InviteManagement() {
-  const { invites, isLoading, page, totalPages, statusFilter, quota, fetchInvites, fetchQuota, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
+  const { invites, isLoading, page, totalPages, statusFilter, fetchInvites, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
   const [label, setLabel] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
@@ -21,8 +21,7 @@ export default function InviteManagement() {
 
   useEffect(() => {
     fetchInvites({ page: 1, status: statusFilter || undefined });
-    fetchQuota();
-  }, [fetchInvites, fetchQuota, statusFilter]);
+  }, [fetchInvites, statusFilter]);
 
   const handleCreateClick = () => {
     setShowCreateConfirm(true);
@@ -34,7 +33,6 @@ export default function InviteManagement() {
       await createInvite({ label: label || undefined });
       setLabel('');
       fetchInvites({ page: 1, status: statusFilter || undefined });
-      fetchQuota();
       toast.success('초대 링크가 생성되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 생성에 실패했습니다.');
@@ -54,7 +52,6 @@ export default function InviteManagement() {
     if (!revokeTarget) return;
     try {
       await revokeInvite(revokeTarget.id);
-      fetchQuota();
       toast.success('초대 링크가 폐기되었습니다.');
     } catch (err) {
       toast.error(err.message || '초대 링크 폐기에 실패했습니다.');
@@ -117,11 +114,6 @@ export default function InviteManagement() {
             <Plus size={16} /> 생성
           </button>
         </div>
-        {quota && (
-          <p className={styles.quotaHint}>
-            남은 초대: <strong>{quota.remaining}</strong>개 (총 {quota.limit}개 중 {quota.used}개 사용)
-          </p>
-        )}
       </div>
 
       <div className={styles.filters}>
@@ -204,7 +196,7 @@ export default function InviteManagement() {
       {showCreateConfirm && (
         <ConfirmModal
           title="초대 링크 생성"
-          message={`초대 링크 1개를 생성하시겠습니까?${quota ? `\n남은 초대: ${quota.remaining}개` : ''}`}
+          message="초대 링크 1개를 생성하시겠습니까?"
           confirmLabel="생성"
           onConfirm={handleCreateConfirm}
           onCancel={() => setShowCreateConfirm(false)}
