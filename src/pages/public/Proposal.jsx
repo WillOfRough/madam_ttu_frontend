@@ -682,17 +682,22 @@ export default function Proposal() {
 
           {/* 본인이 수락했는데 상대방 아직 응답 안 한 경우 */}
           {!afterError && myAfterResponse === 'accepted' && afterStatus === 'pending' && (
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>에프터를 신청했습니다</p>
-              <p className={styles.respondedStatus}>상대방의 응답을 기다리고 있습니다.</p>
+            <div className={styles.afterWaitingCard}>
+              <div className={styles.afterWaitingIcon}>
+                <span className={styles.afterWaitingDot} />
+                <span className={styles.afterWaitingDot} />
+                <span className={styles.afterWaitingDot} />
+              </div>
+              <p className={styles.afterWaitingTitle}>응답이 전달되었습니다</p>
+              <p className={styles.afterWaitingDesc}>아직 상대방의 선택이 완료되지 않았어요.<br />상대방이 응답하면 결과를 확인하실 수 있습니다.</p>
             </div>
           )}
 
           {/* 본인이 거절했지만 상대방 아직 미응답 (대기 중) */}
           {!afterError && myAfterResponse === 'rejected' && afterStatus === 'pending' && (
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>응답 완료</p>
-              <p className={styles.respondedStatus}>소중한 시간 감사합니다.</p>
+            <div className={styles.afterWaitingCard}>
+              <p className={styles.afterWaitingTitle}>응답이 전달되었습니다</p>
+              <p className={styles.afterWaitingDesc}>소중한 시간 감사합니다.<br />상대방의 응답이 완료되면 최종 결과가 안내됩니다.</p>
             </div>
           )}
 
