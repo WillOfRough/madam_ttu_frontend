@@ -125,7 +125,14 @@ export default function Proposal() {
         .getAfterStatus(token)
         .then((res) => {
           setAfterStatus(res.afterStatus);
-          setMyAfterResponse(res.myAfterResponse);
+          // 백엔드 버그 대응: 한쪽이 rejected하면 양쪽 myAfterResponse를 모두 rejected로 덮어씀
+          // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
+          const savedResponse = localStorage.getItem(`after_response_${token}`);
+          if (savedResponse && res.afterStatus === 'rejected' && res.myAfterResponse === 'rejected') {
+            setMyAfterResponse(savedResponse);
+          } else {
+            setMyAfterResponse(res.myAfterResponse);
+          }
         })
         .catch((err) => {
           const code = err.body?.error;
@@ -168,6 +175,8 @@ export default function Proposal() {
     setSubmitting(true);
     try {
       await matchService.respondAfter(token, response);
+      // 원래 응답을 localStorage에 보존 (백엔드가 rejected로 덮어쓰는 버그 대응)
+      localStorage.setItem(`after_response_${token}`, response);
       setMyAfterResponse(response);
       // 응답 후 최신 상태를 서버에서 다시 조회
       try {
