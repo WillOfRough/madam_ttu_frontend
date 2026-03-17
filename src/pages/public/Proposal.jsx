@@ -660,7 +660,7 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 아직 본인이 응답 안 한 경우 → 에프터 선택 화면 (afterStatus 무관) */}
+          {/* 1. 아직 미응답 → 에프터 선택 화면 */}
           {!afterError && myAfterResponse === 'pending' && (
             <div className={styles.afterCard}>
               <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
@@ -687,7 +687,7 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 본인이 수락했는데 상대방 아직 응답 안 한 경우 */}
+          {/* 2. "만나볼래요" 선택 + 상대 미응답 → 대기 애니메이션 */}
           {!afterError && myAfterResponse === 'accepted' && afterStatus === 'pending' && (
             <div className={styles.afterWaitingCard}>
               <div className={styles.afterWaitingIcon}>
@@ -700,15 +700,7 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 본인이 거절했지만 상대방 아직 미응답 (대기 중) */}
-          {!afterError && myAfterResponse === 'rejected' && afterStatus === 'pending' && (
-            <div className={styles.afterWaitingCard}>
-              <p className={styles.afterWaitingTitle}>응답이 전달되었습니다</p>
-              <p className={styles.afterWaitingDesc}>소중한 시간 감사합니다.<br />상대방의 응답이 완료되면 최종 결과가 안내됩니다.</p>
-            </div>
-          )}
-
-          {/* 미성사: 본인이 수락했는데 상대가 거절한 경우 */}
+          {/* 3. "만나볼래요" 선택 + 상대 거절 → 미성사 안내 + 피드백 버튼 */}
           {!afterError && afterStatus === 'rejected' && myAfterResponse === 'accepted' && (
             <>
               <div className={styles.respondedBanner}>
@@ -746,31 +738,55 @@ export default function Proposal() {
                     >
                       {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
-                    <button
-                      className={styles.rejectBtn}
-                      onClick={() => setShowFeedbackForm(false)}
-                    >
-                      닫기
-                    </button>
+                    <button className={styles.rejectBtn} onClick={() => setShowFeedbackForm(false)}>닫기</button>
                   </div>
                 </div>
               )}
             </>
           )}
 
-          {/* 미성사: 본인이 거절한 경우 */}
+          {/* 4. "괜찮습니다" 선택 + 상대 미응답 → 피드백 화면 바로 표시 */}
+          {!afterError && myAfterResponse === 'rejected' && afterStatus === 'pending' && (
+            <div className={styles.afterCard}>
+              <p className={styles.afterDesc}>
+                인연에도 &lsquo;결&rsquo;이 있다고 합니다.
+                <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
+                <br />
+                <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
+                <br />다음에는 꼭 맞는 분을 찾아드릴게요.
+              </p>
+              <textarea
+                className={styles.feedbackTextarea}
+                value={meetingComment}
+                onChange={(e) => setMeetingComment(e.target.value)}
+                placeholder="예) 대화 스타일이 조금 달랐어요, 관심사가 달라서 아쉬웠어요 등"
+                rows={4}
+                maxLength={1000}
+                disabled={submitting}
+              />
+              {!submitting && (
+                <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
+              )}
+              <div className={styles.afterActions}>
+                <button
+                  className={styles.acceptBtn}
+                  onClick={handleMeetingFeedbackSubmit}
+                  disabled={submitting || !meetingComment}
+                >
+                  {submitting ? '제출 중...' : '피드백 제출'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 5. 양쪽 완료 → 미성사 (본인 거절) → 완료 배너 + 피드백 펼쳐서 표시 */}
           {!afterError && afterStatus === 'rejected' && myAfterResponse === 'rejected' && (
             <>
               <div className={styles.respondedBanner}>
                 <p className={styles.respondedLabel}>응답이 완료되었습니다</p>
                 <p className={styles.respondedStatus}>소중한 시간 감사합니다. 더 좋은 인연을 찾아드릴게요.</p>
               </div>
-              {!showFeedbackForm && !meetingFeedbackLoading && (
-                <button className={styles.feedbackToggleBtn} onClick={() => setShowFeedbackForm(true)}>
-                  이번 만남에 대한 피드백 남기기
-                </button>
-              )}
-              {showFeedbackForm && !meetingFeedbackLoading && (
+              {!meetingFeedbackLoading && (
                 <div className={styles.afterCard}>
                   <p className={styles.afterDesc}>
                     괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
@@ -796,18 +812,13 @@ export default function Proposal() {
                     >
                       {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
-                    <button
-                      className={styles.rejectBtn}
-                      onClick={() => setShowFeedbackForm(false)}
-                    >
-                      닫기
-                    </button>
                   </div>
                 </div>
               )}
             </>
           )}
 
+          {/* 6. 양쪽 완료 → 성사 */}
           {!afterError && afterStatus === 'accepted' && (
             <div className={styles.afterSuccessBanner}>
               <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
