@@ -868,8 +868,8 @@ export default function MatchDetail() {
 function AfterLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}`;
-  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}`;
+  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after`;
+  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after`;
 
   const handleCopy = async (url, key) => {
     try {
@@ -985,60 +985,6 @@ function SchedulingLinkCard({ match }) {
   );
 }
 
-function AfterLinkCard({ match }) {
-  const [copiedKey, setCopiedKey] = useState(null);
-
-  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after`;
-  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after`;
-
-  const handleCopy = async (url, key) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedKey(key);
-      toast.success('링크가 복사되었습니다.');
-      setTimeout(() => setCopiedKey(null), 2000);
-    } catch {
-      toast.error('복사에 실패했습니다.');
-    }
-  };
-
-  return (
-    <div className={styles.schedulingLinkCard}>
-      <h3 className={styles.schedulingLinkTitle}>
-        <Heart size={16} /> 에프터 링크
-      </h3>
-      <p className={styles.schedulingLinkHint}>아래 링크를 각 회원에게 전달해주세요</p>
-      <div className={styles.schedulingLinkRows}>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.clientA.clientName} — 에프터 응답</span>
-          </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlA}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'afterA')}>
-              {copiedKey === 'afterA' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'afterA' ? '복사됨' : '복사'}
-            </button>
-          </div>
-        </div>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.clientB.clientName} — 에프터 응답</span>
-          </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlB}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'afterB')}>
-              {copiedKey === 'afterB' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'afterB' ? '복사됨' : '복사'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
