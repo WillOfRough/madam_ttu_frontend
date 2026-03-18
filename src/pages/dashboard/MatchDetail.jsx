@@ -187,16 +187,10 @@ export default function MatchDetail() {
     setSelectedTimeId(null);
   };
 
-  const handleReschedule = async () => {
-    setActionLoading(true);
-    try {
-      await matchService.rescheduleMatch(matchId);
-      toast.success('가용시간 재등록이 요청되었습니다.');
-      reload();
-    } catch (err) {
-      toast.error(err.message || '재등록 요청에 실패했습니다.');
-    }
-    setActionLoading(false);
+  const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
+
+  const handleReschedule = () => {
+    setShowRescheduleLinks((prev) => !prev);
   };
 
   const handleAfterOverride = async () => {
@@ -336,11 +330,13 @@ export default function MatchDetail() {
               <button
                 className={styles.rescheduleBtn}
                 onClick={handleReschedule}
-                disabled={actionLoading}
               >
-                <RefreshCw size={14} />
-                {actionLoading ? '요청 중...' : '가용시간 재등록 요청'}
+                <Link2 size={14} />
+                {showRescheduleLinks ? '링크 숨기기' : '일정조율 링크 보기'}
               </button>
+              {showRescheduleLinks && (
+                <SchedulingLinkCard match={match} />
+              )}
             </div>
           )}
 
