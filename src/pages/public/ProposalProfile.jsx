@@ -155,7 +155,7 @@ export default function ProposalProfile() {
     if (matchStatus === 'proposal_sent') {
       statusMsg = '상대방 프로필 확인 대기 중입니다.';
     } else if (matchStatus === 'proposal_accepted') {
-      statusMsg = '일정 조율이 곧 시작됩니다.';
+      statusMsg = '상대방의 선택을 기다리고 있어요. 조금만 기다려주세요!';
     } else if (matchStatus === 'scheduling' || matchStatus === 'arranging') {
       statusMsg = '일정 조율이 진행 중입니다.';
     } else if (matchStatus === 'scheduled') {
