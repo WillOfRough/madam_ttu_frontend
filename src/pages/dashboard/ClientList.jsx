@@ -94,7 +94,7 @@ export default function ClientList() {
       )}
 
       {isLoading ? (
-        <SkeletonTable rows={6} columns={5} />
+        <SkeletonTable rows={6} columns={6} />
       ) : clients.length === 0 && !error ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />
@@ -107,6 +107,7 @@ export default function ClientList() {
               <span>이름</span>
               <span>성별</span>
               <span>직업</span>
+              <span>회사</span>
               <span>소속</span>
               <span>상태</span>
             </div>
@@ -116,18 +117,21 @@ export default function ClientList() {
                 className={styles.tableRow}
                 onClick={() => navigate(`/dashboard/clients/${client.id}`)}
               >
-                <span className={styles.name}>
+                <span className={styles.name} data-label="이름">
                   {client.nickname || client.name}
                   {client.nickname && <span className={styles.realName}>{client.name}</span>}
                 </span>
-                <span>{client.gender === 'male' ? '남성' : '여성'}</span>
-                <span>{client.occupation || '-'}</span>
-                <span className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
+                <span data-label="성별" className={styles.genderCell}>
+                  <span className={styles.genderTag}>{client.gender === 'male' ? '남성' : '여성'}</span>
+                </span>
+                <span data-label="직업">{client.occupation || '-'}</span>
+                <span data-label="회사">{client.company || '-'}</span>
+                <span data-label="소속" className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
                   {client.ownerManager
                     ? <><span>{client.ownerManager.name}</span>{client.ownerManager.email && <span className={styles.ownerEmail}>{client.ownerManager.email}</span>}</>
                     : (client.isOwner ? '나' : '-')}
                 </span>
-                <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>
+                <span data-label="상태" className={styles.statusCell}><StatusBadge status={client.approvalStatus || 'pending'} /></span>
               </div>
             ))}
           </div>
