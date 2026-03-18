@@ -321,9 +321,17 @@
   padding: 0;
   width: 100%;
   max-width: 540px;
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   box-shadow: var(--shadow-float);
   animation: modalSlideIn var(--duration-slow) var(--ease-out) both;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modal::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Modal Header ── */

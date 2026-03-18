@@ -31,6 +31,7 @@ import InviteManagement from './pages/dashboard/InviteManagement';
 import Settings from './pages/dashboard/Settings';
 import MatchList from './pages/dashboard/MatchList';
 import MatchDetail from './pages/dashboard/MatchDetail';
+import ManagerGuide from './pages/dashboard/ManagerGuide';
 
 function AuthListener() {
   const navigate = useNavigate();
@@ -96,6 +97,7 @@ export default function App() {
             <Route path="/dashboard/matches" element={<MatchList />} />
             <Route path="/dashboard/matches/:matchId" element={<MatchDetail />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/guide" element={<ManagerGuide />} />
           </Route>
         </Route>
 

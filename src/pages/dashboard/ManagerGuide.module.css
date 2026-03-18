@@ -1,0 +1,343 @@
+.page {
+  max-width: 960px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-xl);
+}
+
+/* ── Workflow Steps ── */
+.section {
+  margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 750;
+  color: var(--charcoal);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionIconNavy {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--white);
+  box-shadow: 0 3px 10px rgba(26, 43, 75, 0.25);
+}
+
+.sectionIconCoral {
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-light) 100%);
+  color: var(--white);
+  box-shadow: 0 3px 10px rgba(255, 126, 103, 0.25);
+}
+
+.stepsTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.stepItem {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+
+/* Vertical connector line */
+.stepItem:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--border-light);
+}
+
+.stepNum {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--navy);
+  color: var(--white);
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(26, 43, 75, 0.2);
+}
+
+.stepContent {
+  flex: 1;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.stepContent:hover {
+  border-color: var(--navy-glow);
+  box-shadow: var(--shadow-md);
+}
+
+.stepTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+}
+
+.stepDesc {
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.stepTip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--charcoal-mid);
+  line-height: 1.55;
+}
+
+.stepTipIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--coral);
+}
+
+/* ── Templates Section ── */
+.templateCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-md);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.templateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, rgba(26, 43, 75, 0.02) 0%, rgba(255, 126, 103, 0.02) 100%);
+}
+
+.templateTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.templateBadge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--navy-glow);
+  color: var(--navy);
+}
+
+.templateActions {
+  display: flex;
+  gap: 6px;
+}
+
+.templateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.editBtn {
+  background: var(--bg);
+  color: var(--charcoal-mid);
+  border: 1px solid var(--border);
+}
+
+.editBtn:hover {
+  background: var(--white);
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.saveBtn {
+  background: var(--navy);
+  color: var(--white);
+}
+
+.saveBtn:hover {
+  background: var(--navy-light);
+}
+
+.cancelEditBtn {
+  background: var(--white);
+  color: var(--charcoal-light);
+  border: 1px solid var(--border);
+}
+
+.cancelEditBtn:hover {
+  background: var(--bg-warm);
+}
+
+.copyBtn {
+  background: var(--bg);
+  color: var(--charcoal-mid);
+  border: 1px solid var(--border);
+}
+
+.copyBtn:hover {
+  background: var(--white);
+  border-color: var(--charcoal-pale);
+  color: var(--charcoal);
+}
+
+.copiedBtn {
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.resetBtn {
+  background: var(--white);
+  color: var(--charcoal-pale);
+  border: 1px solid var(--border);
+}
+
+.resetBtn:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.templateBody {
+  padding: 20px;
+}
+
+.templatePreview {
+  font-size: 0.84rem;
+  color: var(--charcoal);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.templateTextarea {
+  width: 100%;
+  min-height: 300px;
+  padding: 16px;
+  border: 1.5px solid var(--navy);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  line-height: 1.75;
+  resize: vertical;
+  background: var(--bg);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.templateTextarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--navy-glow);
+  background: var(--white);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .stepItem {
+    gap: 12px;
+  }
+
+  .stepItem:not(:last-child)::before {
+    left: 13px;
+  }
+
+  .stepNum {
+    width: 28px;
+    height: 28px;
+    font-size: 0.72rem;
+  }
+
+  .stepContent {
+    padding: 14px 16px;
+  }
+
+  .templateHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .templateActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .templateBtn {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  .templateBody {
+    padding: 16px;
+  }
+
+  .templateTextarea {
+    min-height: 250px;
+  }
+}
