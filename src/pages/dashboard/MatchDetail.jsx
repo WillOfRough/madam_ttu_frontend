@@ -110,6 +110,7 @@ export default function MatchDetail() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showAfterOverride, setShowAfterOverride] = useState(false);
   const [afterOverrideValue, setAfterOverrideValue] = useState('');
+  const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
@@ -186,8 +187,6 @@ export default function MatchDetail() {
     setEndTimeInput('');
     setSelectedTimeId(null);
   };
-
-  const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
 
   const handleReschedule = () => {
     setShowRescheduleLinks((prev) => !prev);
