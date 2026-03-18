@@ -34,6 +34,7 @@ export default function ProposalAfter() {
 
   // Feedback state
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackAlreadyDone, setFeedbackAlreadyDone] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
@@ -84,7 +85,10 @@ export default function ProposalAfter() {
       matchService
         .getFeedback(token)
         .then((res) => {
-          if (res?.feedbackAt) setFeedbackSubmitted(true);
+          if (res?.feedbackAt) {
+            setFeedbackSubmitted(true);
+            setFeedbackAlreadyDone(true);
+          }
         })
         .catch(() => {})
         .finally(() => setFeedbackLoading(false));
@@ -141,7 +145,7 @@ export default function ProposalAfter() {
   const handleFeedbackSubmit = async (comment) => {
     setSubmitting(true);
     try {
-      await matchService.submitFeedback(token, { comment });
+      await matchService.submitFeedback(token, { rating: 5, comment });
       setFeedbackSubmitted(true);
     } catch {
       setAfterError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
@@ -234,10 +238,28 @@ export default function ProposalAfter() {
     );
   }
 
-  // 4. 내가 거절 → 피드백 페이지
+  // 4. 내가 거절 → 피드백 페이지 (이미 제출한 경우 만료 화면)
   if (myAfterResponse === 'rejected') {
     if (feedbackLoading) {
       return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
+    }
+    // 새로고침 시 이미 피드백 제출 완료 → 만료 화면
+    if (feedbackAlreadyDone) {
+      return (
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <h1 className={styles.logo}>Knots & Links</h1>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>아쉽지만 이번엔 인연이 아니였나봐요</p>
+              <p className={styles.respondedStatus}>더 좋은 매칭으로 다시 돌아올게요!</p>
+            </div>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>만료된 링크입니다</p>
+              <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
+            </div>
+          </div>
+        </div>
+      );
     }
     return (
       <AfterFeedback
