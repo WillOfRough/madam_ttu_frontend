@@ -63,6 +63,28 @@ function formatDateHeader(dateStr) {
   return `${d.getMonth() + 1}/${d.getDate()} (${dayNames[d.getDay()]})`;
 }
 
+function addHour(timeStr) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const nh = h + 1;
+  if (nh >= 24) return '23:30';
+  return `${String(nh).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function generateTimeOptions(fromTime) {
+  const options = [];
+  const startMinutes = fromTime ? (() => {
+    const [h, m] = fromTime.split(':').map(Number);
+    return h * 60 + m + 30;
+  })() : 0;
+  for (let mins = startMinutes; mins < 24 * 60; mins += 30) {
+    const h = String(Math.floor(mins / 60)).padStart(2, '0');
+    const m = String(mins % 60).padStart(2, '0');
+    options.push(`${h}:${m}`);
+  }
+  return options;
+}
+
 function getRefundStatus(meetingDate) {
   if (!meetingDate) return null;
   const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
@@ -231,6 +253,14 @@ export default function MatchDetail() {
   // Selected time for modal display
   const selectedSlot = allTimes.find((t) => t.timeId === selectedTimeId);
 
+  const openConfirmModal = () => {
+    if (selectedSlot) {
+      const startHHMM = formatTimeOnly(selectedSlot.startTime);
+      setEndTimeInput(addHour(startHHMM));
+    }
+    setShowConfirm(true);
+  };
+
   // confirmedSchedule (new format) with fallback
   const confirmedSchedule = match.confirmedSchedule || null;
 
@@ -346,7 +376,7 @@ export default function MatchDetail() {
                 })}
               </div>
               <div className={styles.confirmSection}>
-                <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+                <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
                   약속 확정하기
                 </button>
               </div>
@@ -487,7 +517,7 @@ export default function MatchDetail() {
               );
             })}
             <div className={styles.confirmSection}>
-              <button className={styles.actionBtn} onClick={() => setShowConfirm(true)} disabled={!selectedTimeId}>
+              <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
                 약속 확정하기
               </button>
             </div>
@@ -657,6 +687,11 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* After Links (completed only) */}
+      {match.status === 'completed' && (
+        <AfterLinkCard match={match} />
+      )}
+
       {match.note && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>매니저 메모</h3>
@@ -802,12 +837,16 @@ export default function MatchDetail() {
             </div>
             <div className={styles.modalField}>
               <label className={styles.modalLabel}>종료 시간 (선택)</label>
-              <input
+              <select
                 className={styles.modalInput}
                 value={endTimeInput}
                 onChange={(e) => setEndTimeInput(e.target.value)}
-                placeholder="예: 21:00"
-              />
+              >
+                <option value="">선택 안 함</option>
+                {generateTimeOptions(selectedSlot ? formatTimeOnly(selectedSlot.startTime) : null).map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
             <div className={styles.modalActions}>
               <button className={styles.cancelModalBtn} onClick={() => setShowConfirm(false)}>취소</button>
@@ -890,8 +929,8 @@ function AfterLinkCard({ match }) {
 function SchedulingLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
-  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/available-times`;
-  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/available-times`;
+  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/schedule`;
+  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/schedule`;
 
   const handleCopy = async (url, key) => {
     try {
@@ -938,6 +977,61 @@ function SchedulingLinkCard({ match }) {
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
               {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
               {copiedKey === 'B' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AfterLinkCard({ match }) {
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after`;
+  const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after`;
+
+  const handleCopy = async (url, key) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedKey(key);
+      toast.success('링크가 복사되었습니다.');
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  return (
+    <div className={styles.schedulingLinkCard}>
+      <h3 className={styles.schedulingLinkTitle}>
+        <Heart size={16} /> 에프터 링크
+      </h3>
+      <p className={styles.schedulingLinkHint}>아래 링크를 각 회원에게 전달해주세요</p>
+      <div className={styles.schedulingLinkRows}>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>A</span>
+            <span>{match.clientA.clientName} — 에프터 응답</span>
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{urlA}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'afterA')}>
+              {copiedKey === 'afterA' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'afterA' ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+        <div className={styles.schedulingLinkRow}>
+          <div className={styles.schedulingLinkLabel}>
+            <span className={styles.schedulingRoleBadge}>B</span>
+            <span>{match.clientB.clientName} — 에프터 응답</span>
+          </div>
+          <div className={styles.schedulingLinkUrl}>
+            <span className={styles.schedulingLinkValue}>{urlB}</span>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'afterB')}>
+              {copiedKey === 'afterB' ? <Check size={13} /> : <Copy size={13} />}
+              {copiedKey === 'afterB' ? '복사됨' : '복사'}
             </button>
           </div>
         </div>

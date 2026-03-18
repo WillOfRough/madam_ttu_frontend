@@ -3,6 +3,32 @@
  */
 
 const MANAGER_ID = '00000000-0000-0000-0000-000000000001';
+const ADMIN_ID = 'admin001';
+
+// ── 계정 정보 ─────────────────────────────────────────
+const accounts = {
+  'sungjoong.kim@hancom.com': {
+    id: MANAGER_ID,
+    email: 'sungjoong.kim@hancom.com',
+    password: 'hancom123',
+    name: '김성중',
+    nickname: '',
+    phone: '010-1234-5678',
+    role: 'manager',
+  },
+  'admin@admin.com': {
+    id: ADMIN_ID,
+    email: 'admin@admin.com',
+    password: 'hancom123',
+    name: '관리자',
+    nickname: '',
+    phone: '010-0000-0000',
+    role: 'admin',
+  },
+};
+
+// 현재 로그인한 사용자 추적
+let currentUser = accounts['sungjoong.kim@hancom.com'];
 
 function randomToken(len = 12) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -787,7 +813,7 @@ function enrichClient(c) {
     nickname: c.nickname || null,
     photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     ownerManager: owner,
-    isOwner: c.ownerManagerId === MANAGER_ID,
+    isOwner: c.ownerManagerId === currentUser.id,
   };
 }
 
@@ -814,20 +840,25 @@ function enrichParticipant(participant) {
   };
 }
 
-// ── Dashboard Summary ──────────────────────────────────
-const dashboardSummary = {
-  myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
-  pendingCount: clients.filter((c) => c.approvalStatus === 'pending').length,
-  connectedManagerCount: connections.length,
-  activeInviteCount: invites.filter((i) => i.status === 'active').length,
-  recentPendingClients: clients
-    .filter((c) => c.approvalStatus === 'pending')
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 5)
-    .map((c) => ({ ...c, ...enrichClient(c) })),
-};
+// ── Dashboard Summary (동적 계산) ──────────────────────
+function getDashboardSummary() {
+  return {
+    myClientCount: clients.filter((c) => c.ownerManagerId === currentUser.id).length,
+    pendingCount: clients.filter((c) => c.approvalStatus === 'pending').length,
+    connectedManagerCount: connections.length,
+    activeInviteCount: invites.filter((i) => i.status === 'active').length,
+    recentPendingClients: clients
+      .filter((c) => c.approvalStatus === 'pending')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5)
+      .map((c) => ({ ...c, ...enrichClient(c) })),
+  };
+}
 
-const managerInfo = { id: MANAGER_ID, name: '김성중', email: 'sungjoong.kim@hancom.com', nickname: '', phone: '010-1234-5678' };
+// managerInfo는 currentUser를 참조하도록 getter로 접근
+function getManagerInfo() {
+  return { id: currentUser.id, name: currentUser.name, email: currentUser.email, nickname: currentUser.nickname || '', phone: currentUser.phone || '' };
+}
 
 // ── Route Matcher ──────────────────────────────────────
 
@@ -860,16 +891,22 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/auth/login
   if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};
-    return { manager: { id: MANAGER_ID, email: body.email || 'sungjoong.kim@hancom.com', name: '김성중' } };
+    const account = accounts[body.email];
+    if (!account || account.password !== body.password) {
+      throw Object.assign(new Error('이메일 또는 비밀번호가 올바르지 않습니다.'), { status: 401 });
+    }
+    currentUser = account;
+    return { manager: { id: account.id, email: account.email, name: account.name, role: account.role } };
   }
 
   // GET /api/v1/auth/me
   if (method === 'GET' && pathname === '/api/v1/auth/me') {
     return {
-      id: MANAGER_ID, email: 'sungjoong.kim@hancom.com', name: managerInfo.name,
-      nickname: managerInfo.nickname || '', phone: managerInfo.phone || '',
+      id: currentUser.id, email: currentUser.email, name: currentUser.name,
+      nickname: currentUser.nickname || '', phone: currentUser.phone || '',
+      role: currentUser.role,
       connections: connections.map((c) => ({ managerId: c.managerId, name: c.name, clientCount: c.clientCount, connectedAt: c.connectedAt })),
-      myClientCount: clients.filter((c) => c.ownerManagerId === MANAGER_ID).length,
+      myClientCount: clients.filter((c) => c.ownerManagerId === currentUser.id).length,
       createdAt: '2026-01-01T00:00:00Z',
     };
   }
@@ -895,22 +932,34 @@ export async function mockFetch(path, options = {}) {
     const body = options.body || {};
     const idx = connections.findIndex((c) => c.managerId === body.targetManagerId);
     if (idx !== -1) connections.splice(idx, 1);
-    dashboardSummary.connectedManagerCount = connections.length;
     return { success: true };
   }
 
   // GET /api/v1/dashboard/summary
-  if (method === 'GET' && pathname === '/api/v1/dashboard/summary') return dashboardSummary;
+  if (method === 'GET' && pathname === '/api/v1/dashboard/summary') return getDashboardSummary();
   // PATCH /api/v1/managers/me
   if (method === 'PATCH' && pathname === '/api/v1/managers/me') {
     const body = options.body || {};
-    if (body.name) managerInfo.name = body.name;
-    if (body.nickname) managerInfo.nickname = body.nickname;
-    if (body.phone) managerInfo.phone = body.phone;
+    if (body.name) currentUser.name = body.name;
+    if (body.nickname) currentUser.nickname = body.nickname;
+    if (body.phone) currentUser.phone = body.phone;
     return { success: true, message: '정보가 수정되었습니다.' };
   }
   // GET /api/v1/managers/:id
-  if (method === 'GET' && /^\/api\/v1\/managers\/[^/]+$/.test(pathname)) return managerInfo;
+  if (method === 'GET' && /^\/api\/v1\/managers\/[^/]+$/.test(pathname)) return getManagerInfo();
+
+  // GET /api/v1/clients/:id/matches (client match history)
+  if (method === 'GET' && /^\/api\/v1\/clients\/[^/]+\/matches$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    const filtered = matches.filter(
+      (m) => m.clientA?.clientId === id || m.clientB?.clientId === id,
+    );
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const start = page * size;
+    return { content: filtered.slice(start, start + size), pagination: { page, size, totalElements: filtered.length, totalPages: Math.ceil(filtered.length / size) } };
+  }
 
   // GET /api/v1/clients/:id (detail)
   if (method === 'GET' && /^\/api\/v1\/clients\/[^?]+$/.test(pathname) && !pathname.endsWith('/clients')) {
@@ -935,7 +984,7 @@ export async function mockFetch(path, options = {}) {
     if (phoneQ) filtered = filtered.filter((c) => c.phone === phoneQ);
     if (gender) filtered = filtered.filter((c) => c.gender === gender);
     if (approval) filtered = filtered.filter((c) => c.approvalStatus === approval);
-    if (owner === 'me') filtered = filtered.filter((c) => c.ownerManagerId === MANAGER_ID);
+    if (owner === 'me') filtered = filtered.filter((c) => c.ownerManagerId === currentUser.id);
     else if (owner && owner !== 'all') filtered = filtered.filter((c) => c.ownerManagerId === owner);
     const [field, dir] = sort.split(':');
     filtered.sort((a, b) => { const va = a[field] || ''; const vb = b[field] || ''; return dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1); });
@@ -957,7 +1006,6 @@ export async function mockFetch(path, options = {}) {
     const body = options.body || {};
     const newInvite = { id: `inv${Date.now()}`, token: randomToken(), label: body.label || '', status: 'active', useCount: 0, createdAt: new Date().toISOString(), expiresAt: new Date(Date.now() + (body.expiresInHours || 24) * 3600000).toISOString() };
     invites.unshift(newInvite);
-    dashboardSummary.activeInviteCount = invites.filter((i) => i.status === 'active').length;
     return newInvite;
   }
 
@@ -976,7 +1024,6 @@ export async function mockFetch(path, options = {}) {
     const id = pathname.split('/').pop();
     const inv = invites.find((i) => i.id === id);
     if (inv) inv.status = 'revoked';
-    dashboardSummary.activeInviteCount = invites.filter((i) => i.status === 'active').length;
     return { success: true };
   }
 
@@ -1007,7 +1054,7 @@ export async function mockFetch(path, options = {}) {
   if (method === 'POST' && /^\/api\/v1\/connections\/requests\/[^/]+\/accept$/.test(pathname)) {
     const reqId = pathname.split('/').slice(-2, -1)[0];
     const req = connectionRequests.find((r) => r.id === reqId);
-    if (req) { req.status = 'accepted'; connections.push({ id: `c${Date.now()}`, managerId: req.managerId, name: req.managerName, email: '', clientCount: 0, connectedAt: new Date().toISOString() }); dashboardSummary.connectedManagerCount = connections.length; }
+    if (req) { req.status = 'accepted'; connections.push({ id: `c${Date.now()}`, managerId: req.managerId, name: req.managerName, email: '', clientCount: 0, connectedAt: new Date().toISOString() }); }
     return { success: true, connection: req ? { managerId: req.managerId, name: req.managerName } : {}, message: req ? `'${req.managerName}' 님과 연결되었습니다.` : '연결되었습니다.' };
   }
 
@@ -1028,7 +1075,6 @@ export async function mockFetch(path, options = {}) {
     const body = options.body || {};
     const c = clients.find((cl) => cl.id === id);
     if (c) c.approvalStatus = body.status;
-    dashboardSummary.pendingCount = clients.filter((cl) => cl.approvalStatus === 'pending').length;
     return { success: true };
   }
 

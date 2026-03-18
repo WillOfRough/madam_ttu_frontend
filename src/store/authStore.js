@@ -2,9 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import * as authService from '../api/authService';
 
-const DEV = import.meta.env.DEV;
-const MOCK_MANAGER_ID = '00000000-0000-0000-0000-000000000001';
-
 const useAuthStore = create(
   persist(
     (set) => ({
@@ -12,6 +9,7 @@ const useAuthStore = create(
       managerId: null,
       email: null,
       name: null,
+      role: null,
       managerInviteQuota: null,
       isLoading: false,
       error: null,
@@ -26,22 +24,11 @@ const useAuthStore = create(
             managerId: mgr.id,
             email: mgr.email || email,
             name: mgr.name || null,
+            role: mgr.role || 'manager',
             isLoading: false,
           });
           return data;
         } catch (err) {
-          // DEV: 백엔드 없이 로컬 테스트용 패스스루
-          if (DEV) {
-            const mockName = email.split('@')[0] || 'Manager';
-            set({
-              isLoggedIn: true,
-              managerId: MOCK_MANAGER_ID,
-              email,
-              name: mockName,
-              isLoading: false,
-            });
-            return { managerId: MOCK_MANAGER_ID, email, name: mockName };
-          }
           set({ isLoading: false, error: err.message });
           throw err;
         }
@@ -58,20 +45,11 @@ const useAuthStore = create(
             managerId: mgr.id || data.id,
             email,
             name,
+            role: mgr.role || 'manager',
             isLoading: false,
           });
           return data;
         } catch (err) {
-          if (DEV) {
-            set({
-              isLoggedIn: true,
-              managerId: MOCK_MANAGER_ID,
-              email,
-              name,
-              isLoading: false,
-            });
-            return { managerId: MOCK_MANAGER_ID, email, name };
-          }
           set({ isLoading: false, error: err.message });
           throw err;
         }
@@ -88,20 +66,11 @@ const useAuthStore = create(
             managerId: mgr.id || data.id,
             email,
             name,
+            role: mgr.role || 'manager',
             isLoading: false,
           });
           return data;
         } catch (err) {
-          if (DEV) {
-            set({
-              isLoggedIn: true,
-              managerId: MOCK_MANAGER_ID,
-              email,
-              name,
-              isLoading: false,
-            });
-            return { managerId: MOCK_MANAGER_ID, email, name };
-          }
           set({ isLoading: false, error: err.message });
           throw err;
         }
@@ -113,6 +82,7 @@ const useAuthStore = create(
           managerId: null,
           email: null,
           name: null,
+          role: null,
           managerInviteQuota: null,
           error: null,
         });
@@ -126,6 +96,7 @@ const useAuthStore = create(
             managerId: data.id,
             email: data.email,
             name: data.name || null,
+            role: data.role || 'manager',
             managerInviteQuota: data.managerInviteQuota || null,
           });
           return true;
@@ -135,6 +106,7 @@ const useAuthStore = create(
             managerId: null,
             email: null,
             name: null,
+            role: null,
             managerInviteQuota: null,
           });
           return false;
@@ -150,6 +122,7 @@ const useAuthStore = create(
         managerId: state.managerId,
         email: state.email,
         name: state.name,
+        role: state.role,
         managerInviteQuota: state.managerInviteQuota,
       }),
     },
