@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link2, Plus, Copy, Unlink, X, Search, UserPlus, Check, XCircle, Send, Clock } from 'lucide-react';
+import { Link2, Plus, Copy, Unlink, X, Search, UserPlus, Check, XCircle, Send, Clock, Trash2 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useManagerInviteStore from '../../store/managerInviteStore';
 import { searchManager } from '../../api/connectionService';
+import { revokeInvite } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
 import ConfirmModal from '../../components/ConfirmModal';
 import StatusBadge from '../../components/StatusBadge';
@@ -36,6 +37,8 @@ export default function Connections() {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteLabel, setInviteLabel] = useState('');
   const [creatingInvite, setCreatingInvite] = useState(false);
+  const [copiedInviteId, setCopiedInviteId] = useState(null);
+  const [revokeTarget, setRevokeTarget] = useState(null);
 
   // Search state
   const [searchEmail, setSearchEmail] = useState('');
@@ -138,6 +141,26 @@ export default function Connections() {
     } catch (err) {
       toast.error(err.message || '거절에 실패했습니다.');
     }
+  };
+
+  const handleCopyInviteLink = (invite) => {
+    const url = `${window.location.origin}/connect/${invite.token}`;
+    navigator.clipboard.writeText(url);
+    setCopiedInviteId(invite.id);
+    toast.success('링크가 복사되었습니다.');
+    setTimeout(() => setCopiedInviteId(null), 2000);
+  };
+
+  const handleRevokeInvite = async () => {
+    if (!revokeTarget) return;
+    try {
+      await revokeInvite(revokeTarget.id);
+      toast.success('초대 링크가 폐기되었습니다.');
+      fetchInvites({ status: statusFilter || undefined });
+    } catch (err) {
+      toast.error(err.message || '폐기에 실패했습니다.');
+    }
+    setRevokeTarget(null);
   };
 
   const handleStatusFilter = (status) => {
@@ -454,6 +477,20 @@ export default function Connections() {
                         </span>
                       </div>
                     </div>
+                    {invite.status === 'active' && (
+                      <div className={styles.cardActions}>
+                        <button className={styles.iconBtn} onClick={() => handleCopyInviteLink(invite)}>
+                          <Copy size={14} />
+                          {copiedInviteId === invite.id ? '복사됨!' : '복사'}
+                        </button>
+                        <button
+                          className={`${styles.iconBtn} ${styles.dangerBtn}`}
+                          onClick={() => setRevokeTarget(invite)}
+                        >
+                          <Trash2 size={14} /> 폐기
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -477,6 +514,17 @@ export default function Connections() {
           danger
           onConfirm={handleDisconnect}
           onCancel={() => setDisconnectTarget(null)}
+        />
+      )}
+
+      {revokeTarget && (
+        <ConfirmModal
+          title="초대 폐기"
+          message="이 초대 링크를 폐기하시겠습니까? 더 이상 사용할 수 없게 됩니다."
+          confirmLabel="폐기"
+          danger
+          onConfirm={handleRevokeInvite}
+          onCancel={() => setRevokeTarget(null)}
         />
       )}
     </div>

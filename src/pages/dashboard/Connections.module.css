@@ -734,3 +734,33 @@
     flex-wrap: nowrap;
   }
 }
+
+/* ── Invite Card Actions ── */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: var(--bg);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.iconBtn:hover {
+  background: var(--border-light);
+}
+
+.dangerBtn:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+}
