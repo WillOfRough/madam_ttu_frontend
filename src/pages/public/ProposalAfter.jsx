@@ -51,7 +51,15 @@ export default function ProposalAfter() {
       .then((res) => {
         if (res) {
           setAfterStatus(res.afterStatus);
-          setMyAfterResponse(res.myAfterResponse);
+          // 백엔드 버그 대응: 매니저가 에프터 상태를 rejected로 변경하면
+          // 양쪽 myAfterResponse를 모두 rejected로 덮어씀
+          // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
+          const savedResponse = localStorage.getItem(`after_response_${token}`);
+          if (savedResponse && res.afterStatus === 'rejected' && res.myAfterResponse === 'rejected') {
+            setMyAfterResponse(savedResponse);
+          } else {
+            setMyAfterResponse(res.myAfterResponse);
+          }
           setMyAfterRespondedAt(res.myAfterRespondedAt || null);
         }
       })
@@ -104,6 +112,10 @@ export default function ProposalAfter() {
     setSubmitting(true);
     try {
       await matchService.respondAfter(token, response);
+      // 백엔드 버그 대응: 원래 응답을 localStorage에 저장
+      // 매니저가 에프터 상태를 rejected로 변경하면 양쪽 myAfterResponse가
+      // 모두 rejected로 덮어씌워지므로 원본 응답을 보존
+      localStorage.setItem(`after_response_${token}`, response);
       setMyAfterResponse(response);
       if (response === 'accepted') {
         setMyAfterRespondedAt(new Date().toISOString());

@@ -21,10 +21,23 @@ export default function ProposalProfile() {
   const [oathAgreed, setOathAgreed] = useState(false);
   const [oathPassed, setOathPassed] = useState(false);
 
+  // After status (completed 상태에서 에프터 확정 여부)
+  const [afterFinalized, setAfterFinalized] = useState(false);
+
   useEffect(() => {
     matchService
       .getProposal(token)
-      .then((res) => setData(res))
+      .then((res) => {
+        setData(res);
+        // completed 상태면 에프터 확정 여부 확인
+        if (res.matchStatus === 'completed') {
+          return matchService.getAfterStatus(token).then((afterRes) => {
+            if (afterRes.afterStatus === 'accepted' || afterRes.afterStatus === 'rejected') {
+              setAfterFinalized(true);
+            }
+          }).catch(() => {});
+        }
+      })
       .catch((err) => setError(err.message || '프로포절을 불러올 수 없습니다.'))
       .finally(() => setLoading(false));
   }, [token]);
@@ -50,9 +63,8 @@ export default function ProposalProfile() {
   const { myName, myRole, myResponse, matchStatus, counterpart: cp } = data;
   const responded = myResponse !== 'pending';
 
-  // 만료 체크: 취소됨(한 쪽 거절) 또는 에프터 완전 종료
-  const isCancelled = matchStatus === 'cancelled';
-  if (isCancelled) {
+  // 만료 체크: 취소됨 또는 에프터 확정(성사/미성사)
+  if (matchStatus === 'cancelled' || afterFinalized) {
     return (
       <div className={styles.page}>
         <div className={styles.container}>
