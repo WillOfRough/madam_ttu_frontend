@@ -869,8 +869,11 @@ const managerMap = {
 
 function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
+  const birthYear = c.birthDate ? new Date(c.birthDate).getFullYear() : null;
+  const age = birthYear ? new Date().getFullYear() - birthYear : null;
   return {
     nickname: c.nickname || null,
+    age,
     photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     ownerManager: owner,
     isOwner: c.ownerManagerId === currentUser.id,
