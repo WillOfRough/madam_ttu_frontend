@@ -115,7 +115,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 1.2fr 0.8fr;
+  grid-template-columns: 2fr 1fr 2fr 1.2fr 1fr;
   gap: var(--space-md);
   padding: 10px 24px;
   font-size: 0.72rem;
@@ -129,7 +129,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 1.5fr 1.5fr 1.2fr 0.8fr;
+  grid-template-columns: 2fr 1fr 2fr 1.2fr 1fr;
   gap: var(--space-md);
   padding: 14px 24px;
   font-size: 0.875rem;
@@ -189,20 +189,6 @@
   letter-spacing: 0;
 }
 
-.genderCell {
-  display: flex;
-  align-items: center;
-}
-
-.genderTag {
-  font-size: 0.82rem;
-}
-
-.statusCell {
-  display: flex;
-  align-items: center;
-}
-
 @media (max-width: 640px) {
   .title {
     font-size: 1.35rem;
@@ -219,126 +205,13 @@
     padding: 8px 30px 8px 10px;
   }
 
-  .table {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
   .tableHeader {
     display: none;
   }
 
   .tableRow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding: 0;
-    background: var(--white);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
-  }
-
-  .tableRow:last-child {
-    border-bottom: 1px solid var(--border-light);
-  }
-
-  /* Card header: name row */
-  .tableRow .name {
-    padding: 14px 16px 10px;
-    font-size: 0.95rem;
-    border-bottom: 1px solid var(--border-light);
-    flex-direction: row;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  .tableRow .name::before {
-    display: none;
-  }
-
-  /* Gender tag next to name on mobile */
-  .tableRow .genderCell {
-    position: absolute;
-    right: 16px;
-    top: 14px;
-  }
-
-  .tableRow .genderTag {
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    background: #f0f4ff;
-    color: var(--navy);
-  }
-
-  /* Status badge: positioned top-right area */
-  .tableRow .statusCell {
-    position: absolute;
-    right: 16px;
-    bottom: 14px;
-  }
-
-  .tableRow .statusCell::before {
-    display: none;
-  }
-
-  /* Card-relative positioning */
-  .tableRow {
-    position: relative;
-  }
-
-  /* Label-value fields */
-  .tableRow > span[data-label] {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding: 7px 16px;
-    font-size: 0.84rem;
-  }
-
-  .tableRow > span[data-label]::before {
-    content: attr(data-label);
-    font-size: 0.74rem;
-    font-weight: 650;
-    color: var(--charcoal-pale);
-    min-width: 32px;
-    flex-shrink: 0;
-    letter-spacing: 0.02em;
-  }
-
-  /* Hide gender label (shown as tag) */
-  .tableRow .genderCell::before {
-    display: none;
-  }
-
-  /* Owner field: allow column layout for email */
-  .tableRow .ownerMe,
-  .tableRow .ownerOther {
-    padding: 7px 16px;
-    padding-right: 80px;
-  }
-
-  .tableRow .ownerMe::before,
-  .tableRow .ownerOther::before {
-    content: attr(data-label);
-    font-size: 0.74rem;
-    font-weight: 650;
-    color: var(--charcoal-pale);
-    min-width: 32px;
-    flex-shrink: 0;
-    letter-spacing: 0.02em;
-    align-self: flex-start;
-  }
-
-  /* Add bottom padding to last visible field */
-  .tableRow > span:last-child {
-    padding-bottom: 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs) var(--space-md);
+    padding: 12px 16px;
   }
 }
