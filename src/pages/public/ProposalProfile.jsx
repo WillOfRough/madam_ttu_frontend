@@ -57,7 +57,26 @@ export default function ProposalProfile() {
   };
 
   if (loading) return <div className={styles.loadingPage}>프로포절을 불러오는 중...</div>;
-  if (error && !data) return <div className={styles.errorPage}><p>{error}</p></div>;
+  if (error && !data) {
+    if (error.includes('만료') || error.includes('취소')) {
+      return (
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <h1 className={styles.logo}>Knots & Links</h1>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>아쉽지만 이번엔 인연이 아니였나봐요</p>
+              <p className={styles.respondedStatus}>더 좋은 매칭으로 다시 돌아올게요!</p>
+            </div>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>만료된 링크입니다</p>
+              <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return <div className={styles.errorPage}><p>{error}</p></div>;
+  }
   if (!data) return <div className={styles.errorPage}><p>프로필 정보를 찾을 수 없습니다.</p></div>;
 
   const { myName, myRole, myResponse, matchStatus, counterpart: cp } = data;
