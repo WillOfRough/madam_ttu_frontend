@@ -18,10 +18,10 @@ export default function DashboardHome() {
   }, [fetchSummary]);
 
   const cards = [
-    { icon: Users, label: '내 회원', value: summary?.myClientCount ?? '-', color: 'navy' },
+    { icon: Users, label: '내 회원', value: summary?.myClientCount ?? '-', color: 'navy', onClick: () => navigate('/dashboard/clients') },
     { icon: Clock, label: '승인 대기', value: summary?.pendingCount ?? '-', color: 'pending' },
-    { icon: Link2, label: '네트워크', value: summary?.connectedManagerCount ?? '-', color: 'success' },
-    { icon: Mail, label: '활성 초대링크', value: summary?.activeInviteCount ?? '-', color: 'coral' },
+    { icon: Link2, label: '네트워크', value: summary?.connectedManagerCount ?? '-', color: 'success', onClick: () => navigate('/dashboard/connections') },
+    { icon: Mail, label: '활성 초대링크', value: summary?.activeInviteCount ?? '-', color: 'coral', onClick: () => navigate('/dashboard/invites') },
   ];
 
   const pendingClients = summary?.recentPendingClients || [];

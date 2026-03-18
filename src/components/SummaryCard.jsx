@@ -1,8 +1,12 @@
 import styles from './SummaryCard.module.css';
 
-export default function SummaryCard({ icon: Icon, label, value, color = 'navy' }) {
+export default function SummaryCard({ icon: Icon, label, value, color = 'navy', onClick }) {
   return (
-    <div className={`${styles.card} ${styles[color] || ''}`}>
+    <div
+      className={`${styles.card} ${styles[color] || ''}`}
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
       <div className={styles.iconWrap}>
         <Icon size={20} />
       </div>
