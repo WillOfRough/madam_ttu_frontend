@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styles from '../Proposal.module.css';
 
-export default function AfterFeedback({ submitted, onSubmit, onBack, submitting }) {
+export default function AfterFeedback({ submitted, onSubmit, submitting }) {
   const [feedback, setFeedback] = useState('');
 
   if (submitted) {
@@ -47,13 +47,6 @@ export default function AfterFeedback({ submitted, onSubmit, onBack, submitting 
               disabled={submitting}
             >
               {submitting ? '처리 중...' : '피드백 제출하기'}
-            </button>
-            <button
-              className={styles.rejectBtn}
-              onClick={onBack}
-              disabled={submitting}
-            >
-              돌아가기
             </button>
           </div>
         </div>

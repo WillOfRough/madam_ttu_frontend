@@ -2,6 +2,7 @@ import { mockFetch } from './mockData';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const DEV = import.meta.env.DEV;
+const USE_MOCK = DEV && !API_BASE && !import.meta.env.VITE_NO_MOCK;
 
 export class ApiError extends Error {
   constructor(message, status, body) {
@@ -16,7 +17,7 @@ export async function apiFetch(path, options = {}) {
   const { body, headers, skipUnauthorizedEvent, ...rest } = options;
 
   // DEV 모드: 백엔드 없이 목 데이터 사용
-  if (DEV && !API_BASE) {
+  if (USE_MOCK) {
     return mockFetch(path, { ...rest, body });
   }
 

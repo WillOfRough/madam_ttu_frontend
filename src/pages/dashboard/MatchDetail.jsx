@@ -88,8 +88,9 @@ function generateTimeOptions(fromTime) {
 function getRefundStatus(meetingDate) {
   if (!meetingDate) return null;
   const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
-  if (hours >= 72) return { label: '환불 가능', type: 'safe', hours: Math.floor(hours) };
-  if (hours >= 24) return { label: '변경만 가능', type: 'warn', hours: Math.floor(hours) };
+  if (hours >= 168) return { label: '전액 환불 가능', type: 'safe', hours: Math.floor(hours) };
+  if (hours >= 72) return { label: '80% 환불 가능', type: 'safe', hours: Math.floor(hours) };
+  if (hours >= 24) return { label: '환불 불가 · 일정 변경 가능', type: 'warn', hours: Math.floor(hours) };
   if (hours > 0) return { label: '환불 불가', type: 'danger', hours: Math.floor(hours) };
   return { label: '미팅 시간 경과', type: 'past', hours: 0 };
 }
@@ -594,9 +595,10 @@ export default function MatchDetail() {
             </span>
           </div>
           <ul className={styles.policyList}>
-            <li>약속일 3일 전까지: 전액 환불 가능</li>
-            <li>약속 24시간 전까지: 일정 변경 가능</li>
-            <li>24시간 미만: 취소 시 환불 불가</li>
+            <li>만남 7일 전까지: 전액 환불 가능</li>
+            <li>만남 3일 전까지: 80% 환불 가능</li>
+            <li>만남 24시간 전까지: 환불 불가</li>
+            <li>약속 24시간 전까지: 일정 1회 변경 가능</li>
           </ul>
         </div>
       )}
@@ -685,11 +687,6 @@ export default function MatchDetail() {
             <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
           )}
         </div>
-      )}
-
-      {/* After Links (completed only) */}
-      {match.status === 'completed' && (
-        <AfterLinkCard match={match} />
       )}
 
       {match.note && (

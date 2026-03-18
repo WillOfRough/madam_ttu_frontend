@@ -31,7 +31,11 @@ export default function ProposalAfter() {
   const [afterProfile, setAfterProfile] = useState(null);
   const [afterError, setAfterError] = useState(null);
   const [waitTimeUp, setWaitTimeUp] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
+
+  // Feedback state
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   // 1. 매칭 상태 확인 → completed일 때만 에프터 상태 조회
   useEffect(() => {
@@ -59,8 +63,25 @@ export default function ProposalAfter() {
           setError(err.message || '정보를 불러올 수 없습니다.');
         }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setInitialLoadDone(true);
+      });
   }, [token]);
+
+  // 거절 후 피드백 데이터 로드 (초기 로드 시에만 - 이미 제출했는지 확인)
+  useEffect(() => {
+    if (initialLoadDone && myAfterResponse === 'rejected') {
+      setFeedbackLoading(true);
+      matchService
+        .getFeedback(token)
+        .then((res) => {
+          if (res?.feedbackAt) setFeedbackSubmitted(true);
+        })
+        .catch(() => {})
+        .finally(() => setFeedbackLoading(false));
+    }
+  }, [initialLoadDone, token]);
 
   // 2시간 대기 타이머: 내가 수락했는데 상대가 거절한 경우
   useEffect(() => {
@@ -78,14 +99,24 @@ export default function ProposalAfter() {
     return () => clearTimeout(timer);
   }, [myAfterResponse, afterStatus, myAfterRespondedAt]);
 
+  // 에프터 응답 (수락/거절)
   const handleAfterRespond = async (response) => {
     setSubmitting(true);
     try {
-      const result = await matchService.respondAfter(token, response);
+      await matchService.respondAfter(token, response);
       setMyAfterResponse(response);
-      setAfterStatus(result.afterStatus);
       if (response === 'accepted') {
         setMyAfterRespondedAt(new Date().toISOString());
+      }
+      // 응답 후 최신 상태를 서버에서 재조회
+      try {
+        const fresh = await matchService.getAfterStatus(token);
+        setAfterStatus(fresh.afterStatus);
+      } catch {
+        // 재조회 실패 시 안전한 기본값 유지
+        if (response === 'rejected') {
+          setAfterStatus('rejected');
+        }
       }
     } catch (err) {
       const code = err.body?.error;
@@ -94,14 +125,19 @@ export default function ProposalAfter() {
     setSubmitting(false);
   };
 
-  const handleAfterReject = () => {
-    setShowFeedback(true);
+  // 피드백 제출 (거절 후 별도 단계)
+  const handleFeedbackSubmit = async (comment) => {
+    setSubmitting(true);
+    try {
+      await matchService.submitFeedback(token, { comment });
+      setFeedbackSubmitted(true);
+    } catch {
+      setAfterError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
+    }
+    setSubmitting(false);
   };
 
-  const handleFeedbackSubmit = async (_feedbackText) => {
-    await handleAfterRespond('rejected');
-  };
-
+  // 에프터 성사 → 프로필 조회
   const handleViewAfterProfile = async () => {
     setSubmitting(true);
     try {
@@ -165,45 +201,52 @@ export default function ProposalAfter() {
     );
   }
 
-  // 성사 → 프로필 보기
+  // ── 상태별 화면 분기 ──
+
+  // 1. 성사 → 프로필 보기
   if (afterProfile) return <AfterProfile profile={afterProfile} />;
 
-  // 양쪽 모두 수락 → 성사 페이지
+  // 2. 양쪽 모두 수락 → 성사 페이지 (프로필+연락처 보기)
   if (afterStatus === 'accepted') {
     return <AfterSuccess onViewProfile={handleViewAfterProfile} submitting={submitting} />;
   }
 
-  // 아직 미응답 → 선택 또는 피드백 입력 페이지
+  // 3. 아직 미응답 → 선택 페이지 (더 만나고 싶어요 / 싫어요)
   if (myAfterResponse === 'pending' || myAfterResponse == null) {
-    if (showFeedback) {
-      return (
-        <AfterFeedback
-          submitted={false}
-          onSubmit={handleFeedbackSubmit}
-          onBack={() => setShowFeedback(false)}
-          submitting={submitting}
-        />
-      );
-    }
     return (
       <AfterChoice
         onAccept={() => handleAfterRespond('accepted')}
-        onReject={handleAfterReject}
+        onReject={() => handleAfterRespond('rejected')}
         submitting={submitting}
       />
     );
   }
 
-  // 내가 거절 → 피드백 완료 페이지
+  // 4. 내가 거절 → 피드백 페이지
   if (myAfterResponse === 'rejected') {
-    return <AfterFeedback submitted />;
+    if (feedbackLoading) {
+      return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
+    }
+    return (
+      <AfterFeedback
+        submitted={feedbackSubmitted}
+        onSubmit={handleFeedbackSubmit}
+        submitting={submitting}
+      />
+    );
   }
 
-  // 내가 수락한 상태
+  // 5. 내가 수락한 상태
   if (myAfterResponse === 'accepted') {
-    if (afterStatus === 'rejected' && waitTimeUp) {
-      return <AfterRejected />;
+    // 5a. 상대가 거절 → 2시간 대기 후 "다음 인연 찾자"
+    if (afterStatus === 'rejected') {
+      if (waitTimeUp) {
+        return <AfterRejected />;
+      }
+      // 2시간 이내 → 대기 화면 (결과 업데이트 안내)
+      return <AfterWaiting />;
     }
+    // 5b. 상대 미응답 → 대기 화면
     return <AfterWaiting />;
   }
 
