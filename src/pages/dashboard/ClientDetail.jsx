@@ -93,7 +93,7 @@ export default function ClientDetail() {
     { label: '키', value: client.height ? `${client.height}cm` : null },
     { label: '직업', value: client.occupation },
     { label: '회사', value: client.company },
-    { label: '회사 위치', value: client.companyLocation },
+    { label: '회사 위치', value: client.workLocation },
     { label: '학력', value: client.education },
     { label: '학교', value: client.school },
     { label: '종교', value: client.religion },
