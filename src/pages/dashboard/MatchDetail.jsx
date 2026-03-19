@@ -607,11 +607,6 @@ export default function MatchDetail() {
         <AfterLinkCard match={match} />
       )}
 
-      {/* After Result Link Card (completed only) */}
-      {match.status === 'completed' && (
-        <AfterResultLinkCard match={match} />
-      )}
-
       {/* After Status Card (completed only) */}
       {match.status === 'completed' && (
         <div className={styles.card}>
@@ -691,6 +686,11 @@ export default function MatchDetail() {
             <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
           )}
         </div>
+      )}
+
+      {/* After Result Link Card (에프터 현황 아래) */}
+      {match.status === 'completed' && (
+        <AfterResultLinkCard match={match} />
       )}
 
       {match.note && (
