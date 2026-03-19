@@ -110,6 +110,7 @@ export default function MatchDetail() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
+  const [showCompleteWarning, setShowCompleteWarning] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
@@ -200,7 +201,26 @@ export default function MatchDetail() {
   };
 
 
+  const isMeetingTimeReached = () => {
+    const schedule = match?.confirmedSchedule;
+    if (!schedule?.date || !schedule?.startTime) return true;
+    const startHHMM = schedule.startTime.slice(0, 5);
+    const [h, m] = startHHMM.split(':').map(Number);
+    const meetingEnd = new Date(schedule.date + 'T00:00:00');
+    meetingEnd.setHours(h + 1, m, 0, 0);
+    return Date.now() >= meetingEnd.getTime();
+  };
+
+  const handleCompleteClick = () => {
+    if (!isMeetingTimeReached()) {
+      setShowCompleteWarning(true);
+    } else {
+      handleCompleteMatch();
+    }
+  };
+
   const handleCompleteMatch = async () => {
+    setShowCompleteWarning(false);
     setActionLoading(true);
     try {
       await matchService.completeMatch(matchId);
@@ -687,7 +707,7 @@ export default function MatchDetail() {
         )}
         {match.status === 'scheduled' && (
           <>
-            <button className={styles.actionBtn} onClick={handleCompleteMatch} disabled={actionLoading}>
+            <button className={styles.actionBtn} onClick={handleCompleteClick} disabled={actionLoading}>
               미팅 완료 처리
             </button>
             <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
@@ -751,6 +771,19 @@ export default function MatchDetail() {
         />
       )}
 
+
+      {/* Complete Match Warning Modal */}
+      {showCompleteWarning && (
+        <ConfirmModal
+          title="미팅 완료 처리"
+          message="아직 미팅 시간 전입니다. 정말 완료 처리하시겠습니까?"
+          confirmLabel="완료 처리"
+          cancelLabel="돌아가기"
+          danger
+          onConfirm={handleCompleteMatch}
+          onCancel={() => setShowCompleteWarning(false)}
+        />
+      )}
 
       {/* Reschedule Confirm Modal */}
       {showReschedule && (
