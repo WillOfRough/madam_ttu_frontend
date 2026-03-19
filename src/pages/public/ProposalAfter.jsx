@@ -212,13 +212,32 @@ export default function ProposalAfter() {
         </div>
       );
     }
-    // 피드백 미제출 → 피드백 폼
+    // 양쪽 모두 응답 완료 (afterStatus === 'rejected') → 피드백 폼
+    if (afterStatus === 'rejected') {
+      return (
+        <AfterFeedback
+          submitted={false}
+          onSubmit={handleFeedbackSubmit}
+          submitting={submitting}
+        />
+      );
+    }
+    // 상대방 미응답 → 완료 메시지만 표시 (피드백은 나중에)
     return (
-      <AfterFeedback
-        submitted={false}
-        onSubmit={handleFeedbackSubmit}
-        submitting={submitting}
-      />
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <h1 className={styles.logo}>Knots & Links</h1>
+          <div className={styles.respondedBanner}>
+            <p className={styles.respondedStatus}>
+              비록 이번 만남은 닿지 못했지만,
+              {myName ? ` ${myName} 님께` : ''} 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
+            </p>
+            <p className={styles.respondedStatus} style={{ marginTop: '12px' }}>
+              저희가{myName ? ` ${myName} 님의` : ''} 진가를 알아볼 분을 꼭 찾아낼게요.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
