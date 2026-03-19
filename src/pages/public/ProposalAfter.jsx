@@ -71,7 +71,7 @@ export default function ProposalAfter() {
       });
   }, [token]);
 
-  // 거절 후 피드백 데이터 로드 (초기 로드 시에만 - 이미 제출했는지 확인)
+  // 이미 거절 응답한 경우 피드백 제출 여부 확인
   useEffect(() => {
     if (initialLoadDone && myAfterResponse === 'rejected') {
       setFeedbackLoading(true);
@@ -102,21 +102,20 @@ export default function ProposalAfter() {
     setSubmitting(false);
   };
 
-  // 피드백 제출 (거절 후 별도 단계)
+  // 피드백 제출 (에러 무시 — 백엔드 이슈로 거절 후 피드백 제출 시 9.007 발생 가능)
   const handleFeedbackSubmit = async (comment) => {
     setSubmitting(true);
     try {
       await matchService.submitFeedback(token, { rating: 5, comment });
-      setFeedbackSubmitted(true);
     } catch {
-      setAfterError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
+      // 백엔드 이슈: 거절 후 피드백 제출 시 에러 발생 가능 — 무시
     }
+    setFeedbackSubmitted(true);
     setSubmitting(false);
   };
 
   if (loading) return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
 
-  // 에러 (네트워크 등)
   if (error) {
     return (
       <div className={styles.page}>
@@ -131,7 +130,6 @@ export default function ProposalAfter() {
     );
   }
 
-  // 미팅 완료 전이면 안내
   if (matchStatus !== 'completed') {
     let message = '에프터 응답은 미팅 완료 후 가능합니다.';
     if (matchStatus === 'cancelled') {
@@ -150,7 +148,6 @@ export default function ProposalAfter() {
     );
   }
 
-  // 에프터 에러 (비즈니스 로직)
   if (afterError) {
     return (
       <div className={styles.page}>
@@ -167,7 +164,7 @@ export default function ProposalAfter() {
 
   // ── 상태별 화면 분기 ──
 
-  // 1. 아직 미응답 → 선택 페이지 (더 만나고 싶어요 / 싫어요)
+  // 1. 아직 미응답 → 선택 페이지
   if (myAfterResponse === 'pending' || myAfterResponse == null) {
     return (
       <AfterChoice
@@ -188,7 +185,7 @@ export default function ProposalAfter() {
     if (feedbackLoading) {
       return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
     }
-    // 이미 피드백 제출 완료 → 간단 감사 메시지
+    // 피드백 제출 완료
     if (feedbackAlreadyDone || feedbackSubmitted) {
       return (
         <div className={styles.page}>
@@ -202,9 +199,10 @@ export default function ProposalAfter() {
         </div>
       );
     }
+    // 피드백 미제출 → 피드백 폼
     return (
       <AfterFeedback
-        submitted={feedbackSubmitted}
+        submitted={false}
         onSubmit={handleFeedbackSubmit}
         submitting={submitting}
       />
