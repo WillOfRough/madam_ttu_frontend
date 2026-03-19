@@ -99,3 +99,26 @@ export async function updateNote(clientId, note) {
     body: { note },
   });
 }
+
+export async function updateClient(clientId, data) {
+  return apiFetch(`/api/v1/clients/${clientId}`, {
+    method: 'PUT',
+    body: data,
+  });
+}
+
+export async function addClientPhotos(clientId, photos = []) {
+  const compressed = await Promise.all(photos.map(compressImage));
+  const formData = new FormData();
+  compressed.forEach((file) => formData.append('photos', file));
+  return apiFetch(`/api/v1/clients/${clientId}/photos`, {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+export async function deleteClientPhoto(clientId, photoId) {
+  return apiFetch(`/api/v1/clients/${clientId}/photos/${photoId}`, {
+    method: 'DELETE',
+  });
+}

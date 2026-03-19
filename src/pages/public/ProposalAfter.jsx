@@ -13,6 +13,7 @@ const AFTER_ERROR_MESSAGES = {
   '9.007': '미팅이 아직 완료되지 않았습니다.',
   '9.012': '에프터가 성사되지 않았습니다.',
   '9.013': '연락처 조회 기간(24시간)이 만료되었습니다.',
+  '9.014': '이 매칭은 종료되었습니다.',
 };
 
 export default function ProposalAfter() {
@@ -66,7 +67,9 @@ export default function ProposalAfter() {
       })
       .catch((err) => {
         const code = err.body?.error;
-        if (AFTER_ERROR_MESSAGES[code]) {
+        if (code === '9.014') {
+          setError('이 매칭은 종료되었습니다.');
+        } else if (AFTER_ERROR_MESSAGES[code]) {
           setAfterError(AFTER_ERROR_MESSAGES[code]);
         } else {
           setError(err.message || '정보를 불러올 수 없습니다.');

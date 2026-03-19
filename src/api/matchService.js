@@ -108,9 +108,9 @@ export async function submitFeedback(token, { rating, comment }) {
   });
 }
 
-export async function overrideAfter(matchId, afterStatus) {
+export async function overrideAfter(matchId, participants) {
   return apiFetch(`/api/v1/matches/${matchId}/after`, {
     method: 'POST',
-    body: { afterStatus },
+    body: { participants },
   });
 }

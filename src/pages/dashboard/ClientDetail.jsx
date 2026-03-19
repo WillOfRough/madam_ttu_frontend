@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, Heart } from 'lucide-react';
+import { ArrowLeft, Check, X, Heart, Edit3, Plus, Trash2 } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
@@ -20,6 +20,12 @@ export default function ClientDetail() {
   const [lightboxUrl, setLightboxUrl] = useState(null);
   const [matchHistory, setMatchHistory] = useState([]);
   const [matchLoading, setMatchLoading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [deletingPhotoId, setDeletingPhotoId] = useState(null);
+  const photoInputRef = useRef(null);
 
   const closeLightbox = useCallback(() => setLightboxUrl(null), []);
 
@@ -69,6 +75,78 @@ export default function ClientDetail() {
       toast.error(err.message || '메모 저장에 실패했습니다.');
     }
     setSaving(false);
+  };
+
+  const startEditing = () => {
+    setEditForm({
+      name: client.name || '',
+      nickname: client.nickname || '',
+      birthDate: client.birthDate || '',
+      phone: client.phone || '',
+      height: client.height || '',
+      occupation: client.occupation || '',
+      company: client.company || '',
+      workLocation: client.workLocation || '',
+      education: client.education || '',
+      location: client.location || '',
+      religion: client.religion || '',
+      mbti: client.mbti || '',
+      hobbies: client.hobbies || '',
+      introduction: client.introduction || '',
+      idealType: client.idealType || '',
+    });
+    setEditing(true);
+  };
+
+  const handleEditSave = async () => {
+    setEditSaving(true);
+    try {
+      const payload = {};
+      for (const [key, value] of Object.entries(editForm)) {
+        if (value !== '' && value != null) {
+          payload[key] = key === 'height' ? Number(value) : value;
+        }
+      }
+      await clientService.updateClient(clientId, payload);
+      toast.success('프로필이 수정되었습니다.');
+      const updated = await clientService.getClientDetail(clientId);
+      setClient(updated);
+      setEditing(false);
+    } catch (err) {
+      toast.error(err.message || '프로필 수정에 실패했습니다.');
+    }
+    setEditSaving(false);
+  };
+
+  const handlePhotoAdd = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setPhotoUploading(true);
+    try {
+      await clientService.addClientPhotos(clientId, files);
+      toast.success('사진이 추가되었습니다.');
+      const updated = await clientService.getClientDetail(clientId);
+      setClient(updated);
+    } catch (err) {
+      toast.error(err.message || '사진 추가에 실패했습니다.');
+    }
+    setPhotoUploading(false);
+    if (photoInputRef.current) photoInputRef.current.value = '';
+  };
+
+  const handlePhotoDelete = async (photoUrl) => {
+    const segments = photoUrl.split('/');
+    const photoId = segments[segments.length - 1];
+    setDeletingPhotoId(photoId);
+    try {
+      await clientService.deleteClientPhoto(clientId, photoId);
+      toast.success('사진이 삭제되었습니다.');
+      const updated = await clientService.getClientDetail(clientId);
+      setClient(updated);
+    } catch (err) {
+      toast.error(err.message || '사진 삭제에 실패했습니다.');
+    }
+    setDeletingPhotoId(null);
   };
 
   if (loading) return (
@@ -147,33 +225,143 @@ export default function ClientDetail() {
         </div>
       )}
 
-      <div className={styles.card}>
-        <h3 className={styles.cardTitle}>기본 정보</h3>
-        <div className={styles.fields}>
-          {fields.map(({ label, value }) => (
-            <div key={label} className={styles.field}>
-              <span className={styles.fieldLabel}>{label}</span>
-              <span className={styles.fieldValue}>{value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {client.photoUrls?.length > 0 && (
+      {editing ? (
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>사진</h3>
-          <div className={styles.photoGallery}>
-            {client.photoUrls.map((url, idx) => (
-              <PhotoThumb
-                key={idx}
-                src={url}
-                alt={`사진 ${idx + 1}`}
-                onClick={(src) => setLightboxUrl(src)}
+          <h3 className={styles.cardTitle}>프로필 수정</h3>
+          <div className={styles.fields}>
+            {[
+              { key: 'name', label: '이름' },
+              { key: 'nickname', label: '닉네임' },
+              { key: 'birthDate', label: '생년월일', placeholder: 'yyyy-MM-dd' },
+              { key: 'phone', label: '연락처', placeholder: '010-XXXX-XXXX' },
+              { key: 'height', label: '키', type: 'number' },
+              { key: 'occupation', label: '직업' },
+              { key: 'company', label: '회사' },
+              { key: 'workLocation', label: '회사 위치' },
+              { key: 'education', label: '학력' },
+              { key: 'location', label: '거주지' },
+              { key: 'religion', label: '종교' },
+              { key: 'mbti', label: 'MBTI', placeholder: 'INTJ' },
+              { key: 'hobbies', label: '취미' },
+            ].map(({ key, label, type, placeholder }) => (
+              <div key={key} className={styles.field}>
+                <span className={styles.fieldLabel}>{label}</span>
+                <input
+                  className={styles.noteInput}
+                  style={{ padding: '6px 8px', minHeight: 'auto' }}
+                  type={type || 'text'}
+                  value={editForm[key] || ''}
+                  onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                />
+              </div>
+            ))}
+            <div className={styles.field} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              <span className={styles.fieldLabel}>자기소개</span>
+              <textarea
+                className={styles.noteInput}
+                rows={3}
+                value={editForm.introduction || ''}
+                onChange={(e) => setEditForm((f) => ({ ...f, introduction: e.target.value }))}
+                maxLength={1000}
               />
+            </div>
+            <div className={styles.field} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+              <span className={styles.fieldLabel}>이상형</span>
+              <textarea
+                className={styles.noteInput}
+                rows={3}
+                value={editForm.idealType || ''}
+                onChange={(e) => setEditForm((f) => ({ ...f, idealType: e.target.value }))}
+                maxLength={500}
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button className={styles.saveBtn} onClick={handleEditSave} disabled={editSaving}>
+              {editSaving ? '저장 중...' : '저장'}
+            </button>
+            <button className={styles.saveBtn} style={{ background: '#666' }} onClick={() => setEditing(false)}>
+              취소
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            기본 정보
+            {client.isOwner && (
+              <button
+                onClick={startEditing}
+                style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary, #6366f1)', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13 }}
+              >
+                <Edit3 size={14} /> 수정
+              </button>
+            )}
+          </h3>
+          <div className={styles.fields}>
+            {fields.map(({ label, value }) => (
+              <div key={label} className={styles.field}>
+                <span className={styles.fieldLabel}>{label}</span>
+                <span className={styles.fieldValue}>{value}</span>
+              </div>
             ))}
           </div>
         </div>
       )}
+
+      <div className={styles.card}>
+        <h3 className={styles.cardTitle}>
+          사진
+          {client.isOwner && (client.photoUrls?.length || 0) < 5 && (
+            <>
+              <button
+                onClick={() => photoInputRef.current?.click()}
+                disabled={photoUploading}
+                style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary, #6366f1)', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13 }}
+              >
+                <Plus size={14} /> {photoUploading ? '업로드 중...' : '추가'}
+              </button>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handlePhotoAdd}
+                style={{ display: 'none' }}
+              />
+            </>
+          )}
+        </h3>
+        {client.photoUrls?.length > 0 ? (
+          <div className={styles.photoGallery}>
+            {client.photoUrls.map((url, idx) => {
+              const segments = url.split('/');
+              const photoId = segments[segments.length - 1];
+              return (
+                <div key={idx} style={{ position: 'relative' }}>
+                  <PhotoThumb
+                    src={url}
+                    alt={`사진 ${idx + 1}`}
+                    onClick={(src) => setLightboxUrl(src)}
+                  />
+                  {client.isOwner && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handlePhotoDelete(url); }}
+                      disabled={deletingPhotoId === photoId}
+                      style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p style={{ color: '#888', fontSize: 14 }}>등록된 사진이 없습니다.</p>
+        )}
+      </div>
 
       {client.introduction && (
         <div className={styles.card}>

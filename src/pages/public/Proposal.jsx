@@ -9,6 +9,7 @@ const AFTER_ERROR_MESSAGES = {
   '9.007': '미팅이 아직 완료되지 않았습니다.',
   '9.012': '에프터가 성사되지 않았습니다.',
   '9.013': '연락처 조회 기간(24시간)이 만료되었습니다.',
+  '9.014': '이 매칭은 종료되었습니다.',
 };
 
 const OATH_ITEMS = [
@@ -106,7 +107,14 @@ export default function Proposal() {
     matchService
       .getProposal(token)
       .then((res) => setData(res))
-      .catch((err) => setError(err.message || '프로포절을 불러올 수 없습니다.'))
+      .catch((err) => {
+        const code = err.body?.error;
+        if (code === '9.014') {
+          setError('이 매칭은 종료되었습니다.');
+        } else {
+          setError(err.message || '프로포절을 불러올 수 없습니다.');
+        }
+      })
       .finally(() => setLoading(false));
   }, [token]);
 

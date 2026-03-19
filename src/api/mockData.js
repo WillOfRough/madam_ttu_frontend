@@ -1150,6 +1150,28 @@ export async function mockFetch(path, options = {}) {
     return { success: true };
   }
 
+  // PUT /api/v1/clients/:id (update profile)
+  if (method === 'PUT' && /^\/api\/v1\/clients\/[^/]+$/.test(pathname)) {
+    const id = pathname.split('/').pop();
+    const body = options.body || {};
+    const c = clients.find((cl) => cl.id === id);
+    if (!c) throw Object.assign(new Error('해당 Client를 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    for (const [key, value] of Object.entries(body)) {
+      if (value != null) c[key] = value;
+    }
+    return { success: true, message: '프로필이 수정되었습니다.' };
+  }
+
+  // POST /api/v1/clients/:id/photos (add photos)
+  if (method === 'POST' && /^\/api\/v1\/clients\/[^/]+\/photos$/.test(pathname)) {
+    return { success: true, message: '사진이 추가되었습니다.' };
+  }
+
+  // DELETE /api/v1/clients/:id/photos/:photoId (delete photo)
+  if (method === 'DELETE' && /^\/api\/v1\/clients\/[^/]+\/photos\/[^/]+$/.test(pathname)) {
+    return { success: true, message: '사진이 삭제되었습니다.' };
+  }
+
   // ── Match APIs ──
 
   // POST /api/v1/matches (create) → proposal_sent
@@ -1315,7 +1337,7 @@ export async function mockFetch(path, options = {}) {
       throw Object.assign(new Error('아직 상대방 응답을 기다리고 있습니다.'), { status: 403, body: { error: '9.005' } });
     }
     if (m.status === 'cancelled') {
-      throw Object.assign(new Error('종료된 매칭입니다.'), { status: 410, body: { error: '9.003' } });
+      throw Object.assign(new Error('종료된 매칭입니다.'), { status: 410, body: { error: '9.014' } });
     }
 
     const birthYear = cp?.birthDate ? new Date(cp.birthDate).getFullYear() : null;
@@ -1513,13 +1535,23 @@ export async function mockFetch(path, options = {}) {
     return { rating: feedbacks[token].rating, comment: feedbacks[token].comment, feedbackAt: feedbacks[token].feedbackAt };
   }
 
-  // POST /api/v1/matches/:matchId/after (manager override)
+  // POST /api/v1/matches/:matchId/after (manager override - per client)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/after$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const body = options.body || {};
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    m.afterStatus = body.afterStatus;
+    if (body.participants) {
+      for (const p of body.participants) {
+        if (p.clientId === m.clientA.clientId) m.clientA.afterResponse = p.afterResponse;
+        if (p.clientId === m.clientB.clientId) m.clientB.afterResponse = p.afterResponse;
+      }
+      const aResp = m.clientA.afterResponse;
+      const bResp = m.clientB.afterResponse;
+      if (aResp === 'accepted' && bResp === 'accepted') m.afterStatus = 'accepted';
+      else if (aResp === 'rejected' || bResp === 'rejected') m.afterStatus = 'rejected';
+      else m.afterStatus = 'pending';
+    }
     return { success: true, message: '에프터 상태가 변경되었습니다.' };
   }
 
