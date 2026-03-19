@@ -65,12 +65,19 @@ export default function ProposalAfterResult() {
       <div className={styles.page}>
         <div className={styles.container}>
           <h1 className={styles.logo}>Knots & Links</h1>
-          <div className={styles.afterCard}>
-            <p className={styles.afterDesc}>
+          <div className={styles.respondedBanner}>
+            <p className={styles.respondedLabel}>에프터 결과 안내</p>
+            <p className={styles.respondedStatus}>
               인연을 찾는 과정이 늘 쉽지는 않죠.
-              <br />비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
+            </p>
+          </div>
+          <div className={styles.respondedBanner}>
+            <p className={styles.respondedStatus}>
+              비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
               {myName ? ` ${myName}` : ''} 님께 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
-              <br />저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
+            </p>
+            <p className={styles.respondedStatus} style={{ marginTop: 12 }}>
+              저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
             </p>
           </div>
         </div>

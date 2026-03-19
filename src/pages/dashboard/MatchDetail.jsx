@@ -109,8 +109,7 @@ export default function MatchDetail() {
   const [selectedTimeId, setSelectedTimeId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showAfterOverride, setShowAfterOverride] = useState(false);
-  const [afterOverrideA, setAfterOverrideA] = useState('');
-  const [afterOverrideB, setAfterOverrideB] = useState('');
+  const [afterOverrideValue, setAfterOverrideValue] = useState('');
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
 
@@ -203,16 +202,13 @@ export default function MatchDetail() {
   };
 
   const handleAfterOverride = async () => {
-    if (!afterOverrideA && !afterOverrideB) return;
-    const participants = [];
-    if (afterOverrideA) {
-      participants.push({ clientId: match.clientA.clientId, afterResponse: afterOverrideA });
-    }
-    if (afterOverrideB) {
-      participants.push({ clientId: match.clientB.clientId, afterResponse: afterOverrideB });
-    }
+    if (!afterOverrideValue) return;
     setActionLoading(true);
     try {
+      const participants = [
+        { clientId: match.clientA.clientId, afterResponse: afterOverrideValue },
+        { clientId: match.clientB.clientId, afterResponse: afterOverrideValue },
+      ];
       await matchService.overrideAfter(matchId, participants);
       toast.success('에프터 상태가 변경되었습니다.');
       reload();
@@ -221,8 +217,7 @@ export default function MatchDetail() {
     }
     setActionLoading(false);
     setShowAfterOverride(false);
-    setAfterOverrideA('');
-    setAfterOverrideB('');
+    setAfterOverrideValue('');
   };
 
   const handleCompleteMatch = async () => {
@@ -659,7 +654,7 @@ export default function MatchDetail() {
               </div>
               <button
                 className={styles.actionBtn}
-                onClick={() => { setAfterOverrideA(match.clientA.afterResponse || ''); setAfterOverrideB(match.clientB.afterResponse || ''); setShowAfterOverride(true); }}
+                onClick={() => { setAfterOverrideValue(match.afterStatus || 'pending'); setShowAfterOverride(true); }}
                 style={{ marginTop: 12 }}
               >
                 에프터 상태 변경
@@ -789,29 +784,17 @@ export default function MatchDetail() {
         <div className={styles.overlay} onClick={() => setShowAfterOverride(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>에프터 상태 변경</h3>
-            <p className={styles.modalDesc}>회원별로 에프터 응답을 개별 변경할 수 있습니다.</p>
+            <p className={styles.modalDesc}>이 매칭의 에프터 상태를 변경합니다.</p>
             <div className={styles.modalField}>
-              <label className={styles.modalLabel}>{match.clientA.clientName} (A)</label>
+              <label className={styles.modalLabel}>상태</label>
               <select
                 className={styles.modalInput}
-                value={afterOverrideA}
-                onChange={(e) => setAfterOverrideA(e.target.value)}
+                value={afterOverrideValue}
+                onChange={(e) => setAfterOverrideValue(e.target.value)}
               >
-                <option value="">변경 안 함</option>
-                <option value="accepted">만나볼래요 (accepted)</option>
-                <option value="rejected">괜찮아요 (rejected)</option>
-              </select>
-            </div>
-            <div className={styles.modalField}>
-              <label className={styles.modalLabel}>{match.clientB.clientName} (B)</label>
-              <select
-                className={styles.modalInput}
-                value={afterOverrideB}
-                onChange={(e) => setAfterOverrideB(e.target.value)}
-              >
-                <option value="">변경 안 함</option>
-                <option value="accepted">만나볼래요 (accepted)</option>
-                <option value="rejected">괜찮아요 (rejected)</option>
+                <option value="pending">대기</option>
+                <option value="accepted">성사</option>
+                <option value="rejected">미성사</option>
               </select>
             </div>
             <div className={styles.modalActions}>
@@ -819,7 +802,7 @@ export default function MatchDetail() {
               <button
                 className={styles.confirmModalBtn}
                 onClick={handleAfterOverride}
-                disabled={actionLoading || (!afterOverrideA && !afterOverrideB)}
+                disabled={actionLoading || !afterOverrideValue}
               >
                 {actionLoading ? '변경 중...' : '상태 변경'}
               </button>

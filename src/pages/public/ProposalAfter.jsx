@@ -188,19 +188,15 @@ export default function ProposalAfter() {
     if (feedbackLoading) {
       return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
     }
-    // 이미 피드백 제출 완료 → 격려 메시지
+    // 이미 피드백 제출 완료 → 간단 감사 메시지
     if (feedbackAlreadyDone || feedbackSubmitted) {
       return (
         <div className={styles.page}>
           <div className={styles.container}>
             <h1 className={styles.logo}>Knots & Links</h1>
-            <div className={styles.afterCard}>
-              <p className={styles.afterDesc}>
-                인연을 찾는 과정이 늘 쉽지는 않죠.
-                <br />비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
-                {myName ? ` ${myName}` : ''} 님께 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
-                <br />저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
-              </p>
+            <div className={styles.respondedBanner}>
+              <p className={styles.respondedLabel}>피드백을 제출했습니다</p>
+              <p className={styles.respondedStatus}>감사합니다.</p>
             </div>
           </div>
         </div>
