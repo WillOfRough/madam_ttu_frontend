@@ -21,6 +21,7 @@ import NotFound from './pages/public/NotFound';
 import ProposalProfile from './pages/public/ProposalProfile';
 import ProposalSchedule from './pages/public/ProposalSchedule';
 import ProposalAfter from './pages/public/ProposalAfter';
+import ProposalAfterResult from './pages/public/ProposalAfterResult';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/proposal/:token/available-times" element={<ProposalSchedule />} />
         <Route path="/proposal/:token/schedule" element={<ProposalSchedule />} />
         <Route path="/proposal/:token/after" element={<ProposalAfter />} />
+        <Route path="/proposal/:token/after/result" element={<ProposalAfterResult />} />
 
         {/* Dashboard (auth required) */}
         <Route element={<RequireAuth />}>

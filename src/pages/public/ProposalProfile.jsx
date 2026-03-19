@@ -38,7 +38,14 @@ export default function ProposalProfile() {
           }).catch(() => {});
         }
       })
-      .catch((err) => setError(err.message || '프로포절을 불러올 수 없습니다.'))
+      .catch((err) => {
+        const code = err.body?.error;
+        if (code === '9.014') {
+          setError('이 매칭은 종료되었습니다.');
+        } else {
+          setError(err.message || '프로포절을 불러올 수 없습니다.');
+        }
+      })
       .finally(() => setLoading(false));
   }, [token]);
 

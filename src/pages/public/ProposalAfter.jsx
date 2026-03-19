@@ -4,15 +4,10 @@ import * as matchService from '../../api/matchService';
 import AfterChoice from './after/AfterChoice';
 import AfterFeedback from './after/AfterFeedback';
 import AfterWaiting from './after/AfterWaiting';
-import AfterRejected from './after/AfterRejected';
-import AfterSuccess from './after/AfterSuccess';
-import AfterProfile from './after/AfterProfile';
 import styles from './Proposal.module.css';
 
 const AFTER_ERROR_MESSAGES = {
   '9.007': '미팅이 아직 완료되지 않았습니다.',
-  '9.012': '에프터가 성사되지 않았습니다.',
-  '9.013': '연락처 조회 기간(24시간)이 만료되었습니다.',
   '9.014': '이 매칭은 종료되었습니다.',
 };
 
@@ -26,13 +21,10 @@ export default function ProposalAfter() {
   const [matchStatus, setMatchStatus] = useState(null);
 
   // After state
+  const [myName, setMyName] = useState('');
   const [afterStatus, setAfterStatus] = useState(null);
-  const [resultAvailable, setResultAvailable] = useState(false);
   const [myAfterResponse, setMyAfterResponse] = useState(null);
-  const [myAfterRespondedAt, setMyAfterRespondedAt] = useState(null);
-  const [afterProfile, setAfterProfile] = useState(null);
   const [afterError, setAfterError] = useState(null);
-  const [waitTimeUp, setWaitTimeUp] = useState(false);
 
   // Feedback state
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
@@ -53,18 +45,14 @@ export default function ProposalAfter() {
       })
       .then((res) => {
         if (res) {
+          setMyName(res.myName || '');
           setAfterStatus(res.afterStatus);
-          setResultAvailable(res.resultAvailable || false);
-          // 백엔드 버그 대응: 매니저가 에프터 상태를 rejected로 변경하면
-          // 양쪽 myAfterResponse를 모두 rejected로 덮어씀
-          // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
           const savedResponse = localStorage.getItem(`after_response_${token}`);
           if (savedResponse && res.afterStatus === 'rejected' && res.myAfterResponse === 'rejected') {
             setMyAfterResponse(savedResponse);
           } else {
             setMyAfterResponse(res.myAfterResponse);
           }
-          setMyAfterRespondedAt(res.myAfterRespondedAt || null);
         }
       })
       .catch((err) => {
@@ -100,47 +88,13 @@ export default function ProposalAfter() {
     }
   }, [initialLoadDone, token]);
 
-  // 2시간 대기 타이머: 내가 수락했는데 상대가 거절한 경우
-  useEffect(() => {
-    if (myAfterResponse !== 'accepted' || afterStatus !== 'rejected' || !myAfterRespondedAt) {
-      setWaitTimeUp(false);
-      return;
-    }
-    const TWO_HOURS = 2 * 60 * 60 * 1000;
-    const elapsed = Date.now() - new Date(myAfterRespondedAt).getTime();
-    if (elapsed >= TWO_HOURS) {
-      setWaitTimeUp(true);
-      return;
-    }
-    const timer = setTimeout(() => setWaitTimeUp(true), TWO_HOURS - elapsed);
-    return () => clearTimeout(timer);
-  }, [myAfterResponse, afterStatus, myAfterRespondedAt]);
-
   // 에프터 응답 (수락/거절)
   const handleAfterRespond = async (response) => {
     setSubmitting(true);
     try {
       await matchService.respondAfter(token, response);
-      // 백엔드 버그 대응: 원래 응답을 localStorage에 저장
-      // 매니저가 에프터 상태를 rejected로 변경하면 양쪽 myAfterResponse가
-      // 모두 rejected로 덮어씌워지므로 원본 응답을 보존
       localStorage.setItem(`after_response_${token}`, response);
       setMyAfterResponse(response);
-      if (response === 'accepted') {
-        setMyAfterRespondedAt(new Date().toISOString());
-      }
-      // 응답 후 최신 상태를 서버에서 재조회
-      try {
-        const fresh = await matchService.getAfterStatus(token);
-        setAfterStatus(fresh.afterStatus);
-        setResultAvailable(fresh.resultAvailable || false);
-      } catch {
-        // 재조회 실패 시 안전한 기본값 유지
-        if (response === 'rejected') {
-          setAfterStatus('rejected');
-          setResultAvailable(true);
-        }
-      }
     } catch (err) {
       const code = err.body?.error;
       setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '응답 처리에 실패했습니다.');
@@ -156,23 +110,6 @@ export default function ProposalAfter() {
       setFeedbackSubmitted(true);
     } catch {
       setAfterError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
-    }
-    setSubmitting(false);
-  };
-
-  // 에프터 결과 조회 → 성사 시 프로필 표시
-  const handleViewAfterResult = async () => {
-    setSubmitting(true);
-    try {
-      const result = await matchService.getAfterResult(token);
-      if (result.afterStatus === 'accepted' && result.counterpartProfile) {
-        setAfterProfile(result.counterpartProfile);
-      } else if (result.afterStatus === 'rejected') {
-        setAfterStatus('rejected');
-      }
-    } catch (err) {
-      const code = err.body?.error;
-      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '결과 조회에 실패했습니다.');
     }
     setSubmitting(false);
   };
@@ -230,15 +167,7 @@ export default function ProposalAfter() {
 
   // ── 상태별 화면 분기 ──
 
-  // 1. 성사 → 프로필 보기
-  if (afterProfile) return <AfterProfile profile={afterProfile} />;
-
-  // 2. 결과 확인 가능 + 성사 → 성사 페이지 (프로필+연락처 보기)
-  if (resultAvailable && afterStatus === 'accepted') {
-    return <AfterSuccess onViewProfile={handleViewAfterResult} submitting={submitting} />;
-  }
-
-  // 3. 아직 미응답 → 선택 페이지 (더 만나고 싶어요 / 싫어요)
+  // 1. 아직 미응답 → 선택 페이지 (더 만나고 싶어요 / 싫어요)
   if (myAfterResponse === 'pending' || myAfterResponse == null) {
     return (
       <AfterChoice
@@ -249,24 +178,29 @@ export default function ProposalAfter() {
     );
   }
 
-  // 4. 내가 거절 → 피드백 페이지 (이미 제출한 경우 만료 화면)
+  // 2. 내가 수락 → 응답 완료 대기 메시지
+  if (myAfterResponse === 'accepted') {
+    return <AfterWaiting />;
+  }
+
+  // 3. 내가 거절 → 피드백 페이지
   if (myAfterResponse === 'rejected') {
     if (feedbackLoading) {
       return <div className={styles.loadingPage}>정보를 불러오는 중...</div>;
     }
-    // 새로고침 시 이미 피드백 제출 완료 → 만료 화면
-    if (feedbackAlreadyDone) {
+    // 이미 피드백 제출 완료 → 격려 메시지
+    if (feedbackAlreadyDone || feedbackSubmitted) {
       return (
         <div className={styles.page}>
           <div className={styles.container}>
             <h1 className={styles.logo}>Knots & Links</h1>
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>아쉽지만 이번엔 인연이 아니였나봐요</p>
-              <p className={styles.respondedStatus}>더 좋은 매칭으로 다시 돌아올게요!</p>
-            </div>
-            <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>만료된 링크입니다</p>
-              <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
+            <div className={styles.afterCard}>
+              <p className={styles.afterDesc}>
+                인연을 찾는 과정이 늘 쉽지는 않죠.
+                <br />비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
+                {myName ? ` ${myName}` : ''} 님께 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
+                <br />저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
+              </p>
             </div>
           </div>
         </div>
@@ -279,20 +213,6 @@ export default function ProposalAfter() {
         submitting={submitting}
       />
     );
-  }
-
-  // 5. 내가 수락한 상태
-  if (myAfterResponse === 'accepted') {
-    // 5a. 결과 나옴 + 미성사 → 2시간 대기 후 "다음 인연 찾자"
-    if (resultAvailable && afterStatus === 'rejected') {
-      if (waitTimeUp) {
-        return <AfterRejected />;
-      }
-      // 2시간 이내 → 대기 화면 (결과 업데이트 안내)
-      return <AfterWaiting />;
-    }
-    // 5b. 아직 결과 없음(상대 미응답) → 대기 화면
-    return <AfterWaiting />;
   }
 
   return null;

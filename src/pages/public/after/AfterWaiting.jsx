@@ -6,11 +6,10 @@ export default function AfterWaiting() {
       <div className={styles.container}>
         <h1 className={styles.logo}>Knots & Links</h1>
         <div className={styles.respondedBanner}>
-          <p className={styles.respondedLabel}>응답이 접수되었습니다</p>
+          <p className={styles.respondedLabel}>응답이 완료되었습니다</p>
           <p className={styles.respondedStatus}>
-            상대방의 응답을 기다리고 있습니다.
-            <br />이 페이지에 결과가 업데이트되니
-            <br />잠시 후 다시 확인해주세요.
+            결과를 위해 잠시만 기다려주세요.
+            <br />매니저가 결과 링크를 보내드릴 예정입니다.
           </p>
         </div>
       </div>
