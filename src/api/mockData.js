@@ -1447,11 +1447,13 @@ export async function mockFetch(path, options = {}) {
     const counterpartClient = proposal.counterpart;
     const myAfterResponse = participant.afterResponse || 'pending';
     const counterpartAfterResponse = counterpart.afterResponse || 'pending';
+    const currentAfterStatus = m.afterStatus || 'pending';
     return {
       myName: participant.clientName,
       counterpartName: counterpartClient?.nickname || counterpartClient?.name || '',
       matchStatus: m.status,
-      afterStatus: m.afterStatus || 'pending',
+      afterStatus: currentAfterStatus,
+      resultAvailable: currentAfterStatus === 'accepted' || currentAfterStatus === 'rejected',
       myAfterResponse,
       myAfterRespondedAt: participant.afterRespondedAt || null,
       counterpartAfterResponse,
@@ -1505,6 +1507,42 @@ export async function mockFetch(path, options = {}) {
       hobbies: cp.hobbies,
       introduction: cp.introduction,
       photoUrls: (cp.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
+    };
+  }
+
+  // GET /api/v1/proposals/:token/after/result
+  if (method === 'GET' && /^\/api\/v1\/proposals\/[^/]+\/after\/result$/.test(pathname)) {
+    const token = pathname.split('/').slice(-3, -2)[0];
+    const proposal = getProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('프로포절을 찾을 수 없습니다.'), { status: 404 });
+    const m = proposal.match;
+    if (m.status !== 'completed') throw Object.assign(new Error('완료된 매칭이 아닙니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    const currentAfterStatus = m.afterStatus || 'pending';
+    if (currentAfterStatus === 'pending') throw Object.assign(new Error('아직 양쪽 응답이 완료되지 않았습니다.'), { status: 400, body: { error: 'MATCH_INVALID_STATUS' } });
+    if (currentAfterStatus === 'rejected') {
+      return { afterStatus: 'rejected', counterpartProfile: null };
+    }
+    const cp = proposal.counterpart;
+    return {
+      afterStatus: 'accepted',
+      counterpartProfile: cp ? {
+        name: cp.name,
+        phone: cp.phone,
+        nickname: cp.nickname,
+        gender: cp.gender,
+        age: cp.birthDate ? new Date().getFullYear() - new Date(cp.birthDate).getFullYear() : null,
+        height: cp.height,
+        occupation: cp.occupation,
+        company: cp.company,
+        workLocation: cp.workLocation,
+        education: cp.education,
+        location: cp.location,
+        religion: cp.religion,
+        mbti: cp.mbti,
+        hobbies: cp.hobbies,
+        introduction: cp.introduction,
+        photoUrls: (cp.photoIds || []).map((id) => `/api/v1/proposals/${token}/photos/${id}`),
+      } : null,
     };
   }
 

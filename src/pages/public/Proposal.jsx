@@ -84,6 +84,7 @@ export default function Proposal() {
 
   // After
   const [afterStatus, setAfterStatus] = useState(null);
+  const [resultAvailable, setResultAvailable] = useState(false);
   const [myAfterResponse, setMyAfterResponse] = useState(null);
   const [afterProfile, setAfterProfile] = useState(null);
   const [afterError, setAfterError] = useState(null);
@@ -133,6 +134,7 @@ export default function Proposal() {
         .getAfterStatus(token)
         .then((res) => {
           setAfterStatus(res.afterStatus);
+          setResultAvailable(res.resultAvailable || false);
           // 백엔드 버그 대응: 한쪽이 rejected하면 양쪽 myAfterResponse를 모두 rejected로 덮어씀
           // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
           const savedResponse = localStorage.getItem(`after_response_${token}`);
@@ -190,6 +192,7 @@ export default function Proposal() {
       try {
         const status = await matchService.getAfterStatus(token);
         setAfterStatus(status.afterStatus);
+        setResultAvailable(status.resultAvailable || false);
       } catch {
         // 조회 실패 시 안전한 기본값
         setAfterStatus('pending');
@@ -201,14 +204,19 @@ export default function Proposal() {
     setSubmitting(false);
   };
 
-  const handleViewAfterProfile = async () => {
+  const handleViewAfterResult = async () => {
     setSubmitting(true);
     try {
-      const profile = await matchService.getAfterProfile(token);
-      setAfterProfile(profile);
+      const result = await matchService.getAfterResult(token);
+      if (result.afterStatus === 'accepted' && result.counterpartProfile) {
+        setAfterProfile(result.counterpartProfile);
+      } else if (result.afterStatus === 'rejected') {
+        setAfterStatus('rejected');
+        setResultAvailable(true);
+      }
     } catch (err) {
       const code = err.body?.error;
-      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '프로필 조회에 실패했습니다.');
+      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '결과 조회에 실패했습니다.');
     }
     setSubmitting(false);
   };
@@ -704,8 +712,8 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 2. "만나볼래요" 선택 + 상대 미응답 → 대기 애니메이션 */}
-          {!afterError && myAfterResponse === 'accepted' && afterStatus === 'pending' && (
+          {/* 2. "만나볼래요" 선택 + 결과 아직 없음 → 대기 애니메이션 */}
+          {!afterError && myAfterResponse === 'accepted' && !resultAvailable && (
             <div className={styles.afterWaitingCard}>
               <div className={styles.afterWaitingIcon}>
                 <span className={styles.afterWaitingDot} />
@@ -717,8 +725,8 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 3. "만나볼래요" 선택 + 상대 거절 → 미성사 안내 + 피드백 버튼 */}
-          {!afterError && afterStatus === 'rejected' && myAfterResponse === 'accepted' && (
+          {/* 3. "만나볼래요" 선택 + 결과 나옴 + 미성사 → 미성사 안내 + 피드백 버튼 */}
+          {!afterError && resultAvailable && afterStatus === 'rejected' && myAfterResponse === 'accepted' && (
             <>
               <div className={styles.respondedBanner}>
                 <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
@@ -836,13 +844,13 @@ export default function Proposal() {
           )}
 
           {/* 6. 양쪽 완료 → 성사 */}
-          {!afterError && afterStatus === 'accepted' && (
+          {!afterError && resultAvailable && afterStatus === 'accepted' && (
             <div className={styles.afterSuccessBanner}>
               <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
               <p className={styles.respondedStatus}>양쪽 모두 다시 만나고 싶어합니다.</p>
               <button
                 className={styles.afterProfileBtn}
-                onClick={handleViewAfterProfile}
+                onClick={handleViewAfterResult}
                 disabled={submitting}
               >
                 {submitting ? '조회 중...' : '상대 연락처 보기'}

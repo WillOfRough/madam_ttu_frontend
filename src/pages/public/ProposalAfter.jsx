@@ -27,6 +27,7 @@ export default function ProposalAfter() {
 
   // After state
   const [afterStatus, setAfterStatus] = useState(null);
+  const [resultAvailable, setResultAvailable] = useState(false);
   const [myAfterResponse, setMyAfterResponse] = useState(null);
   const [myAfterRespondedAt, setMyAfterRespondedAt] = useState(null);
   const [afterProfile, setAfterProfile] = useState(null);
@@ -53,6 +54,7 @@ export default function ProposalAfter() {
       .then((res) => {
         if (res) {
           setAfterStatus(res.afterStatus);
+          setResultAvailable(res.resultAvailable || false);
           // 백엔드 버그 대응: 매니저가 에프터 상태를 rejected로 변경하면
           // 양쪽 myAfterResponse를 모두 rejected로 덮어씀
           // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
@@ -131,10 +133,12 @@ export default function ProposalAfter() {
       try {
         const fresh = await matchService.getAfterStatus(token);
         setAfterStatus(fresh.afterStatus);
+        setResultAvailable(fresh.resultAvailable || false);
       } catch {
         // 재조회 실패 시 안전한 기본값 유지
         if (response === 'rejected') {
           setAfterStatus('rejected');
+          setResultAvailable(true);
         }
       }
     } catch (err) {
@@ -156,15 +160,19 @@ export default function ProposalAfter() {
     setSubmitting(false);
   };
 
-  // 에프터 성사 → 프로필 조회
-  const handleViewAfterProfile = async () => {
+  // 에프터 결과 조회 → 성사 시 프로필 표시
+  const handleViewAfterResult = async () => {
     setSubmitting(true);
     try {
-      const profile = await matchService.getAfterProfile(token);
-      setAfterProfile(profile);
+      const result = await matchService.getAfterResult(token);
+      if (result.afterStatus === 'accepted' && result.counterpartProfile) {
+        setAfterProfile(result.counterpartProfile);
+      } else if (result.afterStatus === 'rejected') {
+        setAfterStatus('rejected');
+      }
     } catch (err) {
       const code = err.body?.error;
-      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '프로필 조회에 실패했습니다.');
+      setAfterError(AFTER_ERROR_MESSAGES[code] || err.message || '결과 조회에 실패했습니다.');
     }
     setSubmitting(false);
   };
@@ -225,9 +233,9 @@ export default function ProposalAfter() {
   // 1. 성사 → 프로필 보기
   if (afterProfile) return <AfterProfile profile={afterProfile} />;
 
-  // 2. 양쪽 모두 수락 → 성사 페이지 (프로필+연락처 보기)
-  if (afterStatus === 'accepted') {
-    return <AfterSuccess onViewProfile={handleViewAfterProfile} submitting={submitting} />;
+  // 2. 결과 확인 가능 + 성사 → 성사 페이지 (프로필+연락처 보기)
+  if (resultAvailable && afterStatus === 'accepted') {
+    return <AfterSuccess onViewProfile={handleViewAfterResult} submitting={submitting} />;
   }
 
   // 3. 아직 미응답 → 선택 페이지 (더 만나고 싶어요 / 싫어요)
@@ -275,15 +283,15 @@ export default function ProposalAfter() {
 
   // 5. 내가 수락한 상태
   if (myAfterResponse === 'accepted') {
-    // 5a. 상대가 거절 → 2시간 대기 후 "다음 인연 찾자"
-    if (afterStatus === 'rejected') {
+    // 5a. 결과 나옴 + 미성사 → 2시간 대기 후 "다음 인연 찾자"
+    if (resultAvailable && afterStatus === 'rejected') {
       if (waitTimeUp) {
         return <AfterRejected />;
       }
       // 2시간 이내 → 대기 화면 (결과 업데이트 안내)
       return <AfterWaiting />;
     }
-    // 5b. 상대 미응답 → 대기 화면
+    // 5b. 아직 결과 없음(상대 미응답) → 대기 화면
     return <AfterWaiting />;
   }
 

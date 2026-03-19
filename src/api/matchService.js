@@ -95,6 +95,10 @@ export async function getAfterProfile(token) {
   return apiFetch(`/api/v1/proposals/${token}/after/profile`, { method: 'GET' });
 }
 
+export async function getAfterResult(token) {
+  return apiFetch(`/api/v1/proposals/${token}/after/result`, { method: 'GET' });
+}
+
 // ── Feedback APIs (공개) ──
 
 export async function getFeedback(token) {
