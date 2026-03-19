@@ -71,9 +71,15 @@ export default function ProposalAfter() {
       });
   }, [token]);
 
-  // 이미 거절 응답한 경우 피드백 제출 여부 확인
+  // 이미 거절 응답한 경우 피드백 제출 여부 확인 (서버 + localStorage)
   useEffect(() => {
     if (initialLoadDone && myAfterResponse === 'rejected') {
+      // localStorage에 피드백 제출 기록이 있으면 바로 완료 처리
+      if (localStorage.getItem(`after_feedback_${token}`)) {
+        setFeedbackSubmitted(true);
+        setFeedbackAlreadyDone(true);
+        return;
+      }
       setFeedbackLoading(true);
       matchService
         .getFeedback(token)
@@ -81,6 +87,7 @@ export default function ProposalAfter() {
           if (res?.feedbackAt) {
             setFeedbackSubmitted(true);
             setFeedbackAlreadyDone(true);
+            localStorage.setItem(`after_feedback_${token}`, 'true');
           }
         })
         .catch(() => {})
@@ -110,6 +117,7 @@ export default function ProposalAfter() {
     } catch {
       // 백엔드 이슈: 거절 후 피드백 제출 시 에러 발생 가능 — 무시
     }
+    localStorage.setItem(`after_feedback_${token}`, 'true');
     setFeedbackSubmitted(true);
     setSubmitting(false);
   };
