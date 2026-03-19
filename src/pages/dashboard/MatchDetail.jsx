@@ -108,8 +108,6 @@ export default function MatchDetail() {
   const [endTimeInput, setEndTimeInput] = useState('');
   const [selectedTimeId, setSelectedTimeId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [showAfterOverride, setShowAfterOverride] = useState(false);
-  const [afterOverrideValue, setAfterOverrideValue] = useState('');
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
 
@@ -201,24 +199,6 @@ export default function MatchDetail() {
     setActionLoading(false);
   };
 
-  const handleAfterOverride = async () => {
-    if (!afterOverrideValue) return;
-    setActionLoading(true);
-    try {
-      const participants = [
-        { clientId: match.clientA.clientId, afterResponse: afterOverrideValue },
-        { clientId: match.clientB.clientId, afterResponse: afterOverrideValue },
-      ];
-      await matchService.overrideAfter(matchId, participants);
-      toast.success('에프터 상태가 변경되었습니다.');
-      reload();
-    } catch (err) {
-      toast.error(err.message || '에프터 상태 변경에 실패했습니다.');
-    }
-    setActionLoading(false);
-    setShowAfterOverride(false);
-    setAfterOverrideValue('');
-  };
 
   const handleCompleteMatch = async () => {
     setActionLoading(true);
@@ -647,14 +627,6 @@ export default function MatchDetail() {
                   </span>
                 </div>
               </div>
-              <button
-                className={styles.actionBtn}
-                onClick={() => { setAfterOverrideValue(match.afterStatus || 'pending'); setShowAfterOverride(true); }}
-                style={{ marginTop: 12 }}
-              >
-                에프터 상태 변경
-              </button>
-
               {/* Feedback Section - afterStatus rejected일 때 */}
               {match.afterStatus === 'rejected' && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
                 <div className={styles.feedbackSection}>
@@ -688,8 +660,8 @@ export default function MatchDetail() {
         </div>
       )}
 
-      {/* After Result Link Card (에프터 현황 아래) */}
-      {match.status === 'completed' && (
+      {/* After Result Link Card (양쪽 에프터 응답 완료 시에만 표시) */}
+      {match.status === 'completed' && (match.afterStatus === 'accepted' || match.afterStatus === 'rejected') && (
         <AfterResultLinkCard match={match} />
       )}
 
@@ -779,37 +751,6 @@ export default function MatchDetail() {
         />
       )}
 
-      {/* After Override Modal */}
-      {showAfterOverride && (
-        <div className={styles.overlay} onClick={() => setShowAfterOverride(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>에프터 상태 변경</h3>
-            <p className={styles.modalDesc}>이 매칭의 에프터 상태를 변경합니다.</p>
-            <div className={styles.modalField}>
-              <label className={styles.modalLabel}>상태</label>
-              <select
-                className={styles.modalInput}
-                value={afterOverrideValue}
-                onChange={(e) => setAfterOverrideValue(e.target.value)}
-              >
-                <option value="pending">대기</option>
-                <option value="accepted">성사</option>
-                <option value="rejected">미성사</option>
-              </select>
-            </div>
-            <div className={styles.modalActions}>
-              <button className={styles.cancelModalBtn} onClick={() => setShowAfterOverride(false)}>취소</button>
-              <button
-                className={styles.confirmModalBtn}
-                onClick={handleAfterOverride}
-                disabled={actionLoading || !afterOverrideValue}
-              >
-                {actionLoading ? '변경 중...' : '상태 변경'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Reschedule Confirm Modal */}
       {showReschedule && (
