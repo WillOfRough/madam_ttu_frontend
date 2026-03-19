@@ -86,7 +86,7 @@ export default function ProposalAfter() {
         .catch(() => {})
         .finally(() => setFeedbackLoading(false));
     }
-  }, [initialLoadDone, token]);
+  }, [initialLoadDone, myAfterResponse, token]);
 
   // 에프터 응답 (수락/거절)
   const handleAfterRespond = async (response) => {
@@ -192,8 +192,13 @@ export default function ProposalAfter() {
           <div className={styles.container}>
             <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>피드백을 제출했습니다</p>
-              <p className={styles.respondedStatus}>감사합니다.</p>
+              <p className={styles.respondedStatus}>
+                비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
+                {myName ? ` ${myName} 님께` : ''} 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
+              </p>
+              <p className={styles.respondedStatus} style={{ marginTop: '12px' }}>
+                저희가{myName ? ` ${myName} 님의` : ''} 진가를 알아볼 분을 꼭 찾아낼게요.
+              </p>
             </div>
           </div>
         </div>
