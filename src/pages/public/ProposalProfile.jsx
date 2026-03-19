@@ -71,10 +71,6 @@ export default function ProposalProfile() {
           <div className={styles.container}>
             <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
-              <p className={styles.respondedLabel}>아쉽지만 이번엔 인연이 아니였나봐요</p>
-              <p className={styles.respondedStatus}>더 좋은 매칭으로 다시 돌아올게요!</p>
-            </div>
-            <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>만료된 링크입니다</p>
               <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
             </div>
