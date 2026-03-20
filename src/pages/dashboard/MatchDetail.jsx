@@ -1383,7 +1383,7 @@ function GuideMessageCard({ title, hint, badge, participants, generateMsg }) {
     <div className={styles.guideMessageCard}>
       <h3 className={styles.guideMessageTitle}>
         <FileText size={16} /> {title}
-        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: '#ddd6fe', color: '#5b21b6' }}>
+        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'var(--bg-warm)', color: 'var(--charcoal-pale)' }}>
           {badge}
         </span>
       </h3>
