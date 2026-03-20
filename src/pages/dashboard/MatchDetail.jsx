@@ -355,7 +355,7 @@ export default function MatchDetail() {
           hint="양쪽 모두 수락했습니다. 아래 버튼으로 성사 안내 메시지를 복사하세요"
           badge="양식 3"
           participants={[match.clientA, match.clientB]}
-          generateMsg={(p) => generateAfterSuccessMessage(p.clientName)}
+          generateMsg={(p) => generateAfterSuccessMessage(p.clientNickname || p.clientName)}
         />
       )}
 
@@ -621,7 +621,7 @@ export default function MatchDetail() {
           hint="확정된 일정과 장소가 반영된 안내 메시지를 복사하세요"
           badge="양식 4"
           participants={[match.clientA, match.clientB]}
-          generateMsg={(p) => generateMeetingMessage(p.clientName, confirmedSchedule)}
+          generateMsg={(p) => generateMeetingMessage(p.clientNickname || p.clientName, confirmedSchedule)}
         />
       )}
 
@@ -1124,7 +1124,7 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   const handleMsgCopy = async () => {
     if (!isLinkActive) return;
     try {
-      const msg = generateProposalMessage(participant.clientName, proposalUrl);
+      const msg = generateProposalMessage(participant.clientNickname || participant.clientName, proposalUrl);
       await navigator.clipboard.writeText(msg);
       setMsgCopied(true);
       toast.success('안내 메시지가 복사되었습니다.');
