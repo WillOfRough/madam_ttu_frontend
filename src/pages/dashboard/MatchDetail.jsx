@@ -349,7 +349,7 @@ export default function MatchDetail() {
       </div>
 
       {/* 양식 3: 만남 성사 안내 메시지 복사 */}
-      {match.status === 'proposal_accepted' && (
+      {match.status === 'scheduling' && (
         <GuideMessageCard
           title="만남 성사 안내"
           hint="양쪽 모두 수락했습니다. 아래 버튼으로 성사 안내 메시지를 복사하세요"
