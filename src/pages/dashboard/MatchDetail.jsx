@@ -1,12 +1,46 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonLine } from '../../components/Skeleton';
+import { loadTemplates } from './ManagerGuide';
 import styles from './MatchDetail.module.css';
+
+function generateProposalMessage(clientName, proposalUrl) {
+  const templates = loadTemplates();
+  return templates.proposalIntro
+    .replace(/OO\(별명\)/, clientName)
+    .replace('[프로포절 링크 첨부]', proposalUrl);
+}
+
+function generateAfterSuccessMessage(clientName) {
+  const templates = loadTemplates();
+  return templates.afterSuccess.replace(/OO님/g, `${clientName}님`);
+}
+
+function generateMeetingMessage(clientName, schedule) {
+  const templates = loadTemplates();
+  let msg = templates.meeting.replace(/OO님/g, `${clientName}님`);
+
+  if (schedule) {
+    if (schedule.date && schedule.startTime) {
+      const d = new Date(schedule.date + 'T00:00:00');
+      const startHHMM = schedule.startTime.slice(0, 5);
+      const [h, m] = startHHMM.split(':').map(Number);
+      const endH = h + 1;
+      const endTime = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      const dateStr = `${d.getMonth() + 1}월 ${d.getDate()}일 / ${startHHMM} ~ ${endTime}`;
+      msg = msg.replace('○월 ○일 / X시 ~ X시', dateStr);
+    }
+    if (schedule.location) {
+      msg = msg.replace('○○카페 (주소: ○○○○)', schedule.location);
+    }
+  }
+  return msg;
+}
 
 const RESPONSE_MAP = {
   accepted: { label: '수락', className: 'responseAccepted' },
@@ -314,6 +348,17 @@ export default function MatchDetail() {
         />
       </div>
 
+      {/* 양식 3: 만남 성사 안내 메시지 복사 */}
+      {match.status === 'proposal_accepted' && (
+        <GuideMessageCard
+          title="만남 성사 안내"
+          hint="양쪽 모두 수락했습니다. 아래 버튼으로 성사 안내 메시지를 복사하세요"
+          badge="양식 3"
+          participants={[match.clientA, match.clientB]}
+          generateMsg={(p) => generateAfterSuccessMessage(p.clientName)}
+        />
+      )}
+
       {/* Scheduling Link Card */}
       {match.status === 'scheduling' && (
         <SchedulingLinkCard match={match} />
@@ -567,6 +612,17 @@ export default function MatchDetail() {
             )}
           </div>
         </div>
+      )}
+
+      {/* 양식 4: 만남 장소 확정 안내 메시지 복사 */}
+      {match.status === 'scheduled' && confirmedSchedule && (
+        <GuideMessageCard
+          title="만남 장소 확정 안내"
+          hint="확정된 일정과 장소가 반영된 안내 메시지를 복사하세요"
+          badge="양식 4"
+          participants={[match.clientA, match.clientB]}
+          generateMsg={(p) => generateMeetingMessage(p.clientName, confirmedSchedule)}
+        />
       )}
 
       {/* Scheduling: waiting for available times */}
@@ -1039,6 +1095,7 @@ function SchedulingLinkCard({ match }) {
 
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
+  const [msgCopied, setMsgCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
@@ -1051,6 +1108,19 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
       setCopied(true);
       toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handleMsgCopy = async () => {
+    if (!isLinkActive) return;
+    try {
+      const msg = generateProposalMessage(participant.clientName, proposalUrl);
+      await navigator.clipboard.writeText(msg);
+      setMsgCopied(true);
+      toast.success('안내 메시지가 복사되었습니다.');
+      setTimeout(() => setMsgCopied(false), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1205,16 +1275,70 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
       <div className={styles.tokenSection}>
         <div className={styles.tokenLabel}>프로포절 링크</div>
         {isLinkActive ? (
-          <div className={styles.tokenRow}>
-            <span className={styles.tokenValue}>{proposalUrl}</span>
-            <button className={styles.copyBtn} onClick={handleCopy}>
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? '복사됨' : '복사'}
-            </button>
-          </div>
+          <>
+            <div className={styles.tokenRow}>
+              <span className={styles.tokenValue}>{proposalUrl}</span>
+              <button className={styles.copyBtn} onClick={handleCopy}>
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? '복사됨' : '복사'}
+              </button>
+            </div>
+            <div className={styles.msgCopyBtnRow}>
+              <button className={styles.msgCopyBtn} onClick={handleMsgCopy}>
+                <FileText size={13} />
+                {msgCopied ? '복사됨' : '안내 메시지 복사'}
+              </button>
+            </div>
+          </>
         ) : (
           <div className={styles.tokenInactive}>A 수락 후 활성화</div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function GuideMessageCard({ title, hint, badge, participants, generateMsg }) {
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const handleCopy = async (participant, key) => {
+    try {
+      const msg = generateMsg(participant);
+      await navigator.clipboard.writeText(msg);
+      setCopiedKey(key);
+      toast.success('안내 메시지가 복사되었습니다.');
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  return (
+    <div className={styles.guideMessageCard}>
+      <h3 className={styles.guideMessageTitle}>
+        <FileText size={16} /> {title}
+        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: '#ddd6fe', color: '#5b21b6' }}>
+          {badge}
+        </span>
+      </h3>
+      <p className={styles.guideMessageHint}>{hint}</p>
+      <div className={styles.guideMessageRows}>
+        {participants.map((p, idx) => {
+          const side = idx === 0 ? 'A' : 'B';
+          const isCopied = copiedKey === side;
+          return (
+            <div key={side} className={styles.guideMessageRow}>
+              <span className={styles.schedulingRoleBadge}>{side}</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--charcoal)' }}>
+                {p.clientName}
+              </span>
+              <button className={styles.msgCopyBtn} onClick={() => handleCopy(p, side)}>
+                {isCopied ? <Check size={13} /> : <FileText size={13} />}
+                {isCopied ? '복사됨' : '안내 메시지 복사'}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -407,6 +407,71 @@
   transform: translateY(-1px);
 }
 
+.msgCopyBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--white);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.msgCopyBtn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+}
+
+.msgCopyBtnRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.guideMessageCard {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border: 1.5px solid #c4b5fd;
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: var(--space-md);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
+}
+
+.guideMessageTitle {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #4338ca;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+.guideMessageHint {
+  font-size: 0.78rem;
+  color: #6366f1;
+  margin-bottom: var(--space-md);
+}
+
+.guideMessageRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guideMessageRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .submittedBadge {
   display: inline-flex;
   align-items: center;
@@ -1371,5 +1436,23 @@
 
   .commonTimesCard {
     padding: 18px;
+  }
+
+  .guideMessageCard {
+    padding: 18px;
+  }
+
+  .guideMessageRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .msgCopyBtn {
+    justify-content: center;
+  }
+
+  .msgCopyBtnRow {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

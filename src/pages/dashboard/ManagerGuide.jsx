@@ -38,7 +38,7 @@ const WORKFLOW_STEPS = [
   },
 ];
 
-const DEFAULT_TEMPLATES = {
+export const DEFAULT_TEMPLATES = {
   proposalIntro: `[Knots & Links]
 새로운 인연의 연결이 도착했습니다.
 
@@ -138,7 +138,7 @@ const TEMPLATE_META = [
 
 const LS_KEY = 'knl_manager_templates';
 
-function loadTemplates() {
+export function loadTemplates() {
   try {
     const saved = localStorage.getItem(LS_KEY);
     if (saved) {
