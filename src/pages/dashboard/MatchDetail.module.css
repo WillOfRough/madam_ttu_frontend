@@ -472,6 +472,140 @@
   gap: 8px;
 }
 
+/* ── Phone Quick Copy (always visible) ── */
+.phoneQuickRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-md);
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.phoneQuickValue {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-family: monospace;
+  letter-spacing: 0.02em;
+  margin-right: auto;
+}
+
+.phoneQuickCopyBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--white);
+  background: var(--navy);
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phoneQuickCopyBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.phoneQuickSafeBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--white);
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phoneQuickSafeBtn:hover {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  transform: translateY(-1px);
+}
+
+/* ── Phone Copy Section (inside profile detail) ── */
+.phoneSection {
+  margin-top: var(--space-sm);
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
+}
+
+.phoneRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.phoneValue {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  font-family: monospace;
+  letter-spacing: 0.02em;
+}
+
+.phoneCopyBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--white);
+  background: var(--navy);
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phoneCopyBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.phoneSafeCopyBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--white);
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  transition: all var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phoneSafeCopyBtn:hover {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  transform: translateY(-1px);
+}
+
+.phoneSafePreview {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: #16a34a;
+  font-family: monospace;
+  font-weight: 500;
+}
+
 .submittedBadge {
   display: inline-flex;
   align-items: center;
@@ -1454,5 +1588,13 @@
   .msgCopyBtnRow {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .phoneRow {
+    flex-wrap: wrap;
+  }
+
+  .phoneQuickRow {
+    flex-wrap: wrap;
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText, Phone } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -1093,9 +1093,17 @@ function SchedulingLinkCard({ match }) {
 }
 
 
+function formatSafeNumber(phone) {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, '');
+  const last8 = digits.slice(-8);
+  return `*2818${last8}`;
+}
+
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
+  const [phoneCopied, setPhoneCopied] = useState(null); // 'phone' | 'safe' | null
   const [profileOpen, setProfileOpen] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
@@ -1121,6 +1129,20 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
       setMsgCopied(true);
       toast.success('안내 메시지가 복사되었습니다.');
       setTimeout(() => setMsgCopied(false), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handlePhoneCopy = async (type) => {
+    const phone = participant.clientPhone;
+    if (!phone) return;
+    const text = type === 'safe' ? formatSafeNumber(phone) : phone;
+    try {
+      await navigator.clipboard.writeText(text);
+      setPhoneCopied(type);
+      toast.success(type === 'safe' ? '안심번호가 복사되었습니다.' : '번호가 복사되었습니다.');
+      setTimeout(() => setPhoneCopied(null), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1173,6 +1195,21 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
           </div>
         )}
       </div>
+
+      {/* Phone Quick Copy */}
+      {participant.clientPhone && (
+        <div className={styles.phoneQuickRow}>
+          <Phone size={13} />
+          <span className={styles.phoneQuickValue}>{participant.clientPhone}</span>
+          <button
+            className={styles.phoneQuickCopyBtn}
+            onClick={() => handlePhoneCopy('phone')}
+          >
+            {phoneCopied === 'phone' ? <Check size={12} /> : <Copy size={12} />}
+            {phoneCopied === 'phone' ? '복사됨' : '복사'}
+          </button>
+        </div>
+      )}
 
       {/* Profile Toggle */}
       {hasProfile && (
@@ -1251,6 +1288,35 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
                   </div>
                 )}
               </div>
+
+              {/* Phone */}
+              {participant.clientPhone && (
+                <div className={styles.phoneSection}>
+                  <span className={styles.profileFieldLabel}>
+                    <Phone size={12} /> 연락처
+                  </span>
+                  <div className={styles.phoneRow}>
+                    <span className={styles.phoneValue}>{participant.clientPhone}</span>
+                    <button
+                      className={styles.phoneCopyBtn}
+                      onClick={() => handlePhoneCopy('phone')}
+                    >
+                      {phoneCopied === 'phone' ? <Check size={12} /> : <Copy size={12} />}
+                      {phoneCopied === 'phone' ? '복사됨' : '번호 복사'}
+                    </button>
+                    <button
+                      className={styles.phoneSafeCopyBtn}
+                      onClick={() => handlePhoneCopy('safe')}
+                    >
+                      {phoneCopied === 'safe' ? <Check size={12} /> : <Copy size={12} />}
+                      {phoneCopied === 'safe' ? '복사됨' : '안심번호 복사'}
+                    </button>
+                  </div>
+                  <span className={styles.phoneSafePreview}>
+                    안심번호: {formatSafeNumber(participant.clientPhone)}
+                  </span>
+                </div>
+              )}
 
               {/* Introduction */}
               {participant.clientIntroduction && (
