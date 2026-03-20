@@ -1093,17 +1093,11 @@ function SchedulingLinkCard({ match }) {
 }
 
 
-function formatSafeNumber(phone) {
-  if (!phone) return null;
-  const digits = phone.replace(/\D/g, '');
-  const last8 = digits.slice(-8);
-  return `*2818${last8}`;
-}
 
 function ParticipantCard({ participant, label, matchStatus, side }) {
   const [copied, setCopied] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
-  const [phoneCopied, setPhoneCopied] = useState(null); // 'phone' | 'safe' | null
+  const [phoneCopied, setPhoneCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
@@ -1134,15 +1128,14 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
     }
   };
 
-  const handlePhoneCopy = async (type) => {
+  const handlePhoneCopy = async () => {
     const phone = participant.clientPhone;
     if (!phone) return;
-    const text = type === 'safe' ? formatSafeNumber(phone) : phone;
     try {
-      await navigator.clipboard.writeText(text);
-      setPhoneCopied(type);
-      toast.success(type === 'safe' ? '안심번호가 복사되었습니다.' : '번호가 복사되었습니다.');
-      setTimeout(() => setPhoneCopied(null), 2000);
+      await navigator.clipboard.writeText(phone);
+      setPhoneCopied(true);
+      toast.success('번호가 복사되었습니다.');
+      setTimeout(() => setPhoneCopied(false), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1203,10 +1196,10 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
           <span className={styles.phoneQuickValue}>{participant.clientPhone}</span>
           <button
             className={styles.phoneQuickCopyBtn}
-            onClick={() => handlePhoneCopy('phone')}
+            onClick={handlePhoneCopy}
           >
-            {phoneCopied === 'phone' ? <Check size={12} /> : <Copy size={12} />}
-            {phoneCopied === 'phone' ? '복사됨' : '복사'}
+            {phoneCopied ? <Check size={12} /> : <Copy size={12} />}
+            {phoneCopied ? '복사됨' : '복사'}
           </button>
         </div>
       )}
@@ -1299,22 +1292,12 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
                     <span className={styles.phoneValue}>{participant.clientPhone}</span>
                     <button
                       className={styles.phoneCopyBtn}
-                      onClick={() => handlePhoneCopy('phone')}
+                      onClick={handlePhoneCopy}
                     >
-                      {phoneCopied === 'phone' ? <Check size={12} /> : <Copy size={12} />}
-                      {phoneCopied === 'phone' ? '복사됨' : '번호 복사'}
-                    </button>
-                    <button
-                      className={styles.phoneSafeCopyBtn}
-                      onClick={() => handlePhoneCopy('safe')}
-                    >
-                      {phoneCopied === 'safe' ? <Check size={12} /> : <Copy size={12} />}
-                      {phoneCopied === 'safe' ? '복사됨' : '안심번호 복사'}
+                      {phoneCopied ? <Check size={12} /> : <Copy size={12} />}
+                      {phoneCopied ? '복사됨' : '번호 복사'}
                     </button>
                   </div>
-                  <span className={styles.phoneSafePreview}>
-                    안심번호: {formatSafeNumber(participant.clientPhone)}
-                  </span>
                 </div>
               )}
 
