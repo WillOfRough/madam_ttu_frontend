@@ -39,6 +39,15 @@ const WORKFLOW_STEPS = [
 ];
 
 const DEFAULT_TEMPLATES = {
+  proposalIntro: `[Knots & Links]
+새로운 인연의 연결이 도착했습니다.
+
+OO(별명)님의 가치관과 취향을 고려해 정성스럽게 매칭한 상대방의 프로필이 도착했습니다.
+
+소중한 인연의 시작이 될 수 있도록 아래 링크를 통해 상대방의 프로필을 확인한 후 만나보고 싶은 마음이 드신다면 만나볼래요!를 눌러주세요.
+
+[프로포절 링크 첨부]`,
+
   promotion: `[속보] 내 주변 솔로들 다 모여라! ! 💌
 여러분, 제 정말 믿음직한 지인이 야심 차게 준비한 프라이빗 매칭 서비스를 드디어 런칭했습니다! 가벼운 만남 앱에 지치셨거나, 지인에게 소개팅 부탁하기는 왠지 미안했던 분들을 위해 제가 발 벗고 홍보하러 왔어요. 😊
 
@@ -121,9 +130,10 @@ OO님의 빛나는 만남을 위해 모든 준비를 마쳤습니다.
 };
 
 const TEMPLATE_META = [
-  { key: 'promotion', label: '홍보 문구', badge: '양식 1' },
-  { key: 'afterSuccess', label: '만남 성사 안내', badge: '양식 2' },
-  { key: 'meeting', label: '만남 장소 확정', badge: '양식 3' },
+  { key: 'proposalIntro', label: '프로포절 안내', badge: '양식 1' },
+  { key: 'promotion', label: '홍보 문구', badge: '양식 2' },
+  { key: 'afterSuccess', label: '만남 성사 안내', badge: '양식 3' },
+  { key: 'meeting', label: '만남 장소 확정', badge: '양식 4' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
