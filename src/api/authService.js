@@ -29,6 +29,12 @@ export async function checkSession() {
   });
 }
 
+export async function logout() {
+  return apiFetch('/api/v1/auth/logout', {
+    method: 'POST',
+  });
+}
+
 export async function changePassword({ currentPassword, newPassword, confirmPassword }) {
   return apiFetch('/api/v1/auth/change-password', {
     method: 'POST',

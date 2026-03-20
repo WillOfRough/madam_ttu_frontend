@@ -77,6 +77,11 @@ const useAuthStore = create(
       },
 
       logout: async () => {
+        try {
+          await authService.logout();
+        } catch {
+          // 서버 로그아웃 실패해도 로컬 상태는 초기화
+        }
         set({
           isLoggedIn: false,
           managerId: null,
