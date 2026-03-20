@@ -208,10 +208,9 @@ export default function ProposalProfile() {
   ].filter((f) => f.value);
 
   let contextMessage = null;
-  if (matchStatus === 'proposal_sent' && myRole === 'proposer') {
+  if ((matchStatus === 'proposal_sent' && myRole === 'proposer') ||
+      (matchStatus === 'proposal_accepted' && myRole === 'receiver')) {
     contextMessage = '상대방 프로필을 확인하고 수락/거절해주세요.';
-  } else if (matchStatus === 'proposal_accepted' && myRole === 'receiver') {
-    contextMessage = '상대방이 수락했습니다! 프로필을 확인하고 수락/거절해주세요.';
   }
 
   return (
