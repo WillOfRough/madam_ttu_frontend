@@ -164,7 +164,7 @@ export default function ClientDetail() {
   const fields = [
     { label: '닉네임', value: client.nickname },
     { label: '성별', value: client.gender === 'male' ? '남성' : '여성' },
-    { label: '생년월일', value: client.birthDate },
+    { label: '출생연도', value: client.birthDate ? client.birthDate.slice(0, 4) : null },
     { label: '연락처', value: client.phone },
     { label: '이메일', value: client.email },
     { label: '거주지역', value: client.location },
