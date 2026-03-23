@@ -89,17 +89,15 @@ function validateStep(step, form) {
     if (form.hobbies.length < 3) errors.hobbies = '활동을 최소 3개 선택해주세요.';
   } else if (step === 3) {
     if (!form.introQ1.trim()) errors.introQ1 = '답변을 입력해주세요.';
-    if (!form.introQ2.trim()) errors.introQ2 = '답변을 입력해주세요.';
-    if (!form.introQ3.trim()) errors.introQ3 = '답변을 입력해주세요.';
-    const combined = [form.introQ1, form.introQ2, form.introQ3, form.introQ4]
+    const combined = [form.introQ1, form.introQ2]
       .map((a) => a.trim()).filter(Boolean).join(' ');
     const keywordsPrefix = form.introKeywords.length > 0 ? `[${form.introKeywords.join(', ')}] ` : '';
     const totalLen = keywordsPrefix.length + combined.length;
     if (combined.length > 0 && totalLen < 20) {
       errors.introLength = `${20 - totalLen}자 더 작성해주세요. (최소 20자)`;
     }
-    if (form.introKeywords.length < 3) {
-      errors.introKeywords = '키워드를 최소 3개 선택해주세요.';
+    if (form.introKeywords.length < 2) {
+      errors.introKeywords = '키워드를 최소 2개 선택해주세요.';
     }
     if (!form.idealType || !form.idealType.trim()) {
       errors.idealType = '이상형을 적어주세요.';
@@ -176,7 +174,7 @@ export default function ClientForm() {
       0: ['name', 'gender', 'birthYear', 'phone', 'location'],
       1: ['occupation', 'height', 'company', 'companyLocation', 'education', 'school'],
       2: ['religion', 'mbti', 'hobbies'],
-      3: ['introQ1', 'introQ2', 'introQ3', 'introLength', 'introKeywords', 'idealType', 'photos'],
+      3: ['introQ1', 'introLength', 'introKeywords', 'idealType', 'photos'],
     };
     const fields = stepFields[step] || [];
     const newTouched = { ...touched };
@@ -190,7 +188,7 @@ export default function ClientForm() {
   };
 
   const handleSubmitClick = () => {
-    setTouched({ introQ1: true, introQ2: true, introQ3: true, introLength: true, introKeywords: true, idealType: true, photos: true });
+    setTouched({ introQ1: true, introLength: true, introKeywords: true, idealType: true, photos: true });
     if (!hasErrors) {
       handleSubmit();
     }
@@ -409,7 +407,7 @@ export default function ClientForm() {
             <div className={styles.fields}>
               <KeywordTagInput
                 label="나를 표현하는 키워드"
-                hint="최소 3개 이상 선택해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
+                hint="최소 2개 이상 선택해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
                 suggestions={INTRO_KEYWORDS}
                 selected={form.introKeywords}
                 onToggle={(kw) => { toggleKeyword('introKeywords', kw); markTouched('introKeywords'); }}
@@ -436,24 +434,8 @@ export default function ClientForm() {
                 <TextField
                   label="나만의 매력이나 자신 있는 점은?"
                   value={form.introQ2}
-                  onChange={(v) => { setField('introQ2', v); markTouched('introQ2'); }}
+                  onChange={(v) => { setField('introQ2', v); }}
                   placeholder="요리를 잘해서 친구들이 집에 자주 놀러 와요"
-                  required
-                  error={getError('introQ2')}
-                />
-                <TextField
-                  label="친구들이 나를 어떤 사람이라고 하나요?"
-                  value={form.introQ3}
-                  onChange={(v) => { setField('introQ3', v); markTouched('introQ3'); }}
-                  placeholder="조용한데 유머가 있다고 해요"
-                  required
-                  error={getError('introQ3')}
-                />
-                <TextField
-                  label="연인과 함께하고 싶은 것은?"
-                  value={form.introQ4}
-                  onChange={(v) => { setField('introQ4', v); }}
-                  placeholder="같이 여행 다니고 싶어요"
                   required={false}
                 />
                 {getError('introLength') && <p className={styles.fieldError}>{getError('introLength')}</p>}

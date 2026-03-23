@@ -24,8 +24,6 @@ const INITIAL_FORM = {
   // Step 4: 진심
   introQ1: '',
   introQ2: '',
-  introQ3: '',
-  introQ4: '',
   introKeywords: [],
   idealType: '',
   idealKeywords: [],
@@ -101,7 +99,7 @@ const useClientFormStore = create((set, get) => ({
   getPayload: () => {
     const { form, token, suggestedNickname } = get();
     const nickname = form.nickname || suggestedNickname;
-    const introAnswers = [form.introQ1, form.introQ2, form.introQ3, form.introQ4]
+    const introAnswers = [form.introQ1, form.introQ2]
       .map((a) => a.trim())
       .filter(Boolean)
       .join(' ');
