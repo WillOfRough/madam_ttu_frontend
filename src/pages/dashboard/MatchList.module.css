@@ -281,6 +281,14 @@
   font-weight: 500;
 }
 
+.managerInfo {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  white-space: nowrap;
+}
+
 .cardNote {
   font-size: 0.82rem;
   color: var(--charcoal-light);

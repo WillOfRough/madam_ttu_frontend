@@ -194,6 +194,13 @@ export default function MatchList() {
                 <div className={styles.cardMeta}>
                   <span>{formatDate(m.createdAt)}</span>
                   <span className={styles.stepInfo}>{STATUS_STEP_LABELS[m.status] || ''}</span>
+                  {(m.clientA.managerName || m.clientB.managerName) && (
+                    <span className={styles.managerInfo}>
+                      {m.clientA.managerName === m.clientB.managerName
+                        ? m.clientA.managerName
+                        : [m.clientA.managerName, m.clientB.managerName].filter(Boolean).join(' · ')}
+                    </span>
+                  )}
                 </div>
                 {m.note && <div className={styles.cardNote}>{m.note}</div>}
               </div>
