@@ -84,6 +84,8 @@ export default function ClientList() {
           <option value="createdAt:desc">최신순</option>
           <option value="createdAt:asc">오래된순</option>
           <option value="name:asc">이름순</option>
+          <option value="birthDate:asc">나이 많은순</option>
+          <option value="birthDate:desc">나이 적은순</option>
         </select>
       </div>
 
