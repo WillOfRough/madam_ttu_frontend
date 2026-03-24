@@ -595,6 +595,44 @@
 }
 
 /* ── Cards ── */
+/* ── Payment Confirmation Card ── */
+.paymentCard {
+  background: var(--white);
+  border: 1.5px solid var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.paymentHint {
+  font-size: 0.84rem;
+  color: var(--charcoal-mid);
+  line-height: 1.6;
+  margin-bottom: var(--space-lg);
+}
+
+.paymentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 32px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.paymentBtn:hover {
+  background: var(--charcoal);
+  box-shadow: var(--shadow-md);
+}
+
 .card {
   background: var(--white);
   border: 1px solid var(--border-light);

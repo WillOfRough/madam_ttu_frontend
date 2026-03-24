@@ -50,19 +50,38 @@ const RESPONSE_MAP = {
 const STEPS = [
   { key: 'proposal_sent', label: 'A확인' },
   { key: 'proposal_accepted', label: 'B확인' },
+  { key: 'payment_confirmed', label: '입금확인' },
   { key: 'scheduling', label: '일정조율' },
   { key: 'arranging', label: '매니저확정' },
   { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
 ];
 
-function getStepIndex(status) {
+const PAYMENT_STORAGE_KEY = 'match_payment_confirmed';
+
+function getPaymentConfirmed(matchId) {
+  try {
+    const data = JSON.parse(localStorage.getItem(PAYMENT_STORAGE_KEY) || '{}');
+    return !!data[matchId];
+  } catch { return false; }
+}
+
+function setPaymentConfirmed(matchId) {
+  try {
+    const data = JSON.parse(localStorage.getItem(PAYMENT_STORAGE_KEY) || '{}');
+    data[matchId] = Date.now();
+    localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(data));
+  } catch { /* ignore */ }
+}
+
+function getStepIndex(status, paymentConfirmed) {
   if (status === 'proposal_sent') return 0;
   if (status === 'proposal_accepted') return 1;
-  if (status === 'scheduling') return 2;
-  if (status === 'arranging') return 3;
-  if (status === 'scheduled') return 4;
-  if (status === 'completed') return 5;
+  if (status === 'scheduling' && !paymentConfirmed) return 2;
+  if (status === 'scheduling') return 3;
+  if (status === 'arranging') return 4;
+  if (status === 'scheduled') return 5;
+  if (status === 'completed') return 6;
   return -1; // cancelled
 }
 
@@ -145,6 +164,7 @@ export default function MatchDetail() {
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmedState] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
@@ -153,6 +173,7 @@ export default function MatchDetail() {
   useEffect(() => {
     if (matchId) {
       setLoading(true);
+      setPaymentConfirmedState(getPaymentConfirmed(matchId));
       matchService
         .getMatchDetail(matchId)
         .then(setMatch)
@@ -174,9 +195,15 @@ export default function MatchDetail() {
 
   if (!match) return null;
 
-  const stepIndex = getStepIndex(match.status);
+  const stepIndex = getStepIndex(match.status, paymentConfirmed);
   const isCancelled = match.status === 'cancelled';
   const refundStatus = getRefundStatus(match.meetingDate);
+
+  const handlePaymentConfirm = () => {
+    setPaymentConfirmed(matchId);
+    setPaymentConfirmedState(true);
+    toast.success('입금 확인이 완료되었습니다.');
+  };
 
   const handleCancel = async () => {
     setActionLoading(true);
@@ -348,8 +375,21 @@ export default function MatchDetail() {
         />
       </div>
 
+      {/* 입금확인 게이트 */}
+      {match.status === 'scheduling' && !paymentConfirmed && (
+        <div className={styles.paymentCard}>
+          <h3 className={styles.cardTitle}>
+            <Check size={16} /> 입금 확인
+          </h3>
+          <p className={styles.paymentHint}>양쪽 회원의 입금을 확인한 후 버튼을 눌러주세요. 입금 확인 후 일정조율을 진행할 수 있습니다.</p>
+          <button className={styles.paymentBtn} onClick={handlePaymentConfirm}>
+            입금 확인 완료
+          </button>
+        </div>
+      )}
+
       {/* 양식 3: 만남 성사 안내 메시지 복사 */}
-      {match.status === 'scheduling' && (
+      {match.status === 'scheduling' && paymentConfirmed && (
         <GuideMessageCard
           title="만남 성사 안내"
           hint="양쪽 모두 수락했습니다. 아래 버튼으로 성사 안내 메시지를 복사하세요"
@@ -360,7 +400,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling Link Card */}
-      {match.status === 'scheduling' && (
+      {match.status === 'scheduling' && paymentConfirmed && (
         <SchedulingLinkCard match={match} />
       )}
 
@@ -626,7 +666,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling: waiting for available times */}
-      {match.status === 'scheduling' && (
+      {match.status === 'scheduling' && paymentConfirmed && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
