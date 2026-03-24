@@ -343,17 +343,19 @@ export default function MatchDetail() {
         <div className={styles.stepIndicator}>
           {STEPS.map((step, idx) => (
             <div key={step.key} className={styles.stepItem}>
-              <div
-                className={`${styles.stepDot} ${idx < stepIndex ? styles.stepDone : ''} ${idx === stepIndex ? styles.stepCurrent : ''}`}
-              >
-                {idx < stepIndex ? <Check size={12} /> : idx + 1}
-              </div>
-              <span className={`${styles.stepLabel} ${idx === stepIndex ? styles.stepLabelCurrent : ''}`}>
-                {step.label}
-              </span>
-              {idx < STEPS.length - 1 && (
-                <div className={`${styles.stepLine} ${idx < stepIndex ? styles.stepLineDone : ''}`} />
+              {idx > 0 && (
+                <div className={`${styles.stepLine} ${idx <= stepIndex ? styles.stepLineDone : ''}`} />
               )}
+              <div className={styles.stepDotWrap}>
+                <div
+                  className={`${styles.stepDot} ${idx < stepIndex ? styles.stepDone : ''} ${idx === stepIndex ? styles.stepCurrent : ''}`}
+                >
+                  {idx < stepIndex ? <Check size={11} /> : idx + 1}
+                </div>
+                <span className={`${styles.stepLabel} ${idx === stepIndex ? styles.stepLabelCurrent : ''}`}>
+                  {step.label}
+                </span>
+              </div>
             </div>
           ))}
         </div>
