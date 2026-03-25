@@ -26,7 +26,7 @@ export default function InviteValidation() {
 
   useEffect(() => {
     if (status === 'valid') {
-      navigate(`/apply/oath/${token}`, { replace: true });
+      navigate(`/apply/intro/${token}`, { replace: true });
     } else if (status === 'invalid') {
       navigate('/expired', { replace: true });
     }

@@ -1,0 +1,214 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--bg);
+}
+
+.container {
+  max-width: 540px;
+  width: 100%;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 48px 24px 40px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: var(--space-xl);
+  animation: heroIn 0.8s var(--ease-out) both;
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.brand {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.divider {
+  width: 32px;
+  height: 2px;
+  background: var(--coral);
+  margin: 16px auto;
+  border-radius: 1px;
+}
+
+.tagline {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+}
+
+/* ── Sections ── */
+.section {
+  margin-bottom: var(--space-xl);
+}
+
+.sectionHeader {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-md);
+  padding-left: 4px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+}
+
+.sectionHeader.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Cards ── */
+.card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.card.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardEmoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-warm);
+  border-radius: var(--radius-md);
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.cardDesc {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--charcoal-mid);
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+/* ── CTA ── */
+.ctaWrap {
+  position: sticky;
+  bottom: 0;
+  padding: 16px 0 20px;
+  background: linear-gradient(to top, var(--bg) 60%, transparent);
+}
+
+.ctaBtn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.ctaBtn:hover {
+  background: var(--charcoal);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.ctaBtn:active {
+  transform: translateY(0);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .hero {
+    padding: 36px 20px 32px;
+  }
+
+  .brand {
+    font-size: 1.5rem;
+  }
+
+  .tagline {
+    font-size: 0.92rem;
+  }
+
+  .sectionHeader {
+    font-size: 0.95rem;
+  }
+
+  .card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .cardEmoji {
+    width: 36px;
+    height: 36px;
+    font-size: 1.35rem;
+  }
+
+  .cardTitle {
+    font-size: 0.88rem;
+  }
+
+  .cardDesc {
+    font-size: 0.8rem;
+  }
+}

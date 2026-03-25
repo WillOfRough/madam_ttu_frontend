@@ -12,6 +12,7 @@ import RegisterManager from './pages/public/RegisterManager';
 import Signup from './pages/public/Signup';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
+import ServiceIntro from './pages/public/ServiceIntro';
 import ClientOath from './pages/public/ClientOath';
 import ManagerOath from './pages/public/ManagerOath';
 import ClientForm from './pages/public/ClientForm';
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/register/:token" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
         <Route path="/invite/:token" element={<InviteValidation />} />
+        <Route path="/apply/intro/:token" element={<ServiceIntro />} />
         <Route path="/apply/oath/:token" element={<ClientOath />} />
         <Route path="/apply/:token" element={<ClientForm />} />
         <Route path="/apply/complete" element={<ApplyComplete />} />
