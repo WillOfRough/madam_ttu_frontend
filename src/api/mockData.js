@@ -521,6 +521,8 @@ const matches = [
       proposalToken: 'PrTk02eF4gH2',
     },
     createdAt: '2026-03-10T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
   // 2) proposal_accepted — B수락, A(proposer) 확인 대기
   {
@@ -541,6 +543,8 @@ const matches = [
       proposalToken: 'PrTk04mN6oP4',
     },
     createdAt: '2026-03-07T11:00:00Z',
+    createdByManagerId: 'mgr002',
+    createdByManagerName: '박소영',
   },
   // 3) arranging — 양쪽 수락, 양쪽 가용시간 등록 완료 → 매니저 확정 대기
   {
@@ -561,6 +565,8 @@ const matches = [
       proposalToken: 'PrTk08cD0eF8',
     },
     createdAt: '2026-03-09T10:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
   // 4) scheduled — 약속 확정됨
   {
@@ -586,6 +592,8 @@ const matches = [
     endTime: '21:00',
     confirmedAt: '2026-03-05T10:00:00Z',
     createdAt: '2026-03-01T09:00:00Z',
+    createdByManagerId: 'mgr003',
+    createdByManagerName: '이현우',
   },
   // 5-1) scheduling — 양쪽 수락, B가 아직 가용시간 미등록
   {
@@ -606,6 +614,8 @@ const matches = [
       proposalToken: 'PrTk12bNewB6',
     },
     createdAt: '2026-03-12T10:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
   // 6) completed — 미팅 완료
   {
@@ -633,6 +643,8 @@ const matches = [
     confirmedAt: '2026-02-25T11:00:00Z',
     completedAt: '2026-03-02T10:00:00Z',
     createdAt: '2026-02-18T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
     afterStatus: 'pending',
   },
   // 7) proposal_sent — 또 다른 제안 발송 건
@@ -654,6 +666,8 @@ const matches = [
       proposalToken: 'PrTk16fPs0D4',
     },
     createdAt: '2026-03-14T10:00:00Z',
+    createdByManagerId: 'mgr003',
+    createdByManagerName: '이현우',
   },
   // 8) scheduling — A만 가용시간 등록 완료, B 미등록
   {
@@ -674,6 +688,8 @@ const matches = [
       proposalToken: 'PrTk18hRu2F6',
     },
     createdAt: '2026-03-11T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
   // 9) cancelled — 매니저에 의해 취소
   {
@@ -697,6 +713,8 @@ const matches = [
       proposalToken: 'PrTk20jTw4H8',
     },
     createdAt: '2026-03-05T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
   // 10) completed + after rejected — 피드백 테스트용
   {
@@ -722,6 +740,8 @@ const matches = [
     confirmedAt: '2026-03-05T11:00:00Z',
     completedAt: '2026-03-11T10:00:00Z',
     createdAt: '2026-02-28T09:00:00Z',
+    createdByManagerId: 'mgr002',
+    createdByManagerName: '박소영',
     afterStatus: 'rejected',
     afterResponses: { A: 'rejected', B: 'accepted' },
     afterRespondedAts: { A: '2026-03-11T15:00:00Z', B: '2026-03-11T16:00:00Z' },
@@ -752,6 +772,8 @@ const matches = [
     confirmedAt: '2026-03-04T11:00:00Z',
     completedAt: '2026-03-09T10:00:00Z',
     createdAt: '2026-02-25T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
     afterStatus: 'accepted',
     afterResponses: { A: 'accepted', B: 'accepted' },
     afterRespondedAts: { A: '2026-03-12T10:00:00Z', B: '2026-03-12T11:00:00Z' },
@@ -782,6 +804,8 @@ const matches = [
     confirmedAt: '2026-03-06T11:00:00Z',
     completedAt: '2026-03-11T10:00:00Z',
     createdAt: '2026-03-01T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
     afterStatus: 'pending',
     afterResponses: { A: 'accepted', B: 'pending' },
     afterRespondedAts: { A: '2026-03-13T10:00:00Z' },
@@ -808,6 +832,8 @@ const matches = [
       proposalToken: 'PrTk06uV8wX6',
     },
     createdAt: '2026-03-05T15:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
   },
 ];
 

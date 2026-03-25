@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle, UserRound } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
@@ -194,6 +194,12 @@ export default function MatchList() {
                 <div className={styles.cardMeta}>
                   <span>{formatDate(m.createdAt)}</span>
                   <span className={styles.stepInfo}>{STATUS_STEP_LABELS[m.status] || ''}</span>
+                  {m.createdByManagerName && (
+                    <span className={styles.createdBy}>
+                      <UserRound size={12} />
+                      {m.createdByManagerName}
+                    </span>
+                  )}
                 </div>
                 {m.note && <div className={styles.cardNote}>{m.note}</div>}
               </div>

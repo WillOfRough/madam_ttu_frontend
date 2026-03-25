@@ -281,6 +281,19 @@
   font-weight: 500;
 }
 
+.createdBy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 550;
+  color: var(--charcoal-pale);
+  background: var(--bg-warm);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
 .cardNote {
   font-size: 0.82rem;
   color: var(--charcoal-light);
