@@ -517,7 +517,7 @@ export default function ClientForm() {
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   multiple
-                  style={{ display: 'none' }}
+                  style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0 }}
                   onChange={(e) => {
                     if (e.target.files?.length) addPhotos(e.target.files);
                     e.target.value = '';
