@@ -709,6 +709,79 @@
   animation: slideDown var(--duration-fast) var(--ease-out) both;
 }
 
+/* ── Active Match Warning ── */
+.activeMatchWarn {
+  margin: 0 28px 4px;
+  padding: 14px 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  animation: slideDown var(--duration-fast) var(--ease-out) both;
+}
+
+.activeMatchHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b45309;
+  font-size: 0.84rem;
+  margin-bottom: 6px;
+}
+
+.activeMatchHeader strong {
+  font-weight: 700;
+}
+
+.activeMatchDesc {
+  font-size: 0.78rem;
+  color: #92400e;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.activeMatchClient {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.activeMatchLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.activeMatchCount {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.activeMatchLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--navy);
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.activeMatchLink:hover {
+  background: var(--navy-glow);
+  border-color: var(--navy);
+}
+
 /* ── Note Section ── */
 .noteSection {
   padding: 0 28px 24px;

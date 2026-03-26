@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users } from 'lucide-react';
+import { Search, Users, Heart } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -9,7 +9,7 @@ import { SkeletonTable } from '../../components/Skeleton';
 import styles from './ClientList.module.css';
 
 export default function ClientList() {
-  const { clients, totalCount, genderCounts, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
+  const { clients, totalCount, filteredCount, genderCounts, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
     useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function ClientList() {
     fetchConnections();
   }, [page, filters, fetchClients, fetchConnections]);
 
-  const totalPages = Math.ceil(totalCount / limit);
+  const totalPages = Math.ceil(filteredCount / limit);
 
   return (
     <div className={styles.page}>
@@ -142,6 +142,7 @@ export default function ClientList() {
               <span>나이</span>
               <span>직업</span>
               <span>소속</span>
+              <span>매칭</span>
               <span>상태</span>
             </div>
             {clients.map((client) => (
@@ -161,6 +162,16 @@ export default function ClientList() {
                   {client.ownerManager
                     ? <><span>{client.ownerManager.name}</span>{client.ownerManager.email && <span className={styles.ownerEmail}>{client.ownerManager.email}</span>}</>
                     : (client.isOwner ? '나' : '-')}
+                </span>
+                <span>
+                  {client.activeMatchCount > 0 ? (
+                    <span className={styles.matchingActive}>
+                      <Heart size={11} />
+                      {client.activeMatchCount}건 진행 중
+                    </span>
+                  ) : (
+                    <span className={styles.matchingNone}>-</span>
+                  )}
                 </span>
                 <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>
               </div>

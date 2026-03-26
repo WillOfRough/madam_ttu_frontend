@@ -212,7 +212,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 0.8fr;
+  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 1fr 0.8fr;
   gap: var(--space-md);
   padding: 10px 24px;
   font-size: 0.72rem;
@@ -226,7 +226,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 0.8fr;
+  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 1fr 0.8fr;
   gap: var(--space-md);
   padding: 14px 24px;
   font-size: 0.875rem;
@@ -284,6 +284,22 @@
   font-weight: 500;
   color: var(--charcoal-pale);
   letter-spacing: 0;
+}
+
+.matchingActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.matchingNone {
+  color: var(--charcoal-pale);
 }
 
 @media (max-width: 640px) {
@@ -347,11 +363,12 @@
     font-size: 0.92rem;
   }
 
-  /* 2nd, 3rd, 4th, 6th: simple labeled fields */
+  /* 2nd, 3rd, 4th, 6th, 7th: simple labeled fields */
   .tableRow > span:nth-child(2),
   .tableRow > span:nth-child(3),
   .tableRow > span:nth-child(4),
-  .tableRow > span:nth-child(6) {
+  .tableRow > span:nth-child(6),
+  .tableRow > span:nth-child(7) {
     display: flex;
     align-items: center;
     gap: 0;
@@ -372,13 +389,18 @@
   }
 
   .tableRow > span:nth-child(6)::before {
+    content: '매칭';
+  }
+
+  .tableRow > span:nth-child(7)::before {
     content: '상태';
   }
 
   .tableRow > span:nth-child(2)::before,
   .tableRow > span:nth-child(3)::before,
   .tableRow > span:nth-child(4)::before,
-  .tableRow > span:nth-child(6)::before {
+  .tableRow > span:nth-child(6)::before,
+  .tableRow > span:nth-child(7)::before {
     font-size: 0.72rem;
     font-weight: 650;
     color: var(--charcoal-pale);

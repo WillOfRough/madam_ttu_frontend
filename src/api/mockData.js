@@ -897,9 +897,15 @@ function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
   const birthYear = c.birthDate ? new Date(c.birthDate).getFullYear() : null;
   const age = birthYear ? new Date().getFullYear() - birthYear : null;
+  const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
+  const activeMatchCount = matches.filter((m) =>
+    activeStatuses.includes(m.status) &&
+    (m.clientA.clientId === c.id || m.clientB.clientId === c.id)
+  ).length;
   return {
     nickname: c.nickname || null,
     age,
+    activeMatchCount,
     photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     ownerManager: owner,
     isOwner: c.ownerManagerId === currentUser.id,

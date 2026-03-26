@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle, UserRound } from 'lucide-react';
+import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle, UserRound, Info } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
@@ -295,6 +295,8 @@ function CreateMatchModal({ onClose, onCreated }) {
   const [selectingFor, setSelectingFor] = useState('A');
   const [submitting, setSubmitting] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
+  const [activeMatches, setActiveMatches] = useState({ A: [], B: [] });
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (searchQuery.length >= 1) {
@@ -307,26 +309,48 @@ function CreateMatchModal({ onClose, onCreated }) {
     }
   }, [searchQuery]);
 
-  // Check for duplicate match when both clients are selected
+  // Check for duplicate match & active matches per client
   useEffect(() => {
-    if (!clientA || !clientB) {
+    if (!clientA && !clientB) {
       setDuplicateMatch(null);
+      setActiveMatches({ A: [], B: [] });
       return;
     }
     let cancelled = false;
     matchService.listMatches({ size: 200 }).then((res) => {
       if (cancelled) return;
       const list = res.data || res.matches || [];
-      const dup = list.find((m) => {
-        if (m.status === 'cancelled') return false;
-        const ids = [m.clientA.clientId, m.clientB.clientId];
-        return (
-          (ids.includes(clientA.id) && ids.includes(clientB.id))
+      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
+
+      // Duplicate pair check
+      if (clientA && clientB) {
+        const dup = list.find((m) => {
+          if (m.status === 'cancelled') return false;
+          const ids = [m.clientA.clientId, m.clientB.clientId];
+          return ids.includes(clientA.id) && ids.includes(clientB.id);
+        });
+        setDuplicateMatch(dup || null);
+      } else {
+        setDuplicateMatch(null);
+      }
+
+      // Per-client active match check
+      const findActive = (clientId) => {
+        if (!clientId) return [];
+        return list.filter((m) =>
+          activeStatuses.includes(m.status) &&
+          (m.clientA.clientId === clientId || m.clientB.clientId === clientId)
         );
+      };
+      setActiveMatches({
+        A: findActive(clientA?.id),
+        B: findActive(clientB?.id),
       });
-      setDuplicateMatch(dup || null);
     }).catch(() => {
-      if (!cancelled) setDuplicateMatch(null);
+      if (!cancelled) {
+        setDuplicateMatch(null);
+        setActiveMatches({ A: [], B: [] });
+      }
     });
     return () => { cancelled = true; };
   }, [clientA, clientB]);
@@ -416,6 +440,53 @@ function CreateMatchModal({ onClose, onCreated }) {
             <span>
               이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
             </span>
+          </div>
+        )}
+
+        {/* Active Match Warning per client */}
+        {(activeMatches.A.length > 0 || activeMatches.B.length > 0) && !duplicateMatch && (
+          <div className={styles.activeMatchWarn}>
+            <div className={styles.activeMatchHeader}>
+              <Info size={15} />
+              <strong>진행 중인 매칭이 있는 회원입니다</strong>
+            </div>
+            <p className={styles.activeMatchDesc}>
+              동시에 여러 매칭을 진행하면 회원이 부담을 느껴 이탈할 수 있습니다. 한 분의 인연에 집중할 수 있도록, 기존 매칭 현황을 먼저 확인해 주세요.
+            </p>
+            {activeMatches.A.length > 0 && clientA && (
+              <div className={styles.activeMatchClient}>
+                <span className={styles.activeMatchLabel}>{clientA.name || clientA.nickname}</span>
+                <span className={styles.activeMatchCount}>진행 중 {activeMatches.A.length}건</span>
+                {activeMatches.A.map((m) => (
+                  <button
+                    key={m.matchId}
+                    className={styles.activeMatchLink}
+                    onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                    type="button"
+                  >
+                    {m.clientA.clientName} ↔ {m.clientB.clientName}
+                    <StatusBadge status={m.status} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {activeMatches.B.length > 0 && clientB && (
+              <div className={styles.activeMatchClient}>
+                <span className={styles.activeMatchLabel}>{clientB.name || clientB.nickname}</span>
+                <span className={styles.activeMatchCount}>진행 중 {activeMatches.B.length}건</span>
+                {activeMatches.B.map((m) => (
+                  <button
+                    key={m.matchId}
+                    className={styles.activeMatchLink}
+                    onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                    type="button"
+                  >
+                    {m.clientA.clientName} ↔ {m.clientB.clientName}
+                    <StatusBadge status={m.status} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
