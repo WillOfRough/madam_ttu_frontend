@@ -3,12 +3,75 @@
   animation: slideUp var(--duration-normal) var(--ease-out) both;
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
 .title {
   font-size: 1.55rem;
   font-weight: 800;
   color: var(--charcoal);
-  margin-bottom: var(--space-xl);
   letter-spacing: -0.03em;
+}
+
+.statsGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.totalCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  background: var(--bg-warm);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.totalCount strong {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.genderCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.genderMale {
+  color: #3b82f6;
+}
+
+.genderMale strong {
+  font-weight: 700;
+}
+
+.genderFemale {
+  color: #ec4899;
+}
+
+.genderFemale strong {
+  font-weight: 700;
+}
+
+.genderDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
 }
 
 .searchRow {

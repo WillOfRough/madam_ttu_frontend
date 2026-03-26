@@ -1078,7 +1078,9 @@ export async function mockFetch(path, options = {}) {
     const [field, dir] = sort.split(':');
     filtered.sort((a, b) => { const va = a[field] || ''; const vb = b[field] || ''; return dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1); });
     const start = (page - 1) * limit;
-    return { data: filtered.slice(start, start + limit).map((c) => ({ ...c, ...enrichClient(c) })), pagination: { page, limit, total: filtered.length, totalPages: Math.ceil(filtered.length / limit) } };
+    const maleCount = filtered.filter((c) => c.gender === 'male').length;
+    const femaleCount = filtered.filter((c) => c.gender === 'female').length;
+    return { data: filtered.slice(start, start + limit).map((c) => ({ ...c, ...enrichClient(c) })), pagination: { page, limit, total: filtered.length, totalPages: Math.ceil(filtered.length / limit) }, genderCounts: { male: maleCount, female: femaleCount } };
   }
 
   // GET /api/v1/connections

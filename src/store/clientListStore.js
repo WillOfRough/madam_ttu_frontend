@@ -4,6 +4,7 @@ import * as clientService from '../api/clientService';
 const useClientListStore = create((set, get) => ({
   clients: [],
   totalCount: 0,
+  genderCounts: { male: 0, female: 0 },
   page: 1,
   limit: 20,
   filters: {
@@ -38,6 +39,7 @@ const useClientListStore = create((set, get) => ({
       set({
         clients: result.data || result.clients || result,
         totalCount: result.pagination?.total ?? result.totalCount ?? 0,
+        genderCounts: result.genderCounts || { male: 0, female: 0 },
         isLoading: false,
       });
     } catch (err) {
@@ -49,6 +51,7 @@ const useClientListStore = create((set, get) => ({
     clients: [],
     totalCount: 0,
     page: 1,
+    genderCounts: { male: 0, female: 0 },
     filters: { owner: 'all', gender: null, approval: null, sort: 'createdAt:desc', name: '', phone: '' },
     error: null,
   }),

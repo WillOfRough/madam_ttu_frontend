@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -9,7 +9,7 @@ import { SkeletonTable } from '../../components/Skeleton';
 import styles from './ClientList.module.css';
 
 export default function ClientList() {
-  const { clients, totalCount, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
+  const { clients, totalCount, genderCounts, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
     useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
@@ -23,7 +23,22 @@ export default function ClientList() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>회원 관리</h1>
+      <div className={styles.titleRow}>
+        <h1 className={styles.title}>회원 관리</h1>
+        {!isLoading && totalCount > 0 && (
+          <div className={styles.statsGroup}>
+            <span className={styles.totalCount}>
+              <Users size={14} />
+              총 <strong>{totalCount.toLocaleString()}</strong>명
+            </span>
+            <span className={styles.genderCount}>
+              <span className={styles.genderMale}>남 <strong>{genderCounts.male}</strong></span>
+              <span className={styles.genderDivider} />
+              <span className={styles.genderFemale}>여 <strong>{genderCounts.female}</strong></span>
+            </span>
+          </div>
+        )}
+      </div>
 
       <div className={styles.searchRow}>
         <input
