@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users, Heart } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -165,12 +165,9 @@ export default function ClientList() {
                 </span>
                 <span>
                   {client.activeMatchCount > 0 ? (
-                    <span className={styles.matchingActive}>
-                      <Heart size={11} />
-                      {client.activeMatchCount}건 진행 중
-                    </span>
+                    <span className={styles.matchingActive}>매칭 진행중</span>
                   ) : (
-                    <span className={styles.matchingNone}>-</span>
+                    <span className={styles.matchingAvailable}>매칭 가능</span>
                   )}
                 </span>
                 <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>

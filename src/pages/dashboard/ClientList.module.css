@@ -287,19 +287,21 @@
 }
 
 .matchingActive {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   font-size: 0.75rem;
   font-weight: 600;
   color: #b45309;
   background: #fef3c7;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
 }
 
-.matchingNone {
-  color: var(--charcoal-pale);
+.matchingAvailable {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
 }
 
 @media (max-width: 640px) {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as clientService from '../api/clientService';
+import * as matchService from '../api/matchService';
 
 const useClientListStore = create((set, get) => ({
   clients: [],
@@ -54,8 +55,28 @@ const useClientListStore = create((set, get) => ({
         };
       }
 
+      // 매칭 목록에서 각 회원별 진행 중 매칭 수 계산
+      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
+      let activeMatchMap = {};
+      try {
+        const matchRes = await matchService.listMatches({ size: 200 });
+        const matchList = matchRes.data || matchRes.matches || [];
+        for (const m of matchList) {
+          if (!activeStatuses.includes(m.status)) continue;
+          const aId = m.clientA?.clientId;
+          const bId = m.clientB?.clientId;
+          if (aId) activeMatchMap[aId] = (activeMatchMap[aId] || 0) + 1;
+          if (bId) activeMatchMap[bId] = (activeMatchMap[bId] || 0) + 1;
+        }
+      } catch { /* 매칭 조회 실패 시 무시 */ }
+
+      const enrichedClients = clients.map((c) => ({
+        ...c,
+        activeMatchCount: c.activeMatchCount ?? activeMatchMap[c.id] ?? 0,
+      }));
+
       set({
-        clients,
+        clients: enrichedClients,
         filteredCount,
         totalCount: genderCounts.male + genderCounts.female,
         genderCounts,

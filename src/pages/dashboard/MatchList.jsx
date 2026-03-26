@@ -31,6 +31,7 @@ export default function MatchList() {
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [managerFilter, setManagerFilter] = useState('');
   const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
@@ -39,17 +40,22 @@ export default function MatchList() {
 
   const totalPages = Math.ceil(totalCount / size);
 
-  const filteredMatches = searchQuery.trim()
-    ? matches.filter((m) => {
-        const q = searchQuery.trim().toLowerCase();
-        return (
-          m.clientA.clientName?.toLowerCase().includes(q) ||
-          m.clientB.clientName?.toLowerCase().includes(q) ||
-          m.note?.toLowerCase().includes(q) ||
-          (STATUS_STEP_LABELS[m.status] || '').includes(q)
-        );
-      })
-    : matches;
+  // 고유 매니저 목록 추출
+  const managerNames = [...new Set(matches.map((m) => m.createdByManagerName).filter(Boolean))].sort();
+
+  const filteredMatches = matches.filter((m) => {
+    if (managerFilter && m.createdByManagerName !== managerFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      return (
+        m.clientA.clientName?.toLowerCase().includes(q) ||
+        m.clientB.clientName?.toLowerCase().includes(q) ||
+        m.note?.toLowerCase().includes(q) ||
+        (STATUS_STEP_LABELS[m.status] || '').includes(q)
+      );
+    }
+    return true;
+  });
 
   return (
     <div className={styles.page}>
@@ -144,6 +150,18 @@ export default function MatchList() {
           <option value="completed">완료</option>
           <option value="cancelled">취소</option>
         </select>
+        {managerNames.length > 1 && (
+          <select
+            className={styles.filterSelect}
+            value={managerFilter}
+            onChange={(e) => setManagerFilter(e.target.value)}
+          >
+            <option value="">매니저 전체</option>
+            {managerNames.map((name) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {error && (
