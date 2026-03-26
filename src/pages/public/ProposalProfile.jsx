@@ -201,8 +201,10 @@ export default function ProposalProfile() {
   const fields = [
     { label: '나이', value: cp.age ? `${cp.age}세` : null },
     { label: '키', value: cp.height ? `${cp.height}cm` : null },
+    { label: '직업', value: cp.occupation },
     { label: '회사', value: cp.company },
     { label: '거주지', value: cp.location },
+    { label: '직장 위치', value: cp.workLocation },
     { label: 'MBTI', value: cp.mbti },
     { label: '취미', value: cp.hobbies },
   ].filter((f) => f.value);

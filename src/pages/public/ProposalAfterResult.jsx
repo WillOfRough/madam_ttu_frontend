@@ -93,6 +93,7 @@ export default function ProposalAfterResult() {
       { label: '직업', value: profile.occupation },
       { label: '회사', value: profile.company },
       { label: '거주지', value: profile.location },
+      { label: '직장 위치', value: profile.workLocation },
       { label: 'MBTI', value: profile.mbti },
       { label: '취미', value: profile.hobbies },
     ].filter((f) => f.value);
