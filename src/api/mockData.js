@@ -1071,15 +1071,15 @@ export async function mockFetch(path, options = {}) {
     const limit = parseInt(params.get('limit') || '20', 10);
     if (nameQ) filtered = filtered.filter((c) => c.name.includes(nameQ));
     if (phoneQ) filtered = filtered.filter((c) => c.phone === phoneQ);
-    if (gender) filtered = filtered.filter((c) => c.gender === gender);
     if (approval) filtered = filtered.filter((c) => c.approvalStatus === approval);
     if (owner === 'me') filtered = filtered.filter((c) => c.ownerManagerId === currentUser.id);
     else if (owner && owner !== 'all') filtered = filtered.filter((c) => c.ownerManagerId === owner);
+    const maleCount = filtered.filter((c) => c.gender === 'male').length;
+    const femaleCount = filtered.filter((c) => c.gender === 'female').length;
+    if (gender) filtered = filtered.filter((c) => c.gender === gender);
     const [field, dir] = sort.split(':');
     filtered.sort((a, b) => { const va = a[field] || ''; const vb = b[field] || ''; return dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1); });
     const start = (page - 1) * limit;
-    const maleCount = filtered.filter((c) => c.gender === 'male').length;
-    const femaleCount = filtered.filter((c) => c.gender === 'female').length;
     return { data: filtered.slice(start, start + limit).map((c) => ({ ...c, ...enrichClient(c) })), pagination: { page, limit, total: filtered.length, totalPages: Math.ceil(filtered.length / limit) }, genderCounts: { male: maleCount, female: femaleCount } };
   }
 

@@ -27,14 +27,30 @@ export default function ClientList() {
         <h1 className={styles.title}>회원 관리</h1>
         {!isLoading && totalCount > 0 && (
           <div className={styles.statsGroup}>
-            <span className={styles.totalCount}>
+            <button
+              className={`${styles.totalCount} ${!filters.gender ? styles.statsActive : ''}`}
+              onClick={() => setFilter('gender', null)}
+              type="button"
+            >
               <Users size={14} />
               총 <strong>{totalCount.toLocaleString()}</strong>명
-            </span>
+            </button>
             <span className={styles.genderCount}>
-              <span className={styles.genderMale}>남 <strong>{genderCounts.male}</strong></span>
+              <button
+                className={`${styles.genderMale} ${filters.gender === 'male' ? styles.statsActive : ''}`}
+                onClick={() => setFilter('gender', filters.gender === 'male' ? null : 'male')}
+                type="button"
+              >
+                남 <strong>{genderCounts.male}</strong>
+              </button>
               <span className={styles.genderDivider} />
-              <span className={styles.genderFemale}>여 <strong>{genderCounts.female}</strong></span>
+              <button
+                className={`${styles.genderFemale} ${filters.gender === 'female' ? styles.statsActive : ''}`}
+                onClick={() => setFilter('gender', filters.gender === 'female' ? null : 'female')}
+                type="button"
+              >
+                여 <strong>{genderCounts.female}</strong>
+              </button>
             </span>
           </div>
         )}
