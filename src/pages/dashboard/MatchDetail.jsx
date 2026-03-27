@@ -21,6 +21,11 @@ function generateAfterSuccessMessage(clientName) {
   return templates.afterSuccess.replace(/OO님/g, `${clientName}님`);
 }
 
+function generateAfterCompleteMessage(afterUrl) {
+  const templates = loadTemplates();
+  return templates.afterComplete.replace('[애프터 확인 링크]', afterUrl);
+}
+
 function generateMeetingMessage(clientName, schedule) {
   const templates = loadTemplates();
   let msg = templates.meeting.replace(/OO님/g, `${clientName}님`);
@@ -953,6 +958,7 @@ export default function MatchDetail() {
 
 function AfterLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
+  const [msgCopiedKey, setMsgCopiedKey] = useState(null);
 
   const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after`;
   const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after`;
@@ -963,6 +969,18 @@ function AfterLinkCard({ match }) {
       setCopiedKey(key);
       toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handleMsgCopy = async (url, key) => {
+    try {
+      const msg = generateAfterCompleteMessage(url);
+      await navigator.clipboard.writeText(msg);
+      setMsgCopiedKey(key);
+      toast.success('안내 메시지가 복사되었습니다.');
+      setTimeout(() => setMsgCopiedKey(null), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -987,7 +1005,11 @@ function AfterLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlA}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
               {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '복사'}
+              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, 'A')}>
+              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
@@ -1003,7 +1025,11 @@ function AfterLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlB}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
               {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '복사'}
+              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, 'B')}>
+              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
