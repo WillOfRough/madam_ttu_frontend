@@ -798,11 +798,9 @@ export default function MatchDetail() {
 
       {/* Manager Action Buttons */}
       <div className={styles.actionBar}>
-        {match.status === 'proposal_sent' && (
-          <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
-            <Trash2 size={14} /> 매칭 삭제
-          </button>
-        )}
+        <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
+          <Trash2 size={14} /> 매칭 삭제
+        </button>
         {match.status === 'scheduled' && (
           <>
             <button className={styles.actionBtn} onClick={handleCompleteClick} disabled={actionLoading}>
@@ -1197,6 +1195,36 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
 
   const hasProfile = participant.clientAge || participant.clientOccupation || participant.clientLocation;
   const photos = participant.clientPhotoUrls || [];
+
+  if (participant.deleted) {
+    return (
+      <div className={styles.participantCard}>
+        <div className={styles.participantHeader}>
+          <span className={styles.participantNameDeleted}>삭제된 회원</span>
+          <span className={styles.participantLabel}>{label}</span>
+        </div>
+        <div className={styles.participantBody}>
+          <div className={styles.deletedNotice}>
+            이 회원의 정보는 삭제되었습니다.
+          </div>
+          {participant.response && participant.response !== 'pending' && (
+            <div className={styles.participantField}>
+              <span className={styles.fieldLabel}>응답 상태</span>
+              <span className={styles[RESPONSE_MAP[participant.response]?.className || '']}>
+                {RESPONSE_MAP[participant.response]?.label || participant.response}
+              </span>
+            </div>
+          )}
+          {participant.respondedAt && (
+            <div className={styles.participantField}>
+              <span className={styles.fieldLabel}>응답 시각</span>
+              <span className={styles.fieldValue}>{formatDate(participant.respondedAt)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.participantCard}>

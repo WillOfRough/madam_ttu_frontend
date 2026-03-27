@@ -122,3 +122,9 @@ export async function deleteClientPhoto(clientId, photoId) {
     method: 'DELETE',
   });
 }
+
+export async function deleteClient(clientId) {
+  return apiFetch(`/api/v1/clients/${clientId}`, {
+    method: 'DELETE',
+  });
+}

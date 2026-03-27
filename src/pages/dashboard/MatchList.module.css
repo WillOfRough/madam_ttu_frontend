@@ -260,6 +260,11 @@
   color: var(--navy);
 }
 
+.deletedName {
+  color: var(--charcoal-pale);
+  font-style: italic;
+}
+
 .arrow {
   color: var(--charcoal-pale);
   font-size: 0.85rem;

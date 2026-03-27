@@ -146,6 +146,19 @@
   color: var(--charcoal);
 }
 
+.participantNameDeleted {
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  font-style: italic;
+}
+
+.deletedNotice {
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+  padding: 12px 0;
+  font-style: italic;
+}
+
 .participantLabel {
   font-size: 0.68rem;
   font-weight: 600;

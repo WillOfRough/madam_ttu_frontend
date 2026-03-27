@@ -188,18 +188,22 @@ export default function MatchList() {
               >
                 <div className={styles.cardTop}>
                   <div className={styles.matchPair}>
-                    <span>
+                    <span className={m.clientA.deleted ? styles.deletedName : ''}>
                       {m.clientA.clientName}
-                      <span className={styles.genderTag}>
-                        {m.clientA.clientGender === 'female' ? '여' : '남'}
-                      </span>
+                      {!m.clientA.deleted && (
+                        <span className={styles.genderTag}>
+                          {m.clientA.clientGender === 'female' ? '여' : '남'}
+                        </span>
+                      )}
                     </span>
                     <span className={styles.arrow}><ArrowRight size={16} /></span>
-                    <span>
+                    <span className={m.clientB.deleted ? styles.deletedName : ''}>
                       {m.clientB.clientName}
-                      <span className={styles.genderTag}>
-                        {m.clientB.clientGender === 'female' ? '여' : '남'}
-                      </span>
+                      {!m.clientB.deleted && (
+                        <span className={styles.genderTag}>
+                          {m.clientB.clientGender === 'female' ? '여' : '남'}
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className={styles.badgeGroup}>

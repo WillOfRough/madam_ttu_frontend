@@ -835,6 +835,60 @@ const matches = [
     createdByManagerId: 'mgr001',
     createdByManagerName: '김성중',
   },
+  // 12) 삭제된 회원이 포함된 매칭 (proposal_accepted)
+  {
+    matchId: 'match014',
+    type: '1:1 소개팅',
+    status: 'proposal_accepted',
+    note: '삭제된 회원 테스트용 매칭',
+    clientA: {
+      clientId: null, clientName: '삭제된 회원', clientGender: null,
+      managerName: null, role: 'proposer',
+      response: 'accepted', respondedAt: '2026-03-20T10:00:00Z',
+      proposalToken: 'PrTkDeleted01',
+      deleted: true,
+    },
+    clientB: {
+      clientId: 's002', clientName: '이준혁', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-03-21T14:00:00Z',
+      proposalToken: 'PrTkDeleted02',
+      deleted: false,
+    },
+    createdAt: '2026-03-19T09:00:00Z',
+    createdByManagerId: 'mgr001',
+    createdByManagerName: '김성중',
+  },
+  // 13) 삭제된 회원이 포함된 완료 매칭
+  {
+    matchId: 'match015',
+    type: '1:1 소개팅',
+    status: 'completed',
+    note: '삭제된 B회원 완료 매칭 테스트',
+    clientA: {
+      clientId: 's005', clientName: '한소희', clientGender: 'female',
+      managerName: '박소영', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-03-10T10:00:00Z',
+      proposalToken: 'PrTkDeleted03',
+      deleted: false,
+    },
+    clientB: {
+      clientId: null, clientName: '삭제된 회원', clientGender: null,
+      managerName: null, role: 'receiver',
+      response: 'accepted', respondedAt: '2026-03-10T15:00:00Z',
+      proposalToken: 'PrTkDeleted04',
+      deleted: true,
+    },
+    meetingDate: '2026-03-15T18:00:00Z',
+    location: '강남 카페',
+    endTime: '20:00',
+    confirmedAt: '2026-03-12T11:00:00Z',
+    completedAt: '2026-03-16T10:00:00Z',
+    createdAt: '2026-03-08T09:00:00Z',
+    createdByManagerId: 'mgr002',
+    createdByManagerName: '박소영',
+    afterStatus: 'pending',
+  },
 ];
 
 // match003: 양쪽 가용시간 등록 완료 (arranging 상태)
@@ -1201,6 +1255,20 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '사진이 추가되었습니다.' };
   }
 
+  // DELETE /api/v1/clients/:id (delete client)
+  if (method === 'DELETE' && /^\/api\/v1\/clients\/[^/]+$/.test(pathname) && !pathname.includes('/photos/')) {
+    const id = pathname.split('/').pop();
+    const idx = clients.findIndex((c) => c.id === id);
+    if (idx === -1) throw Object.assign(new Error('회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if (clients[idx].ownerManagerId !== currentUser.id) throw Object.assign(new Error('담당 매니저만 삭제할 수 있습니다.'), { status: 403, body: { error: '2.001' } });
+    for (const m of matches) {
+      if (m.clientA.clientId === id) { m.clientA.deleted = true; m.clientA.clientName = '삭제된 회원'; m.clientA.clientGender = null; }
+      if (m.clientB.clientId === id) { m.clientB.deleted = true; m.clientB.clientName = '삭제된 회원'; m.clientB.clientGender = null; }
+    }
+    clients.splice(idx, 1);
+    return { message: '회원이 삭제되었습니다.' };
+  }
+
   // DELETE /api/v1/clients/:id/photos/:photoId (delete photo)
   if (method === 'DELETE' && /^\/api\/v1\/clients\/[^/]+\/photos\/[^/]+$/.test(pathname)) {
     return { success: true, message: '사진이 삭제되었습니다.' };
@@ -1231,7 +1299,6 @@ export async function mockFetch(path, options = {}) {
     const id = pathname.split('/').pop();
     const idx = matches.findIndex((m) => m.matchId === id);
     if (idx === -1) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (matches[idx].status !== 'proposal_sent') throw Object.assign(new Error('제안 발송 상태에서만 삭제할 수 있습니다.'), { status: 400 });
     matches.splice(idx, 1);
     return { success: true, message: '매칭이 삭제되었습니다.' };
   }
@@ -1288,10 +1355,11 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/matches (list)
   if (method === 'GET' && pathname === '/api/v1/matches') {
-    const page = parseInt(params.get('page') || '1', 10);
+    const rawPage = parseInt(params.get('page') || '0', 10);
+    const page = rawPage < 1 ? 0 : rawPage;
     const size = parseInt(params.get('size') || '20', 10);
     const sorted = [...matches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const start = (page - 1) * size;
+    const start = page * size;
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
   }
 

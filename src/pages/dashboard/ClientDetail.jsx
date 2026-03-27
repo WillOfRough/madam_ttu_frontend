@@ -25,6 +25,8 @@ export default function ClientDetail() {
   const [editSaving, setEditSaving] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const photoInputRef = useRef(null);
 
   const closeLightbox = useCallback(() => setLightboxUrl(null), []);
@@ -149,6 +151,19 @@ export default function ClientDetail() {
     setDeletingPhotoId(null);
   };
 
+  const handleDeleteClient = async () => {
+    setDeleting(true);
+    try {
+      await clientService.deleteClient(clientId);
+      toast.success('회원이 삭제되었습니다.');
+      navigate('/dashboard/clients');
+    } catch (err) {
+      toast.error(err.message || '삭제에 실패했습니다.');
+    }
+    setDeleting(false);
+    setShowDeleteConfirm(false);
+  };
+
   if (loading) return (
     <div className={styles.page}>
       <SkeletonLine width="100px" height="16px" />
@@ -201,19 +216,20 @@ export default function ClientDetail() {
           </div>
         </div>
 
-        {client.isOwner && client.approvalStatus === 'pending' && (
+        {client.isOwner && (
           <div className={styles.actions}>
-            <button
-              className={styles.approveBtn}
-              onClick={() => setModal('approve')}
-            >
-              <Check size={16} /> 승인
-            </button>
-            <button
-              className={styles.rejectBtn}
-              onClick={() => setModal('reject')}
-            >
-              <X size={16} /> 거절
+            {client.approvalStatus === 'pending' && (
+              <>
+                <button className={styles.approveBtn} onClick={() => setModal('approve')}>
+                  <Check size={16} /> 승인
+                </button>
+                <button className={styles.rejectBtn} onClick={() => setModal('reject')}>
+                  <X size={16} /> 거절
+                </button>
+              </>
+            )}
+            <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>
+              <Trash2 size={16} /> 회원 삭제
             </button>
           </div>
         )}
@@ -478,6 +494,18 @@ export default function ClientDetail() {
           danger
           onConfirm={() => handleApproval('rejected')}
           onCancel={() => setModal(null)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="회원 삭제"
+          message="이 회원을 삭제하시겠습니까? 프로필, 사진 등 모든 데이터가 영구 삭제되며, 되돌릴 수 없습니다."
+          confirmLabel="삭제"
+          cancelLabel="돌아가기"
+          danger
+          onConfirm={handleDeleteClient}
+          onCancel={() => setShowDeleteConfirm(false)}
         />
       )}
 
