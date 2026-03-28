@@ -170,6 +170,7 @@ export default function MatchDetail() {
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
   const [paymentConfirmed, setPaymentConfirmedState] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
@@ -211,9 +212,13 @@ export default function MatchDetail() {
   };
 
   const handleCancel = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('취소 사유를 입력해주세요.');
+      return;
+    }
     setActionLoading(true);
     try {
-      await matchService.cancelMatch(matchId, { reason: '매니저가 취소' });
+      await matchService.cancelMatch(matchId, { reason: cancelReason.trim() });
       toast.success('매칭이 취소되었습니다.');
       reload();
     } catch (err) {
@@ -221,6 +226,7 @@ export default function MatchDetail() {
     }
     setActionLoading(false);
     setShowCancel(false);
+    setCancelReason('');
   };
 
   const handleDelete = async () => {
@@ -823,19 +829,48 @@ export default function MatchDetail() {
 
       {/* Cancel Modal */}
       {showCancel && (
-        <ConfirmModal
-          title="매칭 취소"
-          message={
-            refundStatus
-              ? `현재 ${refundStatus.label} 상태입니다. 정말 취소하시겠습니까?`
-              : '정말 이 매칭을 취소하시겠습니까?'
-          }
-          confirmLabel="취소 진행"
-          cancelLabel="돌아가기"
-          danger
-          onConfirm={handleCancel}
-          onCancel={() => setShowCancel(false)}
-        />
+        <div className={styles.overlay} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>매칭 취소</h3>
+            {refundStatus && (
+              <p className={styles.modalDesc}>현재 {refundStatus.label} 상태입니다.</p>
+            )}
+            <div className={styles.cancelReasonSection}>
+              <label className={styles.cancelReasonLabel}>취소 사유</label>
+              <div className={styles.cancelReasonPresets}>
+                {['노쇼 (약속 불이행)', '회원 요청으로 취소', '일정 조율 실패', '상대방 거절'].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    className={`${styles.cancelReasonChip} ${cancelReason === preset ? styles.cancelReasonChipActive : ''}`}
+                    onClick={() => setCancelReason(preset)}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className={styles.cancelReasonInput}
+                placeholder="취소 사유를 입력하거나 위에서 선택해주세요"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelModalBtn} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
+                돌아가기
+              </button>
+              <button
+                className={styles.dangerBtn}
+                onClick={handleCancel}
+                disabled={actionLoading || !cancelReason.trim()}
+              >
+                취소 진행
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
 

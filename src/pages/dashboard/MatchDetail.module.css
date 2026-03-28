@@ -855,6 +855,74 @@
   cursor: not-allowed;
 }
 
+/* ── Cancel Reason Modal ── */
+.cancelReasonSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: var(--space-md) 0;
+  text-align: left;
+}
+
+.cancelReasonLabel {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--charcoal);
+}
+
+.cancelReasonPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cancelReasonChip {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  background: var(--bg-warm);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.cancelReasonChip:hover {
+  border-color: var(--charcoal-pale);
+  background: var(--bg);
+}
+
+.cancelReasonChipActive {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f2;
+  font-weight: 600;
+}
+
+.cancelReasonInput {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.84rem;
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  transition: border-color var(--duration-fast) var(--ease-out);
+  box-sizing: border-box;
+}
+
+.cancelReasonInput::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.cancelReasonInput:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
 /* ── Cancelled Banner ── */
 .cancelledBanner {
   text-align: center;
