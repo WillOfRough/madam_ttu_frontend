@@ -166,6 +166,13 @@ OO님의 빛나는 만남을 위해 모든 준비를 마쳤습니다.
 
 Knots & Links와 함께해주셨던 시간에 감사드립니다.
 언제든 새로운 시작이 필요하실 때 다시 찾아주세요. 평안한 하루 되시길 바랍니다.`,
+
+  schedulingGuide: `축하드려요! 이제 두 분이 편하게 마주하실 수 있도록 저희가 모든 과정을 가이드해 드립니다.
+
+먼저, 아래 링크를 통해 만남이 가능한 시간대를 알려주세요.
+상대방분과의 조율은 물론, 대화하기 좋은 최적의 카페 예약까지 매니저가 직접 완료한 뒤 안내해 드리겠습니다. 연락처 노출이나 장소 고민 없이, 약속된 시간에 가벼운 마음으로 발걸음해 주세요.
+
+[일정 등록 링크 첨부]`,
 };
 
 const TEMPLATE_META = [
@@ -176,6 +183,7 @@ const TEMPLATE_META = [
   { key: 'afterComplete', label: '만남 후 애프터 안내', badge: '양식 5' },
   { key: 'deleteRequest', label: '개인정보 삭제 요청 확인', badge: '양식 6' },
   { key: 'deleteComplete', label: '개인정보 삭제 완료 안내', badge: '양식 7' },
+  { key: 'schedulingGuide', label: '일정 조율 안내', badge: '양식 8' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
