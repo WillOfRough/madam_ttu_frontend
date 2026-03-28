@@ -414,68 +414,112 @@ export default function MatchDetail() {
       {/* Arranging: Manager confirms time + venue */}
       {match.status === 'arranging' && allTimes.length > 0 && (
         <div className={styles.arrangingContainer}>
-          {/* No Common Times Warning */}
-          {commonKeys.size === 0 && (
-            <div className={styles.noCommonBanner}>
-              <div className={styles.noCommonContent}>
-                <AlertTriangle size={18} />
-                <div>
-                  <p className={styles.noCommonTitle}>겹치는 가용시간이 없습니다</p>
-                  <p className={styles.noCommonDesc}>양쪽 회원에게 가용시간을 다시 등록하도록 요청할 수 있습니다.</p>
+          {/* Section 1: Common Available Times */}
+          <div className={styles.commonTimesCard}>
+            <h3 className={styles.cardTitle}>
+              <Calendar size={16} /> 공통 가용시간
+            </h3>
+            {commonKeys.size > 0 ? (
+              <>
+                <p className={styles.commonTimesHint}>양쪽 회원이 모두 가능한 시간입니다</p>
+                <div className={styles.slotTags}>
+                  {[...commonKeys].sort().map((key) => {
+                    const [date, time] = key.split('_');
+                    const matchingSlots = allTimes.filter((t) => t.date === date && formatTimeOnly(t.startTime) === time);
+                    const firstSlot = matchingSlots[0];
+                    const isSelected = matchingSlots.some((s) => s.timeId === selectedTimeId);
+                    return (
+                      <label
+                        key={key}
+                        className={`${styles.slotTag} ${styles.slotTagCommon} ${isSelected ? styles.slotTagPicked : ''}`}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <input
+                          type="radio"
+                          name="confirmTime"
+                          value={firstSlot.timeId}
+                          checked={isSelected}
+                          onChange={() => setSelectedTimeId(firstSlot.timeId)}
+                          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0 }}
+                        />
+                        {formatDateHeader(date)} {time}
+                      </label>
+                    );
+                  })}
                 </div>
+                <div className={styles.confirmSection}>
+                  <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
+                    약속 확정하기
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.noCommonInline}>
+                <AlertTriangle size={16} />
+                <p>겹치는 가용시간이 없습니다. 아래 각 회원의 시간을 확인해주세요.</p>
+                <button
+                  className={styles.rescheduleBtn}
+                  onClick={() => setShowReschedule(true)}
+                  disabled={actionLoading}
+                >
+                  <RefreshCw size={14} />
+                  일정 재조율 요청
+                </button>
               </div>
-              <button
-                className={styles.rescheduleBtn}
-                onClick={() => setShowReschedule(true)}
-                disabled={actionLoading}
-              >
-                <RefreshCw size={14} />
-                일정 재조율 요청
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Section A: Common Available Times */}
-          {commonKeys.size > 0 && (
-            <div className={styles.commonTimesCard}>
-              <h3 className={styles.cardTitle}>
-                <Calendar size={16} /> 공통 가용시간
-              </h3>
-              <p className={styles.commonTimesHint}>양쪽 회원이 모두 가능한 시간입니다</p>
+          {/* Section 2: Client A Times */}
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>
+              <span className={styles.schedulingRoleBadge}>A</span> {match.clientA.clientName} 가용시간
+            </h3>
+            {timesA.length > 0 ? (
               <div className={styles.slotTags}>
-                {[...commonKeys].sort().map((key) => {
-                  const [date, time] = key.split('_');
-                  const matchingSlots = allTimes.filter((t) => t.date === date && formatTimeOnly(t.startTime) === time);
-                  const firstSlot = matchingSlots[0];
-                  const isSelected = matchingSlots.some((s) => s.timeId === selectedTimeId);
+                {timesA.map((slot) => {
+                  const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
                   return (
-                    <label
-                      key={key}
-                      className={`${styles.slotTag} ${styles.slotTagCommon} ${isSelected ? styles.slotTagPicked : ''}`}
-                      style={{ cursor: 'pointer' }}
+                    <span
+                      key={slot.timeId}
+                      className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''}`}
                     >
-                      <input
-                        type="radio"
-                        name="confirmTime"
-                        value={firstSlot.timeId}
-                        checked={isSelected}
-                        onChange={() => setSelectedTimeId(firstSlot.timeId)}
-                        style={{ display: 'none' }}
-                      />
-                      {formatDateHeader(date)} {time}
-                    </label>
+                      {isCommon && <span className={styles.commonDot} />}
+                      {formatDateHeader(slot.date)} {formatTimeOnly(slot.startTime)}
+                    </span>
                   );
                 })}
               </div>
-              <div className={styles.confirmSection}>
-                <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
-                  약속 확정하기
-                </button>
-              </div>
-            </div>
-          )}
+            ) : (
+              <p className={styles.waitingText}>아직 등록된 시간이 없습니다.</p>
+            )}
+          </div>
 
-          {/* Section B: Location Comparison */}
+          {/* Section 3: Client B Times */}
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>
+              <span className={styles.schedulingRoleBadge}>B</span> {match.clientB.clientName} 가용시간
+            </h3>
+            {timesB.length > 0 ? (
+              <div className={styles.slotTags}>
+                {timesB.map((slot) => {
+                  const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
+                  return (
+                    <span
+                      key={slot.timeId}
+                      className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''}`}
+                    >
+                      {isCommon && <span className={styles.commonDot} />}
+                      {formatDateHeader(slot.date)} {formatTimeOnly(slot.startTime)}
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className={styles.waitingText}>아직 등록된 시간이 없습니다.</p>
+            )}
+          </div>
+
+          {/* Location Comparison */}
           {(match.clientA.clientLocation || match.clientB.clientLocation) && (
             <div className={styles.card}>
               <h3 className={styles.cardTitle}>
@@ -536,84 +580,6 @@ export default function MatchDetail() {
               </div>
             </div>
           )}
-
-          {/* Section C: Date-by-Date Comparison (공통 시간 없을 때만) */}
-          {commonKeys.size === 0 && <div className={styles.card}>
-            <h3 className={styles.cardTitle}>
-              <Clock size={16} /> 날짜별 가용시간
-            </h3>
-            <div className={styles.dateCompareHeader}>
-              <span className={styles.dateCompareLabel} />
-              <span className={styles.dateCompareSide}>{match.clientA.clientName} (A)</span>
-              <span className={styles.dateCompareSide}>{match.clientB.clientName} (B)</span>
-            </div>
-            {allDates.map((date) => {
-              const aTimes = timesA.filter((t) => t.date === date);
-              const bTimes = timesB.filter((t) => t.date === date);
-              return (
-                <div key={date} className={styles.dateRow}>
-                  <div className={styles.dateLabel}>{formatDateHeader(date)}</div>
-                  <div className={styles.dateSlotsCompare}>
-                    <div className={styles.dateSlotsCol}>
-                      {aTimes.length > 0
-                        ? aTimes.map((slot) => {
-                            const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
-                            return (
-                              <label
-                                key={slot.timeId}
-                                className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <input
-                                  type="radio"
-                                  name="confirmTime"
-                                  value={slot.timeId}
-                                  checked={selectedTimeId === slot.timeId}
-                                  onChange={() => setSelectedTimeId(slot.timeId)}
-                                  style={{ display: 'none' }}
-                                />
-                                {isCommon && <span className={styles.commonDot} />}
-                                {formatTimeOnly(slot.startTime)}
-                              </label>
-                            );
-                          })
-                        : <span className={styles.noSlot}>-</span>}
-                    </div>
-                    <div className={styles.dateSlotsCol}>
-                      {bTimes.length > 0
-                        ? bTimes.map((slot) => {
-                            const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
-                            return (
-                              <label
-                                key={slot.timeId}
-                                className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''} ${selectedTimeId === slot.timeId ? styles.slotTagPicked : ''}`}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <input
-                                  type="radio"
-                                  name="confirmTime"
-                                  value={slot.timeId}
-                                  checked={selectedTimeId === slot.timeId}
-                                  onChange={() => setSelectedTimeId(slot.timeId)}
-                                  style={{ display: 'none' }}
-                                />
-                                {isCommon && <span className={styles.commonDot} />}
-                                {formatTimeOnly(slot.startTime)}
-                              </label>
-                            );
-                          })
-                        : <span className={styles.noSlot}>-</span>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            <div className={styles.confirmSection}>
-              <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
-                약속 확정하기
-              </button>
-            </div>
-          </div>}
         </div>
       )}
 
