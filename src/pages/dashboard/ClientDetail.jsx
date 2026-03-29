@@ -437,6 +437,12 @@ export default function ClientDetail() {
               const isA = m.clientA?.clientId === clientId;
               const partner = isA ? m.clientB : m.clientA;
               const myResponse = isA ? m.clientA?.response : m.clientB?.response;
+              const partnerResponse = isA ? m.clientB?.response : m.clientA?.response;
+              const myName = isA ? (m.clientA?.clientName || '나') : (m.clientB?.clientName || '나');
+              const partnerName = partner?.clientName || '상대';
+              const myAfter = isA ? m.afterResponses?.A : m.afterResponses?.B;
+              const partnerAfter = isA ? m.afterResponses?.B : m.afterResponses?.A;
+              const respLabel = (r) => r === 'accepted' ? '수락' : r === 'rejected' ? '거절' : '대기';
               return (
                 <button
                   key={m.matchId}
@@ -445,30 +451,50 @@ export default function ClientDetail() {
                 >
                   <div className={styles.historyTop}>
                     <span className={styles.historyPartner}>
-                      {partner?.clientName || '알 수 없음'}
+                      {partnerName}
                     </span>
                     <span className={styles.historyDate}>
                       {new Date(m.createdAt).toLocaleDateString('ko-KR')}
                     </span>
                   </div>
                   <div className={styles.historyTags}>
-                    <span className={styles.historyTagLabel}>매칭</span>
                     <StatusBadge status={m.status} />
-                    {myResponse && myResponse !== 'pending' && (
-                      <>
-                        <span className={styles.historyTagLabel}>응답</span>
-                        <span className={styles[`historyResp_${myResponse}`]}>
-                          {myResponse === 'accepted' ? '수락' : '거절'}
-                        </span>
-                      </>
-                    )}
-                    {m.afterStatus && (
-                      <>
-                        <span className={styles.historyTagLabel}>에프터</span>
-                        <StatusBadge status={`after_${m.afterStatus}`} />
-                      </>
-                    )}
+                    {m.afterStatus && <StatusBadge status={`after_${m.afterStatus}`} />}
                   </div>
+                  <div className={styles.historyResponses}>
+                    <span className={styles.historyResponseLabel}>프로포절</span>
+                    <span className={styles.historyResponseItem}>
+                      <span className={styles.historyResponseName}>{myName}</span>
+                      <span className={styles[`resp_${myResponse || 'pending'}`]}>
+                        {respLabel(myResponse)}
+                      </span>
+                    </span>
+                    <span className={styles.historyResponseDivider}>|</span>
+                    <span className={styles.historyResponseItem}>
+                      <span className={styles.historyResponseName}>{partnerName}</span>
+                      <span className={styles[`resp_${partnerResponse || 'pending'}`]}>
+                        {respLabel(partnerResponse)}
+                      </span>
+                    </span>
+                  </div>
+                  {m.status === 'completed' && m.afterResponses && (
+                    <div className={styles.historyResponses}>
+                      <span className={styles.historyResponseLabel}>에프터</span>
+                      <span className={styles.historyResponseItem}>
+                        <span className={styles.historyResponseName}>{myName}</span>
+                        <span className={styles[`resp_${myAfter || 'pending'}`]}>
+                          {respLabel(myAfter)}
+                        </span>
+                      </span>
+                      <span className={styles.historyResponseDivider}>|</span>
+                      <span className={styles.historyResponseItem}>
+                        <span className={styles.historyResponseName}>{partnerName}</span>
+                        <span className={styles[`resp_${partnerAfter || 'pending'}`]}>
+                          {respLabel(partnerAfter)}
+                        </span>
+                      </span>
+                    </div>
+                  )}
                 </button>
               );
             })}

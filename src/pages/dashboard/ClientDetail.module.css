@@ -441,6 +441,52 @@
   color: #b71c2c;
 }
 
+.historyResponses {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 0.78rem;
+}
+
+.historyResponseLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.02em;
+  min-width: 40px;
+}
+
+.historyResponseItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.historyResponseName {
+  font-weight: 600;
+  color: var(--charcoal-mid);
+}
+
+.historyResponseDivider {
+  color: var(--border);
+}
+
+.resp_accepted {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.resp_rejected {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.resp_pending {
+  color: var(--charcoal-pale);
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
   .fields {
     grid-template-columns: 1fr;
