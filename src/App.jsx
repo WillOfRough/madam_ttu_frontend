@@ -9,12 +9,10 @@ import RequireAuth from './components/RequireAuth';
 // Public pages
 import Login from './pages/public/Login';
 import RegisterManager from './pages/public/RegisterManager';
-import Signup from './pages/public/Signup';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
 import ServiceIntro from './pages/public/ServiceIntro';
 import ClientOath from './pages/public/ClientOath';
-import ManagerOath from './pages/public/ManagerOath';
 import ClientForm from './pages/public/ClientForm';
 import ApplyComplete from './pages/public/ApplyComplete';
 import ExpiredLink from './pages/public/ExpiredLink';
@@ -73,8 +71,8 @@ export default function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/signup/oath" element={<ManagerOath />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/signup/oath" element={<Navigate to="/login" replace />} />
+        <Route path="/signup" element={<Navigate to="/login" replace />} />
         <Route path="/register/:token" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
         <Route path="/invite/:token" element={<InviteValidation />} />

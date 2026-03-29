@@ -1,9 +1,17 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname } from '../../data/constants';
 import styles from './RegisterManager.module.css';
+import oathStyles from './ClientOath.module.css';
+
+const OATH_ITEMS = [
+  '매칭 과정에서 취득한 회원의 개인정보(이름, 연락처, 사진 등)를 제3자에게 무단으로 제공하거나 유출하지 않겠습니다.',
+  '수집된 개인정보는 매칭 목적 이외의 용도로 사용하지 않겠습니다.',
+  '매칭이 종료되거나 회원이 탈퇴를 요청한 경우, 관련 정보를 지체 없이 삭제하겠습니다.',
+  '위 사항을 위반할 경우 서비스 이용 제한 및 민·형사상 법적 책임을 질 수 있음을 이해합니다.',
+];
 
 export default function RegisterManager() {
   const { token } = useParams();
@@ -17,6 +25,8 @@ export default function RegisterManager() {
   if (isLoggedIn) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const [oathAgreed, setOathAgreed] = useState(false);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [nickname, setNickname] = useState('');
@@ -59,6 +69,47 @@ export default function RegisterManager() {
       setError(err.message || '가입에 실패했습니다.');
     }
   };
+
+  if (!oathAgreed) {
+    return (
+      <div className={oathStyles.page}>
+        <div className={oathStyles.container}>
+          <div className={oathStyles.iconWrap}>
+            <ShieldCheck size={36} />
+          </div>
+          <h1 className={oathStyles.title}>회원 정보 보호 서약</h1>
+          <h2 className={oathStyles.subtitle}>매니저로서 꼭 지켜주세요</h2>
+
+          <div className={oathStyles.items}>
+            {OATH_ITEMS.map((text, idx) => (
+              <div key={idx} className={oathStyles.item}>
+                <span className={oathStyles.itemNum}>{idx + 1}.</span>
+                <span className={oathStyles.itemText}>{text}</span>
+              </div>
+            ))}
+          </div>
+
+          <label className={oathStyles.agreeAllLabel}>
+            <input
+              type="checkbox"
+              checked={oathAgreed}
+              onChange={(e) => setOathAgreed(e.target.checked)}
+              className={oathStyles.checkbox}
+            />
+            <span>위 내용을 숙지했으며 서약합니다.</span>
+          </label>
+
+          <button
+            className={oathStyles.proceedBtn}
+            onClick={() => setOathAgreed(true)}
+            disabled={!oathAgreed}
+          >
+            서약하고 회원가입 진행하기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
