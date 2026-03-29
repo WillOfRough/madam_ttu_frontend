@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Link2, Mail, Clock } from 'lucide-react';
+import { Users, Link2, Mail, Clock, Heart, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
 import SummaryCard from '../../components/SummaryCard';
 import StatusBadge from '../../components/StatusBadge';
@@ -24,6 +24,17 @@ export default function DashboardHome() {
     { icon: Mail, label: '활성 초대링크', value: summary?.activeInviteCount ?? '-', color: 'coral', onClick: () => navigate('/dashboard/invites') },
   ];
 
+  const matchCards = [
+    { icon: Heart, label: '전체 매칭', value: summary?.totalMatches ?? '-', color: 'navy', onClick: () => navigate('/dashboard/matches') },
+    { icon: TrendingUp, label: '진행 중', value: summary?.activeMatches ?? '-', color: 'pending', onClick: () => navigate('/dashboard/matches') },
+    { icon: CheckCircle, label: '완료', value: summary?.completedMatches ?? '-', color: 'success', onClick: () => navigate('/dashboard/matches') },
+    { icon: XCircle, label: '취소', value: summary?.cancelledMatches ?? '-', color: 'coral' },
+  ];
+
+  const successRate = summary?.completedMatches > 0
+    ? Math.round((summary.afterSuccessCount / summary.completedMatches) * 100)
+    : 0;
+
   const pendingClients = summary?.recentPendingClients || [];
 
   if (isLoading && !summary) {
@@ -31,7 +42,7 @@ export default function DashboardHome() {
       <div className={styles.page}>
         <h1 className={styles.title}>대시보드</h1>
         <div className={styles.grid}>
-          {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <SkeletonCard key={i} />)}
         </div>
         <SkeletonTable rows={3} columns={4} />
       </div>
@@ -48,16 +59,33 @@ export default function DashboardHome() {
         ))}
       </div>
 
+      <h2 className={styles.statsTitle}>매칭 현황</h2>
+      <div className={styles.grid}>
+        {matchCards.map((card) => (
+          <SummaryCard key={card.label} {...card} />
+        ))}
+      </div>
+
+      <div className={styles.successRateBar}>
+        <div className={styles.successRateHeader}>
+          <span className={styles.successRateLabel}>에프터 성사율</span>
+          <span className={styles.successRateValue}>{successRate}%</span>
+        </div>
+        <div className={styles.successRateTrack}>
+          <div className={styles.successRateFill} style={{ width: `${successRate}%` }} />
+        </div>
+      </div>
+
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>최근 승인 대기</h2>
+          <h2 className={styles.sectionTitle}>최근 접수 회원</h2>
           <button className={styles.viewAll} onClick={() => navigate('/dashboard/clients')}>
             전체보기
           </button>
         </div>
 
         {pendingClients.length === 0 ? (
-          <div className={styles.empty}>승인 대기중인 회원이 없습니다.</div>
+          <div className={styles.empty}>접수된 회원이 없습니다.</div>
         ) : (
           <div className={styles.table}>
             <div className={styles.tableHeader}>

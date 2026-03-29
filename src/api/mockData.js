@@ -1002,6 +1002,13 @@ function getDashboardSummary() {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 5)
       .map((c) => ({ ...c, ...enrichClient(c) })),
+    // Match statistics
+    totalMatches: matches.length,
+    activeMatches: matches.filter(m => !['completed', 'cancelled'].includes(m.status)).length,
+    completedMatches: matches.filter(m => m.status === 'completed').length,
+    cancelledMatches: matches.filter(m => m.status === 'cancelled').length,
+    // After success rate (both accepted out of completed)
+    afterSuccessCount: matches.filter(m => m.status === 'completed' && m.afterResponses?.A === 'accepted' && m.afterResponses?.B === 'accepted').length,
   };
 }
 
