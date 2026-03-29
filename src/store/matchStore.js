@@ -28,7 +28,11 @@ const useMatchStore = create((set, get) => ({
       if (filters.status) {
         // 필터 활성화 시: 전체 데이터를 가져와서 클라이언트에서 필터링 + 페이징
         const result = await matchService.listMatches({ page: 0, size: 9999 });
-        const all = (result.data || result.matches || []).filter((m) => m.status === filters.status);
+        const all = (result.data || result.matches || []).filter((m) =>
+          filters.status === 'active'
+            ? !['completed', 'cancelled'].includes(m.status)
+            : m.status === filters.status
+        );
         const start = (page - 1) * size;
         set({
           matches: all.slice(start, start + size),

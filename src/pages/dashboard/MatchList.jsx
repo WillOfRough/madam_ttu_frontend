@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle, UserRound, Info } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import * as matchService from '../../api/matchService';
@@ -29,10 +29,20 @@ export default function MatchList() {
   const { matches, totalCount, page, size, filters, isLoading, error, setFilter, setPage, fetchMatches } =
     useMatchStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [managerFilter, setManagerFilter] = useState('');
   const [showGuide, setShowGuide] = useState(false);
+
+  // URL 파라미터에서 필터 적용
+  useEffect(() => {
+    const statusParam = searchParams.get('status');
+    if (statusParam) {
+      setFilter('status', statusParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchMatches();
@@ -120,6 +130,7 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
+          <option value="active">진행 중</option>
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
           <option value="scheduling">일정조율</option>

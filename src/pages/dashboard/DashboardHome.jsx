@@ -26,9 +26,9 @@ export default function DashboardHome() {
 
   const matchCards = [
     { icon: Heart, label: '전체 매칭', value: summary?.totalMatches ?? '-', color: 'navy', onClick: () => navigate('/dashboard/matches') },
-    { icon: TrendingUp, label: '진행 중', value: summary?.activeMatches ?? '-', color: 'pending', onClick: () => navigate('/dashboard/matches') },
-    { icon: CheckCircle, label: '완료', value: summary?.completedMatches ?? '-', color: 'success', onClick: () => navigate('/dashboard/matches') },
-    { icon: XCircle, label: '취소', value: summary?.cancelledMatches ?? '-', color: 'coral' },
+    { icon: TrendingUp, label: '진행 중', value: summary?.activeMatches ?? '-', color: 'pending', onClick: () => navigate('/dashboard/matches?status=active') },
+    { icon: CheckCircle, label: '완료', value: summary?.completedMatches ?? '-', color: 'success', onClick: () => navigate('/dashboard/matches?status=completed') },
+    { icon: XCircle, label: '취소', value: summary?.cancelledMatches ?? '-', color: 'coral', onClick: () => navigate('/dashboard/matches?status=cancelled') },
   ];
 
   const successRate = summary?.completedMatches > 0
