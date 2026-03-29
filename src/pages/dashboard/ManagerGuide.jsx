@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Copy, Check, Pencil, RotateCcw, Save, X, Lightbulb, FileText, Layout, Users, Heart, Network, Link2, Settings, BookMarked } from 'lucide-react';
+import { BookOpen, Copy, Check, Pencil, RotateCcw, Save, X, Lightbulb, FileText, Layout, Users, Heart, Network, Link2, Settings, BookMarked, Search, ChevronDown } from 'lucide-react';
 import styles from './ManagerGuide.module.css';
 
 const TAB_GUIDES = [
@@ -262,6 +262,7 @@ const TEMPLATE_META = [
 ];
 
 const LS_KEY = 'knl_manager_templates';
+const LS_SECTIONS_KEY = 'knl_guide_sections';
 
 export function loadTemplates() {
   try {
@@ -278,11 +279,33 @@ function saveTemplates(templates) {
   localStorage.setItem(LS_KEY, JSON.stringify(templates));
 }
 
+function loadSections() {
+  try {
+    const saved = localStorage.getItem(LS_SECTIONS_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { tabGuide: true, workflow: true, ...parsed };
+    }
+  } catch { /* ignore */ }
+  return { tabGuide: true, workflow: true };
+}
+
 export default function ManagerGuide() {
   const [templates, setTemplates] = useState(loadTemplates);
   const [editing, setEditing] = useState(null); // 'promotion' | 'meeting' | 'afterSuccess' | null
   const [editDraft, setEditDraft] = useState('');
   const [copiedKey, setCopiedKey] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeChip, setActiveChip] = useState('all');
+  const [sections, setSections] = useState(loadSections);
+
+  const toggleSection = (key) => {
+    setSections((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem(LS_SECTIONS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  };
 
   // Clear copied state after 2s
   useEffect(() => {
@@ -335,50 +358,70 @@ export default function ManagerGuide() {
 
       {/* ── Tab Guide ── */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
+        <h2
+          className={`${styles.sectionTitle} ${styles.sectionTitleClickable}`}
+          onClick={() => toggleSection('tabGuide')}
+          aria-expanded={sections.tabGuide}
+        >
           <span className={`${styles.sectionIcon} ${styles.sectionIconNavy}`}>
             <Layout size={15} />
           </span>
           화면별 안내
+          <ChevronDown
+            size={14}
+            className={`${styles.sectionChevron} ${!sections.tabGuide ? styles.sectionChevronCollapsed : ''}`}
+          />
         </h2>
-        <div className={styles.tabGuideGrid}>
-          {TAB_GUIDES.map(({ icon: Icon, title, path, desc }) => (
-            <div key={title} className={styles.tabGuideCard}>
-              <div className={styles.tabGuideHeader}>
-                <Icon size={18} className={styles.tabGuideIcon} />
-                <span className={styles.tabGuideTitle}>{title}</span>
-                <span className={styles.tabGuidePath}>{path}</span>
+        <div className={`${styles.sectionContent} ${!sections.tabGuide ? styles.sectionContentCollapsed : ''}`}>
+          <div className={styles.tabGuideGrid}>
+            {TAB_GUIDES.map(({ icon: Icon, title, path, desc }) => (
+              <div key={title} className={styles.tabGuideCard}>
+                <div className={styles.tabGuideHeader}>
+                  <Icon size={18} className={styles.tabGuideIcon} />
+                  <span className={styles.tabGuideTitle}>{title}</span>
+                  <span className={styles.tabGuidePath}>{path}</span>
+                </div>
+                <p className={styles.tabGuideDesc}>{desc}</p>
               </div>
-              <p className={styles.tabGuideDesc}>{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ── Workflow Steps ── */}
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
+        <h2
+          className={`${styles.sectionTitle} ${styles.sectionTitleClickable}`}
+          onClick={() => toggleSection('workflow')}
+          aria-expanded={sections.workflow}
+        >
           <span className={`${styles.sectionIcon} ${styles.sectionIconNavy}`}>
             <BookOpen size={15} />
           </span>
           매칭 업무 흐름
+          <ChevronDown
+            size={14}
+            className={`${styles.sectionChevron} ${!sections.workflow ? styles.sectionChevronCollapsed : ''}`}
+          />
         </h2>
-        <div className={styles.stepsTimeline}>
-          {WORKFLOW_STEPS.map((step, idx) => (
-            <div key={step.title} className={styles.stepItem}>
-              <div className={styles.stepNum}>{idx + 1}</div>
-              <div className={styles.stepContent}>
-                <div className={styles.stepTitle}>{step.title}</div>
-                <p className={styles.stepDesc}>{step.desc}</p>
-                {step.tip && (
-                  <div className={styles.stepTip}>
-                    <Lightbulb size={14} className={styles.stepTipIcon} />
-                    <span>{step.tip}</span>
-                  </div>
-                )}
+        <div className={`${styles.sectionContent} ${!sections.workflow ? styles.sectionContentCollapsed : ''}`}>
+          <div className={styles.stepsTimeline}>
+            {WORKFLOW_STEPS.map((step, idx) => (
+              <div key={step.title} className={styles.stepItem}>
+                <div className={styles.stepNum}>{idx + 1}</div>
+                <div className={styles.stepContent}>
+                  <div className={styles.stepTitle}>{step.title}</div>
+                  <p className={styles.stepDesc}>{step.desc}</p>
+                  {step.tip && (
+                    <div className={styles.stepTip}>
+                      <Lightbulb size={14} className={styles.stepTipIcon} />
+                      <span>{step.tip}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -391,77 +434,147 @@ export default function ManagerGuide() {
           글 양식
         </h2>
 
-        {TEMPLATE_META.map(({ key, label, badge }) => {
-          const isEditing = editing === key;
-          const isCopied = copiedKey === key;
+        {/* ── Filter Bar ── */}
+        <div className={styles.templateFilterBar}>
+          <div className={styles.templateSearchWrap}>
+            <Search size={15} className={styles.templateSearchIcon} />
+            <input
+              type="text"
+              className={styles.templateSearchInput}
+              placeholder="양식 이름 또는 내용으로 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                className={styles.templateSearchClear}
+                onClick={() => setSearchQuery('')}
+                aria-label="검색어 지우기"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <div className={styles.templateChips}>
+            <button
+              className={`${styles.chip} ${activeChip === 'all' ? styles.chipActive : ''}`}
+              onClick={() => setActiveChip('all')}
+            >
+              전체
+            </button>
+            {TEMPLATE_META.map(({ key, label }) => (
+              <button
+                key={key}
+                className={`${styles.chip} ${activeChip === key ? styles.chipActive : ''}`}
+                onClick={() => setActiveChip(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className={styles.templateResultCount}>
+            {(() => {
+              const q = searchQuery.trim().toLowerCase();
+              const chipFiltered = activeChip === 'all' ? TEMPLATE_META : TEMPLATE_META.filter(m => m.key === activeChip);
+              const count = chipFiltered.filter(({ key, label }) =>
+                !q || label.toLowerCase().includes(q) || templates[key].toLowerCase().includes(q)
+              ).length;
+              return q || activeChip !== 'all'
+                ? `검색 결과 ${count}개`
+                : `${TEMPLATE_META.length}개 양식`;
+            })()}
+          </div>
+        </div>
 
-          return (
-            <div key={key} className={styles.templateCard}>
-              <div className={styles.templateHeader}>
-                <span className={styles.templateTitle}>
-                  {label}
-                  <span className={styles.templateBadge}>{badge}</span>
-                </span>
-                <div className={styles.templateActions}>
+        {(() => {
+          const q = searchQuery.trim().toLowerCase();
+          const chipFiltered = activeChip === 'all' ? TEMPLATE_META : TEMPLATE_META.filter(m => m.key === activeChip);
+          const filtered = chipFiltered.filter(({ key, label }) =>
+            !q || label.toLowerCase().includes(q) || templates[key].toLowerCase().includes(q)
+          );
+
+          if (filtered.length === 0) {
+            return (
+              <div className={styles.templateEmpty}>
+                <Search size={28} className={styles.templateEmptyIcon} />
+                <p className={styles.templateEmptyText}>검색 결과가 없습니다</p>
+                <p className={styles.templateEmptyHint}>다른 검색어를 입력하거나 필터를 변경해 보세요</p>
+              </div>
+            );
+          }
+
+          return filtered.map(({ key, label, badge }) => {
+            const isEditing = editing === key;
+            const isCopied = copiedKey === key;
+
+            return (
+              <div key={key} className={styles.templateCard}>
+                <div className={styles.templateHeader}>
+                  <span className={styles.templateTitle}>
+                    {label}
+                    <span className={styles.templateBadge}>{badge}</span>
+                  </span>
+                  <div className={styles.templateActions}>
+                    {isEditing ? (
+                      <>
+                        <button
+                          className={`${styles.templateBtn} ${styles.saveBtn}`}
+                          onClick={handleSave}
+                        >
+                          <Save size={13} />
+                          저장
+                        </button>
+                        <button
+                          className={`${styles.templateBtn} ${styles.cancelEditBtn}`}
+                          onClick={handleCancelEdit}
+                        >
+                          <X size={13} />
+                          취소
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className={`${styles.templateBtn} ${isCopied ? styles.copiedBtn : styles.copyBtn}`}
+                          onClick={() => handleCopy(key)}
+                        >
+                          {isCopied ? <Check size={13} /> : <Copy size={13} />}
+                          {isCopied ? '복사됨' : '복사'}
+                        </button>
+                        <button
+                          className={`${styles.templateBtn} ${styles.editBtn}`}
+                          onClick={() => handleEdit(key)}
+                        >
+                          <Pencil size={13} />
+                          수정
+                        </button>
+                        <button
+                          className={`${styles.templateBtn} ${styles.resetBtn}`}
+                          onClick={() => handleReset(key)}
+                        >
+                          <RotateCcw size={13} />
+                          초기화
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.templateBody}>
                   {isEditing ? (
-                    <>
-                      <button
-                        className={`${styles.templateBtn} ${styles.saveBtn}`}
-                        onClick={handleSave}
-                      >
-                        <Save size={13} />
-                        저장
-                      </button>
-                      <button
-                        className={`${styles.templateBtn} ${styles.cancelEditBtn}`}
-                        onClick={handleCancelEdit}
-                      >
-                        <X size={13} />
-                        취소
-                      </button>
-                    </>
+                    <textarea
+                      className={styles.templateTextarea}
+                      value={editDraft}
+                      onChange={(e) => setEditDraft(e.target.value)}
+                      autoFocus
+                    />
                   ) : (
-                    <>
-                      <button
-                        className={`${styles.templateBtn} ${isCopied ? styles.copiedBtn : styles.copyBtn}`}
-                        onClick={() => handleCopy(key)}
-                      >
-                        {isCopied ? <Check size={13} /> : <Copy size={13} />}
-                        {isCopied ? '복사됨' : '복사'}
-                      </button>
-                      <button
-                        className={`${styles.templateBtn} ${styles.editBtn}`}
-                        onClick={() => handleEdit(key)}
-                      >
-                        <Pencil size={13} />
-                        수정
-                      </button>
-                      <button
-                        className={`${styles.templateBtn} ${styles.resetBtn}`}
-                        onClick={() => handleReset(key)}
-                      >
-                        <RotateCcw size={13} />
-                        초기화
-                      </button>
-                    </>
+                    <div className={styles.templatePreview}>{templates[key]}</div>
                   )}
                 </div>
               </div>
-              <div className={styles.templateBody}>
-                {isEditing ? (
-                  <textarea
-                    className={styles.templateTextarea}
-                    value={editDraft}
-                    onChange={(e) => setEditDraft(e.target.value)}
-                    autoFocus
-                  />
-                ) : (
-                  <div className={styles.templatePreview}>{templates[key]}</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+            );
+          });
+        })()}
       </div>
     </div>
   );
