@@ -78,48 +78,26 @@ export default function MatchList() {
         {showGuide && (
           <div className={styles.guideContent}>
             <div className={styles.guideSteps}>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>1</span>
-                <div>
-                  <strong>매칭 생성</strong>
-                  <p>회원 A, B를 선택하여 매칭을 만듭니다.</p>
+              {[
+                { title: '매칭 생성', desc: '회원 A, B를 선택하여 매칭을 만듭니다.' },
+                { title: 'A 프로필 확인', desc: 'A에게 프로포절 링크를 전달합니다. A가 수락해야 B에게 전달됩니다.' },
+                { title: 'B 프로필 확인', desc: 'A 수락 후 B에게 프로포절 링크를 전달합니다. B도 수락하면 매칭 성사.' },
+                { title: '입금 확인', desc: '양쪽 수락 후 입금을 안내하고, 확인되면 입금 확인 버튼을 눌러주세요.' },
+                { title: '일정 조율', desc: '양쪽에 가용시간 등록 링크를 전달합니다.' },
+                { title: '매니저 확정', desc: '양쪽 가용시간 등록 완료 후 공통 시간을 선택합니다.' },
+                { title: '약속 확정', desc: '장소를 입력하면 약속이 확정됩니다. 양측에 안내합니다.' },
+                { title: '미팅 완료', desc: '만남 후 매니저가 완료 처리합니다.' },
+                { title: '에프터', desc: '에프터 링크를 전달하여 "다시 만나고 싶은지" 응답을 받습니다.' },
+                { title: '성사 결과', desc: '양쪽 OK이면 연락처 공개, 한쪽 거절이면 미성사 안내.' },
+              ].map((step, idx) => (
+                <div key={step.title} className={styles.guideStep}>
+                  <span className={styles.guideNum}>{idx + 1}</span>
+                  <div>
+                    <strong>{step.title}</strong>
+                    <p>{step.desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>2</span>
-                <div>
-                  <strong>제안 발송</strong>
-                  <p>B에게 프로포절 링크가 전달됩니다. B가 상대 프로필을 확인하고 수락/거절합니다.</p>
-                </div>
-              </div>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>3</span>
-                <div>
-                  <strong>상대 수락</strong>
-                  <p>B가 수락하면 A에게도 프로포절 링크가 전달됩니다. A가 확인 후 수락/거절합니다.</p>
-                </div>
-              </div>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>4</span>
-                <div>
-                  <strong>일정 조율</strong>
-                  <p>양쪽 모두 수락 시 A, B 각각에게 가용시간 등록 링크가 전달됩니다. 양쪽 모두 등록하면 매니저가 시간을 확정합니다.</p>
-                </div>
-              </div>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>5</span>
-                <div>
-                  <strong>약속 확정</strong>
-                  <p>매니저가 장소를 입력하면 약속이 확정됩니다. 양측에 안내가 전달됩니다.</p>
-                </div>
-              </div>
-              <div className={styles.guideStep}>
-                <span className={styles.guideNum}>6</span>
-                <div>
-                  <strong>미팅 완료</strong>
-                  <p>만남 후 매니저가 완료 처리합니다.</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         )}
