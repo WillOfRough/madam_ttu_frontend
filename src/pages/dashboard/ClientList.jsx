@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Users } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
@@ -13,6 +13,30 @@ export default function ClientList() {
     useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
+
+  // Debounced search: local input state separate from store filters
+  const [nameInput, setNameInput] = useState(filters.name);
+  const [phoneInput, setPhoneInput] = useState(filters.phone);
+  const debounceRef = useRef(null);
+
+  const debouncedSetFilter = useCallback((key, value) => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setFilter(key, value);
+    }, 300);
+  }, [setFilter]);
+
+  const handleNameChange = (e) => {
+    const v = e.target.value;
+    setNameInput(v);
+    debouncedSetFilter('name', v);
+  };
+
+  const handlePhoneChange = (e) => {
+    const v = e.target.value;
+    setPhoneInput(v);
+    debouncedSetFilter('phone', v);
+  };
 
   useEffect(() => {
     fetchClients();
@@ -59,14 +83,14 @@ export default function ClientList() {
       <div className={styles.searchRow}>
         <input
           className={styles.searchInput}
-          value={filters.name}
-          onChange={(e) => setFilter('name', e.target.value)}
+          value={nameInput}
+          onChange={handleNameChange}
           placeholder="이름 검색"
         />
         <input
           className={styles.searchInput}
-          value={filters.phone}
-          onChange={(e) => setFilter('phone', e.target.value)}
+          value={phoneInput}
+          onChange={handlePhoneChange}
           placeholder="전화번호 검색 (정확 일치)"
         />
       </div>
@@ -126,9 +150,9 @@ export default function ClientList() {
         </div>
       )}
 
-      {isLoading ? (
+      {isLoading && clients.length === 0 ? (
         <SkeletonTable rows={6} columns={6} />
-      ) : clients.length === 0 && !error ? (
+      ) : clients.length === 0 && !isLoading && !error ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />
           <p>등록된 회원이 없습니다.</p>
