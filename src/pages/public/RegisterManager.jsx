@@ -9,7 +9,7 @@ import oathStyles from './ClientOath.module.css';
 const OATH_ITEMS = [
   '매칭 과정에서 취득한 회원의 개인정보(이름, 연락처, 사진 등)를 제3자에게 무단으로 제공하거나 유출하지 않겠습니다.',
   '수집된 개인정보는 매칭 목적 이외의 용도로 사용하지 않겠습니다.',
-  '매칭이 종료되거나 회원이 탈퇴를 요청한 경우, 관련 정보를 지체 없이 삭제하겠습니다.',
+  '회원이 탈퇴를 요청한 경우, 관련 정보를 지체 없이 삭제하겠습니다.',
   '위 사항을 위반할 경우 서비스 이용 제한 및 민·형사상 법적 책임을 질 수 있음을 이해합니다.',
 ];
 
@@ -21,11 +21,7 @@ export default function RegisterManager() {
   const isLoading = useAuthStore((s) => s.isLoading);
   const initialNickname = useMemo(() => generateNickname(), []);
 
-  // 이미 로그인한 사용자는 대시보드로 리다이렉트
-  if (isLoggedIn) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+  const [oathChecked, setOathChecked] = useState(false);
   const [oathAgreed, setOathAgreed] = useState(false);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
@@ -35,6 +31,11 @@ export default function RegisterManager() {
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [error, setError] = useState(null);
+
+  // 이미 로그인한 사용자는 대시보드로 리다이렉트
+  if (isLoggedIn) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const NAME_REGEX = /^[가-힣a-zA-Z]{2,20}$/;
 
@@ -92,8 +93,8 @@ export default function RegisterManager() {
           <label className={oathStyles.agreeAllLabel}>
             <input
               type="checkbox"
-              checked={oathAgreed}
-              onChange={(e) => setOathAgreed(e.target.checked)}
+              checked={oathChecked}
+              onChange={(e) => setOathChecked(e.target.checked)}
               className={oathStyles.checkbox}
             />
             <span>위 내용을 숙지했으며 서약합니다.</span>
@@ -102,7 +103,7 @@ export default function RegisterManager() {
           <button
             className={oathStyles.proceedBtn}
             onClick={() => setOathAgreed(true)}
-            disabled={!oathAgreed}
+            disabled={!oathChecked}
           >
             서약하고 회원가입 진행하기
           </button>

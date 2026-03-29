@@ -29,6 +29,7 @@ const accounts = {
 
 // 현재 로그인한 사용자 추적
 let currentUser = accounts['sungjoong.kim@hancom.com'];
+let isLoggedIn = false;
 
 function randomToken(len = 12) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1045,11 +1046,13 @@ export async function mockFetch(path, options = {}) {
       throw Object.assign(new Error('이메일 또는 비밀번호가 올바르지 않습니다.'), { status: 401 });
     }
     currentUser = account;
+    isLoggedIn = true;
     return { manager: { id: account.id, email: account.email, name: account.name, role: account.role } };
   }
 
   // GET /api/v1/auth/me
   if (method === 'GET' && pathname === '/api/v1/auth/me') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
     return {
       id: currentUser.id, email: currentUser.email, name: currentUser.name,
       nickname: currentUser.nickname || '', phone: currentUser.phone || '',
@@ -1061,7 +1064,7 @@ export async function mockFetch(path, options = {}) {
   }
 
   // POST /api/v1/auth/logout
-  if (method === 'POST' && pathname === '/api/v1/auth/logout') return { success: true };
+  if (method === 'POST' && pathname === '/api/v1/auth/logout') { isLoggedIn = false; return { success: true }; }
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
