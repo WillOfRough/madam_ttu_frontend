@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Pencil, Save, X } from 'lucide-react';
+import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
+import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
 import styles from './Settings.module.css';
 
@@ -18,6 +19,13 @@ export default function Settings() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', phone: '' });
   const [saving, setSaving] = useState(false);
+
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     fetchInfo();
@@ -54,6 +62,26 @@ export default function Settings() {
       toast.error(err.message || '정보 수정에 실패했습니다.');
     }
     setSaving(false);
+  };
+
+  const handlePasswordChange = async () => {
+    if (!pwForm.current) { toast.error('현재 비밀번호를 입력해주세요.'); return; }
+    if (pwForm.newPw.length < 6) { toast.error('새 비밀번호는 6자 이상이어야 합니다.'); return; }
+    if (pwForm.newPw !== pwForm.confirm) { toast.error('새 비밀번호가 일치하지 않습니다.'); return; }
+    setPwSaving(true);
+    try {
+      await changePassword({
+        currentPassword: pwForm.current,
+        newPassword: pwForm.newPw,
+        confirmPassword: pwForm.confirm,
+      });
+      toast.success('비밀번호가 변경되었습니다.');
+      setPwOpen(false);
+      setPwForm({ current: '', newPw: '', confirm: '' });
+    } catch (err) {
+      toast.error(err.message || '비밀번호 변경에 실패했습니다.');
+    }
+    setPwSaving(false);
   };
 
   const handleLogout = async () => {
@@ -154,6 +182,78 @@ export default function Settings() {
                 <span className={styles.fieldValue}>{info.myClientCount}명</span>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Password Change */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <div className={styles.cardHeaderLeft}>
+            <Lock size={18} />
+            <h3>비밀번호 변경</h3>
+          </div>
+          {!pwOpen && (
+            <button className={styles.editBtn} onClick={() => setPwOpen(true)}>
+              <Pencil size={14} /> 변경
+            </button>
+          )}
+        </div>
+        {pwOpen && (
+          <div className={styles.editForm}>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>현재 비밀번호</label>
+              <div className={styles.pwInputWrap}>
+                <input
+                  className={styles.formInput}
+                  type={showCurrent ? 'text' : 'password'}
+                  value={pwForm.current}
+                  onChange={(e) => setPwForm((f) => ({ ...f, current: e.target.value }))}
+                  placeholder="현재 비밀번호"
+                />
+                <button type="button" className={styles.pwToggle} onClick={() => setShowCurrent((v) => !v)}>
+                  {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>새 비밀번호</label>
+              <div className={styles.pwInputWrap}>
+                <input
+                  className={styles.formInput}
+                  type={showNew ? 'text' : 'password'}
+                  value={pwForm.newPw}
+                  onChange={(e) => setPwForm((f) => ({ ...f, newPw: e.target.value }))}
+                  placeholder="6자 이상"
+                />
+                <button type="button" className={styles.pwToggle} onClick={() => setShowNew((v) => !v)}>
+                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>새 비밀번호 확인</label>
+              <div className={styles.pwInputWrap}>
+                <input
+                  className={styles.formInput}
+                  type={showConfirm ? 'text' : 'password'}
+                  value={pwForm.confirm}
+                  onChange={(e) => setPwForm((f) => ({ ...f, confirm: e.target.value }))}
+                  placeholder="새 비밀번호 재입력"
+                />
+                <button type="button" className={styles.pwToggle} onClick={() => setShowConfirm((v) => !v)}>
+                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className={styles.formActions}>
+              <button className={styles.saveBtn} onClick={handlePasswordChange} disabled={pwSaving}>
+                <Save size={14} /> {pwSaving ? '변경 중...' : '비밀번호 변경'}
+              </button>
+              <button className={styles.cancelBtn} onClick={() => { setPwOpen(false); setPwForm({ current: '', newPw: '', confirm: '' }); }} disabled={pwSaving}>
+                <X size={14} /> 취소
+              </button>
+            </div>
           </div>
         )}
       </div>
