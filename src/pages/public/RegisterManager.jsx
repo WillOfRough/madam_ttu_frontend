@@ -64,7 +64,7 @@ export default function RegisterManager() {
     const finalNickname = nickname.trim() || suggestedNickname;
     try {
       await register({ token, email, password, name: name.trim(), nickname: finalNickname });
-      navigate('/dashboard');
+      navigate('/dashboard/guide');
     } catch (err) {
       setError(err.message || '가입에 실패했습니다.');
     }

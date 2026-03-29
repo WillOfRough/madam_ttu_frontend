@@ -53,6 +53,62 @@
   box-shadow: 0 3px 10px rgba(255, 126, 103, 0.25);
 }
 
+/* ── Tab Guide ── */
+.tabGuideGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.tabGuideCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tabGuideCard:hover {
+  border-color: var(--navy-glow);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.tabGuideHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tabGuideIcon {
+  color: var(--navy);
+  flex-shrink: 0;
+}
+
+.tabGuideTitle {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+.tabGuidePath {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  color: var(--charcoal-pale);
+}
+
+.tabGuideDesc {
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  line-height: 1.65;
+  margin: 0;
+}
+
 .stepsTimeline {
   display: flex;
   flex-direction: column;

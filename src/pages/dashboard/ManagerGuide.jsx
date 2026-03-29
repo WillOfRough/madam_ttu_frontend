@@ -1,6 +1,51 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Copy, Check, Pencil, RotateCcw, Save, X, Lightbulb, FileText } from 'lucide-react';
+import { BookOpen, Copy, Check, Pencil, RotateCcw, Save, X, Lightbulb, FileText, Layout, Users, Heart, Network, Link2, Settings, BookMarked } from 'lucide-react';
 import styles from './ManagerGuide.module.css';
+
+const TAB_GUIDES = [
+  {
+    icon: Layout,
+    title: '대시보드',
+    path: '홈',
+    desc: '로그인 후 가장 먼저 보이는 화면입니다. 승인 대기 중인 회원, 진행 중인 매칭 등 핵심 현황을 한눈에 확인할 수 있습니다.',
+  },
+  {
+    icon: Users,
+    title: '회원 관리',
+    path: '회원',
+    desc: '초대 링크를 통해 가입한 회원 목록을 관리합니다. 회원 승인/거절, 프로필 확인, 매칭 이력 조회가 가능합니다. 이름·성별·상태 필터로 원하는 회원을 빠르게 찾을 수 있습니다.',
+  },
+  {
+    icon: Heart,
+    title: '매칭',
+    path: '매칭',
+    desc: '매칭을 생성하고 전체 진행 과정을 관리하는 핵심 탭입니다. 프로포절 전달 → 수락 확인 → 입금 → 일정 조율 → 만남 → 에프터까지 모든 단계를 이 탭에서 관리합니다.',
+  },
+  {
+    icon: Network,
+    title: '네트워크',
+    path: '네트워크',
+    desc: '다른 매니저와 연결하여 서로의 회원을 열람하고 크로스 매칭을 할 수 있습니다. 네트워크가 넓을수록 더 좋은 매칭 조합을 만들 수 있습니다.',
+  },
+  {
+    icon: Link2,
+    title: '초대 관리',
+    path: '초대',
+    desc: '회원을 초대하기 위한 링크를 생성하고 관리합니다. 생성된 링크를 카카오톡 등으로 전달하면, 상대방이 링크를 통해 프로필을 등록할 수 있습니다.',
+  },
+  {
+    icon: Settings,
+    title: '설정',
+    path: '설정',
+    desc: '내 정보(이름, 닉네임, 연락처) 수정과 비밀번호 변경이 가능합니다.',
+  },
+  {
+    icon: BookMarked,
+    title: '가이드',
+    path: '가이드',
+    desc: '지금 보고 계신 이 페이지입니다. 매칭 업무 흐름과 회원에게 보낼 글 양식을 확인하고 복사·수정할 수 있습니다.',
+  },
+];
 
 const WORKFLOW_STEPS = [
   {
@@ -287,6 +332,28 @@ export default function ManagerGuide() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>매니저 가이드</h1>
+
+      {/* ── Tab Guide ── */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>
+          <span className={`${styles.sectionIcon} ${styles.sectionIconNavy}`}>
+            <Layout size={15} />
+          </span>
+          화면별 안내
+        </h2>
+        <div className={styles.tabGuideGrid}>
+          {TAB_GUIDES.map(({ icon: Icon, title, path, desc }) => (
+            <div key={title} className={styles.tabGuideCard}>
+              <div className={styles.tabGuideHeader}>
+                <Icon size={18} className={styles.tabGuideIcon} />
+                <span className={styles.tabGuideTitle}>{title}</span>
+                <span className={styles.tabGuidePath}>{path}</span>
+              </div>
+              <p className={styles.tabGuideDesc}>{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Workflow Steps ── */}
       <div className={styles.section}>
