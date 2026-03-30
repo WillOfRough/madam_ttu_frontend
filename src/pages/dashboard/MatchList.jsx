@@ -48,8 +48,6 @@ export default function MatchList() {
     fetchMatches();
   }, [page, filters, fetchMatches]);
 
-  const totalPages = Math.ceil(totalCount / size);
-
   // 고유 매니저 목록 추출
   const managerNames = [...new Set(matches.map((m) => m.createdByManagerName).filter(Boolean))].sort();
 
@@ -66,6 +64,10 @@ export default function MatchList() {
     }
     return true;
   });
+
+  // 매니저/검색 필터 적용 시 filteredMatches 기준, 아닐 때 totalCount 기준
+  const effectiveTotal = (managerFilter || searchQuery.trim()) ? filteredMatches.length : totalCount;
+  const totalPages = Math.ceil(effectiveTotal / size);
 
   return (
     <div className={styles.page}>
