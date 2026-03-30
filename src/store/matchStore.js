@@ -10,7 +10,8 @@ const STATUS_PRIORITY = {
   scheduling: 4,      // 가용시간 수집 중
   proposal_accepted: 5, // 프로포절 수락
   proposal_sent: 6,     // 프로포절 발송
-  cancelled: 7,       // 취소 (맨 마지막)
+  after_failed: 7,    // 애프터 미성사
+  cancelled: 8,       // 취소 (맨 마지막)
 };
 
 function sortByStatusPriority(matches) {
