@@ -1,6 +1,27 @@
 import { create } from 'zustand';
 import * as matchService from '../api/matchService';
 
+// 진행 상태 우선순위: 가장 진행된 상태가 먼저, cancelled은 맨 뒤
+const STATUS_PRIORITY = {
+  after_pending: 0,   // 애프터 대기
+  completed: 1,       // 만남 완료
+  scheduled: 2,       // 일정 확정
+  arranging: 3,       // 일정 조율 중
+  scheduling: 4,      // 가용시간 수집 중
+  proposal_accepted: 5, // 프로포절 수락
+  proposal_sent: 6,     // 프로포절 발송
+  cancelled: 7,       // 취소 (맨 마지막)
+};
+
+function sortByStatusPriority(matches) {
+  return [...matches].sort((a, b) => {
+    const pa = STATUS_PRIORITY[a.status] ?? 6;
+    const pb = STATUS_PRIORITY[b.status] ?? 6;
+    if (pa !== pb) return pa - pb;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+}
+
 const useMatchStore = create((set, get) => ({
   matches: [],
   totalCount: 0,
@@ -34,17 +55,20 @@ const useMatchStore = create((set, get) => ({
             : m.status === filters.status
         );
         const start = (page - 1) * size;
+        const sorted = sortByStatusPriority(all);
         set({
-          matches: all.slice(start, start + size),
+          matches: sorted.slice(start, start + size),
           totalCount: all.length,
           isLoading: false,
         });
       } else {
-        // 필터 없음: 서버 페이징 그대로 사용
-        const result = await matchService.listMatches({ page: page - 1, size });
+        // 필터 없음: 전체 데이터를 가져와서 상태 우선순위로 정렬 + 페이징
+        const result = await matchService.listMatches({ page: 0, size: 9999 });
+        const all = sortByStatusPriority(result.data || result.matches || []);
+        const start = (page - 1) * size;
         set({
-          matches: result.data || result.matches || [],
-          totalCount: result.pagination?.total ?? (result.data || result.matches || []).length,
+          matches: all.slice(start, start + size),
+          totalCount: all.length,
           isLoading: false,
         });
       }
