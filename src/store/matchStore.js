@@ -1,23 +1,30 @@
 import { create } from 'zustand';
 import * as matchService from '../api/matchService';
 
-// 진행 상태 우선순위: 가장 진행된 상태가 먼저, cancelled은 맨 뒤
+// 진행 상태 우선순위: 가장 진행된 상태가 먼저, 종료 상태는 맨 뒤
 const STATUS_PRIORITY = {
-  after_pending: 0,   // 애프터 대기
-  completed: 1,       // 만남 완료
-  scheduled: 2,       // 일정 확정
-  arranging: 3,       // 일정 조율 중
-  scheduling: 4,      // 가용시간 수집 중
-  proposal_accepted: 5, // 프로포절 수락
-  proposal_sent: 6,     // 프로포절 발송
-  after_failed: 7,    // 애프터 미성사
-  cancelled: 8,       // 취소 (맨 마지막)
+  scheduled: 0,       // 일정 확정
+  arranging: 1,       // 일정 조율 중
+  scheduling: 2,      // 가용시간 수집 중
+  proposal_accepted: 3, // 프로포절 수락
+  proposal_sent: 4,     // 프로포절 발송
+  completed: 5,       // 만남 완료 (애프터 대기/성사)
+  cancelled: 6,       // 취소 (맨 마지막)
 };
+
+function getEffectivePriority(match) {
+  if (match.status === 'completed') {
+    if (match.afterStatus === 'pending') return -1;    // 애프터 대기 → 최상위
+    if (match.afterStatus === 'accepted') return 5;    // 애프터 성사 → completed 급
+    if (match.afterStatus === 'rejected') return 5.5;  // 애프터 미성사 → cancelled 바로 앞
+  }
+  return STATUS_PRIORITY[match.status] ?? 4;
+}
 
 function sortByStatusPriority(matches) {
   return [...matches].sort((a, b) => {
-    const pa = STATUS_PRIORITY[a.status] ?? 6;
-    const pb = STATUS_PRIORITY[b.status] ?? 6;
+    const pa = getEffectivePriority(a);
+    const pb = getEffectivePriority(b);
     if (pa !== pb) return pa - pb;
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
