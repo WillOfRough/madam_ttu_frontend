@@ -37,3 +37,7 @@ export async function updateInviteLabel(inviteId, label) {
     body: { label },
   });
 }
+
+export async function getInviteClients(inviteId) {
+  return apiFetch(`/api/v1/invites/${inviteId}/clients`, { method: 'GET' });
+}

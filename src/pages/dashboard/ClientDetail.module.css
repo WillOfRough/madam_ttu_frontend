@@ -71,6 +71,17 @@
   color: var(--charcoal-light);
 }
 
+.inviteTokenBadge {
+  font-size: 0.75rem;
+  color: var(--charcoal-pale);
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  display: inline-block;
+}
+
 .readonlyNotice {
   background: linear-gradient(135deg, #fff8f0 0%, #fff3e6 100%);
   border: 1px solid #f2c899;

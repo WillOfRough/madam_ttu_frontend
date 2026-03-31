@@ -214,6 +214,11 @@ export default function ClientDetail() {
               </span>
             )}
           </div>
+          {client.inviteToken && (
+            <div className={styles.inviteTokenBadge}>
+              초대 링크: {client.inviteToken.label || '라벨 없음'}
+            </div>
+          )}
         </div>
 
         {client.isOwner && (

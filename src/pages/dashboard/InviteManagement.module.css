@@ -270,6 +270,42 @@
   line-height: 1.5;
 }
 
+.registeredClients {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.registeredLabel {
+  font-size: 0.75rem;
+  color: var(--charcoal-pale);
+  font-weight: 500;
+}
+
+.registeredChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  color: var(--charcoal);
+}
+
+.registeredChip:hover {
+  background: var(--bg-dark);
+  border-color: var(--border);
+}
+
+.registeredStatus {
+  font-size: 0.65rem;
+  color: var(--charcoal-pale);
+}
+
 .cardActions {
   display: flex;
   gap: 8px;

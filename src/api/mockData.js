@@ -66,6 +66,7 @@ const clients = [
     managerNote: '밝고 활발한 성격. 대화 능력 좋음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-28T09:00:00Z',
+    inviteToken: { id: 'inv001', label: '김서연 지인 소개용' },
   },
   {
     id: 's002',
@@ -93,6 +94,7 @@ const clients = [
     managerNote: '차분하고 진중한 인상. 연봉 높음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-25T14:30:00Z',
+    inviteToken: { id: 'inv002', label: '3월 신규 모집' },
   },
   {
     id: 's003',
@@ -120,6 +122,7 @@ const clients = [
     managerNote: '',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-03-05T11:20:00Z',
+    inviteToken: { id: 'inv002', label: '3월 신규 모집' },
   },
   {
     id: 's004',
@@ -147,6 +150,7 @@ const clients = [
     managerNote: '',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-03-04T16:45:00Z',
+    inviteToken: { id: 'inv002', label: '3월 신규 모집' },
   },
   {
     id: 's005',
@@ -174,6 +178,7 @@ const clients = [
     managerNote: '자유로운 영혼. 비주얼 좋음.',
     ownerManagerId: 'm002',
     createdAt: '2026-02-20T08:15:00Z',
+    inviteToken: { id: 'inv004', label: '' },
   },
   {
     id: 's006',
@@ -438,6 +443,9 @@ const invites = [
     useCount: 1,
     createdAt: '2026-02-27T09:00:00Z',
     expiresAt: '2026-02-28T09:00:00Z',
+    registeredClients: [
+      { id: 's001', name: '김서연', gender: 'female', approvalStatus: 'approved', createdAt: '2026-02-27T11:00:00Z' },
+    ],
   },
   {
     id: 'inv002',
@@ -447,6 +455,11 @@ const invites = [
     useCount: 3,
     createdAt: '2026-03-05T10:00:00Z',
     expiresAt: '2026-03-12T10:00:00Z',
+    registeredClients: [
+      { id: 's002', name: '이준혁', gender: 'male', approvalStatus: 'approved', createdAt: '2026-03-05T12:00:00Z' },
+      { id: 's003', name: '박지민', gender: 'female', approvalStatus: 'approved', createdAt: '2026-03-06T10:00:00Z' },
+      { id: 's004', name: '최민수', gender: 'male', approvalStatus: 'pending', createdAt: '2026-03-07T09:00:00Z' },
+    ],
   },
   {
     id: 'inv003',
@@ -456,6 +469,7 @@ const invites = [
     useCount: 0,
     createdAt: '2026-03-06T08:00:00Z',
     expiresAt: '2026-03-07T08:00:00Z',
+    registeredClients: [],
   },
   {
     id: 'inv004',
@@ -465,6 +479,10 @@ const invites = [
     useCount: 2,
     createdAt: '2026-02-01T12:00:00Z',
     expiresAt: '2026-02-02T12:00:00Z',
+    registeredClients: [
+      { id: 's005', name: '한소희', gender: 'female', approvalStatus: 'approved', createdAt: '2026-02-01T14:00:00Z' },
+      { id: 's006', name: '오태양', gender: 'male', approvalStatus: 'approved', createdAt: '2026-02-01T15:00:00Z' },
+    ],
   },
   {
     id: 'inv005',
@@ -474,6 +492,7 @@ const invites = [
     useCount: 0,
     createdAt: '2026-02-20T16:00:00Z',
     expiresAt: '2026-02-21T16:00:00Z',
+    registeredClients: [],
   },
 ];
 
@@ -1081,6 +1100,13 @@ export async function mockFetch(path, options = {}) {
   if (method === 'POST' && pathname === '/api/v1/managers/register') {
     const body = options.body || {};
     return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
+  }
+  // GET /api/v1/invites/:id/clients
+  if (method === 'GET' && /^\/api\/v1\/invites\/[^/]+\/clients$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const invite = invites.find((inv) => inv.id === id);
+    if (!invite) throw Object.assign(new Error('초대 토큰을 찾을 수 없습니다.'), { status: 410, body: { error: '6.001' } });
+    return invite.registeredClients || [];
   }
   // GET /api/v1/invites/{token}/validate
   if (method === 'GET' && pathname.match(/^\/api\/v1\/invites\/[^/]+\/validate$/)) return { valid: true, managerName: '김성중' };

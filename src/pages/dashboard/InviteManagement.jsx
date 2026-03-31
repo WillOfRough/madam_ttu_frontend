@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Copy, Trash2, Mail, X, Pencil } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
 import { updateInviteLabel } from '../../api/inviteService';
@@ -10,6 +11,7 @@ import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
 export default function InviteManagement() {
+  const navigate = useNavigate();
   const { invites, isLoading, page, totalPages, statusFilter, fetchInvites, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
   const [label, setLabel] = useState('');
   const [copiedId, setCopiedId] = useState(null);
@@ -169,6 +171,24 @@ export default function InviteManagement() {
                     생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
                     {invite.useCount != null && ` · 등록 ${invite.useCount}명`}
                   </span>
+                  {invite.registeredClients && invite.registeredClients.length > 0 && (
+                    <div className={styles.registeredClients}>
+                      <span className={styles.registeredLabel}>등록 회원:</span>
+                      {invite.registeredClients.map((client) => (
+                        <span
+                          key={client.id}
+                          className={styles.registeredChip}
+                          onClick={() => navigate(`/dashboard/clients/${client.id}`)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {client.name}
+                          <span className={styles.registeredStatus}>
+                            {client.approvalStatus === 'approved' ? '승인' : client.approvalStatus === 'rejected' ? '거절' : '대기'}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className={styles.cardActions}>
                   {invite.status === 'active' && (
