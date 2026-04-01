@@ -179,7 +179,9 @@ export default function MatchList() {
               >
                 <div className={styles.cardTop}>
                   <div className={styles.matchPair}>
-                    <span className={m.clientA.deleted ? styles.deletedName : ''}>
+                    <span className={m.clientA.deleted ? styles.deletedName : styles.clientNameLink}
+                      onClick={m.clientA.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientA.clientId}`); }}
+                    >
                       {m.clientA.clientName}
                       {!m.clientA.deleted && (
                         <span className={m.clientA.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
@@ -188,7 +190,9 @@ export default function MatchList() {
                       )}
                     </span>
                     <span className={styles.arrow}><ArrowRight size={16} /></span>
-                    <span className={m.clientB.deleted ? styles.deletedName : ''}>
+                    <span className={m.clientB.deleted ? styles.deletedName : styles.clientNameLink}
+                      onClick={m.clientB.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientB.clientId}`); }}
+                    >
                       {m.clientB.clientName}
                       {!m.clientB.deleted && (
                         <span className={m.clientB.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>

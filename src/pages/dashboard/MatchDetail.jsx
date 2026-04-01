@@ -1162,6 +1162,7 @@ function SchedulingLinkCard({ match }) {
 
 
 function ParticipantCard({ participant, label, matchStatus, side }) {
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
   const [phoneCopied, setPhoneCopied] = useState(false);
@@ -1256,7 +1257,11 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
   return (
     <div className={styles.participantCard}>
       <div className={styles.participantHeader}>
-        <span className={styles.participantName}>{participant.clientName}</span>
+        <span
+          className={styles.participantName}
+          onClick={() => navigate(`/dashboard/clients/${participant.clientId}`)}
+          style={{ cursor: 'pointer' }}
+        >{participant.clientName}</span>
         <span className={styles.participantLabel}>{label}</span>
         <span className={styles.participantGender}>
           {participant.clientGender === 'female' ? '여성' : '남성'}

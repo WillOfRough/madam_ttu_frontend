@@ -144,6 +144,13 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--charcoal);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.participantName:hover {
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .participantNameDeleted {
