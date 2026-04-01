@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Link2, Mail, Clock, Heart, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
+import useAuthStore from '../../store/authStore';
 import * as matchService from '../../api/matchService';
 import SummaryCard from '../../components/SummaryCard';
 import StatusBadge from '../../components/StatusBadge';
@@ -12,6 +13,7 @@ export default function DashboardHome() {
   const summary = useManagerStore((s) => s.summary);
   const isLoading = useManagerStore((s) => s.isLoading);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
+  const myName = useAuthStore((s) => s.name);
   const navigate = useNavigate();
   const [matchStats, setMatchStats] = useState(null);
 
@@ -19,11 +21,14 @@ export default function DashboardHome() {
     fetchSummary();
   }, [fetchSummary]);
 
-  // 백엔드 summary에 매칭 통계가 없으면 match list에서 직접 계산
+  // 백엔드 summary에 매칭 통계가 없으면 match list에서 직접 계산 (자신의 매칭만)
   useEffect(() => {
     if (summary && summary.totalMatches == null) {
       matchService.listMatches({ page: 0, size: 9999 }).then((res) => {
-        const list = res.data || res.matches || [];
+        const raw = res.data || res.matches || [];
+        const list = myName
+          ? raw.filter((m) => m.clientA.managerName === myName || m.clientB.managerName === myName)
+          : raw;
         const completed = list.filter((m) => m.status === 'completed');
         setMatchStats({
           totalMatches: list.length,
@@ -34,7 +39,7 @@ export default function DashboardHome() {
         });
       }).catch(() => {});
     }
-  }, [summary]);
+  }, [summary, myName]);
 
   const ms = summary?.totalMatches != null ? summary : matchStats;
 

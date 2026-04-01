@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as matchService from '../api/matchService';
+import useAuthStore from './authStore';
 
 // 진행 상태 우선순위: 가장 진행된 상태가 먼저, 종료 상태는 맨 뒤
 const STATUS_PRIORITY = {
@@ -54,32 +55,31 @@ const useMatchStore = create((set, get) => ({
     const { page, size, filters } = get();
     set({ isLoading: true, error: null });
     try {
+      const result = await matchService.listMatches({ page: 0, size: 9999 });
+      const raw = result.data || result.matches || [];
+
+      // 자신의 매칭만 필터링 (백엔드가 전체 반환할 경우 대비)
+      const myName = useAuthStore.getState().name;
+      const mine = myName
+        ? raw.filter((m) => m.clientA.managerName === myName || m.clientB.managerName === myName)
+        : raw;
+
+      let filtered = mine;
       if (filters.status) {
-        // 필터 활성화 시: 전체 데이터를 가져와서 클라이언트에서 필터링 + 페이징
-        const result = await matchService.listMatches({ page: 0, size: 9999 });
-        const all = (result.data || result.matches || []).filter((m) =>
+        filtered = mine.filter((m) =>
           filters.status === 'active'
             ? !['completed', 'cancelled'].includes(m.status)
             : m.status === filters.status
         );
-        const start = (page - 1) * size;
-        const sorted = sortByStatusPriority(all);
-        set({
-          matches: sorted.slice(start, start + size),
-          totalCount: all.length,
-          isLoading: false,
-        });
-      } else {
-        // 필터 없음: 전체 데이터를 가져와서 상태 우선순위로 정렬 + 페이징
-        const result = await matchService.listMatches({ page: 0, size: 9999 });
-        const all = sortByStatusPriority(result.data || result.matches || []);
-        const start = (page - 1) * size;
-        set({
-          matches: all.slice(start, start + size),
-          totalCount: all.length,
-          isLoading: false,
-        });
       }
+
+      const sorted = sortByStatusPriority(filtered);
+      const start = (page - 1) * size;
+      set({
+        matches: sorted.slice(start, start + size),
+        totalCount: filtered.length,
+        isLoading: false,
+      });
     } catch (err) {
       set({ isLoading: false, error: err.message });
     }

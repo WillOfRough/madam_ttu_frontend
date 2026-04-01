@@ -1011,6 +1011,7 @@ function enrichParticipant(participant) {
 
 // ── Dashboard Summary (동적 계산) ──────────────────────
 function getDashboardSummary() {
+  const myMatches = matches.filter(m => m.clientA.managerName === currentUser.name || m.clientB.managerName === currentUser.name);
   return {
     myClientCount: clients.filter((c) => c.ownerManagerId === currentUser.id).length,
     pendingCount: clients.filter((c) => c.approvalStatus === 'pending').length,
@@ -1021,13 +1022,12 @@ function getDashboardSummary() {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 5)
       .map((c) => ({ ...c, ...enrichClient(c) })),
-    // Match statistics
-    totalMatches: matches.length,
-    activeMatches: matches.filter(m => !['completed', 'cancelled'].includes(m.status)).length,
-    completedMatches: matches.filter(m => m.status === 'completed').length,
-    cancelledMatches: matches.filter(m => m.status === 'cancelled').length,
-    // After success rate (both accepted out of completed)
-    afterSuccessCount: matches.filter(m => m.status === 'completed' && m.afterResponses?.A === 'accepted' && m.afterResponses?.B === 'accepted').length,
+    // Match statistics (자신의 매칭만)
+    totalMatches: myMatches.length,
+    activeMatches: myMatches.filter(m => !['completed', 'cancelled'].includes(m.status)).length,
+    completedMatches: myMatches.filter(m => m.status === 'completed').length,
+    cancelledMatches: myMatches.filter(m => m.status === 'cancelled').length,
+    afterSuccessCount: myMatches.filter(m => m.status === 'completed' && m.afterResponses?.A === 'accepted' && m.afterResponses?.B === 'accepted').length,
   };
 }
 
@@ -1325,6 +1325,8 @@ export async function mockFetch(path, options = {}) {
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
       createdAt: new Date().toISOString(),
+      createdByManagerId: currentUser.id,
+      createdByManagerName: currentUser.name,
     };
     matches.unshift(newMatch);
     return { matchId: newMatch.matchId, status: 'proposal_sent', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
@@ -1389,12 +1391,13 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
-  // GET /api/v1/matches (list)
+  // GET /api/v1/matches (list) — 자신의 매칭만 반환
   if (method === 'GET' && pathname === '/api/v1/matches') {
     const rawPage = parseInt(params.get('page') || '0', 10);
     const page = rawPage < 1 ? 0 : rawPage;
     const size = parseInt(params.get('size') || '20', 10);
-    const sorted = [...matches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const myMatches = matches.filter(m => m.clientA.managerName === currentUser.name || m.clientB.managerName === currentUser.name);
+    const sorted = [...myMatches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const start = page * size;
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
   }
