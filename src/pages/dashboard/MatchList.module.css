@@ -260,6 +260,15 @@
   color: var(--navy);
 }
 
+.genderTagFemale {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: #fff0f4;
+  color: #d4547a;
+}
+
 .deletedName {
   color: var(--charcoal-pale);
   font-style: italic;

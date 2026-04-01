@@ -182,7 +182,7 @@ export default function MatchList() {
                     <span className={m.clientA.deleted ? styles.deletedName : ''}>
                       {m.clientA.clientName}
                       {!m.clientA.deleted && (
-                        <span className={styles.genderTag}>
+                        <span className={m.clientA.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
                           {m.clientA.clientGender === 'female' ? '여' : '남'}
                         </span>
                       )}
@@ -191,7 +191,7 @@ export default function MatchList() {
                     <span className={m.clientB.deleted ? styles.deletedName : ''}>
                       {m.clientB.clientName}
                       {!m.clientB.deleted && (
-                        <span className={styles.genderTag}>
+                        <span className={m.clientB.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
                           {m.clientB.clientGender === 'female' ? '여' : '남'}
                         </span>
                       )}
