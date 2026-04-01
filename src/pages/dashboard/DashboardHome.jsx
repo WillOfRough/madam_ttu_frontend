@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Link2, Mail, Clock, Heart, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
+import * as matchService from '../../api/matchService';
 import SummaryCard from '../../components/SummaryCard';
 import StatusBadge from '../../components/StatusBadge';
 import { SkeletonCard, SkeletonTable } from '../../components/Skeleton';
@@ -12,10 +13,30 @@ export default function DashboardHome() {
   const isLoading = useManagerStore((s) => s.isLoading);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
   const navigate = useNavigate();
+  const [matchStats, setMatchStats] = useState(null);
 
   useEffect(() => {
     fetchSummary();
   }, [fetchSummary]);
+
+  // 백엔드 summary에 매칭 통계가 없으면 match list에서 직접 계산
+  useEffect(() => {
+    if (summary && summary.totalMatches == null) {
+      matchService.listMatches({ page: 0, size: 9999 }).then((res) => {
+        const list = res.data || res.matches || [];
+        const completed = list.filter((m) => m.status === 'completed');
+        setMatchStats({
+          totalMatches: list.length,
+          activeMatches: list.filter((m) => !['completed', 'cancelled'].includes(m.status)).length,
+          completedMatches: completed.length,
+          cancelledMatches: list.filter((m) => m.status === 'cancelled').length,
+          afterSuccessCount: completed.filter((m) => m.afterStatus === 'accepted').length,
+        });
+      }).catch(() => {});
+    }
+  }, [summary]);
+
+  const ms = summary?.totalMatches != null ? summary : matchStats;
 
   const cards = [
     { icon: Users, label: '내 회원', value: summary?.myClientCount ?? '-', color: 'navy', onClick: () => navigate('/dashboard/clients') },
@@ -25,14 +46,14 @@ export default function DashboardHome() {
   ];
 
   const matchCards = [
-    { icon: Heart, label: '전체 매칭', value: summary?.totalMatches ?? '-', color: 'navy', onClick: () => navigate('/dashboard/matches') },
-    { icon: TrendingUp, label: '진행 중', value: summary?.activeMatches ?? '-', color: 'pending', onClick: () => navigate('/dashboard/matches?status=active') },
-    { icon: CheckCircle, label: '완료', value: summary?.completedMatches ?? '-', color: 'success', onClick: () => navigate('/dashboard/matches?status=completed') },
-    { icon: XCircle, label: '취소', value: summary?.cancelledMatches ?? '-', color: 'coral', onClick: () => navigate('/dashboard/matches?status=cancelled') },
+    { icon: Heart, label: '전체 매칭', value: ms?.totalMatches ?? '-', color: 'navy', onClick: () => navigate('/dashboard/matches') },
+    { icon: TrendingUp, label: '진행 중', value: ms?.activeMatches ?? '-', color: 'pending', onClick: () => navigate('/dashboard/matches?status=active') },
+    { icon: CheckCircle, label: '완료', value: ms?.completedMatches ?? '-', color: 'success', onClick: () => navigate('/dashboard/matches?status=completed') },
+    { icon: XCircle, label: '취소', value: ms?.cancelledMatches ?? '-', color: 'coral', onClick: () => navigate('/dashboard/matches?status=cancelled') },
   ];
 
-  const successRate = summary?.completedMatches > 0
-    ? Math.round((summary.afterSuccessCount / summary.completedMatches) * 100)
+  const successRate = ms?.completedMatches > 0
+    ? Math.round((ms.afterSuccessCount / ms.completedMatches) * 100)
     : 0;
 
   const pendingClients = summary?.recentPendingClients || [];
