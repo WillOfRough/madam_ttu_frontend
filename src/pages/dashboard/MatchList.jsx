@@ -313,6 +313,7 @@ function CreateMatchModal({ onClose, onCreated }) {
   const [submitting, setSubmitting] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
   const [activeMatches, setActiveMatches] = useState({ A: [], B: [] });
+  const [pairHistory, setPairHistory] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -331,6 +332,7 @@ function CreateMatchModal({ onClose, onCreated }) {
     if (!clientA && !clientB) {
       setDuplicateMatch(null);
       setActiveMatches({ A: [], B: [] });
+      setPairHistory([]);
       return;
     }
     let cancelled = false;
@@ -349,6 +351,33 @@ function CreateMatchModal({ onClose, onCreated }) {
         setDuplicateMatch(dup || null);
       } else {
         setDuplicateMatch(null);
+      }
+
+      // Pair history warnings (cancelled, proposal rejected, after rejected)
+      if (clientA && clientB) {
+        const pairMatches = list.filter((m) => {
+          const ids = [m.clientA.clientId, m.clientB.clientId];
+          return ids.includes(clientA.id) && ids.includes(clientB.id);
+        });
+
+        const warnings = [];
+        for (const m of pairMatches) {
+          if (m.status === 'cancelled') {
+            warnings.push({ type: 'cancelled', message: '이전에 매칭이 취소된 이력이 있습니다', matchId: m.matchId });
+          }
+          const rejectedBy = [];
+          if (m.clientA.response === 'rejected') rejectedBy.push(m.clientA.clientName);
+          if (m.clientB.response === 'rejected') rejectedBy.push(m.clientB.clientName);
+          if (rejectedBy.length > 0) {
+            warnings.push({ type: 'rejected', message: `${rejectedBy.join(', ')}이(가) 프로포절을 거절한 이력이 있습니다`, matchId: m.matchId });
+          }
+          if (m.afterStatus === 'rejected') {
+            warnings.push({ type: 'after_rejected', message: '만남 후 애프터가 미성사된 이력이 있습니다', matchId: m.matchId });
+          }
+        }
+        setPairHistory(warnings);
+      } else {
+        setPairHistory([]);
       }
 
       // Per-client active match check
@@ -457,6 +486,21 @@ function CreateMatchModal({ onClose, onCreated }) {
             <span>
               이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
             </span>
+          </div>
+        )}
+
+        {/* Pair History Warning */}
+        {pairHistory.length > 0 && !duplicateMatch && (
+          <div className={styles.historyWarn}>
+            <div className={styles.historyWarnHeader}>
+              <AlertTriangle size={15} />
+              <strong>과거 매칭 이력 주의</strong>
+            </div>
+            <ul className={styles.historyWarnList}>
+              {pairHistory.map((w, i) => (
+                <li key={i}>{w.message}</li>
+              ))}
+            </ul>
           </div>
         )}
 

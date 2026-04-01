@@ -738,6 +738,38 @@
   animation: slideDown var(--duration-fast) var(--ease-out) both;
 }
 
+/* ── Pair History Warning ── */
+.historyWarn {
+  background: #fff8f0;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin: 0 28px 8px;
+  animation: slideDown var(--duration-fast) var(--ease-out) both;
+}
+
+.historyWarnHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b45309;
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.historyWarnHeader strong {
+  font-weight: 700;
+}
+
+.historyWarnList {
+  list-style: disc;
+  padding-left: 20px;
+  font-size: 0.8rem;
+  color: #92400e;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* ── Active Match Warning ── */
 .activeMatchWarn {
   margin: 0 28px 4px;
