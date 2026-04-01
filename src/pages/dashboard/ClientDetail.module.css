@@ -525,3 +525,304 @@
     font-size: 1.3rem;
   }
 }
+
+/* ── Deletion Certificate Modal ── */
+@keyframes certOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes certModalIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes certSealPop {
+  0%   { transform: scale(0.5) rotate(-12deg); opacity: 0; }
+  60%  { transform: scale(1.12) rotate(2deg);  opacity: 1; }
+  100% { transform: scale(1)    rotate(0deg);  opacity: 1; }
+}
+
+.certOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 18, 36, 0.65);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+  animation: certOverlayIn var(--duration-normal) var(--ease-out) both;
+}
+
+.certModal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  max-width: 460px;
+  width: 100%;
+  box-shadow:
+    0 24px 64px rgba(10, 18, 36, 0.18),
+    0 4px 16px rgba(10, 18, 36, 0.08),
+    0 0 0 1px rgba(26, 43, 75, 0.06);
+  overflow: hidden;
+  animation: certModalIn var(--duration-normal) var(--ease-out) both;
+  position: relative;
+}
+
+/* Top coral accent stripe */
+.certAccentBar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--coral) 0%, var(--coral-light) 60%, var(--coral-pale) 100%);
+}
+
+/* Header */
+.certHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 24px 28px 20px;
+}
+
+.certIconWrap {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  box-shadow: 0 2px 8px rgba(26, 43, 75, 0.25);
+}
+
+.certHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.certOrg {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+
+.certTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.certDocId {
+  font-size: 0.68rem;
+  color: var(--charcoal-pale);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 3px;
+}
+
+/* Section divider */
+.certDivider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border-light) 15%, var(--border) 50%, var(--border-light) 85%, transparent 100%);
+  margin: 0 28px;
+}
+
+/* Body */
+.certBody {
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.certRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.certRow:last-child {
+  border-bottom: none;
+}
+
+.certLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  width: 68px;
+  padding-top: 1px;
+}
+
+.certValue {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  flex: 1;
+  line-height: 1.5;
+}
+
+/* Bulleted deletion items list */
+.certItemList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.certItemList li {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.45;
+}
+
+.certItemList li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+
+/* Completion status badge */
+.certStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--success-light);
+  color: #1a7a3a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  animation: certSealPop var(--duration-slow) var(--ease-spring) 200ms both;
+}
+
+/* Footer disclaimer */
+.certFooterWrap {
+  margin: 4px 28px 0;
+  padding: 14px 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+.certFooter {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+  line-height: 1.65;
+  text-align: center;
+}
+
+/* Action buttons */
+.certActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 28px 24px;
+}
+
+.certDownloadBtn {
+  width: 100%;
+  padding: 13px 20px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+  border: none;
+  letter-spacing: -0.01em;
+}
+
+.certDownloadBtn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(26, 43, 75, 0.22);
+}
+
+.certDownloadBtn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.certCloseBtn {
+  width: 100%;
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--charcoal-light);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.certCloseBtn:hover {
+  background: var(--bg);
+  border-color: var(--charcoal-pale);
+  color: var(--charcoal);
+}
+
+@media (max-width: 480px) {
+  .certModal {
+    border-radius: var(--radius-md);
+  }
+
+  .certHeader {
+    padding: 20px 20px 16px;
+  }
+
+  .certDivider {
+    margin: 0 20px;
+  }
+
+  .certBody {
+    padding: 16px 20px;
+  }
+
+  .certLabel {
+    width: 60px;
+  }
+
+  .certFooterWrap {
+    margin: 4px 20px 0;
+  }
+
+  .certActions {
+    padding: 14px 20px 20px;
+  }
+}

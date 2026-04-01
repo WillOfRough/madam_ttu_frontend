@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, Heart, Edit3, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, X, Heart, Edit3, Plus, Trash2, ShieldCheck, Download } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
@@ -27,6 +27,7 @@ export default function ClientDetail() {
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletionCert, setDeletionCert] = useState(null);
   const photoInputRef = useRef(null);
 
   const closeLightbox = useCallback(() => setLightboxUrl(null), []);
@@ -154,14 +155,61 @@ export default function ClientDetail() {
   const handleDeleteClient = async () => {
     setDeleting(true);
     try {
+      const clientName = client.name;
       await clientService.deleteClient(clientId);
       toast.success('회원이 삭제되었습니다.');
-      navigate('/dashboard/clients');
+      setShowDeleteConfirm(false);
+      setDeletionCert({
+        name: clientName,
+        deletedAt: new Date(),
+      });
     } catch (err) {
       toast.error(err.message || '삭제에 실패했습니다.');
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
-    setDeleting(false);
-    setShowDeleteConfirm(false);
+  };
+
+  const handleDownloadCert = () => {
+    if (!deletionCert) return;
+    const { name, deletedAt } = deletionCert;
+    const dateStr = deletedAt.toLocaleString('ko-KR', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+    const content = `
+═══════════════════════════════════════
+       개인정보 삭제 확인서
+       Knots & Links
+═══════════════════════════════════════
+
+처리일시: ${dateStr}
+삭제 대상: ${name}
+
+삭제 항목:
+  • 프로필 정보 (이름, 연락처, 이메일 등)
+  • 등록 사진 전체
+  • 매칭 이력 및 관련 데이터
+  • 매니저 메모
+
+처리 상태: 영구 삭제 완료
+
+법적 근거: 개인정보보호법 제36조
+          (개인정보의 정정·삭제)
+
+───────────────────────────────────────
+본 확인서는 개인정보 삭제 처리를
+증빙하기 위해 발급되었습니다.
+═══════════════════════════════════════
+`.trim();
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `삭제확인서_${name}_${deletedAt.toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (loading) return (
@@ -544,6 +592,89 @@ export default function ClientDetail() {
         <div className={styles.lightbox} onClick={closeLightbox}>
           <img src={lightboxUrl} alt="확대 보기" onClick={(e) => e.stopPropagation()} />
           <button className={styles.lightboxClose} onClick={closeLightbox}>×</button>
+        </div>
+      )}
+
+      {deletionCert && (
+        <div className={styles.certOverlay}>
+          <div className={styles.certModal}>
+
+            {/* Top accent bar */}
+            <div className={styles.certAccentBar} />
+
+            {/* Header */}
+            <div className={styles.certHeader}>
+              <div className={styles.certIconWrap}>
+                <ShieldCheck size={22} strokeWidth={2} />
+              </div>
+              <div className={styles.certHeaderText}>
+                <p className={styles.certOrg}>Knots &amp; Links</p>
+                <h2 className={styles.certTitle}>개인정보 삭제 확인서</h2>
+                <p className={styles.certDocId}>
+                  문서번호&nbsp;·&nbsp;KL-DEL-{deletionCert.deletedAt.getFullYear()}{String(deletionCert.deletedAt.getMonth() + 1).padStart(2, '0')}{String(deletionCert.deletedAt.getDate()).padStart(2, '0')}
+                </p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className={styles.certDivider} />
+
+            {/* Body rows */}
+            <div className={styles.certBody}>
+              <div className={styles.certRow}>
+                <span className={styles.certLabel}>처리일시</span>
+                <span className={styles.certValue}>
+                  {deletionCert.deletedAt.toLocaleString('ko-KR', {
+                    year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit',
+                  })}
+                </span>
+              </div>
+              <div className={styles.certRow}>
+                <span className={styles.certLabel}>삭제 대상</span>
+                <span className={styles.certValue}>{deletionCert.name}</span>
+              </div>
+              <div className={styles.certRow}>
+                <span className={styles.certLabel}>삭제 항목</span>
+                <ul className={styles.certItemList}>
+                  <li>프로필 정보 (이름, 연락처, 이메일 등)</li>
+                  <li>등록 사진 전체</li>
+                  <li>매칭 이력 및 관련 데이터</li>
+                  <li>매니저 메모</li>
+                </ul>
+              </div>
+              <div className={styles.certRow}>
+                <span className={styles.certLabel}>처리 상태</span>
+                <span className={styles.certStatusBadge}>
+                  <Check size={11} strokeWidth={2.5} />
+                  영구 삭제 완료
+                </span>
+              </div>
+              <div className={styles.certRow}>
+                <span className={styles.certLabel}>법적 근거</span>
+                <span className={styles.certValue}>개인정보보호법 제36조</span>
+              </div>
+            </div>
+
+            {/* Footer disclaimer */}
+            <div className={styles.certFooterWrap}>
+              <p className={styles.certFooter}>
+                본 확인서는 개인정보 삭제 처리를 증빙하기 위해 발급되었습니다.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className={styles.certActions}>
+              <button className={styles.certDownloadBtn} onClick={handleDownloadCert}>
+                <Download size={15} strokeWidth={2} />
+                확인서 다운로드
+              </button>
+              <button className={styles.certCloseBtn} onClick={() => navigate('/dashboard/clients')}>
+                목록으로 돌아가기
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
     </div>
