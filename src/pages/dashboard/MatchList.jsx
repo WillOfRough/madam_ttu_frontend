@@ -20,6 +20,35 @@ const STATUS_STEP_LABELS = {
   cancelled: '매칭 종료',
 };
 
+function getNextAction(match) {
+  const paymentKey = 'match_payment_confirmed';
+  let paymentConfirmed = false;
+  try {
+    const data = JSON.parse(localStorage.getItem(paymentKey) || '{}');
+    paymentConfirmed = !!data[match.matchId];
+  } catch { /* ignore */ }
+
+  switch (match.status) {
+    case 'proposal_sent':
+      return { text: 'A에게 프로포절 링크 전달', icon: '→' };
+    case 'proposal_accepted':
+      return { text: 'B에게 프로포절 링크 전달', icon: '→' };
+    case 'scheduling':
+      if (!paymentConfirmed) return { text: '입금 확인하기', icon: '₩' };
+      return { text: '양쪽에 일정조율 링크 전달', icon: '📅' };
+    case 'arranging':
+      return { text: '공통 시간 선택 후 약속 확정', icon: '✓' };
+    case 'scheduled':
+      return { text: '미팅 후 완료 처리', icon: '🤝' };
+    case 'completed':
+      if (!match.afterStatus || match.afterStatus === 'pending')
+        return { text: '에프터 링크 전달', icon: '💌' };
+      return null;
+    default:
+      return null;
+  }
+}
+
 function formatDate(iso) {
   if (!iso) return '-';
   return new Date(iso).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -218,6 +247,15 @@ export default function MatchList() {
                     </span>
                   )}
                 </div>
+                {(() => {
+                  const nextAction = getNextAction(m);
+                  return nextAction ? (
+                    <div className={styles.nextAction}>
+                      <span className={styles.nextActionIcon}>{nextAction.icon}</span>
+                      <span className={styles.nextActionText}>다음: {nextAction.text}</span>
+                    </div>
+                  ) : null;
+                })()}
                 {m.note && <div className={styles.cardNote}>{m.note}</div>}
               </div>
             ))}
