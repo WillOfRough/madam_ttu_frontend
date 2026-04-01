@@ -1011,7 +1011,7 @@ function enrichParticipant(participant) {
 
 // ── Dashboard Summary (동적 계산) ──────────────────────
 function getDashboardSummary() {
-  const myMatches = matches.filter(m => m.clientA.managerName === currentUser.name || m.clientB.managerName === currentUser.name);
+  const myMatches = matches.filter(m => m.createdByManagerName === currentUser.name);
   return {
     myClientCount: clients.filter((c) => c.ownerManagerId === currentUser.id).length,
     pendingCount: clients.filter((c) => c.approvalStatus === 'pending').length,
@@ -1396,7 +1396,7 @@ export async function mockFetch(path, options = {}) {
     const rawPage = parseInt(params.get('page') || '0', 10);
     const page = rawPage < 1 ? 0 : rawPage;
     const size = parseInt(params.get('size') || '20', 10);
-    const myMatches = matches.filter(m => m.clientA.managerName === currentUser.name || m.clientB.managerName === currentUser.name);
+    const myMatches = matches.filter(m => m.createdByManagerName === currentUser.name);
     const sorted = [...myMatches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const start = page * size;
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };

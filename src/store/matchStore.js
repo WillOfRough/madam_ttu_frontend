@@ -61,7 +61,7 @@ const useMatchStore = create((set, get) => ({
       // 자신의 매칭만 필터링 (백엔드가 전체 반환할 경우 대비)
       const myName = useAuthStore.getState().name;
       const mine = myName
-        ? raw.filter((m) => m.clientA.managerName === myName || m.clientB.managerName === myName)
+        ? raw.filter((m) => m.createdByManagerName === myName)
         : raw;
 
       let filtered = mine;

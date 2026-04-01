@@ -27,7 +27,7 @@ export default function DashboardHome() {
       matchService.listMatches({ page: 0, size: 9999 }).then((res) => {
         const raw = res.data || res.matches || [];
         const list = myName
-          ? raw.filter((m) => m.clientA.managerName === myName || m.clientB.managerName === myName)
+          ? raw.filter((m) => m.createdByManagerName === myName)
           : raw;
         const completed = list.filter((m) => m.status === 'completed');
         setMatchStats({
