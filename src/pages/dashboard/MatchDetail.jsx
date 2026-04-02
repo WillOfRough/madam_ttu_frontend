@@ -407,28 +407,28 @@ export default function MatchDetail() {
         />
       </div>
 
+      {/* 양식 3: 만남 성사(입금) 안내 메시지 복사 — 입금 확인 전에 먼저 표시 */}
+      {match.status === 'scheduling' && !paymentConfirmed && (
+        <GuideMessageCard
+          title="만남 성사 안내 (입금 요청)"
+          hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
+          badge="양식 3"
+          participants={[match.clientA, match.clientB]}
+          generateMsg={(p) => generateAfterSuccessMessage(p.clientNickname || p.clientName)}
+        />
+      )}
+
       {/* 입금확인 게이트 */}
       {match.status === 'scheduling' && !paymentConfirmed && (
         <div className={styles.paymentCard}>
           <h3 className={styles.cardTitle}>
             <Check size={16} /> 입금 확인
           </h3>
-          <p className={styles.paymentHint}>양쪽 회원의 입금을 확인한 후 버튼을 눌러주세요. 입금 확인 후 일정조율을 진행할 수 있습니다.</p>
+          <p className={styles.paymentHint}>양쪽 회원에게 입금 안내 메시지를 보낸 후, 입금이 확인되면 아래 버튼을 눌러주세요.</p>
           <button className={styles.paymentBtn} onClick={handlePaymentConfirm}>
             입금 확인 완료
           </button>
         </div>
-      )}
-
-      {/* 양식 3: 만남 성사 안내 메시지 복사 */}
-      {match.status === 'scheduling' && paymentConfirmed && (
-        <GuideMessageCard
-          title="만남 성사 안내"
-          hint="양쪽 모두 수락했습니다. 아래 버튼으로 성사 안내 메시지를 복사하세요"
-          badge="양식 3"
-          participants={[match.clientA, match.clientB]}
-          generateMsg={(p) => generateAfterSuccessMessage(p.clientNickname || p.clientName)}
-        />
       )}
 
       {/* Scheduling Link Card */}
