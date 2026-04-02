@@ -28,8 +28,8 @@ const accounts = {
 };
 
 // 현재 로그인한 사용자 추적
-let currentUser = accounts['sungjoong.kim@hancom.com'];
-let isLoggedIn = false;
+let currentUser = accounts[sessionStorage.getItem('mock_user_email') || 'sungjoong.kim@hancom.com'];
+let isLoggedIn = sessionStorage.getItem('mock_logged_in') === 'true';
 
 function randomToken(len = 12) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1072,7 +1072,7 @@ export async function mockFetch(path, options = {}) {
       throw Object.assign(new Error('이메일 또는 비밀번호가 올바르지 않습니다.'), { status: 401 });
     }
     currentUser = account;
-    isLoggedIn = true;
+    isLoggedIn = true; sessionStorage.setItem('mock_logged_in', 'true'); sessionStorage.setItem('mock_user_email', body.email);
     return { manager: { id: account.id, email: account.email, name: account.name, role: account.role } };
   }
 
@@ -1090,7 +1090,7 @@ export async function mockFetch(path, options = {}) {
   }
 
   // POST /api/v1/auth/logout
-  if (method === 'POST' && pathname === '/api/v1/auth/logout') { isLoggedIn = false; return { success: true }; }
+  if (method === 'POST' && pathname === '/api/v1/auth/logout') { isLoggedIn = false; sessionStorage.removeItem('mock_logged_in'); sessionStorage.removeItem('mock_user_email'); return { success: true }; }
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
@@ -1165,7 +1165,7 @@ export async function mockFetch(path, options = {}) {
     const sort = params.get('sort') || 'createdAt:desc';
     const page = parseInt(params.get('page') || '1', 10);
     const limit = parseInt(params.get('limit') || '20', 10);
-    if (nameQ) filtered = filtered.filter((c) => c.name.includes(nameQ));
+    if (nameQ) filtered = filtered.filter((c) => c.name.includes(nameQ) || (c.nickname && c.nickname.includes(nameQ)));
     if (phoneQ) filtered = filtered.filter((c) => c.phone === phoneQ);
     if (approval) filtered = filtered.filter((c) => c.approvalStatus === approval);
     if (owner === 'me') filtered = filtered.filter((c) => c.ownerManagerId === currentUser.id);

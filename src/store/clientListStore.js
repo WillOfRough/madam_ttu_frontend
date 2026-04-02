@@ -19,6 +19,16 @@ const useClientListStore = create((set, get) => ({
   },
   isLoading: false,
   error: null,
+  selectedForMatch: [],
+
+  setSelectedForMatch: (selected) => set({ selectedForMatch: selected }),
+  toggleSelectForMatch: (client) => set((state) => {
+    const exists = state.selectedForMatch.find((c) => c.id === client.id);
+    if (exists) return { selectedForMatch: state.selectedForMatch.filter((c) => c.id !== client.id) };
+    if (state.selectedForMatch.length >= 2) return { selectedForMatch: [state.selectedForMatch[1], client] };
+    return { selectedForMatch: [...state.selectedForMatch, client] };
+  }),
+  clearSelectedForMatch: () => set({ selectedForMatch: [] }),
 
   setFilter: (key, value) => {
     set((state) => ({
