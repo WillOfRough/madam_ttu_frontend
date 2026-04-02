@@ -233,6 +233,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 14px;
 }
 
@@ -249,6 +251,8 @@
   font-size: 0.95rem;
   font-weight: 650;
   color: var(--charcoal);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .genderTag {
@@ -299,7 +303,8 @@
 .cardMeta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   font-size: 0.78rem;
   color: var(--charcoal-pale);
 }
@@ -1016,5 +1021,17 @@
   .slotDropdown {
     left: -14px;
     right: -14px;
+  }
+
+  .duplicateWarn {
+    margin: 0 20px;
+  }
+
+  .historyWarn {
+    margin: 0 20px 8px;
+  }
+
+  .activeMatchWarn {
+    margin: 0 20px 4px;
   }
 }

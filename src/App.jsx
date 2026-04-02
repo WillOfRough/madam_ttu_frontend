@@ -37,15 +37,27 @@ function AuthListener() {
   const navigate = useNavigate();
   const location = useLocation();
   const logout = useAuthStore((s) => s.logout);
+  const checkSession = useAuthStore((s) => s.checkSession);
 
   useEffect(() => {
-    const handleUnauthorized = () => {
-      logout();
-      navigate('/login', { state: { from: location } });
+    let checking = false;
+    const handleUnauthorized = async () => {
+      if (checking) return;
+      checking = true;
+      try {
+        // 즉시 로그아웃하지 않고 세션 재검증 시도
+        const valid = await checkSession();
+        if (!valid) {
+          logout();
+          navigate('/login', { state: { from: location } });
+        }
+      } finally {
+        checking = false;
+      }
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, [navigate, logout, location]);
+  }, [navigate, logout, checkSession, location]);
 
   return null;
 }
@@ -60,6 +72,17 @@ export default function App() {
 
   useEffect(() => {
     checkSession();
+  }, [checkSession]);
+
+  // 탭 전환 복귀 시 세션 재검증
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && useAuthStore.getState().isLoggedIn) {
+        checkSession();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [checkSession]);
 
   return (

@@ -305,6 +305,21 @@
 }
 
 @media (max-width: 640px) {
+  .titleRow {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .statsGroup {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .genderCount {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
   .title {
     font-size: 1.35rem;
   }
