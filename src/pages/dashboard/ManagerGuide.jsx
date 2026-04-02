@@ -247,6 +247,15 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 
 코드 : notslink
 좋은 인연으로 이어질 수 있도록 저희도 함께 하겠습니다. 감사합니다 💛`,
+
+  afterResult: `안녕하세요 OO님 😊
+
+두 분의 만남 결과가 확인되었습니다.
+아래 링크에서 결과를 확인하실 수 있어요.
+
+👉 [결과 확인 링크]
+
+감사합니다 💛`,
 };
 
 const TEMPLATE_META = [
@@ -259,6 +268,7 @@ const TEMPLATE_META = [
   { key: 'deleteComplete', label: '개인정보 삭제 완료 안내', badge: '양식 7' },
   { key: 'schedulingGuide', label: '일정 조율 안내', badge: '양식 8' },
   { key: 'openChatGuide', label: '오픈카톡 안내', badge: '양식 9' },
+  { key: 'afterResult', label: '에프터 결과 안내', badge: '양식 10' },
 ];
 
 const LS_KEY = 'knl_manager_templates';

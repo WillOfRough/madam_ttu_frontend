@@ -26,6 +26,25 @@ function generateAfterCompleteMessage(afterUrl) {
   return templates.afterComplete.replace('[애프터 확인 링크]', afterUrl);
 }
 
+function generateSchedulingMessage(clientName, scheduleUrl) {
+  const templates = loadTemplates();
+  return templates.schedulingGuide
+    .replace(/[일정 등록 링크 첨부]/g, scheduleUrl)
+    .replace(/\[일정 등록 링크 첨부\]/g, scheduleUrl);
+}
+
+function generateAfterResultMessage(clientName, resultUrl) {
+  const templates = loadTemplates();
+  return templates.afterResult
+    .replace(/OO님/g, `${clientName}님`)
+    .replace(/\[결과 확인 링크\]/g, resultUrl);
+}
+
+function generateOpenChatMessage(clientName) {
+  const templates = loadTemplates();
+  return templates.openChatGuide.replace(/OO님/g, `${clientName}님`);
+}
+
 function generateMeetingMessage(clientName, schedule) {
   const templates = loadTemplates();
   let msg = templates.meeting.replace(/OO님/g, `${clientName}님`);
@@ -1041,6 +1060,7 @@ function AfterLinkCard({ match }) {
 
 function AfterResultLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
+  const [msgCopiedKey, setMsgCopiedKey] = useState(null);
 
   const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after/result`;
   const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after/result`;
@@ -1053,6 +1073,18 @@ function AfterResultLinkCard({ match }) {
       setCopiedKey(key);
       toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handleMsgCopy = async (url, clientName, key) => {
+    try {
+      const msg = generateAfterResultMessage(clientName, url);
+      await navigator.clipboard.writeText(msg);
+      setMsgCopiedKey(key);
+      toast.success('안내 메시지가 복사되었습니다.');
+      setTimeout(() => setMsgCopiedKey(null), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1078,7 +1110,11 @@ function AfterResultLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlA}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')} disabled={!bothResponded}>
               {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '복사'}
+              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, match.clientA.clientNickname || match.clientA.clientName, 'A')} disabled={!bothResponded}>
+              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
@@ -1091,7 +1127,11 @@ function AfterResultLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlB}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')} disabled={!bothResponded}>
               {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '복사'}
+              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, match.clientB.clientNickname || match.clientB.clientName, 'B')} disabled={!bothResponded}>
+              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
@@ -1102,6 +1142,7 @@ function AfterResultLinkCard({ match }) {
 
 function SchedulingLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
+  const [msgCopiedKey, setMsgCopiedKey] = useState(null);
 
   const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/schedule`;
   const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/schedule`;
@@ -1112,6 +1153,18 @@ function SchedulingLinkCard({ match }) {
       setCopiedKey(key);
       toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handleMsgCopy = async (url, clientName, key) => {
+    try {
+      const msg = generateSchedulingMessage(clientName, url);
+      await navigator.clipboard.writeText(msg);
+      setMsgCopiedKey(key);
+      toast.success('안내 메시지가 복사되었습니다.');
+      setTimeout(() => setMsgCopiedKey(null), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1135,7 +1188,11 @@ function SchedulingLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlA}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
               {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '복사'}
+              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, match.clientA.clientNickname || match.clientA.clientName, 'A')}>
+              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
@@ -1150,7 +1207,11 @@ function SchedulingLinkCard({ match }) {
             <span className={styles.schedulingLinkValue}>{urlB}</span>
             <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
               {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '복사'}
+              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
+            </button>
+            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, match.clientB.clientNickname || match.clientB.clientName, 'B')}>
+              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
+              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
             </button>
           </div>
         </div>
