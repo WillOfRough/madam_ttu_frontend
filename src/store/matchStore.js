@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import * as matchService from '../api/matchService';
-import useAuthStore from './authStore';
 
 // 진행 상태 우선순위: 가장 진행된 상태가 먼저, 종료 상태는 맨 뒤
 const STATUS_PRIORITY = {
@@ -58,15 +57,9 @@ const useMatchStore = create((set, get) => ({
       const result = await matchService.listMatches({ page: 0, size: 9999 });
       const raw = result.data || result.matches || [];
 
-      // 자신의 매칭만 필터링 (백엔드가 전체 반환할 경우 대비)
-      const myName = useAuthStore.getState().name;
-      const mine = myName
-        ? raw.filter((m) => m.createdByManagerName === myName)
-        : raw;
-
-      let filtered = mine;
+      let filtered = raw;
       if (filters.status) {
-        filtered = mine.filter((m) =>
+        filtered = raw.filter((m) =>
           filters.status === 'active'
             ? !['completed', 'cancelled'].includes(m.status)
             : m.status === filters.status
