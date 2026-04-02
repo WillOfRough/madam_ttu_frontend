@@ -16,6 +16,14 @@ function generateProposalMessage(clientName, proposalUrl) {
     .replace('[프로포절 링크 첨부]', proposalUrl);
 }
 
+function generateReminderMessage(clientName, partnerName, proposalUrl) {
+  const templates = loadTemplates();
+  return templates.proposalReminder
+    .replace(/OO님/g, `${clientName}님`)
+    .replace(/\[매칭 상대\]/g, partnerName)
+    .replace('[프로포절 링크 첨부]', proposalUrl);
+}
+
 function generateAfterSuccessMessage(clientName) {
   const templates = loadTemplates();
   return templates.afterSuccess.replace(/OO님/g, `${clientName}님`);
@@ -394,12 +402,14 @@ export default function MatchDetail() {
       <div className={styles.participants}>
         <ParticipantCard
           participant={match.clientA}
+          partner={match.clientB}
           label="회원 A"
           matchStatus={match.status}
           side="A"
         />
         <ParticipantCard
           participant={match.clientB}
+          partner={match.clientA}
           label="회원 B"
           matchStatus={match.status}
           side="B"
@@ -1221,10 +1231,11 @@ function SchedulingLinkCard({ match }) {
 
 
 
-function ParticipantCard({ participant, label, matchStatus, side }) {
+function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
+  const [reminderCopied, setReminderCopied] = useState(false);
   const [phoneCopied, setPhoneCopied] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -1251,6 +1262,21 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
       setMsgCopied(true);
       toast.success('안내 메시지가 복사되었습니다.');
       setTimeout(() => setMsgCopied(false), 2000);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  };
+
+  const handleReminderCopy = async () => {
+    if (!isLinkActive) return;
+    try {
+      const clientName = participant.clientNickname || participant.clientName;
+      const partnerName = partner.clientNickname || partner.clientName;
+      const msg = generateReminderMessage(clientName, partnerName, proposalUrl);
+      await navigator.clipboard.writeText(msg);
+      setReminderCopied(true);
+      toast.success('리마인드 메시지가 복사되었습니다.');
+      setTimeout(() => setReminderCopied(false), 2000);
     } catch {
       toast.error('복사에 실패했습니다.');
     }
@@ -1498,6 +1524,10 @@ function ParticipantCard({ participant, label, matchStatus, side }) {
               <button className={styles.msgCopyBtn} onClick={handleMsgCopy}>
                 <FileText size={13} />
                 {msgCopied ? '복사됨' : '안내 메시지 복사'}
+              </button>
+              <button className={styles.msgCopyBtn} onClick={handleReminderCopy}>
+                <RefreshCw size={13} />
+                {reminderCopied ? '복사됨' : '리마인드 복사'}
               </button>
             </div>
           </>

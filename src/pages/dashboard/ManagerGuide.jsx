@@ -256,6 +256,17 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 👉 [결과 확인 링크]
 
 감사합니다 💛`,
+
+  proposalReminder: `안녕하세요 OO님!
+
+지난번에 보내드린 [매칭 상대]님의 프로필, 혹시 확인해 보셨을까요? 😊
+바쁘신 일상 속에서 잠시 잊으셨을 수도 있을 것 같아, 다시 한번 좋은 인연의 기회를 전해드리고 싶어 연락드렸어요.
+
+[매칭 상대]님께서 OO님과의 만남을 기다리고 계실지도 몰라요. 지금 바로 프로필을 다시 한번 살펴보시고, 설레는 새로운 이야기를 시작해보는 건 어떠세요?
+
+👉 [프로포절 링크 첨부]
+
+저희는 두 분의 아름다운 시작을 항상 응원합니다. 😊`,
 };
 
 const TEMPLATE_META = [
@@ -269,6 +280,7 @@ const TEMPLATE_META = [
   { key: 'schedulingGuide', label: '일정 조율 안내', badge: '양식 8' },
   { key: 'openChatGuide', label: '오픈카톡 안내', badge: '양식 9' },
   { key: 'afterResult', label: '에프터 결과 안내', badge: '양식 10' },
+  { key: 'proposalReminder', label: '프로필 확인 리마인드', badge: '양식 11' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
