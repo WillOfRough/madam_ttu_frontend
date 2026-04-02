@@ -29,8 +29,7 @@ function generateAfterCompleteMessage(afterUrl) {
 function generateSchedulingMessage(clientName, scheduleUrl) {
   const templates = loadTemplates();
   return templates.schedulingGuide
-    .replace(/[일정 등록 링크 첨부]/g, scheduleUrl)
-    .replace(/\[일정 등록 링크 첨부\]/g, scheduleUrl);
+    .replace('[일정 등록 링크 첨부]', scheduleUrl);
 }
 
 function generateAfterResultMessage(clientName, resultUrl) {
