@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X, Heart, Edit3, Plus, Trash2, ShieldCheck, Download } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
+import useClientListStore from '../../store/clientListStore';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -269,23 +270,28 @@ export default function ClientDetail() {
           )}
         </div>
 
-        {client.isOwner && (
-          <div className={styles.actions}>
-            {client.approvalStatus === 'pending' && (
-              <>
-                <button className={styles.approveBtn} onClick={() => setModal('approve')}>
-                  <Check size={16} /> 승인
-                </button>
-                <button className={styles.rejectBtn} onClick={() => setModal('reject')}>
-                  <X size={16} /> 거절
-                </button>
-              </>
-            )}
-            <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>
-              <Trash2 size={16} /> 회원 삭제
-            </button>
-          </div>
-        )}
+        <div className={styles.actions}>
+          {client.approvalStatus === 'approved' && (
+            <MatchButton client={client} />
+          )}
+          {client.isOwner && (
+            <>
+              {client.approvalStatus === 'pending' && (
+                <>
+                  <button className={styles.approveBtn} onClick={() => setModal('approve')}>
+                    <Check size={16} /> 승인
+                  </button>
+                  <button className={styles.rejectBtn} onClick={() => setModal('reject')}>
+                    <X size={16} /> 거절
+                  </button>
+                </>
+              )}
+              <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>
+                <Trash2 size={16} /> 회원 삭제
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {!client.isOwner && (
@@ -678,6 +684,30 @@ export default function ClientDetail() {
         </div>
       )}
     </div>
+  );
+}
+
+function MatchButton({ client }) {
+  const { selectedForMatch, toggleSelectForMatch } = useClientListStore();
+  const isSelected = selectedForMatch.some((c) => c.id === client.clientId || c.id === client.id);
+
+  const handleClick = () => {
+    const clientForMatch = {
+      id: client.clientId || client.id,
+      name: client.name,
+      nickname: client.nickname,
+      gender: client.gender,
+    };
+    toggleSelectForMatch(clientForMatch);
+  };
+
+  return (
+    <button
+      className={isSelected ? styles.matchBtnActive : styles.matchBtn}
+      onClick={handleClick}
+    >
+      <Heart size={14} /> {isSelected ? '매칭 선택됨' : '매칭 선택'}
+    </button>
   );
 }
 
