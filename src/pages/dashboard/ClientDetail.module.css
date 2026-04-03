@@ -240,6 +240,29 @@
   font-weight: 500;
 }
 
+.genderMaleCircle,
+.genderFemaleCircle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.genderMaleCircle {
+  background: #f0f4ff;
+  color: var(--navy);
+}
+
+.genderFemaleCircle {
+  background: #fff0f4;
+  color: #d4547a;
+}
+
 .text {
   font-size: 0.9rem;
   color: var(--charcoal);

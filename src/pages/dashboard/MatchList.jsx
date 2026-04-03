@@ -177,31 +177,11 @@ export default function MatchList() {
                 className={styles.matchCard}
                 onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
               >
+                {/* ── 상단: 날짜 + 단계 (좌) / 상태 배지 (우) ── */}
                 <div className={styles.cardTop}>
-                  <div className={styles.matchPair}>
-                    <span className={m.clientA.deleted ? styles.deletedName : styles.clientNameLink}
-                      onClick={m.clientA.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientA.clientId}`); }}
-                    >
-                      {m.clientA.clientNickname || m.clientA.clientName}
-                      {m.clientA.clientNickname && <span className={styles.realNameSub}>{m.clientA.clientName}</span>}
-                      {!m.clientA.deleted && (
-                        <span className={m.clientA.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
-                          {m.clientA.clientGender === 'female' ? '여' : '남'}
-                        </span>
-                      )}
-                    </span>
-                    <span className={styles.arrow}><ArrowRight size={16} /></span>
-                    <span className={m.clientB.deleted ? styles.deletedName : styles.clientNameLink}
-                      onClick={m.clientB.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientB.clientId}`); }}
-                    >
-                      {m.clientB.clientNickname || m.clientB.clientName}
-                      {m.clientB.clientNickname && <span className={styles.realNameSub}>{m.clientB.clientName}</span>}
-                      {!m.clientB.deleted && (
-                        <span className={m.clientB.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
-                          {m.clientB.clientGender === 'female' ? '여' : '남'}
-                        </span>
-                      )}
-                    </span>
+                  <div className={styles.stepInfo}>
+                    <span className={styles.cardDate}>{formatDate(m.createdAt)}</span>
+                    <span className={styles.cardStep}>{STATUS_STEP_LABELS[m.status] || ''}</span>
                   </div>
                   <div className={styles.badgeGroup}>
                     <StatusBadge status={m.status} />
@@ -210,17 +190,55 @@ export default function MatchList() {
                     )}
                   </div>
                 </div>
+
+                {/* ── 중앙: 여성(좌) ← Heart(중) → 남성(우) ── */}
+                <div className={styles.matchPair}>
+                  {/* 좌측 clientA */}
+                  <div className={`${styles.clientSide} ${styles.clientSideLeft}`}>
+                    <div className={m.clientA.deleted ? styles.deletedName : styles.clientNameLink}>
+                      <span className={styles.clientNameRow}>
+                        <span className={styles.clientNickBold}>{m.clientA.clientName}</span>
+                        {!m.clientA.deleted && (
+                          <span className={m.clientA.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
+                            {m.clientA.clientGender === 'female' ? '여' : '남'}
+                          </span>
+                        )}
+                      </span>
+                      {m.clientA.clientNickname && <span className={styles.realNameSub}>{m.clientA.clientNickname}</span>}
+                    </div>
+                  </div>
+
+                  {/* 중앙 화살표 */}
+                  <div className={styles.arrow}>
+                    <ArrowRight size={14} />
+                  </div>
+
+                  {/* 우측 clientB */}
+                  <div className={`${styles.clientSide} ${styles.clientSideRight}`}>
+                    <div className={m.clientB.deleted ? styles.deletedName : styles.clientNameLink}>
+                      <span className={styles.clientNameRow}>
+                        <span className={styles.clientNickBold}>{m.clientB.clientName}</span>
+                        {!m.clientB.deleted && (
+                          <span className={m.clientB.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
+                            {m.clientB.clientGender === 'female' ? '여' : '남'}
+                          </span>
+                        )}
+                      </span>
+                      {m.clientB.clientNickname && <span className={styles.realNameSub}>{m.clientB.clientNickname}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── 하단: 메모 + 담당자 ── */}
                 <div className={styles.cardMeta}>
-                  <span>{formatDate(m.createdAt)}</span>
-                  <span className={styles.stepInfo}>{STATUS_STEP_LABELS[m.status] || ''}</span>
+                  {m.note && <div className={styles.cardNote}>{m.note}</div>}
                   {m.createdByManagerName && (
                     <span className={styles.createdBy}>
-                      <UserRound size={12} />
+                      <UserRound size={11} />
                       {m.createdByManagerName}
                     </span>
                   )}
                 </div>
-                {m.note && <div className={styles.cardNote}>{m.note}</div>}
               </div>
             ))}
           </div>

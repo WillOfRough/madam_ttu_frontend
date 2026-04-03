@@ -168,8 +168,8 @@ export default function ClientList() {
                   onClick={() => handleRowClick(client)}
                 >
                   <span className={styles.name}>
-                    {client.nickname || client.name}
-                    {client.nickname && <span className={styles.realName}>{client.name}</span>}
+                    {client.name}
+                    {client.nickname && <span className={styles.realName}>{client.nickname}</span>}
                   </span>
                   <span className={client.gender === 'female' ? styles.genderFemaleCell : styles.genderMaleCell}>{client.gender === 'male' ? '남' : '여'}</span>
                   <span>{client.age ? `${client.age}세` : '-'}</span>

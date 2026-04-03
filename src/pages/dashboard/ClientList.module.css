@@ -98,21 +98,31 @@
 }
 
 .genderMaleCell {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50%;
   background: #f0f4ff;
   color: var(--navy);
+  flex-shrink: 0;
 }
 
 .genderFemaleCell {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 50%;
   background: #fff0f4;
   color: #d4547a;
+  flex-shrink: 0;
 }
 
 .statsActive {
@@ -284,8 +294,12 @@
   background: var(--navy-glow);
 }
 
+.tableRow:first-child {
+  border-top: 1px solid var(--border-light);
+}
+
 .tableRow:last-child {
-  border-bottom: none;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .name {
@@ -379,14 +393,13 @@
   .tableRow {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: flex-start;
     gap: 0;
     padding: 0;
     background: var(--white);
     border: 1px solid var(--border-light);
     border-radius: 14px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
     transition: border-color var(--duration-fast) var(--ease-out),
                 box-shadow var(--duration-fast) var(--ease-out);
   }
@@ -415,6 +428,9 @@
 
   .realName {
     display: block;
+    width: 0;
+    overflow: visible;
+    white-space: nowrap;
     font-size: 0.72rem;
     font-weight: 500;
     color: var(--charcoal-pale);
@@ -422,8 +438,7 @@
     padding-top: 2px;
   }
 
-  /* ── span 2 (gender pill): inline on header line, after name ── */
-  /* Use margin (not padding) so .genderMaleCell/.genderFemaleCell padding is preserved */
+  /* ── span 2 (gender pill): fixed 6px gap from name, vertically centered with name text ── */
   .tableRow > span:nth-child(2) {
     order: 2;
     display: inline-flex;
@@ -431,21 +446,22 @@
     margin: 14px 0 4px 6px;
   }
 
-  /* ── span 3 (age): inline on header line, after gender ── */
+  /* ── span 3 (age): fixed 4px gap from gender via middle-dot ── */
   .tableRow > span:nth-child(3) {
     order: 3;
     display: inline-flex;
     align-items: center;
-    padding: 14px 0 4px 0;
+    margin: 15px 0 4px 0;
+    padding: 0;
     font-size: 0.8rem;
     color: var(--charcoal-pale);
     white-space: nowrap;
   }
 
-  /* Middle-dot separator before age */
+  /* Middle-dot separator: fixed 5px gap on each side */
   .tableRow > span:nth-child(3)::before {
     content: '·';
-    margin: 0 4px;
+    margin: 0 5px;
     color: var(--charcoal-pale);
     font-weight: 400;
   }
@@ -465,39 +481,46 @@
     content: none;
   }
 
-  /* ── span 4 (occupation): full-width row below header ── */
+  /* Force line break between header and footer rows */
+  .tableRow::after {
+    content: '';
+    order: 4;
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  /* ── span 4 (occupation): footer row, left ── */
   .tableRow > span:nth-child(4) {
     order: 5;
-    flex-basis: 100%;
+    flex: 1;
+    min-width: 0;
     display: block;
-    padding: 2px 16px 10px;
-    font-size: 0.84rem;
+    padding: 8px 0 10px 16px;
+    font-size: 0.8rem;
     color: var(--charcoal-mid);
+    border-top: 1px solid var(--border-light);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  /* Remove ::before label from occupation */
   .tableRow > span:nth-child(4)::before {
     content: none;
   }
 
-  /* ── span 5: owner — full-width footer row ── */
+  /* ── span 5: owner — footer row, right ── */
   .ownerMe,
   .ownerOther {
     order: 6;
-    flex-basis: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 1px;
-    padding: 8px 16px 10px;
-    font-size: 0.78rem;
+    align-items: center;
+    padding: 8px 16px 10px 8px;
+    font-size: 0.75rem;
     border-top: 1px solid var(--border-light);
     background: transparent;
+    white-space: nowrap;
   }
 
-  /* Remove ::before "소속" label */
   .ownerMe::before,
   .ownerOther::before {
     content: none;
@@ -510,7 +533,11 @@
 
   .ownerOther {
     font-weight: 500;
-    color: var(--charcoal-mid);
+    color: var(--charcoal-pale);
+  }
+
+  .ownerEmail {
+    display: none;
   }
 
   .ownerEmail {

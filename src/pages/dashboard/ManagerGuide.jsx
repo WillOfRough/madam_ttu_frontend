@@ -257,6 +257,10 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 
 감사합니다 💛`,
 
+  matchResponseNotice: `안녕하세요 Knots & Links 입니다 🙂
+매칭 진행 관련 안내드려요.
+원활한 진행을 위해 2시간 이내 응답이 없을 경우 해당 매칭은 자동으로 취소 처리되어 알림 드립니다.`,
+
   proposalReminder: `안녕하세요 OO님!
 
 지난번에 보내드린 [매칭 상대]님의 프로필, 혹시 확인해 보셨을까요? 😊
@@ -281,6 +285,7 @@ const TEMPLATE_META = [
   { key: 'openChatGuide', label: '오픈카톡 안내', badge: '양식 9' },
   { key: 'afterResult', label: '에프터 결과 안내', badge: '양식 10' },
   { key: 'proposalReminder', label: '프로필 확인 리마인드', badge: '양식 11' },
+  { key: 'matchResponseNotice', label: '매칭 응답 안내', badge: '양식 12' },
 ];
 
 const LS_KEY = 'knl_manager_templates';

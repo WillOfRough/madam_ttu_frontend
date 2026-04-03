@@ -1347,10 +1347,13 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
           className={styles.participantName}
           onClick={() => navigate(`/dashboard/clients/${participant.clientId}`)}
           style={{ cursor: 'pointer' }}
-        >{participant.clientName}</span>
+        >
+          {participant.clientName}
+          {participant.clientNickname && <span className={styles.participantNickname}>{participant.clientNickname}</span>}
+        </span>
         <span className={styles.participantLabel}>{label}</span>
-        <span className={styles.participantGender}>
-          {participant.clientGender === 'female' ? '여성' : '남성'}
+        <span className={participant.clientGender === 'female' ? styles.participantGenderFemale : styles.participantGenderMale}>
+          {participant.clientGender === 'female' ? '여' : '남'}
         </span>
       </div>
 

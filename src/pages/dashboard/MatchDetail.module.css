@@ -153,6 +153,14 @@
   text-underline-offset: 2px;
 }
 
+.participantNickname {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--charcoal-pale);
+  margin-left: 6px;
+  letter-spacing: 0;
+}
+
 .participantNameDeleted {
   font-weight: 600;
   color: var(--charcoal-pale);
@@ -175,13 +183,27 @@
   color: var(--charcoal-pale);
 }
 
-.participantGender {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
+.participantGenderMale,
+.participantGenderFemale {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.participantGenderMale {
   background: #f0f4ff;
   color: var(--navy);
+}
+
+.participantGenderFemale {
+  background: #fff0f4;
+  color: #d4547a;
 }
 
 .participantBody {

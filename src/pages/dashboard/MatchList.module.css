@@ -213,29 +213,63 @@
   gap: var(--space-md);
 }
 
+/* ── Match Card ── */
 .matchCard {
   background: var(--white);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 20px 24px;
+  overflow: hidden;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: box-shadow var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out);
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
 }
 
 .matchCard:hover {
-  border-color: var(--navy-glow);
+  border-color: rgba(26, 43, 75, 0.18);
   box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
+/* ── Card Top: 날짜/단계(좌) + 배지(우) ── */
 .cardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 8px;
+  padding: 11px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.stepInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cardDate {
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--charcoal-pale);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.cardStep {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--charcoal-light);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.cardStep::before {
+  content: '·';
+  margin-right: 8px;
+  color: var(--border);
 }
 
 .badgeGroup {
@@ -244,82 +278,163 @@
   flex-shrink: 0;
 }
 
+/* ── Match Pair: 5:5 symmetric layout ── */
 .matchPair {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.95rem;
-  font-weight: 650;
-  color: var(--charcoal);
+  padding: 20px 18px;
+  gap: 0;
+  min-height: 88px;
+}
+
+/* 각 클라이언트 사이드 — 정확히 50% 너비 */
+.clientSide {
+  flex: 1 1 0;
   min-width: 0;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.genderTag {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  background: #f0f4ff;
-  color: var(--navy);
+/* 이름 + 성별 배지 가로 배치 */
+.clientNameRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.genderTagFemale {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  background: #fff0f4;
-  color: #d4547a;
+.clientSideLeft {
+  align-items: flex-end;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.clientSideRight {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 16px;
+}
+
+/* 이름 컨테이너 */
+.clientNameLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clientSideLeft .clientNameLink {
+  align-items: flex-end;
+}
+
+.clientSideRight .clientNameLink {
+  align-items: flex-start;
+}
+
+
+
+.clientNickBold {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+}
+
+.realNameSub {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--charcoal-pale);
+  line-height: 1.4;
 }
 
 .deletedName {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deletedName .clientNickBold {
   color: var(--charcoal-pale);
   font-style: italic;
 }
 
-.clientNameLink {
-  color: var(--charcoal);
-  cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-out);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.clientNameLink:hover {
+/* 성별 배지 — 고정 크기 원형 */
+.genderTag {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: #eef2ff;
   color: var(--navy);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.realNameSub {
-  font-size: 0.68rem;
-  font-weight: 400;
-  color: var(--charcoal-pale);
-  margin-left: 4px;
-}
-
-.arrow {
-  color: var(--charcoal-pale);
-  font-size: 0.85rem;
+  font-size: 0.65rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
+.genderTagFemale {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: #fff0f5;
+  color: #c44f7a;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* 중앙 Heart 아이콘 */
+.arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-light) 100%);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 126, 103, 0.32);
+  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.matchCard:hover .arrow {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 126, 103, 0.42);
+}
+
+/* ── Card Meta: 메모 + 담당자 ── */
 .cardMeta {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  font-size: 0.78rem;
-  color: var(--charcoal-pale);
+  gap: 8px;
+  padding: 0 18px 12px;
+  min-height: 0;
 }
 
-.stepInfo {
-  font-size: 0.78rem;
+.cardMeta:empty {
+  display: none;
+}
+
+.cardNote {
+  flex: 1;
+  font-size: 0.76rem;
+  font-weight: 400;
   color: var(--charcoal-light);
-  font-weight: 500;
+  background: var(--bg);
+  border-radius: var(--radius-xs);
+  padding: 6px 10px;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .createdBy {
@@ -327,19 +442,12 @@
   align-items: center;
   gap: 4px;
   margin-left: auto;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 550;
   color: var(--charcoal-pale);
-  background: var(--bg-warm);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-}
-
-.cardNote {
-  font-size: 0.82rem;
-  color: var(--charcoal-light);
-  margin-top: 8px;
-  line-height: 1.5;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
 }
 
 /* ── Create Modal ───────────────────────── */
@@ -982,7 +1090,38 @@
   }
 
   .matchCard {
-    padding: 16px;
+    /* overflow:hidden already set; no extra padding needed */
+  }
+
+  .cardTop {
+    padding: 9px 14px;
+  }
+
+  .matchPair {
+    padding: 16px 14px;
+    min-height: 76px;
+  }
+
+  .clientSideLeft {
+    padding-right: 12px;
+  }
+
+  .clientSideRight {
+    padding-left: 12px;
+  }
+
+  .clientNickBold {
+    font-size: 0.92rem;
+  }
+
+  .arrow {
+    width: 30px;
+    height: 30px;
+  }
+
+  .cardMeta {
+    padding: 0 14px 10px;
+    flex-wrap: wrap;
   }
 
   .modal {

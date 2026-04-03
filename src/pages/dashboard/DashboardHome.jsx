@@ -126,7 +126,7 @@ export default function DashboardHome() {
                 className={styles.tableRow}
                 onClick={() => navigate(`/dashboard/clients/${client.id}`)}
               >
-                <span className={styles.name}>{client.nickname || client.name}</span>
+                <span className={styles.name}>{client.name}</span>
                 <span>{client.gender === 'male' ? '남성' : '여성'}</span>
                 <span>{client.occupation}</span>
                 <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>

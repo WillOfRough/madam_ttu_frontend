@@ -227,7 +227,7 @@ export default function ClientDetail() {
 
   const fields = [
     { label: '닉네임', value: client.nickname },
-    { label: '성별', value: client.gender === 'male' ? '남성' : '여성' },
+    { label: '성별', value: <span className={client.gender === 'male' ? styles.genderMaleCircle : styles.genderFemaleCircle}>{client.gender === 'male' ? '남' : '여'}</span> },
     { label: '출생연도', value: client.birthDate ? client.birthDate.slice(0, 4) : null },
     { label: '연락처', value: client.phone },
     { label: '이메일', value: client.email },
@@ -252,8 +252,8 @@ export default function ClientDetail() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.name}>
-            {client.nickname || client.name}
-            {client.nickname && <span className={styles.realName}>{client.name}</span>}
+            {client.name}
+            {client.nickname && <span className={styles.realName}>{client.nickname}</span>}
           </h1>
           <div className={styles.headerMeta}>
             <StatusBadge status={client.approvalStatus || 'pending'} />
