@@ -182,7 +182,8 @@ export default function MatchList() {
                     <span className={m.clientA.deleted ? styles.deletedName : styles.clientNameLink}
                       onClick={m.clientA.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientA.clientId}`); }}
                     >
-                      {m.clientA.clientName}
+                      {m.clientA.clientNickname || m.clientA.clientName}
+                      {m.clientA.clientNickname && <span className={styles.realNameSub}>{m.clientA.clientName}</span>}
                       {!m.clientA.deleted && (
                         <span className={m.clientA.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
                           {m.clientA.clientGender === 'female' ? '여' : '남'}
@@ -193,7 +194,8 @@ export default function MatchList() {
                     <span className={m.clientB.deleted ? styles.deletedName : styles.clientNameLink}
                       onClick={m.clientB.deleted ? undefined : (e) => { e.stopPropagation(); navigate(`/dashboard/clients/${m.clientB.clientId}`); }}
                     >
-                      {m.clientB.clientName}
+                      {m.clientB.clientNickname || m.clientB.clientName}
+                      {m.clientB.clientNickname && <span className={styles.realNameSub}>{m.clientB.clientName}</span>}
                       {!m.clientB.deleted && (
                         <span className={m.clientB.clientGender === 'female' ? styles.genderTagFemale : styles.genderTag}>
                           {m.clientB.clientGender === 'female' ? '여' : '남'}

@@ -293,6 +293,13 @@
   text-underline-offset: 2px;
 }
 
+.realNameSub {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--charcoal-pale);
+  margin-left: 4px;
+}
+
 .arrow {
   color: var(--charcoal-pale);
   font-size: 0.85rem;
