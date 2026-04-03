@@ -9,37 +9,10 @@ import { SkeletonTable } from '../../components/Skeleton';
 import styles from './ClientList.module.css';
 
 export default function ClientList() {
-  const { clients, totalCount, filteredCount, genderCounts, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients, selectedForMatch: selected, toggleSelectForMatch, clearSelectedForMatch } =
+  const { clients, totalCount, filteredCount, genderCounts, page, limit, filters, isLoading, error, setFilter, setPage, fetchClients } =
     useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
-  const [selectMode, setSelectMode] = useState(false);
-  const longPressRef = useRef(null);
-
-  // 선택 모드: 선택이 모두 해제되면 자동 종료
-  useEffect(() => {
-    if (selectMode && selected.length === 0) setSelectMode(false);
-  }, [selected, selectMode]);
-
-  const toggleSelect = (client, e) => {
-    if (e) e.stopPropagation();
-    if (client.approvalStatus !== 'approved') return;
-    toggleSelectForMatch(client);
-  };
-
-  const handleLongPressStart = (client) => {
-    longPressRef.current = setTimeout(() => {
-      if (client.approvalStatus !== 'approved') return;
-      setSelectMode(true);
-      if (!selected.find((c) => c.id === client.id)) {
-        toggleSelectForMatch(client);
-      }
-    }, 500);
-  };
-
-  const handleLongPressEnd = () => {
-    clearTimeout(longPressRef.current);
-  };
 
   const handleRowClick = (client) => {
     navigate(`/dashboard/clients/${client.id}`);
@@ -200,28 +173,12 @@ export default function ClientList() {
               <span>매칭</span>
               <span>상태</span>
             </div>
-            {clients.map((client) => {
-              const isSelected = selected.some((c) => c.id === client.id);
-              return (
+            {clients.map((client) => (
                 <div
                   key={client.id}
-                  className={`${styles.tableRow} ${isSelected ? styles.tableRowSelected : ''}`}
+                  className={styles.tableRow}
                   onClick={() => handleRowClick(client)}
-                  onTouchStart={() => handleLongPressStart(client)}
-                  onTouchEnd={handleLongPressEnd}
-                  onTouchCancel={handleLongPressEnd}
-                  onMouseDown={() => handleLongPressStart(client)}
-                  onMouseUp={handleLongPressEnd}
-                  onMouseLeave={handleLongPressEnd}
                 >
-                  {selectMode && client.approvalStatus === 'approved' && (
-                    <button
-                      className={`${styles.selectBtn} ${isSelected ? styles.selectBtnActive : ''}`}
-                      onClick={(e) => { e.stopPropagation(); toggleSelect(client, e); }}
-                    >
-                      {isSelected ? '해제' : '선택'}
-                    </button>
-                  )}
                   <span className={styles.name}>
                     {client.nickname || client.name}
                     {client.nickname && <span className={styles.realName}>{client.name}</span>}
@@ -243,8 +200,7 @@ export default function ClientList() {
                   </span>
                   <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>
                 </div>
-              );
-            })}
+            ))}
           </div>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </>
