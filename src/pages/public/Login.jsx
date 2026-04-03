@@ -3,19 +3,28 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import styles from './Login.module.css';
 
+const REMEMBER_KEY = 'knl_remember_email';
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
   const login = useAuthStore((s) => s.login);
   const isLoading = useAuthStore((s) => s.isLoading);
-  const [email, setEmail] = useState('');
+  const savedEmail = localStorage.getItem(REMEMBER_KEY) || '';
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState('');
+  const [rememberEmail, setRememberEmail] = useState(!!savedEmail);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    if (rememberEmail) {
+      localStorage.setItem(REMEMBER_KEY, email);
+    } else {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
     try {
       await login({ email, password });
       navigate(from, { replace: true });
@@ -55,6 +64,15 @@ export default function Login() {
               required
             />
           </div>
+
+          <label className={styles.remember}>
+            <input
+              type="checkbox"
+              checked={rememberEmail}
+              onChange={(e) => setRememberEmail(e.target.checked)}
+            />
+            <span>이메일 기억하기</span>
+          </label>
 
           {error && <p className={styles.error}>{error}</p>}
 
