@@ -97,6 +97,24 @@
   font-weight: 700;
 }
 
+.genderMaleCell {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: #f0f4ff;
+  color: var(--navy);
+}
+
+.genderFemaleCell {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  background: #fff0f4;
+  color: #d4547a;
+}
+
 .statsActive {
   border-color: currentColor !important;
   font-weight: 650;
@@ -349,17 +367,28 @@
     display: none;
   }
 
+  /*
+   * Clean & Structured card layout
+   *
+   * Flex-wrap approach:
+   *   Row 1 (header line): [name] [gender pill] [age] ... [matching badge — right]
+   *   Row 2 (if realName): handled inside .name as block child
+   *   Row 3: [occupation — full width]
+   *   Row 4: [owner — full width, footer style]
+   */
   .tableRow {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: wrap;
+    align-items: baseline;
     gap: 0;
     padding: 0;
     background: var(--white);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    transition: border-color var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
   }
 
   .tableRow:last-child {
@@ -367,94 +396,129 @@
   }
 
   .tableRow:hover {
-    background: var(--white);
-    border-color: var(--navy-glow);
-    box-shadow: var(--shadow-md);
+    border-color: var(--navy);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
 
-  /* 1st: Name → Card header */
+  /* ── span 1 (.name): header line, left side ── */
   .name {
-    padding: 12px 16px 10px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--bg);
+    order: 1;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 14px 0 4px 16px;
     font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    letter-spacing: -0.01em;
   }
 
-  /* 2nd~4th, 6th, 7th: labeled fields */
-  .tableRow > span:nth-child(2),
-  .tableRow > span:nth-child(3),
-  .tableRow > span:nth-child(4),
-  .tableRow > span:nth-child(6),
-  .tableRow > span:nth-child(7) {
-    display: flex;
+  .realName {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--charcoal-pale);
+    letter-spacing: 0;
+    padding-top: 2px;
+  }
+
+  /* ── span 2 (gender pill): inline on header line, after name ── */
+  /* Use margin (not padding) so .genderMaleCell/.genderFemaleCell padding is preserved */
+  .tableRow > span:nth-child(2) {
+    order: 2;
+    display: inline-flex;
     align-items: center;
-    gap: 0;
-    padding: 7px 16px;
+    margin: 14px 0 4px 6px;
+  }
+
+  /* ── span 3 (age): inline on header line, after gender ── */
+  .tableRow > span:nth-child(3) {
+    order: 3;
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 0 4px 0;
+    font-size: 0.8rem;
+    color: var(--charcoal-pale);
+    white-space: nowrap;
+  }
+
+  /* Middle-dot separator before age */
+  .tableRow > span:nth-child(3)::before {
+    content: '·';
+    margin: 0 4px;
+    color: var(--charcoal-pale);
+    font-weight: 400;
+  }
+
+  /* ── span 6 (matching badge): right-aligned on header line ── */
+  .tableRow > span:nth-child(6) {
+    order: 4;
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 16px 4px 0;
+    margin-left: auto;
     font-size: 0.84rem;
   }
 
-  .tableRow > span:nth-child(2)::before {
-    content: '성별';
-  }
-
-  .tableRow > span:nth-child(3)::before {
-    content: '나이';
-  }
-
-  .tableRow > span:nth-child(4)::before {
-    content: '직업';
-  }
-
+  /* Remove any ::before label from matching span */
   .tableRow > span:nth-child(6)::before {
-    content: '매칭';
+    content: none;
   }
 
-  .tableRow > span:nth-child(7)::before {
-    content: '상태';
+  /* ── span 4 (occupation): full-width row below header ── */
+  .tableRow > span:nth-child(4) {
+    order: 5;
+    flex-basis: 100%;
+    display: block;
+    padding: 2px 16px 10px;
+    font-size: 0.84rem;
+    color: var(--charcoal-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .tableRow > span:nth-child(2)::before,
-  .tableRow > span:nth-child(3)::before,
-  .tableRow > span:nth-child(4)::before,
-  .tableRow > span:nth-child(6)::before,
-  .tableRow > span:nth-child(7)::before {
-    font-size: 0.72rem;
-    font-weight: 650;
-    color: var(--charcoal-pale);
-    min-width: 32px;
-    margin-right: 10px;
-    flex-shrink: 0;
+  /* Remove ::before label from occupation */
+  .tableRow > span:nth-child(4)::before {
+    content: none;
   }
 
-  /* 5th: Owner (has ownerMe/ownerOther) */
+  /* ── span 5: owner — full-width footer row ── */
   .ownerMe,
   .ownerOther {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: baseline;
-    padding: 7px 16px;
-    font-size: 0.84rem;
+    order: 6;
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 8px 16px 10px;
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border-light);
+    background: transparent;
   }
 
+  /* Remove ::before "소속" label */
   .ownerMe::before,
   .ownerOther::before {
-    content: '소속';
-    font-size: 0.72rem;
-    font-weight: 650;
-    color: var(--charcoal-pale);
-    min-width: 32px;
-    margin-right: 10px;
-    flex-shrink: 0;
+    content: none;
+  }
+
+  .ownerMe {
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .ownerOther {
+    font-weight: 500;
+    color: var(--charcoal-mid);
   }
 
   .ownerEmail {
-    flex-basis: 100%;
-    padding-left: 42px;
-  }
-
-  /* Last field: extra bottom padding */
-  .tableRow > span:last-child {
-    padding-bottom: 12px;
+    flex-basis: auto;
+    padding-left: 0;
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: var(--charcoal-pale);
   }
 
 }

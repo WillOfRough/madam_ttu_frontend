@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Users } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
-import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import styles from './ClientList.module.css';
@@ -124,16 +123,6 @@ export default function ClientList() {
           <option value="female">여성</option>
         </select>
 
-        <select
-          className={styles.filterSelect}
-          value={filters.approval || ''}
-          onChange={(e) => setFilter('approval', e.target.value || null)}
-        >
-          <option value="">상태 전체</option>
-          <option value="pending">대기</option>
-          <option value="approved">승인</option>
-          <option value="rejected">거절</option>
-        </select>
 
         <select
           className={styles.filterSelect}
@@ -171,7 +160,6 @@ export default function ClientList() {
               <span>직업</span>
               <span>소속</span>
               <span>매칭</span>
-              <span>상태</span>
             </div>
             {clients.map((client) => (
                 <div
@@ -183,7 +171,7 @@ export default function ClientList() {
                     {client.nickname || client.name}
                     {client.nickname && <span className={styles.realName}>{client.name}</span>}
                   </span>
-                  <span>{client.gender === 'male' ? '남성' : '여성'}</span>
+                  <span className={client.gender === 'female' ? styles.genderFemaleCell : styles.genderMaleCell}>{client.gender === 'male' ? '남' : '여'}</span>
                   <span>{client.age ? `${client.age}세` : '-'}</span>
                   <span>{client.occupation || '-'}</span>
                   <span className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
@@ -198,7 +186,6 @@ export default function ClientList() {
                       <span className={styles.matchingAvailable}>매칭 가능</span>
                     )}
                   </span>
-                  <span><StatusBadge status={client.approvalStatus || 'pending'} /></span>
                 </div>
             ))}
           </div>

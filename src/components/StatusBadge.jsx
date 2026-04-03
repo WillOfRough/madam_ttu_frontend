@@ -12,7 +12,7 @@ const LABELS = {
   scheduling: '일정조율',
   arranging: '조율확정',
   scheduled: '약속확정',
-  completed: '완료',
+  completed: '만남',
   cancelled: '취소',
   after_pending: '에프터 대기',
   after_accepted: '에프터 성사',
