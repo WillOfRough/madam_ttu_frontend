@@ -389,24 +389,18 @@
   line-height: 1;
 }
 
-/* 중앙 Heart 아이콘 */
+/* 중앙 화살표 아이콘 */
 .arrow {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-light) 100%);
-  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(255, 126, 103, 0.32);
-  transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-fast) var(--ease-out);
+  color: var(--charcoal-pale);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .matchCard:hover .arrow {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(255, 126, 103, 0.42);
+  color: var(--charcoal-mid);
 }
 
 /* ── Card Meta: 메모 + 담당자 ── */
@@ -1115,8 +1109,7 @@
   }
 
   .arrow {
-    width: 30px;
-    height: 30px;
+    /* 모바일에서도 배경 없이 아이콘만 표시 */
   }
 
   .cardMeta {
