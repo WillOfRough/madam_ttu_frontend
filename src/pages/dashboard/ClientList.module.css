@@ -373,6 +373,7 @@
     background: transparent;
     border: none;
     box-shadow: none;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     gap: 10px;
