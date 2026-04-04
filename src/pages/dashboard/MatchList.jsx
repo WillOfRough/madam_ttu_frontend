@@ -34,7 +34,8 @@ export default function MatchList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [managerFilter, setManagerFilter] = useState(myName || '');
+  const [managerFilter, setManagerFilter] = useState('');
+  const [managerDefaultApplied, setManagerDefaultApplied] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
 
   // URL 파라미터에서 필터 적용
@@ -52,6 +53,14 @@ export default function MatchList() {
 
   // 고유 매니저 목록 추출
   const managerNames = [...new Set(matches.map((m) => m.createdByManagerName).filter(Boolean))].sort();
+
+  // 매칭 로드 후 로그인 매니저로 기본 필터 적용
+  useEffect(() => {
+    if (!managerDefaultApplied && myName && managerNames.includes(myName)) {
+      setManagerFilter(myName);
+      setManagerDefaultApplied(true);
+    }
+  }, [managerNames, myName, managerDefaultApplied]);
 
   const filteredMatches = matches.filter((m) => {
     if (managerFilter && m.createdByManagerName !== managerFilter) return false;
