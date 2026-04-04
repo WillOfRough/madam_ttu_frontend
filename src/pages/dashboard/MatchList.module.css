@@ -306,13 +306,13 @@
 .clientSideLeft {
   align-items: flex-end;
   text-align: right;
-  padding-right: 16px;
+  padding-right: 24px;
 }
 
 .clientSideRight {
   align-items: flex-start;
   text-align: left;
-  padding-left: 16px;
+  padding-left: 24px;
 }
 
 /* 이름 컨테이너 */
@@ -1097,11 +1097,11 @@
   }
 
   .clientSideLeft {
-    padding-right: 12px;
+    padding-right: 18px;
   }
 
   .clientSideRight {
-    padding-left: 12px;
+    padding-left: 18px;
   }
 
   .clientNickBold {
