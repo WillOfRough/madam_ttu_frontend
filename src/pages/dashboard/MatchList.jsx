@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Heart, ArrowRight, Plus, Search, X, ChevronDown, ChevronUp, AlertTriangle, UserRound, Info } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
+import useAuthStore from '../../store/authStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
 import StatusBadge from '../../components/StatusBadge';
@@ -29,10 +30,11 @@ export default function MatchList() {
   const { matches, totalCount, page, size, filters, isLoading, error, setFilter, setPage, fetchMatches } =
     useMatchStore();
   const navigate = useNavigate();
+  const myName = useAuthStore((s) => s.name);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [managerFilter, setManagerFilter] = useState('');
+  const [managerFilter, setManagerFilter] = useState(myName || '');
   const [showGuide, setShowGuide] = useState(false);
 
   // URL 파라미터에서 필터 적용

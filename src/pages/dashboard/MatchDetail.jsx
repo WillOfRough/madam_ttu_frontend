@@ -199,7 +199,9 @@ export default function MatchDetail() {
   const [cancelReason, setCancelReason] = useState('');
 
   const reload = () => {
-    matchService.getMatchDetail(matchId).then(setMatch).catch(() => {});
+    matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
+      toast.error(err.message || '데이터를 불러오지 못했습니다.');
+    });
   };
 
   useEffect(() => {
@@ -209,7 +211,10 @@ export default function MatchDetail() {
       matchService
         .getMatchDetail(matchId)
         .then(setMatch)
-        .catch(() => navigate('/dashboard/matches'))
+        .catch((err) => {
+          toast.error(err.message || '매칭 정보를 불러올 수 없습니다.');
+          navigate('/dashboard/matches');
+        })
         .finally(() => setLoading(false));
     }
   }, [matchId, navigate]);
@@ -226,6 +231,11 @@ export default function MatchDetail() {
     );
 
   if (!match) return null;
+
+  // 삭제된 회원 안전 처리: clientA/clientB가 null이면 기본값
+  const safeClient = { clientId: null, clientName: '삭제된 회원', clientNickname: null, clientPhone: null, clientGender: null, clientAge: 0, clientLocation: null, clientCompany: null, clientWorkLocation: null, clientOccupation: null, clientEducation: null, clientPhotoUrls: [], proposalToken: null, response: null, afterResponse: null, deleted: true, availableTimesSubmitted: false, managerName: null, respondedAt: null, feedbackAt: null, feedbackRating: null, feedbackComment: null };
+  if (!match.clientA) match.clientA = { ...safeClient };
+  if (!match.clientB) match.clientB = { ...safeClient };
 
   const stepIndex = getStepIndex(match.status, paymentConfirmed);
   const isCancelled = match.status === 'cancelled';
