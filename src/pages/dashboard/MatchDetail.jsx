@@ -40,9 +40,10 @@ function generateSchedulingMessage(clientName, scheduleUrl) {
     .replace('[일정 등록 링크 첨부]', scheduleUrl);
 }
 
-function generateAfterResultMessage(clientName, resultUrl) {
+function generateAfterResultMessage(clientName, resultUrl, afterStatus) {
   const templates = loadTemplates();
-  return templates.afterResult
+  const template = afterStatus === 'rejected' ? templates.afterResultRejected : templates.afterResult;
+  return template
     .replace(/OO님/g, `${clientName}님`)
     .replace(/\[결과 확인 링크\]/g, resultUrl);
 }
@@ -1099,7 +1100,7 @@ function AfterResultLinkCard({ match }) {
 
   const handleMsgCopy = async (url, clientName, key) => {
     try {
-      const msg = generateAfterResultMessage(clientName, url);
+      const msg = generateAfterResultMessage(clientName, url, match.afterStatus);
       await navigator.clipboard.writeText(msg);
       setMsgCopiedKey(key);
       toast.success('안내 메시지가 복사되었습니다.');
