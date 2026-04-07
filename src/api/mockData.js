@@ -1625,7 +1625,9 @@ export async function mockFetch(path, options = {}) {
     const rawPage = parseInt(params.get('page') || '0', 10);
     const page = rawPage < 1 ? 0 : rawPage;
     const size = parseInt(params.get('size') || '20', 10);
-    const myMatches = matches.filter(m => m.createdByManagerName === currentUser.name);
+    const myMatches = currentUser.role === 'admin'
+      ? matches
+      : matches.filter(m => m.createdByManagerName === currentUser.name);
     const sorted = [...myMatches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const start = page * size;
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
