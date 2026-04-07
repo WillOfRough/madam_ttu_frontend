@@ -228,7 +228,7 @@ export default function ClientDetail() {
   const fields = [
     { label: '닉네임', value: client.nickname },
     { label: '성별', value: <span className={client.gender === 'male' ? styles.genderMaleCircle : styles.genderFemaleCircle}>{client.gender === 'male' ? '남' : '여'}</span> },
-    { label: '출생연도', value: client.birthDate ? client.birthDate.slice(0, 4) : null },
+    { label: '출생연도', value: client.birthDate ? `${client.birthDate.slice(0, 4)} (${new Date().getFullYear() - parseInt(client.birthDate.slice(0, 4))}세)` : null },
     { label: '연락처', value: client.phone },
     { label: '이메일', value: client.email },
     { label: '거주지역', value: client.location },
