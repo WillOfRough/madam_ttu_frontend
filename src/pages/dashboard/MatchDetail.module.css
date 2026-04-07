@@ -301,6 +301,28 @@
   border-top: 1px solid var(--border-light);
 }
 
+.tokenToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--space-sm);
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.tokenToggle:hover {
+  color: var(--charcoal-mid);
+}
+
 .tokenLabel {
   font-size: 0.72rem;
   font-weight: 600;
