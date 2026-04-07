@@ -12,7 +12,13 @@ const STATUS_PRIORITY = {
   cancelled: 6,       // 취소 (맨 마지막)
 };
 
+function hasDeletedMember(match) {
+  return match.clientA?.deleted || match.clientB?.deleted;
+}
+
 function getEffectivePriority(match) {
+  // 삭제된 회원 포함 매칭 → cancelled 바로 앞
+  if (hasDeletedMember(match)) return 5.8;
   if (match.status === 'completed') {
     if (match.afterStatus === 'pending') return -1;    // 애프터 대기 → 최상위
     if (match.afterStatus === 'accepted') return 5;    // 애프터 성사 → completed 급
