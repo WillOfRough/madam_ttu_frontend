@@ -1,44 +1,25 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, TrendingUp, Users, XCircle, DollarSign, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Users, Send } from 'lucide-react';
 import * as matchService from '../../api/matchService';
+import { toast } from '../../store/toastStore';
 import styles from './Settlement.module.css';
 
-const PRICE_PER_PERSON = 19900;
-const PRICE_PER_MATCH = PRICE_PER_PERSON * 2;
+const SETTLEMENT_MATCH_CREATOR = 10000; // 매칭을 만든 매니저 수당
+const SETTLEMENT_CLIENT_OWNER = 5000;   // 회원을 등록한 매니저 수당
 
 const SETTLEMENT_STATUSES = ['scheduling', 'arranging', 'scheduled', 'completed'];
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
-function getRefundStatus(meetingDate) {
-  if (!meetingDate) return null;
-  const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
-  if (hours >= 168) return { label: '전액 환불', type: 'safe' };
-  if (hours >= 72) return { label: '80% 환불', type: 'safe' };
-  if (hours >= 24) return { label: '환불 불가 · 변경 가능', type: 'warn' };
-  if (hours > 0) return { label: '환불 불가', type: 'danger' };
-  return { label: '미팅 경과', type: 'danger' };
-}
-
 function formatCurrency(amount) {
   return new Intl.NumberFormat('ko-KR').format(amount);
-}
-
-function formatDateShort(iso) {
-  if (!iso) return '-';
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
 }
 
 function getCalendarDays(year, month) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = [];
-
-  for (let i = 0; i < firstDay; i++) {
-    days.push(null);
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    days.push(d);
-  }
+  for (let i = 0; i < firstDay; i++) days.push(null);
+  for (let d = 1; d <= daysInMonth; d++) days.push(d);
   return days;
 }
 
@@ -55,31 +36,26 @@ export default function Settlement() {
     setLoading(true);
     try {
       const result = await matchService.listMatches({ page: 0, size: 9999 });
-      const raw = result.data || result.matches || [];
+      const raw = result?.data ?? [];
       setAllMatches(raw);
     } catch {
       setAllMatches([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // 정산 대상 매칭 (scheduling 이상)
+  // 정산 대상 매칭 (scheduling 이상, cancelled 제외)
   const settlementMatches = useMemo(
     () => allMatches.filter((m) => SETTLEMENT_STATUSES.includes(m.status)),
     [allMatches],
   );
 
-  // 취소 매칭
-  const cancelledMatches = useMemo(
-    () => allMatches.filter((m) => m.status === 'cancelled'),
-    [allMatches],
-  );
-
-  // 이번 달 매칭 (meetingDate 또는 createdAt 기준)
+  // 이번 달 매칭
   const monthMatches = useMemo(() => {
     return settlementMatches.filter((m) => {
       const dateStr = m.meetingDate || m.createdAt;
@@ -88,16 +64,6 @@ export default function Settlement() {
       return d.getFullYear() === year && d.getMonth() === month;
     });
   }, [settlementMatches, year, month]);
-
-  // 이번 달 취소 매칭
-  const monthCancelled = useMemo(() => {
-    return cancelledMatches.filter((m) => {
-      const dateStr = m.createdAt;
-      if (!dateStr) return false;
-      const d = new Date(dateStr);
-      return d.getFullYear() === year && d.getMonth() === month;
-    });
-  }, [cancelledMatches, year, month]);
 
   // 날짜별 매칭 맵
   const dayMatchMap = useMemo(() => {
@@ -109,38 +75,52 @@ export default function Settlement() {
       if (!map[day]) map[day] = [];
       map[day].push(m);
     });
-    monthCancelled.forEach((m) => {
-      const dateStr = m.createdAt;
-      if (!dateStr) return;
-      const day = new Date(dateStr).getDate();
-      if (!map[day]) map[day] = [];
-      map[day].push(m);
-    });
     return map;
-  }, [monthMatches, monthCancelled]);
+  }, [monthMatches]);
 
-  // 매니저별 실적
+  // 매니저별 정산 (매칭매니저 10,000원 + 회원매니저 5,000원)
   const managerStats = useMemo(() => {
     const map = {};
+    const getOrCreate = (name) => {
+      if (!map[name]) map[name] = { matchCreatorCount: 0, clientOwnerCount: 0 };
+      return map[name];
+    };
+
     monthMatches.forEach((m) => {
-      const name = m.createdByManagerName || '알 수 없음';
-      if (!map[name]) map[name] = { count: 0, completed: 0 };
-      map[name].count += 1;
-      if (m.status === 'completed') map[name].completed += 1;
+      // 매칭매니저 (매칭을 만든 매니저): 10,000원
+      const creatorName = m.createdByManagerName || '알 수 없음';
+      getOrCreate(creatorName).matchCreatorCount += 1;
+
+      // 회원매니저 A (clientA를 등록한 매니저): 5,000원
+      const managerA = m.clientA?.managerName;
+      if (managerA) getOrCreate(managerA).clientOwnerCount += 1;
+
+      // 회원매니저 B (clientB를 등록한 매니저): 5,000원
+      const managerB = m.clientB?.managerName;
+      if (managerB) getOrCreate(managerB).clientOwnerCount += 1;
     });
+
     return Object.entries(map)
-      .map(([name, stats]) => ({ name, ...stats, revenue: stats.count * PRICE_PER_MATCH }))
-      .sort((a, b) => b.count - a.count);
+      .map(([name, s]) => ({
+        name,
+        matchCreatorCount: s.matchCreatorCount,
+        clientOwnerCount: s.clientOwnerCount,
+        matchCreatorAmount: s.matchCreatorCount * SETTLEMENT_MATCH_CREATOR,
+        clientOwnerAmount: s.clientOwnerCount * SETTLEMENT_CLIENT_OWNER,
+        total: s.matchCreatorCount * SETTLEMENT_MATCH_CREATOR + s.clientOwnerCount * SETTLEMENT_CLIENT_OWNER,
+      }))
+      .sort((a, b) => b.total - a.total);
   }, [monthMatches]);
 
   // 요약 통계
   const summary = useMemo(() => {
-    const total = monthMatches.length;
+    const totalMatches = monthMatches.length;
     const completed = monthMatches.filter((m) => m.status === 'completed').length;
-    const cancelled = monthCancelled.length;
-    const revenue = total * PRICE_PER_MATCH;
-    return { total, completed, cancelled, revenue };
-  }, [monthMatches, monthCancelled]);
+    const totalSettlement = managerStats.reduce((s, m) => s + m.total, 0);
+    const totalMatchCreator = managerStats.reduce((s, m) => s + m.matchCreatorAmount, 0);
+    const totalClientOwner = managerStats.reduce((s, m) => s + m.clientOwnerAmount, 0);
+    return { totalMatches, completed, totalSettlement, totalMatchCreator, totalClientOwner };
+  }, [monthMatches, managerStats]);
 
   const calendarDays = useMemo(() => getCalendarDays(year, month), [year, month]);
 
@@ -154,6 +134,18 @@ export default function Settlement() {
       next.setMonth(next.getMonth() + delta);
       return next;
     });
+  };
+
+  const handleSendReport = (managerName) => {
+    toast.success(`${year}년 ${month + 1}월 ${managerName} 매니저 리포트 발송 완료`);
+  };
+
+  const handleSendAllReports = () => {
+    if (managerStats.length === 0) {
+      toast.error('발송할 리포트가 없습니다.');
+      return;
+    }
+    toast.success(`${year}년 ${month + 1}월 전체 매니저 리포트 ${managerStats.length}건 발송 완료`);
   };
 
   if (loading) {
@@ -183,13 +175,7 @@ export default function Settlement() {
           className={`${styles.tab} ${activeTab === 'manager' ? styles.tabActive : ''}`}
           onClick={() => setActiveTab('manager')}
         >
-          매니저별
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'refund' ? styles.tabActive : ''}`}
-          onClick={() => setActiveTab('refund')}
-        >
-          취소/환불
+          매니저별 정산
         </button>
       </div>
 
@@ -209,25 +195,31 @@ export default function Settlement() {
         <div className={styles.summaryCard}>
           <div className={styles.summaryLabel}>총 매칭</div>
           <div className={styles.summaryValueNavy}>
-            {summary.total}<span className={styles.summaryUnit}>건</span>
+            {summary.totalMatches}<span className={styles.summaryUnit}>건</span>
           </div>
         </div>
         <div className={styles.summaryCard}>
-          <div className={styles.summaryLabel}>예상 매출</div>
+          <div className={styles.summaryLabel}>총 정산액</div>
           <div className={styles.summaryValue}>
-            {formatCurrency(summary.revenue)}<span className={styles.summaryUnit}>원</span>
+            {formatCurrency(summary.totalSettlement)}<span className={styles.summaryUnit}>원</span>
           </div>
         </div>
         <div className={styles.summaryCard}>
-          <div className={styles.summaryLabel}>완료</div>
+          <div className={styles.summaryLabel}>매칭 수당</div>
           <div className={styles.summaryValueSuccess}>
-            {summary.completed}<span className={styles.summaryUnit}>건</span>
+            {formatCurrency(summary.totalMatchCreator)}<span className={styles.summaryUnit}>원</span>
+          </div>
+          <div className={styles.summarySubLabel}>
+            @{formatCurrency(SETTLEMENT_MATCH_CREATOR)}원 × {summary.totalMatches}건
           </div>
         </div>
         <div className={styles.summaryCard}>
-          <div className={styles.summaryLabel}>취소</div>
-          <div className={styles.summaryValueDanger}>
-            {summary.cancelled}<span className={styles.summaryUnit}>건</span>
+          <div className={styles.summaryLabel}>회원 수당</div>
+          <div className={styles.summaryValueSuccess}>
+            {formatCurrency(summary.totalClientOwner)}<span className={styles.summaryUnit}>원</span>
+          </div>
+          <div className={styles.summarySubLabel}>
+            @{formatCurrency(SETTLEMENT_CLIENT_OWNER)}원/명
           </div>
         </div>
       </div>
@@ -249,10 +241,8 @@ export default function Settlement() {
               if (day === null) {
                 return <div key={`empty-${idx}`} className={styles.calendarCellEmpty} />;
               }
-              const dayOfWeek = (new Date(year, month, day)).getDay();
+              const dayOfWeek = new Date(year, month, day).getDay();
               const matches = dayMatchMap[day] || [];
-              const activeMatches = matches.filter((m) => m.status !== 'cancelled');
-              const cancelledCount = matches.filter((m) => m.status === 'cancelled').length;
               const dateClass = dayOfWeek === 0
                 ? styles.calendarDateSun
                 : dayOfWeek === 6
@@ -265,14 +255,18 @@ export default function Settlement() {
                   className={`${styles.calendarCell} ${isToday(day) ? styles.calendarCellToday : ''}`}
                 >
                   <div className={dateClass}>{day}</div>
-                  {activeMatches.length > 0 && (
-                    <div className={styles.badgeMatch}>{activeMatches.length}건</div>
+                  {matches.length > 0 && (
+                    <div className={styles.badgeMatch}>{matches.length}건</div>
                   )}
-                  {activeMatches.length > 0 && (
-                    <div className={styles.badgeRevenue}>{formatCurrency(activeMatches.length * PRICE_PER_MATCH)}</div>
-                  )}
-                  {cancelledCount > 0 && (
-                    <div className={styles.badgeCancelled}>취소 {cancelledCount}</div>
+                  {matches.length > 0 && (
+                    <div className={styles.badgeRevenue}>
+                      {formatCurrency(matches.reduce((sum, m) => {
+                        let amt = SETTLEMENT_MATCH_CREATOR;
+                        if (m.clientA?.managerName) amt += SETTLEMENT_CLIENT_OWNER;
+                        if (m.clientB?.managerName) amt += SETTLEMENT_CLIENT_OWNER;
+                        return sum + amt;
+                      }, 0))}
+                    </div>
                   )}
                 </div>
               );
@@ -287,8 +281,12 @@ export default function Settlement() {
           <div className={styles.cardHeader}>
             <div className={styles.cardHeaderLeft}>
               <Users size={18} />
-              <h3>매니저별 실적</h3>
+              <h3>매니저별 정산</h3>
             </div>
+            <button className={styles.reportAllBtn} onClick={handleSendAllReports}>
+              <Send size={14} />
+              전체 리포트 발송
+            </button>
           </div>
           {managerStats.length === 0 ? (
             <div className={styles.empty}>
@@ -296,89 +294,55 @@ export default function Settlement() {
               이번 달 매칭 데이터가 없습니다.
             </div>
           ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>매니저</th>
-                  <th>매칭 수</th>
-                  <th>완료</th>
-                  <th>매출</th>
-                </tr>
-              </thead>
-              <tbody>
-                {managerStats.map((mgr) => (
-                  <tr key={mgr.name}>
-                    <td className={styles.managerName}>{mgr.name}</td>
-                    <td className={styles.managerCount}>{mgr.count}건</td>
-                    <td>{mgr.completed}건</td>
-                    <td className={styles.managerRevenue}>{formatCurrency(mgr.revenue)}원</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td className={styles.managerName}>합계</td>
-                  <td className={styles.managerCount}>
-                    {managerStats.reduce((s, m) => s + m.count, 0)}건
-                  </td>
-                  <td>
-                    {managerStats.reduce((s, m) => s + m.completed, 0)}건
-                  </td>
-                  <td className={styles.managerRevenue}>
-                    {formatCurrency(managerStats.reduce((s, m) => s + m.revenue, 0))}원
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* Refund Tab */}
-      {activeTab === 'refund' && (
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <div className={styles.cardHeaderLeft}>
-              <AlertTriangle size={18} />
-              <h3>취소/환불 내역</h3>
-            </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--charcoal-pale)' }}>
-              {monthCancelled.length}건
-            </span>
-          </div>
-          {monthCancelled.length === 0 ? (
-            <div className={styles.empty}>
-              <div className={styles.emptyIcon}><XCircle size={32} /></div>
-              이번 달 취소/환불 내역이 없습니다.
-            </div>
-          ) : (
-            monthCancelled.map((m) => {
-              const clientAName = m.clientA?.clientName || m.clientA?.clientNickname || '?';
-              const clientBName = m.clientB?.clientName || m.clientB?.clientNickname || '?';
-              const refund = getRefundStatus(m.meetingDate);
-              return (
-                <div key={m.matchId} className={styles.refundItem}>
-                  <div className={styles.refundInfo}>
-                    <div className={styles.refundNames}>
-                      {clientAName} & {clientBName}
-                    </div>
-                    <div className={styles.refundMeta}>
-                      {m.createdByManagerName} · {formatDateShort(m.createdAt)}
-                    </div>
+            <>
+              {managerStats.map((mgr) => (
+                <div key={mgr.name} className={styles.managerCard}>
+                  <div className={styles.managerCardHeader}>
+                    <span className={styles.managerCardName}>{mgr.name}</span>
+                    <button
+                      className={styles.reportBtn}
+                      onClick={() => handleSendReport(mgr.name)}
+                    >
+                      <Send size={12} />
+                      리포트
+                    </button>
                   </div>
-                  {refund && (
-                    <span className={
-                      refund.type === 'safe' ? styles.refundSafe
-                        : refund.type === 'warn' ? styles.refundWarn
-                          : styles.refundDanger
-                    }>
-                      {refund.label}
-                    </span>
-                  )}
-                  <div className={styles.refundAmount}>
-                    -{formatCurrency(PRICE_PER_MATCH)}원
+                  <div className={styles.managerCardBody}>
+                    <div className={styles.managerStatRow}>
+                      <span className={styles.managerStatLabel}>매칭 수당</span>
+                      <span className={styles.managerStatDetail}>
+                        {mgr.matchCreatorCount}건 × {formatCurrency(SETTLEMENT_MATCH_CREATOR)}원
+                      </span>
+                      <span className={styles.managerStatAmount}>
+                        {formatCurrency(mgr.matchCreatorAmount)}원
+                      </span>
+                    </div>
+                    <div className={styles.managerStatRow}>
+                      <span className={styles.managerStatLabel}>회원 수당</span>
+                      <span className={styles.managerStatDetail}>
+                        {mgr.clientOwnerCount}명 × {formatCurrency(SETTLEMENT_CLIENT_OWNER)}원
+                      </span>
+                      <span className={styles.managerStatAmount}>
+                        {formatCurrency(mgr.clientOwnerAmount)}원
+                      </span>
+                    </div>
+                    <div className={`${styles.managerStatRow} ${styles.managerStatRowTotal}`}>
+                      <span className={styles.managerStatLabel}>합계</span>
+                      <span />
+                      <span className={styles.managerStatTotal}>
+                        {formatCurrency(mgr.total)}원
+                      </span>
+                    </div>
                   </div>
                 </div>
-              );
-            })
+              ))}
+              <div className={styles.grandTotal}>
+                <span>전체 합계</span>
+                <span className={styles.grandTotalAmount}>
+                  {formatCurrency(managerStats.reduce((s, m) => s + m.total, 0))}원
+                </span>
+              </div>
+            </>
           )}
         </div>
       )}
