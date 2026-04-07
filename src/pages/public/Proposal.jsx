@@ -931,6 +931,7 @@ export default function Proposal() {
 
   // ── Profile View + Response ──
   const fields = [
+    { label: '닉네임', value: cp.nickname },
     { label: '나이', value: cp.age ? `${cp.age}세` : null },
     { label: '키', value: cp.height ? `${cp.height}cm` : null },
     { label: '회사', value: cp.company },
@@ -950,6 +951,9 @@ export default function Proposal() {
       <div className={styles.container}>
         <h1 className={styles.logo}>Knots & Links</h1>
         <p className={styles.subtitle}>당신을 위한 매칭 제안</p>
+        {cp.nickname && (
+          <h2 className={styles.counterpartName}>{cp.nickname}</h2>
+        )}
         {myName && (
           <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
         )}

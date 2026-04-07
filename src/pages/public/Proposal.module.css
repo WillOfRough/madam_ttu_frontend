@@ -28,7 +28,16 @@
   font-weight: 500;
   color: var(--charcoal-pale);
   text-align: center;
-  margin-bottom: var(--space-xl);
+  margin-bottom: 8px;
+}
+
+.counterpartName {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--navy);
+  text-align: center;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-lg);
 }
 
 .greeting {
