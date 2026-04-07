@@ -271,6 +271,10 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 👉 [프로포절 링크 첨부]
 
 저희는 두 분의 아름다운 시작을 항상 응원합니다. 😊`,
+
+  paymentReminder: `현재 매칭된 상대방분께서 [닉네임]님의 최종 확정을 설레는 마음으로 기다리고 계셔서 조심스럽게 노크 드려요.
+
+아직 입금이 확인되지 않아 다음 단계인 '일정 조율'로 넘어가지 못하고 있는데요. 혹시 만남을 앞두고 궁금하신 점 있으시면 편하게 말씀해 주세요! ✨`,
 };
 
 const TEMPLATE_META = [
@@ -286,6 +290,7 @@ const TEMPLATE_META = [
   { key: 'afterResult', label: '에프터 결과 안내', badge: '양식 10' },
   { key: 'proposalReminder', label: '프로필 확인 리마인드', badge: '양식 11' },
   { key: 'matchResponseNotice', label: '매칭 응답 안내', badge: '양식 12' },
+  { key: 'paymentReminder', label: '미입금 리마인드', badge: '양식 13' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
