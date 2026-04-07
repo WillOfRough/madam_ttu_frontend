@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import * as matchService from '../../api/matchService';
+import ConfirmModal from './ConfirmModal';
 import styles from './Proposal.module.css';
 
 const OATH_ITEMS = [
@@ -16,6 +17,9 @@ export default function ProposalProfile() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [responseMessage, setResponseMessage] = useState('');
+
+  // Confirm modal
+  const [confirmModal, setConfirmModal] = useState(null); // 'accept' | 'reject' | null
 
   // Oath
   const [oathAgreed, setOathAgreed] = useState(false);
@@ -262,14 +266,14 @@ export default function ProposalProfile() {
             <div className={styles.actions}>
               <button
                 className={styles.acceptBtn}
-                onClick={() => handleRespond('accepted')}
+                onClick={() => setConfirmModal('accept')}
                 disabled={submitting}
               >
                 {submitting ? '처리 중...' : '만나볼래요!'}
               </button>
               <button
                 className={styles.rejectBtn}
-                onClick={() => handleRespond('rejected')}
+                onClick={() => setConfirmModal('reject')}
                 disabled={submitting}
               >
                 정중히 거절할게요
@@ -284,6 +288,25 @@ export default function ProposalProfile() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        open={confirmModal === 'accept'}
+        variant="accept"
+        title="상대방과 만나보시겠어요?"
+        message="수락하시면 매칭이 다음 단계로 진행됩니다."
+        confirmLabel="네, 만나볼래요!"
+        onConfirm={() => { setConfirmModal(null); handleRespond('accepted'); }}
+        onCancel={() => setConfirmModal(null)}
+      />
+      <ConfirmModal
+        open={confirmModal === 'reject'}
+        variant="reject"
+        title="정말 거절하시겠어요?"
+        message="거절하시면 이번 매칭은 성사되지 않습니다."
+        confirmLabel="네, 거절할게요"
+        onConfirm={() => { setConfirmModal(null); handleRespond('rejected'); }}
+        onCancel={() => setConfirmModal(null)}
+      />
     </div>
   );
 }
