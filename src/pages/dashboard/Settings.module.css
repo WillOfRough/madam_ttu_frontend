@@ -206,6 +206,45 @@
   color: var(--charcoal-mid);
 }
 
+/* ── Settings / Settlement Tab Toggle ── */
+.settingsTabWrap {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-warm);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: var(--space-lg);
+}
+
+.settingsTabBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 16px;
+  border-radius: 7px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: center;
+}
+
+.settingsTabBtnActive {
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.settingsTabBtnInactive {
+  background: transparent;
+  color: var(--charcoal-light);
+}
+
+.settingsTabBtnInactive:hover {
+  color: var(--charcoal);
+}
+
 .logoutBtn {
   display: flex;
   align-items: center;

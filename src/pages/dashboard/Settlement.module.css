@@ -1,0 +1,486 @@
+/* ═══════════════════════════════════════════════════════
+   Settlement Calendar — 정산 페이지
+   ═══════════════════════════════════════════════════════ */
+
+.page {
+  max-width: 720px;
+  animation: slideUp var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.03em;
+}
+
+/* ── Tab Navigation ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-warm);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: var(--space-xl);
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 16px;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--charcoal-light);
+  background: transparent;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: center;
+}
+
+.tab:hover {
+  color: var(--charcoal);
+}
+
+.tabActive {
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* ── Month Navigator ── */
+.monthNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.monthLabel {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  min-width: 140px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.monthBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-xs);
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  color: var(--charcoal-mid);
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: var(--shadow-card);
+}
+
+.monthBtn:hover {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+/* ── Summary Cards ── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: var(--space-xl);
+}
+
+.summaryCard {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--charcoal-light);
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+.summaryValue {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.02em;
+}
+
+.summaryValueNavy {
+  composes: summaryValue;
+  color: var(--navy);
+}
+
+.summaryValueSuccess {
+  composes: summaryValue;
+  color: var(--success);
+}
+
+.summaryValueDanger {
+  composes: summaryValue;
+  color: var(--danger);
+}
+
+.summaryValuePending {
+  composes: summaryValue;
+  color: var(--pending);
+}
+
+.summaryUnit {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* ── Calendar Grid ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--charcoal);
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.cardHeader h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendarDayHeader {
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-light);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.calendarDayHeader:first-child {
+  color: var(--danger);
+}
+
+.calendarDayHeader:last-child {
+  color: var(--info);
+}
+
+.calendarCell {
+  min-height: 72px;
+  padding: 6px;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  cursor: default;
+  transition: background var(--duration-fast) var(--ease-out);
+  position: relative;
+}
+
+.calendarCell:nth-child(7n) {
+  border-right: none;
+}
+
+.calendarCell:hover {
+  background: var(--bg);
+}
+
+.calendarCellEmpty {
+  composes: calendarCell;
+  background: var(--bg);
+  opacity: 0.5;
+}
+
+.calendarCellToday {
+  background: var(--navy-glow);
+}
+
+.calendarDate {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-mid);
+  margin-bottom: 4px;
+}
+
+.calendarDateSun {
+  composes: calendarDate;
+  color: var(--danger);
+}
+
+.calendarDateSat {
+  composes: calendarDate;
+  color: var(--info);
+}
+
+.calendarBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.badgeMatch {
+  composes: calendarBadge;
+  background: var(--navy-glow);
+  color: var(--navy);
+}
+
+.badgeRevenue {
+  composes: calendarBadge;
+  background: var(--coral-dim);
+  color: var(--coral);
+}
+
+.badgeCancelled {
+  composes: calendarBadge;
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+/* ── Manager Table ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--charcoal-light);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table th:last-child,
+.table td:last-child {
+  text-align: right;
+}
+
+.table td {
+  padding: 12px 16px;
+  font-size: 0.84rem;
+  color: var(--charcoal);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background: var(--bg);
+}
+
+.managerName {
+  font-weight: 650;
+}
+
+.managerCount {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.managerRevenue {
+  font-weight: 700;
+  color: var(--charcoal);
+}
+
+/* ── Refund List ── */
+.refundItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+}
+
+.refundItem:last-child {
+  border-bottom: none;
+}
+
+.refundInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.refundNames {
+  font-size: 0.84rem;
+  font-weight: 650;
+  color: var(--charcoal);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.refundMeta {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+}
+
+.refundAmount {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--danger);
+  white-space: nowrap;
+}
+
+.refundPolicy {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.refundSafe {
+  composes: refundPolicy;
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.refundWarn {
+  composes: refundPolicy;
+  background: var(--pending-light);
+  color: var(--pending);
+}
+
+.refundDanger {
+  composes: refundPolicy;
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+/* ── Empty State ── */
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--charcoal-pale);
+  font-size: 0.88rem;
+}
+
+.emptyIcon {
+  margin-bottom: 12px;
+  color: var(--charcoal-pale);
+  opacity: 0.5;
+}
+
+/* ── Loading ── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--charcoal-pale);
+  font-size: 0.88rem;
+  gap: var(--space-sm);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .page {
+    max-width: 100%;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .summaryCard {
+    padding: 12px 14px;
+  }
+
+  .summaryValue {
+    font-size: 1.15rem;
+  }
+
+  .calendarCell {
+    min-height: 56px;
+    padding: 4px;
+  }
+
+  .calendarBadge {
+    font-size: 0.58rem;
+    padding: 1px 4px;
+  }
+
+  .calendarDate {
+    font-size: 0.65rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+
+  .refundItem {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+
+  .monthLabel {
+    font-size: 0.95rem;
+  }
+}

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff } from 'lucide-react';
+import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff, DollarSign } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
 import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
+import Settlement from './Settlement';
 import styles from './Settings.module.css';
+
+const SETTLEMENT_EMAIL = 'minting118@naver.com';
 
 export default function Settings() {
   const email = useAuthStore((s) => s.email);
@@ -15,6 +18,9 @@ export default function Settings() {
   const fetchInfo = useManagerStore((s) => s.fetchInfo);
   const updateInfo = useManagerStore((s) => s.updateInfo);
   const navigate = useNavigate();
+
+  const canSeeSettlement = email === SETTLEMENT_EMAIL;
+  const [settingsTab, setSettingsTab] = useState('settings');
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', phone: '' });
@@ -89,8 +95,40 @@ export default function Settings() {
     navigate('/login');
   };
 
+  if (canSeeSettlement && settingsTab === 'settlement') {
+    return (
+      <div className={styles.page} style={{ maxWidth: 720 }}>
+        <div className={styles.settingsTabWrap}>
+          <button
+            className={`${styles.settingsTabBtn} ${styles.settingsTabBtnInactive}`}
+            onClick={() => setSettingsTab('settings')}
+          >
+            <User size={15} /> 설정
+          </button>
+          <button className={`${styles.settingsTabBtn} ${styles.settingsTabBtnActive}`}>
+            <DollarSign size={15} /> 정산
+          </button>
+        </div>
+        <Settlement />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
+      {canSeeSettlement && (
+        <div className={styles.settingsTabWrap}>
+          <button className={`${styles.settingsTabBtn} ${styles.settingsTabBtnActive}`}>
+            <User size={15} /> 설정
+          </button>
+          <button
+            className={`${styles.settingsTabBtn} ${styles.settingsTabBtnInactive}`}
+            onClick={() => setSettingsTab('settlement')}
+          >
+            <DollarSign size={15} /> 정산
+          </button>
+        </div>
+      )}
       <h1 className={styles.title}>설정</h1>
 
       <div className={styles.card}>
