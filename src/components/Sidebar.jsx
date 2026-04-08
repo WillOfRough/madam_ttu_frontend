@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen } from 'lucide-react';
+import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen, Bell } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import useNotificationStore from '../store/notificationStore';
 import styles from './Sidebar.module.css';
 
 const NAV_ITEMS = [
@@ -9,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/matches', icon: Heart, label: '매칭' },
   { to: '/dashboard/connections', icon: Link2, label: '네트워크' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
+  { to: '/dashboard/notifications', icon: Bell, label: '알림', badge: true },
   { to: '/dashboard/guide', icon: BookOpen, label: '가이드' },
   { to: '/dashboard/settings', icon: Settings, label: '설정' },
 ];
@@ -17,6 +19,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const name = useAuthStore((s) => s.name);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   const handleLogout = async () => {
     await logout();
@@ -37,7 +40,7 @@ export default function Sidebar() {
       )}
 
       <nav className={styles.nav}>
-        {NAV_ITEMS.map(({ to, icon: Icon, label, end }) => (
+        {NAV_ITEMS.map(({ to, icon: Icon, label, end, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -46,7 +49,12 @@ export default function Sidebar() {
               `${styles.navItem} ${isActive ? styles.active : ''}`
             }
           >
-            <Icon size={18} />
+            <span className={styles.navIconWrap}>
+              <Icon size={18} />
+              {badge && unreadCount > 0 && (
+                <span className={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
+            </span>
             <span>{label}</span>
           </NavLink>
         ))}

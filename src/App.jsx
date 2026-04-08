@@ -32,6 +32,7 @@ import Settings from './pages/dashboard/Settings';
 import MatchList from './pages/dashboard/MatchList';
 import MatchDetail from './pages/dashboard/MatchDetail';
 import ManagerGuide from './pages/dashboard/ManagerGuide';
+import Notifications from './pages/dashboard/Notifications';
 
 function AuthListener() {
   const navigate = useNavigate();
@@ -121,6 +122,7 @@ export default function App() {
             <Route path="/dashboard/invites" element={<InviteManagement />} />
             <Route path="/dashboard/matches" element={<MatchList />} />
             <Route path="/dashboard/matches/:matchId" element={<MatchDetail />} />
+            <Route path="/dashboard/notifications" element={<Notifications />} />
             <Route path="/dashboard/settings" element={<Settings />} />
             <Route path="/dashboard/guide" element={<ManagerGuide />} />
           </Route>
