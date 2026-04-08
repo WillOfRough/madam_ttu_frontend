@@ -113,23 +113,6 @@ export default function DashboardHome() {
         ))}
       </div>
 
-      <h2 className={styles.statsTitle}>매칭 현황</h2>
-      <div className={styles.grid}>
-        {matchCards.map((card) => (
-          <SummaryCard key={card.label} {...card} />
-        ))}
-      </div>
-
-      <div className={styles.successRateBar}>
-        <div className={styles.successRateHeader}>
-          <span className={styles.successRateLabel}>에프터 성사율</span>
-          <span className={styles.successRateValue}>{successRate}%</span>
-        </div>
-        <div className={styles.successRateTrack}>
-          <div className={styles.successRateFill} style={{ width: `${successRate}%` }} />
-        </div>
-      </div>
-
       <section className={styles.section} style={{ marginBottom: 'var(--space-2xl)' }}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>
@@ -159,6 +142,23 @@ export default function DashboardHome() {
           ))
         )}
       </section>
+
+      <h2 className={styles.statsTitle}>매칭 현황</h2>
+      <div className={styles.grid}>
+        {matchCards.map((card) => (
+          <SummaryCard key={card.label} {...card} />
+        ))}
+      </div>
+
+      <div className={styles.successRateBar}>
+        <div className={styles.successRateHeader}>
+          <span className={styles.successRateLabel}>에프터 성사율</span>
+          <span className={styles.successRateValue}>{successRate}%</span>
+        </div>
+        <div className={styles.successRateTrack}>
+          <div className={styles.successRateFill} style={{ width: `${successRate}%` }} />
+        </div>
+      </div>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
