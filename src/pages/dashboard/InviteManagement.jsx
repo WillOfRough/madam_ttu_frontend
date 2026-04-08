@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Copy, Trash2, Mail, X, Pencil } from 'lucide-react';
+import { Plus, Copy, Trash2, Mail, X, Pencil, Sparkles } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
 import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
@@ -20,6 +20,8 @@ export default function InviteManagement() {
   const [editingId, setEditingId] = useState(null);
   const [editingLabel, setEditingLabel] = useState('');
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideInviteDesc') !== '1');
+  const [eventTarget, setEventTarget] = useState(null);
+  const [partnerName, setPartnerName] = useState('');
 
   useEffect(() => {
     fetchInvites({ page: 1, status: statusFilter || undefined });
@@ -80,6 +82,28 @@ export default function InviteManagement() {
   const handleLabelKeyDown = (e, inviteId) => {
     if (e.key === 'Enter') handleSaveLabel(inviteId);
     if (e.key === 'Escape') setEditingId(null);
+  };
+
+  const handleEventCopy = () => {
+    const token = eventTarget.token || eventTarget.id;
+    let url = `${window.location.origin}/event/${token}`;
+    if (partnerName.trim()) {
+      url += `?partner=${encodeURIComponent(partnerName.trim())}`;
+    }
+    navigator.clipboard.writeText(url);
+    toast.success('이벤트 링크가 복사되었습니다.');
+    setEventTarget(null);
+    setPartnerName('');
+  };
+
+  const getEventPreviewUrl = () => {
+    if (!eventTarget) return '';
+    const token = eventTarget.token || eventTarget.id;
+    let url = `${window.location.origin}/event/${token}`;
+    if (partnerName.trim()) {
+      url += `?partner=${encodeURIComponent(partnerName.trim())}`;
+    }
+    return url;
   };
 
   return (
@@ -198,6 +222,12 @@ export default function InviteManagement() {
                         {copiedId === invite.id ? '복사됨!' : '복사'}
                       </button>
                       <button
+                        className={`${styles.iconBtn} ${styles.eventBtn}`}
+                        onClick={() => { setEventTarget(invite); setPartnerName(''); }}
+                      >
+                        <Sparkles size={14} /> 이벤트
+                      </button>
+                      <button
                         className={`${styles.iconBtn} ${styles.dangerBtn}`}
                         onClick={() => setRevokeTarget(invite)}
                       >
@@ -232,6 +262,48 @@ export default function InviteManagement() {
           onConfirm={handleRevoke}
           onCancel={() => setRevokeTarget(null)}
         />
+      )}
+
+      {eventTarget && (
+        <div className={styles.eventModal} onClick={(e) => { if (e.target === e.currentTarget) { setEventTarget(null); setPartnerName(''); } }}>
+          <div className={styles.eventModalContent}>
+            <div className={styles.eventModalHeader}>
+              <h2 className={styles.eventModalTitle}>
+                <Sparkles size={16} />
+                이벤트 링크 만들기
+              </h2>
+              <button
+                className={styles.eventModalClose}
+                onClick={() => { setEventTarget(null); setPartnerName(''); }}
+                aria-label="닫기"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className={styles.eventModalDesc}>
+              협업 업체명을 입력하면 업체명이 포함된 이벤트 페이지 링크가 생성됩니다.
+            </p>
+            <input
+              className={styles.eventModalInput}
+              value={partnerName}
+              onChange={(e) => setPartnerName(e.target.value)}
+              placeholder="협업 업체명 (예: 와인주막차차 여의도)"
+              autoFocus
+            />
+            <div className={styles.eventModalPreviewBox}>
+              <span className={styles.eventModalPreviewLabel}>미리보기</span>
+              <p className={styles.eventModalPreview}>{getEventPreviewUrl()}</p>
+            </div>
+            <div className={styles.eventModalActions}>
+              <button className={styles.eventCloseBtn} onClick={() => { setEventTarget(null); setPartnerName(''); }}>
+                닫기
+              </button>
+              <button className={styles.eventCopyBtn} onClick={handleEventCopy}>
+                <Copy size={14} /> 링크 복사
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
