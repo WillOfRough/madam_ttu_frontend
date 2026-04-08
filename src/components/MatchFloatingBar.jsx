@@ -16,7 +16,7 @@ export default function MatchFloatingBar() {
   const [creating, setCreating] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
   const [pairHistory, setPairHistory] = useState([]);
-  const [activeMatches, setActiveMatches] = useState({ A: [], B: [] });
+  const [activeMatches, setActiveMatches] = useState({ A: [], B: [], deletedA: [], deletedB: [] });
 
   const genderValid = selected.length === 2 && selected[0].gender !== selected[1].gender;
 
@@ -24,7 +24,7 @@ export default function MatchFloatingBar() {
     if (selected.length === 0) {
       setDuplicateMatch(null);
       setPairHistory([]);
-      setActiveMatches({ A: [], B: [] });
+      setActiveMatches({ A: [], B: [], deletedA: [], deletedB: [] });
       return;
     }
 
@@ -72,23 +72,30 @@ export default function MatchFloatingBar() {
         setPairHistory([]);
       }
 
-      // 개별 회원 진행중 매칭 체크
+      // 개별 회원 진행중 매칭 체크 (삭제된 회원과의 매칭 분리)
       const findActive = (clientId) => {
         if (!clientId) return [];
-        return list.filter((m) =>
+        const all = list.filter((m) =>
           activeStatuses.includes(m.status) &&
           (m.clientA.clientId === clientId || m.clientB.clientId === clientId)
         );
+        const normal = all.filter((m) => !m.clientA.deleted && !m.clientB.deleted);
+        const deleted = all.filter((m) => m.clientA.deleted || m.clientB.deleted);
+        return { normal, deleted };
       };
+      const activeA = findActive(selected[0]?.id);
+      const activeB = findActive(selected[1]?.id);
       setActiveMatches({
-        A: findActive(selected[0]?.id),
-        B: findActive(selected[1]?.id),
+        A: activeA.normal || [],
+        B: activeB.normal || [],
+        deletedA: activeA.deleted || [],
+        deletedB: activeB.deleted || [],
       });
     }).catch(() => {
       if (!cancelled) {
         setDuplicateMatch(null);
         setPairHistory([]);
-        setActiveMatches({ A: [], B: [] });
+        setActiveMatches({ A: [], B: [], deletedA: [], deletedB: [] });
       }
     });
     return () => { cancelled = true; };
@@ -179,6 +186,13 @@ export default function MatchFloatingBar() {
                 {selected[1] && activeMatches.B.length > 0 && (
                   <span>{selected[1].nickname || selected[1].name}: 진행 중 {activeMatches.B.length}건</span>
                 )}
+              </div>
+            )}
+
+            {(activeMatches.deletedA.length > 0 || activeMatches.deletedB.length > 0) && !duplicateMatch && (
+              <div className={styles.warning}>
+                <AlertTriangle size={12} />
+                <span>삭제된 회원과의 진행 중 매칭 {activeMatches.deletedA.length + activeMatches.deletedB.length}건 (매칭 상세에서 취소 가능)</span>
               </div>
             )}
           </div>

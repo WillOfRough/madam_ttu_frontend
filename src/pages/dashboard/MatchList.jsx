@@ -343,7 +343,7 @@ function CreateMatchModal({ onClose, onCreated }) {
   const [selectingFor, setSelectingFor] = useState('A');
   const [submitting, setSubmitting] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
-  const [activeMatches, setActiveMatches] = useState({ A: [], B: [] });
+  const [activeMatches, setActiveMatches] = useState({ A: [], B: [], deletedA: [], deletedB: [] });
   const [pairHistory, setPairHistory] = useState([]);
   const navigate = useNavigate();
 
@@ -362,7 +362,7 @@ function CreateMatchModal({ onClose, onCreated }) {
   useEffect(() => {
     if (!clientA && !clientB) {
       setDuplicateMatch(null);
-      setActiveMatches({ A: [], B: [] });
+      setActiveMatches({ A: [], B: [], deletedA: [], deletedB: [] });
       setPairHistory([]);
       return;
     }
@@ -411,22 +411,30 @@ function CreateMatchModal({ onClose, onCreated }) {
         setPairHistory([]);
       }
 
-      // Per-client active match check
+      // Per-client active match check (삭제된 회원과의 매칭 분리)
       const findActive = (clientId) => {
-        if (!clientId) return [];
-        return list.filter((m) =>
+        if (!clientId) return { normal: [], deleted: [] };
+        const all = list.filter((m) =>
           activeStatuses.includes(m.status) &&
           (m.clientA.clientId === clientId || m.clientB.clientId === clientId)
         );
+        const normal = all.filter((m) => !m.clientA.deleted && !m.clientB.deleted);
+        const deleted = all.filter((m) => m.clientA.deleted || m.clientB.deleted);
+        return { normal, deleted };
       };
+      const activeA = findActive(clientA?.id);
+      const activeB = findActive(clientB?.id);
       setActiveMatches({
-        A: findActive(clientA?.id),
-        B: findActive(clientB?.id),
+        A: activeA.normal,
+        B: activeB.normal,
+        deletedA: activeA.deleted,
+        deletedB: activeB.deleted,
       });
     }).catch(() => {
       if (!cancelled) {
         setDuplicateMatch(null);
-        setActiveMatches({ A: [], B: [] });
+        setActiveMatches({ A: [], B: [], deletedA: [], deletedB: [] });
+        setPairHistory([]);
       }
     });
     return () => { cancelled = true; };
@@ -535,7 +543,7 @@ function CreateMatchModal({ onClose, onCreated }) {
           </div>
         )}
 
-        {/* Active Match Warning per client */}
+        {/* Active Match Warning per client (정상 회원 매칭만) */}
         {(activeMatches.A.length > 0 || activeMatches.B.length > 0) && !duplicateMatch && (
           <div className={styles.activeMatchWarn}>
             <div className={styles.activeMatchHeader}>
@@ -579,6 +587,16 @@ function CreateMatchModal({ onClose, onCreated }) {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Deleted Member Match Warning */}
+        {(activeMatches.deletedA.length > 0 || activeMatches.deletedB.length > 0) && !duplicateMatch && (
+          <div className={styles.duplicateWarn}>
+            <AlertTriangle size={15} />
+            <span>
+              삭제된 회원과의 진행 중 매칭 {activeMatches.deletedA.length + activeMatches.deletedB.length}건이 있습니다 (매칭 상세에서 취소 가능)
+            </span>
           </div>
         )}
 
