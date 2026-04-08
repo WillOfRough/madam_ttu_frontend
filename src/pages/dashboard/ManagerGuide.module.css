@@ -88,9 +88,9 @@
 
 /* ── Tab Guide ── */
 .tabGuideGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .tabGuideCard {
@@ -140,6 +140,7 @@
   color: var(--charcoal-light);
   line-height: 1.65;
   margin: 0;
+  white-space: pre-line;
 }
 
 .stepsTimeline {
