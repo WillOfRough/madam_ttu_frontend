@@ -5,6 +5,7 @@ import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
 import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
+import { BANK_OPTIONS } from '../../data/constants';
 import Settlement from './Settlement';
 import styles from './Settings.module.css';
 
@@ -23,7 +24,7 @@ export default function Settings() {
   const [settingsTab, setSettingsTab] = useState('settings');
 
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: '', nickname: '', phone: '' });
+  const [form, setForm] = useState({ name: '', nickname: '', phone: '', bankName: '', bankNumber: '' });
   const [saving, setSaving] = useState(false);
 
   const [pwOpen, setPwOpen] = useState(false);
@@ -42,6 +43,8 @@ export default function Settings() {
       name: info?.name || name || '',
       nickname: info?.nickname || '',
       phone: info?.phone || '',
+      bankName: info?.bankName || '',
+      bankNumber: info?.bankNumber || '',
     });
     setEditing(true);
   };
@@ -61,6 +64,8 @@ export default function Settings() {
         name: form.name.trim(),
         nickname: form.nickname.trim() || undefined,
         phone: form.phone.trim() || undefined,
+        bankName: form.bankName || undefined,
+        bankNumber: form.bankNumber.trim() || undefined,
       });
       toast.success('정보가 수정되었습니다.');
       setEditing(false);
@@ -174,6 +179,28 @@ export default function Settings() {
               />
             </div>
             <div className={styles.formField}>
+              <label className={styles.formLabel}>은행명</label>
+              <select
+                className={styles.formSelect}
+                value={form.bankName}
+                onChange={(e) => setForm((f) => ({ ...f, bankName: e.target.value }))}
+              >
+                <option value="">은행 선택</option>
+                {BANK_OPTIONS.map((bank) => (
+                  <option key={bank.value} value={bank.value}>{bank.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.formField}>
+              <label className={styles.formLabel}>계좌번호</label>
+              <input
+                className={styles.formInput}
+                value={form.bankNumber}
+                onChange={(e) => setForm((f) => ({ ...f, bankNumber: e.target.value }))}
+                placeholder="계좌번호 (-없이 입력)"
+              />
+            </div>
+            <div className={styles.formField}>
               <label className={styles.formLabel}>이메일</label>
               <span className={styles.formReadonly}>{info?.email || email || '-'}</span>
             </div>
@@ -218,6 +245,12 @@ export default function Settings() {
               <div className={styles.field}>
                 <span className={styles.fieldLabel}>내 회원</span>
                 <span className={styles.fieldValue}>{info.myClientCount}명</span>
+              </div>
+            )}
+            {(info?.bankName && info?.bankNumber) && (
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>정산 계좌</span>
+                <span className={styles.fieldValue}>{info.bankName} {info.bankNumber}</span>
               </div>
             )}
           </div>

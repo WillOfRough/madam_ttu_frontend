@@ -8,17 +8,26 @@ export async function login({ email, password }) {
   });
 }
 
-export async function signup({ email, password, name, nickname, inviteCode }) {
+export async function signup({ email, password, name, nickname, inviteCode, bankName, bankNumber }) {
   return apiFetch('/api/v1/managers/signup', {
     method: 'POST',
-    body: { email, password, name, nickname, ...(inviteCode ? { inviteCode } : {}) },
+    body: {
+      email, password, name, nickname,
+      ...(inviteCode ? { inviteCode } : {}),
+      ...(bankName !== undefined ? { bankName } : {}),
+      ...(bankNumber !== undefined ? { bankNumber } : {}),
+    },
   });
 }
 
-export async function register({ token, email, password, name, nickname }) {
+export async function register({ token, email, password, name, nickname, bankName, bankNumber }) {
   return apiFetch('/api/v1/managers/register', {
     method: 'POST',
-    body: { token, email, password, name, nickname },
+    body: {
+      token, email, password, name, nickname,
+      ...(bankName !== undefined ? { bankName } : {}),
+      ...(bankNumber !== undefined ? { bankNumber } : {}),
+    },
   });
 }
 

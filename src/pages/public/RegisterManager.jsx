@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { RefreshCw, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
-import { generateNickname } from '../../data/constants';
+import { generateNickname, BANK_OPTIONS } from '../../data/constants';
 import styles from './RegisterManager.module.css';
 import oathStyles from './ClientOath.module.css';
 
@@ -30,6 +30,8 @@ export default function RegisterManager() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [bankNumber, setBankNumber] = useState('');
   const [error, setError] = useState(null);
 
   // 이미 로그인한 사용자는 대시보드로 리다이렉트
@@ -64,7 +66,7 @@ export default function RegisterManager() {
 
     const finalNickname = nickname.trim() || suggestedNickname;
     try {
-      await register({ token, email, password, name: name.trim(), nickname: finalNickname });
+      await register({ token, email, password, name: name.trim(), nickname: finalNickname, bankName: bankName || undefined, bankNumber: bankNumber.trim() || undefined });
       navigate('/dashboard/guide');
     } catch (err) {
       setError(err.message || '가입에 실패했습니다.');
@@ -186,6 +188,35 @@ export default function RegisterManager() {
               onChange={(e) => setConfirmPw(e.target.value)}
               placeholder="비밀번호 재입력"
               required
+            />
+          </div>
+
+          <div className={styles.sectionDivider}>
+            <span className={styles.sectionLabel}>정산 계좌 (선택)</span>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>은행명</label>
+            <select
+              className={styles.select}
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+            >
+              <option value="" className={styles.selectPlaceholder}>은행 선택 (선택)</option>
+              {BANK_OPTIONS.map((bank) => (
+                <option key={bank.value} value={bank.value}>{bank.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>계좌번호</label>
+            <input
+              className={styles.input}
+              type="text"
+              value={bankNumber}
+              onChange={(e) => setBankNumber(e.target.value)}
+              placeholder="계좌번호 입력 (선택)"
             />
           </div>
 

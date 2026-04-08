@@ -15,6 +15,8 @@ const accounts = {
     nickname: '',
     phone: '010-1234-5678',
     role: 'manager',
+    bankName: 'KB국민은행',
+    bankNumber: '123-456-789012',
   },
   'admin@admin.com': {
     id: ADMIN_ID,
@@ -1312,6 +1314,8 @@ export async function mockFetch(path, options = {}) {
       id: currentUser.id, email: currentUser.email, name: currentUser.name,
       nickname: currentUser.nickname || '', phone: currentUser.phone || '',
       role: currentUser.role,
+      bankName: currentUser.bankName || null,
+      bankNumber: currentUser.bankNumber || null,
       connections: connections.map((c) => ({ managerId: c.managerId, name: c.name, clientCount: c.clientCount, connectedAt: c.connectedAt })),
       myClientCount: clients.filter((c) => c.ownerManagerId === currentUser.id).length,
       createdAt: '2026-01-01T00:00:00Z',
@@ -1323,11 +1327,19 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
+    if (body.email && accounts[body.email]) {
+      if (body.bankName) accounts[body.email].bankName = body.bankName;
+      if (body.bankNumber) accounts[body.email].bankNumber = body.bankNumber;
+    }
     return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
   }
   // POST /api/v1/managers/register
   if (method === 'POST' && pathname === '/api/v1/managers/register') {
     const body = options.body || {};
+    if (currentUser) {
+      if (body.bankName) currentUser.bankName = body.bankName;
+      if (body.bankNumber) currentUser.bankNumber = body.bankNumber;
+    }
     return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
   }
   // GET /api/v1/invites/:id/clients
@@ -1357,6 +1369,8 @@ export async function mockFetch(path, options = {}) {
     if (body.name) currentUser.name = body.name;
     if (body.nickname) currentUser.nickname = body.nickname;
     if (body.phone) currentUser.phone = body.phone;
+    if (body.bankName !== undefined) currentUser.bankName = body.bankName;
+    if (body.bankNumber !== undefined) currentUser.bankNumber = body.bankNumber;
     return { success: true, message: '정보가 수정되었습니다.' };
   }
   // GET /api/v1/managers/:id
@@ -1967,6 +1981,55 @@ export async function mockFetch(path, options = {}) {
       else m.afterStatus = 'pending';
     }
     return { success: true, message: '에프터 상태가 변경되었습니다.' };
+  }
+
+  // ── Notifications ──────────────────────────────────
+  const mockNotifications = [
+    { id: 'noti-001', type: 'match_created', title: '새 매칭이 생성되었습니다', message: '김서연님과 이준혁님의 매칭이 생성되었습니다.', referenceType: 'match', referenceId: 'match001', read: false, createdAt: '2026-04-07T12:00:00Z' },
+    { id: 'noti-002', type: 'proposal_accepted', title: '매칭 제안이 수락되었습니다', message: '한소희님이 매칭 제안을 수락했습니다.', referenceType: 'match', referenceId: 'match002', read: false, createdAt: '2026-04-07T10:30:00Z' },
+    { id: 'noti-003', type: 'client_registered', title: '새 회원이 가입했습니다', message: '초대 링크를 통해 새 회원이 가입했습니다.', referenceType: 'client', referenceId: 's003', read: false, createdAt: '2026-04-06T18:00:00Z' },
+    { id: 'noti-004', type: 'connection_requested', title: '새 연결 요청이 도착했습니다', message: '이매니저님이 연결을 요청했습니다.', referenceType: 'connection_request', referenceId: 'conn-001', read: false, createdAt: '2026-04-06T15:20:00Z' },
+    { id: 'noti-005', type: 'match_matched', title: '매칭이 성사되었습니다', message: '윤예은님과 정우진님의 매칭이 성사되었습니다.', referenceType: 'match', referenceId: 'match003', read: true, createdAt: '2026-04-05T14:00:00Z' },
+    { id: 'noti-006', type: 'scheduling_ready', title: '가용시간 등록이 완료되었습니다', message: '양측 가용시간 등록이 완료되어 약속을 확정할 수 있습니다.', referenceType: 'match', referenceId: 'match004', read: true, createdAt: '2026-04-05T11:00:00Z' },
+    { id: 'noti-007', type: 'match_scheduled', title: '약속이 확정되었습니다', message: '4월 10일 19:00 강남역 카페에서 만남이 확정되었습니다.', referenceType: 'match', referenceId: 'match006', read: true, createdAt: '2026-04-04T16:30:00Z' },
+    { id: 'noti-008', type: 'after_responded', title: '에프터 응답이 도착했습니다', message: '김서연님이 에프터 응답을 제출했습니다.', referenceType: 'match', referenceId: 'match007', read: false, createdAt: '2026-04-04T10:00:00Z' },
+    { id: 'noti-009', type: 'match_cancelled', title: '매칭이 취소되었습니다', message: '임수아님과 강도윤님의 매칭이 취소되었습니다.', referenceType: 'match', referenceId: 'match008', read: true, createdAt: '2026-04-03T09:00:00Z' },
+    { id: 'noti-010', type: 'connection_accepted', title: '연결 요청이 수락되었습니다', message: '박매니저님이 연결 요청을 수락했습니다.', referenceType: 'connection_request', referenceId: 'conn-002', read: true, createdAt: '2026-04-02T14:00:00Z' },
+    { id: 'noti-011', type: 'after_matched', title: '에프터가 성사되었습니다', message: '윤예은님과 정우진님의 에프터가 성사되었습니다!', referenceType: 'match', referenceId: 'match003', read: true, createdAt: '2026-04-01T13:00:00Z' },
+    { id: 'noti-012', type: 'match_completed', title: '매칭이 완료되었습니다', message: '오태양님과 김서연님의 매칭이 완료 처리되었습니다.', referenceType: 'match', referenceId: 'match009', read: true, createdAt: '2026-03-31T17:00:00Z' },
+  ];
+
+  // GET /api/v1/notifications
+  if (method === 'GET' && pathname === '/api/v1/notifications') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    const start = page * size;
+    const paged = mockNotifications.slice(start, start + size);
+    return {
+      data: paged,
+      pagination: { page, limit: size, total: mockNotifications.length, totalPages: Math.ceil(mockNotifications.length / size) },
+    };
+  }
+
+  // GET /api/v1/notifications/unread-count
+  if (method === 'GET' && pathname === '/api/v1/notifications/unread-count') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    return { unreadCount: mockNotifications.filter((n) => !n.read).length };
+  }
+
+  // POST /api/v1/notifications/:id/read
+  if (method === 'POST' && /^\/api\/v1\/notifications\/[^/]+\/read$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const noti = mockNotifications.find((n) => n.id === id);
+    if (noti) noti.read = true;
+    return { success: true };
+  }
+
+  // POST /api/v1/notifications/read-all
+  if (method === 'POST' && pathname === '/api/v1/notifications/read-all') {
+    mockNotifications.forEach((n) => { n.read = true; });
+    return { success: true };
   }
 
   // fallback

@@ -112,6 +112,30 @@ export function generateNickname() {
   return `${adj}${noun}`;
 }
 
+/* ── 은행 목록 ── */
+export const BANK_OPTIONS = [
+  { value: 'KB국민은행', label: 'KB국민은행' },
+  { value: '신한은행', label: '신한은행' },
+  { value: '하나은행', label: '하나은행' },
+  { value: '우리은행', label: '우리은행' },
+  { value: 'NH농협은행', label: 'NH농협은행' },
+  { value: 'IBK기업은행', label: 'IBK기업은행' },
+  { value: 'SC제일은행', label: 'SC제일은행' },
+  { value: '카카오뱅크', label: '카카오뱅크' },
+  { value: '케이뱅크', label: '케이뱅크' },
+  { value: '토스뱅크', label: '토스뱅크' },
+  { value: '대구은행', label: '대구은행' },
+  { value: '부산은행', label: '부산은행' },
+  { value: '경남은행', label: '경남은행' },
+  { value: '광주은행', label: '광주은행' },
+  { value: '전북은행', label: '전북은행' },
+  { value: '제주은행', label: '제주은행' },
+  { value: '새마을금고', label: '새마을금고' },
+  { value: '신협', label: '신협' },
+  { value: '수협', label: '수협' },
+  { value: '우체국', label: '우체국' },
+];
+
 /* ── 취미 키워드 ── */
 export const HOBBY_KEYWORDS = [
   '운동/헬스', '러닝/마라톤', '등산/하이킹', '자전거', '수영',
