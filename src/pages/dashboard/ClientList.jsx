@@ -19,7 +19,6 @@ export default function ClientList() {
 
   // Debounced search: local input state separate from store filters
   const [nameInput, setNameInput] = useState(filters.name);
-  const [phoneInput, setPhoneInput] = useState(filters.phone);
   const debounceRef = useRef(null);
 
   const debouncedSetFilter = useCallback((key, value) => {
@@ -33,12 +32,6 @@ export default function ClientList() {
     const v = e.target.value;
     setNameInput(v);
     debouncedSetFilter('name', v);
-  };
-
-  const handlePhoneChange = (e) => {
-    const v = e.target.value;
-    setPhoneInput(v);
-    debouncedSetFilter('phone', v);
   };
 
   useEffect(() => {
@@ -90,12 +83,6 @@ export default function ClientList() {
           onChange={handleNameChange}
           placeholder="이름 / 별명 검색"
         />
-        <input
-          className={styles.searchInput}
-          value={phoneInput}
-          onChange={handlePhoneChange}
-          placeholder="전화번호 검색 (정확 일치)"
-        />
       </div>
 
       <div className={styles.filters}>
@@ -123,6 +110,16 @@ export default function ClientList() {
           <option value="female">여성</option>
         </select>
 
+        <select
+          className={styles.filterSelect}
+          value={filters.status || ''}
+          onChange={(e) => setFilter('status', e.target.value || null)}
+        >
+          <option value="">상태 전체</option>
+          <option value="active">활성</option>
+          <option value="inactive">비활성</option>
+          <option value="dormant">휴면</option>
+        </select>
 
         <select
           className={styles.filterSelect}
@@ -144,7 +141,7 @@ export default function ClientList() {
       )}
 
       {isLoading && clients.length === 0 ? (
-        <SkeletonTable rows={6} columns={6} />
+        <SkeletonTable rows={6} columns={5} />
       ) : clients.length === 0 && !isLoading && !error ? (
         <div className={styles.empty}>
           <Search size={40} strokeWidth={1} />
@@ -158,7 +155,6 @@ export default function ClientList() {
               <span>성별</span>
               <span>나이</span>
               <span>직업</span>
-              <span>소속</span>
               <span>매칭</span>
             </div>
             {clients.map((client) => (
@@ -174,11 +170,6 @@ export default function ClientList() {
                   <span className={client.gender === 'female' ? styles.genderFemaleCell : styles.genderMaleCell}>{client.gender === 'male' ? '남' : '여'}</span>
                   <span>{client.age ? `${client.age}세` : '-'}</span>
                   <span>{client.occupation || '-'}</span>
-                  <span className={client.isOwner ? styles.ownerMe : styles.ownerOther}>
-                    {client.ownerManager
-                      ? <><span>{client.ownerManager.name}</span>{client.ownerManager.email && <span className={styles.ownerEmail}>{client.ownerManager.email}</span>}</>
-                      : (client.isOwner ? '나' : '-')}
-                  </span>
                   <span>
                     {client.activeMatchCount > 0 ? (
                       <span className={styles.matchingActive}>매칭 진행중</span>

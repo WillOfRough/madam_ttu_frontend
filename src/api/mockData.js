@@ -74,6 +74,7 @@ const clients = [
     idealType:
       '유머감각이 있고, 자기 일에 열정적인 분이면 좋겠어요. 같이 맛집 투어 다니면서 소소한 일상을 즐길 수 있는 사람이 좋아요.',
     approvalStatus: 'approved',
+    status: 'active',
     managerNote: '밝고 활발한 성격. 대화 능력 좋음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-28T09:00:00Z',
@@ -102,6 +103,7 @@ const clients = [
     idealType:
       '서로의 공간을 존중하면서도 함께하는 시간을 소중히 여기는 분. 지적 호기심이 많고 자기만의 세계가 있는 분이면 좋겠습니다.',
     approvalStatus: 'approved',
+    status: 'active',
     managerNote: '차분하고 진중한 인상. 연봉 높음.',
     ownerManagerId: MANAGER_ID,
     createdAt: '2026-02-25T14:30:00Z',
@@ -1207,13 +1209,16 @@ function enrichClient(c) {
     activeStatuses.includes(m.status) &&
     (m.clientA.clientId === c.id || m.clientB.clientId === c.id)
   ).length;
+  const invite = c.inviteToken ? invites.find((inv) => inv.id === c.inviteToken.id) : null;
   return {
     nickname: c.nickname || null,
     age,
+    status: c.status || 'active',
     activeMatchCount,
     photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
     ownerManager: owner,
     isOwner: c.ownerManagerId === currentUser.id,
+    inviteToken: c.inviteToken ? { ...c.inviteToken, token: invite?.token || null } : null,
   };
 }
 
@@ -1389,6 +1394,62 @@ export async function mockFetch(path, options = {}) {
     return { content: filtered.slice(start, start + size), pagination: { page, size, totalElements: filtered.length, totalPages: Math.ceil(filtered.length / size) } };
   }
 
+  // GET /api/v1/clients/me (본인 프로필 조회)
+  if (method === 'GET' && pathname === '/api/v1/clients/me') {
+    const token = params.get('token');
+    const phone = params.get('phone');
+    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
+    const invite = invites.find((inv) => inv.token === token);
+    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
+    const normalizePhone = (p) => (p || '').replace(/-/g, '');
+    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+    const birthYear = found.birthDate ? new Date(found.birthDate).getFullYear() : null;
+    const age = birthYear ? new Date().getFullYear() - birthYear : null;
+    return {
+      id: found.id, name: found.name, nickname: found.nickname, gender: found.gender,
+      birthDate: found.birthDate, age, phone: found.phone, height: found.height,
+      occupation: found.occupation, company: found.company, workLocation: found.workLocation,
+      education: found.education, location: found.location, religion: found.religion,
+      mbti: found.mbti, hobbies: found.hobbies, introduction: found.introduction,
+      idealType: found.idealType, status: found.status || 'active',
+      photoUrls: (found.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
+      approvalStatus: found.approvalStatus, createdAt: found.createdAt,
+    };
+  }
+
+  // PUT /api/v1/clients/me (본인 프로필 수정)
+  if (method === 'PUT' && pathname === '/api/v1/clients/me') {
+    const token = params.get('token');
+    const phone = params.get('phone');
+    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
+    const invite = invites.find((inv) => inv.token === token);
+    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
+    const normalizePhone = (p) => (p || '').replace(/-/g, '');
+    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+    const body = options.body || {};
+    const editable = ['name','nickname','birthDate','phone','height','occupation','company','workLocation','education','location','religion','mbti','hobbies','introduction','idealType'];
+    for (const key of editable) {
+      if (body[key] !== undefined && body[key] !== null) {
+        found[key] = key === 'height' ? Number(body[key]) : body[key];
+      }
+    }
+    return { success: true, message: '프로필이 수정되었습니다.' };
+  }
+
+  // PATCH /api/v1/clients/:id/status (회원 상태 변경)
+  if (method === 'PATCH' && /^\/api\/v1\/clients\/[^/]+\/status$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('Client not found'), { status: 404 });
+    const body = options.body || {};
+    if (['active', 'inactive', 'dormant'].includes(body.status)) {
+      found.status = body.status;
+    }
+    return { success: true, message: '상태가 변경되었습니다.' };
+  }
+
   // GET /api/v1/clients/:id (detail)
   if (method === 'GET' && /^\/api\/v1\/clients\/[^?]+$/.test(pathname) && !pathname.endsWith('/clients')) {
     const id = pathname.split('/').pop();
@@ -1410,7 +1471,9 @@ export async function mockFetch(path, options = {}) {
     const limit = parseInt(params.get('limit') || '20', 10);
     if (nameQ) filtered = filtered.filter((c) => c.name.includes(nameQ) || (c.nickname && c.nickname.includes(nameQ)));
     if (phoneQ) filtered = filtered.filter((c) => c.phone === phoneQ);
+    const statusQ = params.get('status');
     if (approval) filtered = filtered.filter((c) => c.approvalStatus === approval);
+    if (statusQ) filtered = filtered.filter((c) => (c.status || 'active') === statusQ);
     if (owner === 'me') filtered = filtered.filter((c) => c.ownerManagerId === currentUser.id);
     else if (owner && owner !== 'all') filtered = filtered.filter((c) => c.ownerManagerId === owner);
     const maleCount = filtered.filter((c) => c.gender === 'male').length;

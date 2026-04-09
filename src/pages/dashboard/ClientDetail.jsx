@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, Heart, Edit3, Plus, Trash2, ShieldCheck, Download } from 'lucide-react';
+import { ArrowLeft, Check, X, Heart, Edit3, Trash2, ShieldCheck, Download, Copy, Link2, MessageSquare } from 'lucide-react';
+import PhotoGallery from '../../components/PhotoGallery';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
 import useClientListStore from '../../store/clientListStore';
@@ -18,7 +19,6 @@ export default function ClientDetail() {
   const [saving, setSaving] = useState(false);
   const [modal, setModal] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [lightboxUrl, setLightboxUrl] = useState(null);
   const [matchHistory, setMatchHistory] = useState([]);
   const [matchLoading, setMatchLoading] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -29,9 +29,52 @@ export default function ClientDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletionCert, setDeletionCert] = useState(null);
-  const photoInputRef = useRef(null);
+  const [copiedKey, setCopiedKey] = useState(null);
 
-  const closeLightbox = useCallback(() => setLightboxUrl(null), []);
+  useEffect(() => {
+    if (!copiedKey) return;
+    const t = setTimeout(() => setCopiedKey(null), 2000);
+    return () => clearTimeout(t);
+  }, [copiedKey]);
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      await clientService.updateClientStatus(clientId, newStatus);
+      setClient((c) => ({ ...c, status: newStatus }));
+      const labels = { active: '활성', inactive: '비활성', dormant: '휴면' };
+      toast.success(`상태가 "${labels[newStatus]}"(으)로 변경되었습니다.`);
+    } catch (err) {
+      toast.error(err.message || '상태 변경에 실패했습니다.');
+    }
+  };
+
+  const getProfileEditUrl = () => {
+    const token = client?.inviteToken?.token || client?.inviteToken?.id;
+    if (!token) return null;
+    return `${window.location.origin}/my-profile?token=${token}`;
+  };
+
+  const handleCopyProfileLink = async () => {
+    const url = getProfileEditUrl();
+    if (!url) { toast.error('초대 토큰 정보가 없습니다.'); return; }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedKey('link');
+      toast.success('프로필 수정 링크가 복사되었습니다.');
+    } catch { /* silent */ }
+  };
+
+  const handleCopyProfileMessage = async () => {
+    const url = getProfileEditUrl();
+    if (!url) { toast.error('초대 토큰 정보가 없습니다.'); return; }
+    const name = client?.nickname || client?.name || '회원';
+    const msg = `안녕하세요, ${name}님! Knots & Links 매니저입니다 😊\n\n더 좋은 매칭을 위해 프로필 정보를 최신 상태로 유지해 주시면 좋겠어요.\n아래 링크를 통해 직접 프로필을 확인하고 수정하실 수 있습니다.\n\n👉 ${url}\n\n정보가 정확할수록 더 어울리는 인연을 찾아드릴 수 있어요.\n궁금한 점이 있으시면 언제든 연락 주세요! 💛`;
+    try {
+      await navigator.clipboard.writeText(msg);
+      setCopiedKey('msg');
+      toast.success('메시지가 복사되었습니다.');
+    } catch { /* silent */ }
+  };
 
   useEffect(() => {
     if (clientId) {
@@ -135,7 +178,7 @@ export default function ClientDetail() {
       toast.error(err.message || '사진 추가에 실패했습니다.');
     }
     setPhotoUploading(false);
-    if (photoInputRef.current) photoInputRef.current.value = '';
+    e.target.value = '';
   };
 
   const handlePhotoDelete = async (photoUrl) => {
@@ -257,6 +300,7 @@ export default function ClientDetail() {
           </h1>
           <div className={styles.headerMeta}>
             <StatusBadge status={client.approvalStatus || 'pending'} />
+            <StatusBadge status={client.status || 'active'} />
             {client.ownerManager && (
               <span className={client.isOwner ? styles.ownerBadgeMe : styles.ownerBadgeOther}>
                 {client.isOwner ? '내 회원' : `${client.ownerManager.name}의 회원`}
@@ -286,6 +330,15 @@ export default function ClientDetail() {
                   </button>
                 </>
               )}
+              <select
+                className={styles.statusSelect}
+                value={client.status || 'active'}
+                onChange={(e) => handleStatusChange(e.target.value)}
+              >
+                <option value="active">활성</option>
+                <option value="inactive">비활성</option>
+                <option value="dormant">휴면</option>
+              </select>
               <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>
                 <Trash2 size={16} /> 회원 삭제
               </button>
@@ -297,6 +350,36 @@ export default function ClientDetail() {
       {!client.isOwner && (
         <div className={styles.readonlyNotice}>
           이 회원은 {client.ownerManager?.name || '다른 매니저'}님이 관리하는 프로필입니다. 열람만 가능합니다.
+        </div>
+      )}
+
+      {client.isOwner && client.inviteToken && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <Link2 size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+            프로필 수정 링크 공유
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'var(--charcoal-light)', marginBottom: 12, lineHeight: 1.5 }}>
+            아래 버튼으로 회원에게 프로필 수정 링크를 전달할 수 있습니다. 회원이 직접 프로필을 확인하고 수정할 수 있습니다.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              className={copiedKey === 'link' ? styles.approveBtn : styles.matchBtn}
+              onClick={handleCopyProfileLink}
+              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            >
+              {copiedKey === 'link' ? <Check size={14} /> : <Copy size={14} />}
+              {copiedKey === 'link' ? '복사됨' : '링크 복사'}
+            </button>
+            <button
+              className={copiedKey === 'msg' ? styles.approveBtn : styles.matchBtn}
+              onClick={handleCopyProfileMessage}
+              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            >
+              {copiedKey === 'msg' ? <Check size={14} /> : <MessageSquare size={14} />}
+              {copiedKey === 'msg' ? '복사됨' : '메시지와 함께 복사'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -386,56 +469,15 @@ export default function ClientDetail() {
       )}
 
       <div className={styles.card}>
-        <h3 className={styles.cardTitle}>
-          사진
-          {client.isOwner && (client.photoUrls?.length || 0) < 5 && (
-            <>
-              <button
-                onClick={() => photoInputRef.current?.click()}
-                disabled={photoUploading}
-                style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary, #6366f1)', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13 }}
-              >
-                <Plus size={14} /> {photoUploading ? '업로드 중...' : '추가'}
-              </button>
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={handlePhotoAdd}
-                style={{ display: 'none' }}
-              />
-            </>
-          )}
-        </h3>
-        {client.photoUrls?.length > 0 ? (
-          <div className={styles.photoGallery}>
-            {client.photoUrls.map((url, idx) => {
-              const segments = url.split('/');
-              const photoId = segments[segments.length - 1];
-              return (
-                <div key={idx} style={{ position: 'relative' }}>
-                  <PhotoThumb
-                    src={url}
-                    alt={`사진 ${idx + 1}`}
-                    onClick={(src) => setLightboxUrl(src)}
-                  />
-                  {client.isOwner && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handlePhotoDelete(url); }}
-                      disabled={deletingPhotoId === photoId}
-                      style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
-                    >
-                      <Trash2 size={12} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p style={{ color: '#888', fontSize: 14 }}>등록된 사진이 없습니다.</p>
-        )}
+        <h3 className={styles.cardTitle}>사진</h3>
+        <PhotoGallery
+          photoUrls={client.photoUrls || []}
+          canEdit={client.isOwner}
+          onAdd={handlePhotoAdd}
+          onDelete={handlePhotoDelete}
+          uploading={photoUploading}
+          deletingPhotoId={deletingPhotoId}
+        />
       </div>
 
       {client.introduction && (
@@ -594,13 +636,6 @@ export default function ClientDetail() {
         />
       )}
 
-      {lightboxUrl && (
-        <div className={styles.lightbox} onClick={closeLightbox}>
-          <img src={lightboxUrl} alt="확대 보기" onClick={(e) => e.stopPropagation()} />
-          <button className={styles.lightboxClose} onClick={closeLightbox}>×</button>
-        </div>
-      )}
-
       {deletionCert && (
         <div className={styles.certOverlay}>
           <div className={styles.certModal}>
@@ -711,40 +746,3 @@ function MatchButton({ client }) {
   );
 }
 
-function PhotoThumb({ src, alt, onClick }) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-  const imgRef = useRef(null);
-
-  useEffect(() => {
-    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
-      setLoaded(true);
-    }
-  }, []);
-
-  if (error) {
-    return (
-      <div className={styles.photoThumb}>
-        <div className={styles.photoError}>불러올 수 없음</div>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      className={styles.photoThumb}
-      onClick={() => onClick(src)}
-      type="button"
-    >
-      {!loaded && <div className={styles.photoSkeleton} />}
-      <img
-        ref={imgRef}
-        src={src}
-        alt={alt}
-        className={loaded ? styles.photoLoaded : styles.photoHidden}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-      />
-    </button>
-  );
-}

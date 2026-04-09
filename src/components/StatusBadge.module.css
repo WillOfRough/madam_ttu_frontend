@@ -25,6 +25,16 @@
   color: #b71c2c;
 }
 
+.inactive {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.dormant {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .expired {
   background: var(--bg-warm);
   color: var(--charcoal-pale);

@@ -289,6 +289,21 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
   paymentReminder: `현재 매칭된 상대방분께서 [닉네임]님의 최종 확정을 설레는 마음으로 기다리고 계셔서 조심스럽게 노크 드려요.
 
 아직 입금이 확인되지 않아 다음 단계인 '일정 조율'로 넘어가지 못하고 있는데요. 혹시 만남을 앞두고 궁금하신 점 있으시면 편하게 말씀해 주세요! ✨`,
+
+  profileEditGuide: `안녕하세요, OO님! Knots & Links 매니저입니다 😊
+
+더 좋은 매칭을 위해 프로필 정보를 최신 상태로 유지해 주시면 좋겠어요.
+아래 링크를 통해 직접 프로필을 확인하고 수정하실 수 있습니다.
+
+👉 [프로필 수정 링크]
+
+수정 가능한 항목:
+• 닉네임, 직업, 회사, 거주지
+• 키, 학력, 종교, MBTI
+• 취미, 자기소개, 이상형
+
+정보가 정확할수록 더 어울리는 인연을 찾아드릴 수 있어요.
+궁금한 점이 있으시면 언제든 연락 주세요! 💛`,
 };
 
 const TEMPLATE_META = [
@@ -306,6 +321,7 @@ const TEMPLATE_META = [
   { key: 'proposalReminder', label: '프로필 확인 리마인드', badge: '양식 12' },
   { key: 'matchResponseNotice', label: '매칭 응답 안내', badge: '양식 13' },
   { key: 'paymentReminder', label: '미입금 리마인드', badge: '양식 14' },
+  { key: 'profileEditGuide', label: '프로필 수정 안내', badge: '양식 15' },
 ];
 
 const LS_KEY = 'knl_manager_templates';

@@ -240,7 +240,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 1fr;
+  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1fr;
   gap: var(--space-md);
   padding: 10px 24px;
   font-size: 0.72rem;
@@ -255,7 +255,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1.2fr 1fr;
+  grid-template-columns: 2fr 0.8fr 0.8fr 1.5fr 1fr;
   gap: var(--space-md);
   padding: 14px 24px;
   font-size: 0.875rem;
@@ -476,8 +476,8 @@
     font-weight: 400;
   }
 
-  /* ── span 6 (matching badge): right-aligned on header line ── */
-  .tableRow > span:nth-child(6) {
+  /* ── span 5 (matching badge): right-aligned on header line ── */
+  .tableRow > span:nth-child(5) {
     order: 4;
     display: inline-flex;
     align-items: center;
@@ -496,7 +496,7 @@
   }
 
   /* Remove any ::before label from matching span */
-  .tableRow > span:nth-child(6)::before {
+  .tableRow > span:nth-child(5)::before {
     content: none;
   }
 

@@ -128,3 +128,23 @@ export async function deleteClient(clientId) {
     method: 'DELETE',
   });
 }
+
+export async function getMyProfile(token, phone) {
+  const query = new URLSearchParams({ token, phone });
+  return apiFetch(`/api/v1/clients/me?${query}`, { method: 'GET' });
+}
+
+export async function updateMyProfile(token, phone, data) {
+  const query = new URLSearchParams({ token, phone });
+  return apiFetch(`/api/v1/clients/me?${query}`, {
+    method: 'PUT',
+    body: data,
+  });
+}
+
+export async function updateClientStatus(clientId, status) {
+  return apiFetch(`/api/v1/clients/${clientId}/status`, {
+    method: 'PATCH',
+    body: { status },
+  });
+}

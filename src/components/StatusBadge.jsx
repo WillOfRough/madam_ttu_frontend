@@ -5,6 +5,8 @@ const LABELS = {
   approved: '승인',
   rejected: '거절',
   active: '활성',
+  inactive: '비활성',
+  dormant: '휴면',
   expired: '만료',
   revoked: '폐기',
   proposal_sent: '제안발송',
