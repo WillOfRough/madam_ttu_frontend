@@ -353,36 +353,6 @@ export default function ClientDetail() {
         </div>
       )}
 
-      {client.isOwner && client.inviteToken && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <Link2 size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
-            프로필 수정 링크 공유
-          </h3>
-          <p style={{ fontSize: '0.82rem', color: 'var(--charcoal-light)', marginBottom: 12, lineHeight: 1.5 }}>
-            아래 버튼으로 회원에게 프로필 수정 링크를 전달할 수 있습니다. 회원이 직접 프로필을 확인하고 수정할 수 있습니다.
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              className={copiedKey === 'link' ? styles.approveBtn : styles.matchBtn}
-              onClick={handleCopyProfileLink}
-              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
-            >
-              {copiedKey === 'link' ? <Check size={14} /> : <Copy size={14} />}
-              {copiedKey === 'link' ? '복사됨' : '링크 복사'}
-            </button>
-            <button
-              className={copiedKey === 'msg' ? styles.approveBtn : styles.matchBtn}
-              onClick={handleCopyProfileMessage}
-              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
-            >
-              {copiedKey === 'msg' ? <Check size={14} /> : <MessageSquare size={14} />}
-              {copiedKey === 'msg' ? '복사됨' : '메시지와 함께 복사'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {editing ? (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>프로필 수정</h3>
@@ -450,10 +420,10 @@ export default function ClientDetail() {
             기본 정보
             {client.isOwner && (
               <button
+                className={styles.editInfoBtn}
                 onClick={startEditing}
-                style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary, #6366f1)', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13 }}
               >
-                <Edit3 size={14} /> 수정
+                <Edit3 size={13} /> 수정
               </button>
             )}
           </h3>
@@ -491,6 +461,36 @@ export default function ClientDetail() {
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>이상형</h3>
           <p className={styles.text}>{client.idealType}</p>
+        </div>
+      )}
+
+      {client.isOwner && client.inviteToken && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <Link2 size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+            프로필 수정 링크 공유
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'var(--charcoal-light)', marginBottom: 12, lineHeight: 1.5 }}>
+            아래 버튼으로 회원에게 프로필 수정 링크를 전달할 수 있습니다. 회원이 직접 프로필을 확인하고 수정할 수 있습니다.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button
+              className={copiedKey === 'link' ? styles.approveBtn : styles.matchBtn}
+              onClick={handleCopyProfileLink}
+              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            >
+              {copiedKey === 'link' ? <Check size={14} /> : <Copy size={14} />}
+              {copiedKey === 'link' ? '복사됨' : '링크 복사'}
+            </button>
+            <button
+              className={copiedKey === 'msg' ? styles.approveBtn : styles.matchBtn}
+              onClick={handleCopyProfileMessage}
+              style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+            >
+              {copiedKey === 'msg' ? <Check size={14} /> : <MessageSquare size={14} />}
+              {copiedKey === 'msg' ? '복사됨' : '메시지와 함께 복사'}
+            </button>
+          </div>
         </div>
       )}
 

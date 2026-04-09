@@ -242,6 +242,40 @@
   letter-spacing: -0.01em;
 }
 
+/* ── 기본정보 카드 수정 버튼 ── */
+.editInfoBtn {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: var(--navy-glow, rgba(26, 43, 75, 0.08));
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.editInfoBtn:hover {
+  background: var(--navy);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(26, 43, 75, 0.22);
+}
+
+.editInfoBtn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
 .fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
