@@ -4,11 +4,13 @@ export async function getMyInfo() {
   return apiFetch('/api/v1/auth/me', { method: 'GET' });
 }
 
-export async function updateMyInfo({ name, nickname, phone, bankName, bankNumber }) {
+export async function updateMyInfo({ name, nickname, phone, verificationId, bankName, bankNumber }) {
   return apiFetch('/api/v1/managers/me', {
     method: 'PATCH',
     body: {
-      name, nickname, phone,
+      name, nickname,
+      ...(phone !== undefined ? { phone } : {}),
+      ...(verificationId !== undefined ? { verificationId } : {}),
       ...(bankName !== undefined ? { bankName } : {}),
       ...(bankNumber !== undefined ? { bankNumber } : {}),
     },

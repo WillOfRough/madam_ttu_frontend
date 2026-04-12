@@ -58,15 +58,20 @@ export default function Settings() {
       toast.error('이름을 입력해주세요.');
       return;
     }
+    const phoneChanged = (form.phone.trim() || '') !== (info?.phone || '');
+    if (phoneChanged) {
+      toast.error('전화번호 변경은 본인인증이 필요합니다. (추후 지원 예정)');
+      return;
+    }
     setSaving(true);
     try {
-      await updateInfo({
+      const payload = {
         name: form.name.trim(),
         nickname: form.nickname.trim() || undefined,
-        phone: form.phone.trim() || undefined,
         bankName: form.bankName || undefined,
         bankNumber: form.bankNumber.trim() || undefined,
-      });
+      };
+      await updateInfo(payload);
       toast.success('정보가 수정되었습니다.');
       setEditing(false);
     } catch (err) {
@@ -174,9 +179,13 @@ export default function Settings() {
               <input
                 className={styles.formInput}
                 value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                readOnly
+                style={{ opacity: 0.6, cursor: 'not-allowed' }}
                 placeholder="010-0000-0000"
               />
+              <span style={{ fontSize: '0.7rem', color: 'var(--charcoal-pale)', marginTop: 2 }}>
+                전화번호 변경은 본인인증이 필요합니다
+              </span>
             </div>
             <div className={styles.formField}>
               <label className={styles.formLabel}>은행명</label>

@@ -66,6 +66,12 @@ export async function completeMatch(matchId) {
   });
 }
 
+export async function confirmPayment(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/confirm-payment`, {
+    method: 'POST',
+  });
+}
+
 export async function rescheduleMatch(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}/reschedule`, {
     method: 'POST',

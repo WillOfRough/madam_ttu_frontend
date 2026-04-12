@@ -82,35 +82,18 @@ const RESPONSE_MAP = {
 const STEPS = [
   { key: 'proposal_sent', label: 'A확인' },
   { key: 'proposal_accepted', label: 'B확인' },
-  { key: 'payment_confirmed', label: '입금확인' },
-  { key: 'scheduling', label: '일정조율' },
+  { key: 'scheduling', label: '입금대기' },
+  { key: 'payment_confirmed', label: '일정조율' },
   { key: 'arranging', label: '매니저확정' },
   { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
 ];
 
-const PAYMENT_STORAGE_KEY = 'match_payment_confirmed';
-
-function getPaymentConfirmed(matchId) {
-  try {
-    const data = JSON.parse(localStorage.getItem(PAYMENT_STORAGE_KEY) || '{}');
-    return !!data[matchId];
-  } catch { return false; }
-}
-
-function setPaymentConfirmed(matchId) {
-  try {
-    const data = JSON.parse(localStorage.getItem(PAYMENT_STORAGE_KEY) || '{}');
-    data[matchId] = Date.now();
-    localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(data));
-  } catch { /* ignore */ }
-}
-
-function getStepIndex(status, paymentConfirmed) {
+function getStepIndex(status) {
   if (status === 'proposal_sent') return 0;
   if (status === 'proposal_accepted') return 1;
-  if (status === 'scheduling' && !paymentConfirmed) return 2;
-  if (status === 'scheduling') return 3;
+  if (status === 'scheduling') return 2;
+  if (status === 'payment_confirmed') return 3;
   if (status === 'arranging') return 4;
   if (status === 'scheduled') return 5;
   if (status === 'completed') return 6;
@@ -196,7 +179,6 @@ export default function MatchDetail() {
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
-  const [paymentConfirmed, setPaymentConfirmedState] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
   const reload = () => {
@@ -208,7 +190,6 @@ export default function MatchDetail() {
   useEffect(() => {
     if (matchId) {
       setLoading(true);
-      setPaymentConfirmedState(getPaymentConfirmed(matchId));
       matchService
         .getMatchDetail(matchId)
         .then(setMatch)
@@ -238,14 +219,20 @@ export default function MatchDetail() {
   if (!match.clientA) match.clientA = { ...safeClient };
   if (!match.clientB) match.clientB = { ...safeClient };
 
-  const stepIndex = getStepIndex(match.status, paymentConfirmed);
+  const stepIndex = getStepIndex(match.status);
   const isCancelled = match.status === 'cancelled';
   const refundStatus = getRefundStatus(match.meetingDate);
 
-  const handlePaymentConfirm = () => {
-    setPaymentConfirmed(matchId);
-    setPaymentConfirmedState(true);
-    toast.success('입금 확인이 완료되었습니다.');
+  const handlePaymentConfirm = async () => {
+    setActionLoading(true);
+    try {
+      await matchService.confirmPayment(matchId);
+      toast.success('입금 확인이 완료되었습니다.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '입금 확인에 실패했습니다.');
+    }
+    setActionLoading(false);
   };
 
   const handleCancel = async () => {
@@ -428,7 +415,7 @@ export default function MatchDetail() {
       </div>
 
       {/* 양식 3: 만남 성사(입금) 안내 메시지 복사 — 입금 확인 전에 먼저 표시 */}
-      {match.status === 'scheduling' && !paymentConfirmed && (
+      {match.status === 'scheduling' && (
         <GuideMessageCard
           title="만남 성사 안내 (입금 요청)"
           hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
@@ -439,20 +426,20 @@ export default function MatchDetail() {
       )}
 
       {/* 입금확인 게이트 */}
-      {match.status === 'scheduling' && !paymentConfirmed && (
+      {match.status === 'scheduling' && (
         <div className={styles.paymentCard}>
           <h3 className={styles.cardTitle}>
             <Check size={16} /> 입금 확인
           </h3>
           <p className={styles.paymentHint}>양쪽 회원에게 입금 안내 메시지를 보낸 후, 입금이 확인되면 아래 버튼을 눌러주세요.</p>
-          <button className={styles.paymentBtn} onClick={handlePaymentConfirm}>
-            입금 확인 완료
+          <button className={styles.paymentBtn} onClick={handlePaymentConfirm} disabled={actionLoading}>
+            {actionLoading ? '확인 중...' : '입금 확인 완료'}
           </button>
         </div>
       )}
 
       {/* Scheduling Link Card */}
-      {match.status === 'scheduling' && paymentConfirmed && (
+      {match.status === 'payment_confirmed' && (
         <SchedulingLinkCard match={match} />
       )}
 
@@ -684,7 +671,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling: waiting for available times */}
-      {match.status === 'scheduling' && paymentConfirmed && (
+      {match.status === 'payment_confirmed' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
@@ -830,7 +817,7 @@ export default function MatchDetail() {
             </button>
           </>
         )}
-        {(match.status === 'scheduling' || match.status === 'arranging') && (
+        {(match.status === 'scheduling' || match.status === 'payment_confirmed' || match.status === 'arranging') && (
           <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
             매칭 취소
           </button>

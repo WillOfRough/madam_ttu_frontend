@@ -51,6 +51,11 @@
   color: #7b1fa2;
 }
 
+.payment_confirmed {
+  background: #e0f7fa;
+  color: #00695c;
+}
+
 .arranging {
   background: #e8eaf6;
   color: #283593;

@@ -926,8 +926,8 @@ const matches = [
   {
     matchId: 'match-apr01',
     type: '1:1 소개팅',
-    status: 'scheduling',
-    note: '4월 일정조율 테스트',
+    status: 'payment_confirmed',
+    note: '4월 입금확인 완료 — 일정조율 대기',
     clientA: {
       clientId: 's001', clientName: '김서연', clientNickname: '반짝이는 서연', clientGender: 'female',
       managerName: '김성중', role: 'proposer',
@@ -1204,7 +1204,7 @@ function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
   const birthYear = c.birthDate ? new Date(c.birthDate).getFullYear() : null;
   const age = birthYear ? new Date().getFullYear() - birthYear : null;
-  const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
+  const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'payment_confirmed', 'arranging', 'scheduled'];
   const activeMatchCount = matches.filter((m) =>
     activeStatuses.includes(m.status) &&
     (m.clientA.clientId === c.id || m.clientB.clientId === c.id)
@@ -1710,6 +1710,16 @@ export async function mockFetch(path, options = {}) {
     return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
   }
 
+  // POST /api/v1/matches/:matchId/confirm-payment (입금 확인)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/confirm-payment$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    if (m.status !== 'scheduling') throw Object.assign(new Error('scheduling 상태에서만 입금 확인할 수 있습니다.'), { status: 400 });
+    m.status = 'payment_confirmed';
+    return { success: true, message: '입금이 확인되었습니다. 일정조율 안내가 발송되었습니다.' };
+  }
+
   // POST /api/v1/matches/:matchId/confirm (매니저 일정 확정 — arranging 상태에서만)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/confirm$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
@@ -1739,10 +1749,10 @@ export async function mockFetch(path, options = {}) {
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
     if (m.status !== 'arranging') throw Object.assign(new Error('arranging 상태에서만 재등록 요청할 수 있습니다.'), { status: 400 });
-    // Clear available times and revert to scheduling
+    // Clear available times and revert to payment_confirmed
     delete availableTimes[m.clientA.proposalToken];
     delete availableTimes[m.clientB.proposalToken];
-    m.status = 'scheduling';
+    m.status = 'payment_confirmed';
     return { success: true, message: '가용시간 재등록이 요청되었습니다.' };
   }
 
@@ -1876,7 +1886,7 @@ export async function mockFetch(path, options = {}) {
     }));
     // Auto-transition to arranging if both sides have submitted
     const otherToken = result.side === 'A' ? m.clientB.proposalToken : m.clientA.proposalToken;
-    if ((availableTimes[otherToken] || []).length > 0 && m.status === 'scheduling') {
+    if ((availableTimes[otherToken] || []).length > 0 && (m.status === 'scheduling' || m.status === 'payment_confirmed')) {
       m.status = 'arranging';
     }
     return { success: true, message: '가용시간이 등록되었습니다.' };
