@@ -337,6 +337,15 @@
   border-radius: var(--radius-full);
 }
 
+.matchingPending {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b21a8;
+  background: #f3e8ff;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+
 .matchingUnavailable {
   font-size: 0.75rem;
   font-weight: 600;
@@ -501,6 +510,10 @@
   }
 
   .matchingAvailable {
+    padding: 4px 12px;
+  }
+
+  .matchingPending {
     padding: 4px 12px;
   }
 

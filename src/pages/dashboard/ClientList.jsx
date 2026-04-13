@@ -171,7 +171,11 @@ export default function ClientList() {
                   <span>{client.age ? `${client.age}세` : '-'}</span>
                   <span>{client.company && client.occupation ? `${client.company}(${client.occupation})` : client.company || client.occupation || '-'}</span>
                   <span>
-                    {(client.status || 'active') !== 'active' ? (
+                    {client.approvalStatus === 'pending' ? (
+                      <span className={styles.matchingPending}>승인 대기</span>
+                    ) : client.approvalStatus === 'rejected' ? (
+                      <span className={styles.matchingUnavailable}>승인 거절</span>
+                    ) : (client.status || 'active') !== 'active' ? (
                       <span className={styles.matchingUnavailable}>매칭 불가</span>
                     ) : client.activeMatchCount > 0 ? (
                       <span className={styles.matchingActive}>매칭 진행중</span>
