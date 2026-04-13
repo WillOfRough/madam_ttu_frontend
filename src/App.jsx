@@ -23,6 +23,7 @@ import ProposalSchedule from './pages/public/ProposalSchedule';
 import ProposalAfter from './pages/public/ProposalAfter';
 import ProposalAfterResult from './pages/public/ProposalAfterResult';
 import MyProfile from './pages/public/MyProfile';
+import ClientInquiry from './pages/public/ClientInquiry';
 
 // Dashboard pages
 import DashboardHome from './pages/dashboard/DashboardHome';
@@ -121,6 +122,7 @@ export default function App() {
         <Route path="/proposal/:token/after" element={<ProposalAfter />} />
         <Route path="/proposal/:token/after/result" element={<ProposalAfterResult />} />
         <Route path="/my-profile" element={<MyProfile />} />
+        <Route path="/inquiry" element={<ClientInquiry />} />
 
         {/* Dashboard (auth required) */}
         <Route element={<RequireAuth />}>

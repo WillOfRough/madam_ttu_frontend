@@ -1,0 +1,588 @@
+/* ═══════════════════════════════════════════════
+   ClientInquiry — Public inquiry registration page
+   Aesthetic: Warm editorial — intimate, trustworthy
+   Mirrors MyProfile.module.css design system
+   ═══════════════════════════════════════════════ */
+
+/* ── Page shell ── */
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+}
+
+/* ═══════════════════════════════════════════════
+   BRAND MARK (shared by all states)
+   ═══════════════════════════════════════════════ */
+.brandMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: var(--space-lg);
+}
+
+.brandName {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.04em;
+}
+
+.brandDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--coral);
+  display: inline-block;
+  animation: dotPulse 2.4s ease-in-out infinite;
+}
+
+.brandMark .brandDot:last-child {
+  animation-delay: 1.2s;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1.15); }
+}
+
+/* ═══════════════════════════════════════════════
+   STATE 1 — PHONE VERIFICATION
+   ═══════════════════════════════════════════════ */
+.verifyWrap {
+  width: 100%;
+  max-width: 400px;
+  padding-top: var(--space-xl);
+  animation: slideUp var(--duration-slow) var(--ease-out) both;
+}
+
+.verifyCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 44px 32px 36px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.verifyIconRing {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  border-radius: var(--radius-full);
+  background: var(--navy-glow);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(26, 43, 75, 0.10); }
+  50%       { box-shadow: 0 0 0 12px rgba(26, 43, 75, 0.04); }
+}
+
+.verifyTitle {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+
+.verifyDesc {
+  font-size: 0.9rem;
+  color: var(--charcoal-pale);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.verifyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.inputWrap:focus-within {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26, 43, 75, 0.08);
+  background: var(--white);
+}
+
+.inputWrapError {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(235, 87, 87, 0.08);
+}
+
+.inputIcon {
+  color: var(--charcoal-pale);
+  flex-shrink: 0;
+}
+
+.phoneInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 14px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  letter-spacing: 0.04em;
+}
+
+.phoneInput::placeholder {
+  color: var(--charcoal-pale);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.verifyError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--danger-light);
+  padding: 10px 14px;
+  border-radius: var(--radius-xs);
+  text-align: left;
+  animation: shakeIn var(--duration-fast) var(--ease-out);
+}
+
+@keyframes shakeIn {
+  0%   { transform: translateX(-4px); opacity: 0; }
+  40%  { transform: translateX(4px); }
+  70%  { transform: translateX(-2px); }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.verifyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all var(--duration-fast) var(--ease-out);
+  margin-top: 4px;
+}
+
+.verifyBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.verifyBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.verifyBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+}
+
+.verifyFootnote {
+  margin-top: 20px;
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.verifyFootnote::before {
+  content: '🔒';
+  font-size: 0.72rem;
+}
+
+/* ─── spinner ─── */
+.btnSpinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════════════
+   STATE 2 — INQUIRY FORM
+   ═══════════════════════════════════════════════ */
+.formWrap {
+  width: 100%;
+  max-width: 480px;
+  padding-top: var(--space-xl);
+  animation: slideUp var(--duration-slow) var(--ease-out) both;
+}
+
+.formCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px 36px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-light);
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.formIconWrap {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  background: var(--coral-dim, rgba(233, 93, 63, 0.08));
+  color: var(--coral);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.formTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.04em;
+}
+
+.formDesc {
+  font-size: 0.88rem;
+  color: var(--charcoal-pale);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  margin-top: 12px;
+}
+
+.inquiryForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── field group ── */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── category chips ── */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--charcoal-mid, var(--charcoal));
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  letter-spacing: -0.01em;
+}
+
+.chip:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  background: var(--navy-glow);
+}
+
+.chipActive {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+
+.chipActive:hover {
+  background: var(--navy-light, var(--navy));
+  color: var(--white);
+  border-color: var(--navy-light, var(--navy));
+}
+
+/* ── textarea ── */
+.textareaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.charCount {
+  font-size: 0.72rem;
+  color: var(--charcoal-pale);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.charCountWarn {
+  color: var(--danger);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--charcoal);
+  line-height: 1.7;
+  resize: vertical;
+  min-height: 130px;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out);
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--coral);
+  background: var(--white);
+  box-shadow: 0 0 0 3px var(--coral-dim, rgba(233, 93, 63, 0.08));
+}
+
+.textarea::placeholder {
+  color: var(--charcoal-pale);
+}
+
+.textareaHint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  color: var(--danger);
+  font-weight: 600;
+  animation: fadeIn var(--duration-fast) var(--ease-out);
+}
+
+/* ── submit button ── */
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 15px;
+  background: var(--coral);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 2px 10px rgba(233, 93, 63, 0.25);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--coral-dark, #d44a2b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(233, 93, 63, 0.35);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  background: var(--bg-dark);
+  color: var(--charcoal-pale);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════
+   STATE 3 — DONE
+   ═══════════════════════════════════════════════ */
+.doneWrap {
+  width: 100%;
+  max-width: 400px;
+  padding-top: var(--space-xl);
+  animation: slideUp var(--duration-slow) var(--ease-out) both;
+}
+
+.doneCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 52px 32px 44px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+.doneIconRing {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 28px;
+  border-radius: var(--radius-full);
+  background: rgba(39, 174, 96, 0.10);
+  color: #1a8a47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popIn var(--duration-slow) var(--ease-out) both;
+  border: 2px solid rgba(39, 174, 96, 0.20);
+}
+
+@keyframes popIn {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.doneTitle {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+
+.doneDesc {
+  font-size: 0.9rem;
+  color: var(--charcoal-pale);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.additionalBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--white);
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.additionalBtn:hover {
+  background: var(--navy);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.additionalBtn:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════ */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — mobile first (max 640px)
+   ═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .page {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .verifyWrap,
+  .doneWrap {
+    padding-top: var(--space-lg);
+  }
+
+  .verifyCard {
+    padding: 36px 20px 30px;
+  }
+
+  .verifyTitle {
+    font-size: 1.25rem;
+  }
+
+  .formWrap {
+    padding-top: var(--space-lg);
+  }
+
+  .formCard {
+    padding: 24px 18px 28px;
+  }
+
+  .formTitle {
+    font-size: 1.1rem;
+  }
+
+  .doneCard {
+    padding: 40px 20px 36px;
+  }
+
+  .doneTitle {
+    font-size: 1.25rem;
+  }
+
+  .chipRow {
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 7px 13px;
+    font-size: 0.82rem;
+  }
+}

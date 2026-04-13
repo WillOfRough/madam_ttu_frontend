@@ -149,3 +149,11 @@ export async function updateClientStatus(clientId, status) {
     body: { status },
   });
 }
+
+export async function submitInquiry(token, phone, data) {
+  const query = new URLSearchParams({ token, phone });
+  return apiFetch(`/api/v1/clients/me/inquiry?${query}`, {
+    method: 'POST',
+    body: data,
+  });
+}

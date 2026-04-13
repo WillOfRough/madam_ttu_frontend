@@ -49,6 +49,9 @@ function randomToken(len = 12) {
   return out;
 }
 
+// ── Inquiries ──────────────────────────────────────────
+const inquiries = [];
+
 // ── Clients ────────────────────────────────────────────
 const clients = [
   {
@@ -1451,6 +1454,30 @@ export async function mockFetch(path, options = {}) {
       }
     }
     return { success: true, message: '프로필이 수정되었습니다.' };
+  }
+
+  // POST /api/v1/clients/me/inquiry (문의 등록)
+  if (method === 'POST' && pathname === '/api/v1/clients/me/inquiry') {
+    const token = params.get('token');
+    const phone = params.get('phone');
+    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
+    const invite = invites.find((inv) => inv.token === token);
+    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
+    const normalizePhone = (p) => (p || '').replace(/-/g, '');
+    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+    const body = options.body || {};
+    const { category, content } = body;
+    if (!category || !content) throw Object.assign(new Error('category와 content는 필수입니다.'), { status: 400 });
+    const newInquiry = {
+      id: crypto.randomUUID(),
+      clientId: found.id,
+      category,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    inquiries.push(newInquiry);
+    return { id: newInquiry.id, category, content, createdAt: newInquiry.createdAt };
   }
 
   // PATCH /api/v1/clients/:id/status (회원 상태 변경)
