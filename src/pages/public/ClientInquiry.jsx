@@ -83,7 +83,7 @@ export default function ClientInquiry() {
     setSubmitting(true);
     try {
       await submitInquiry(token, verifiedPhone, { category, content });
-      toast.success('문의가 등록되었습니다.');
+      alert('담당 매니저에게 문의사항이 등록되었습니다.\n최대한 빠르게 답변 드리도록 하겠습니다.');
       setStep('done');
     } catch (err) {
       toast.error(err.message || '문의 등록에 실패했습니다. 다시 시도해주세요.');
