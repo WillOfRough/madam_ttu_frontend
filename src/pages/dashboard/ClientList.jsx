@@ -171,7 +171,9 @@ export default function ClientList() {
                   <span>{client.age ? `${client.age}세` : '-'}</span>
                   <span>{client.company && client.occupation ? `${client.company}(${client.occupation})` : client.company || client.occupation || '-'}</span>
                   <span>
-                    {client.activeMatchCount > 0 ? (
+                    {(client.status || 'active') !== 'active' ? (
+                      <span className={styles.matchingUnavailable}>매칭 불가</span>
+                    ) : client.activeMatchCount > 0 ? (
                       <span className={styles.matchingActive}>매칭 진행중</span>
                     ) : (
                       <span className={styles.matchingAvailable}>매칭 가능</span>

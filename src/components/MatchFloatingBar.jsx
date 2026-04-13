@@ -19,6 +19,7 @@ export default function MatchFloatingBar() {
   const [activeMatches, setActiveMatches] = useState({ A: [], B: [], deletedA: [], deletedB: [] });
 
   const genderValid = selected.length === 2 && selected[0].gender !== selected[1].gender;
+  const inactiveClients = selected.filter((c) => (c.status || 'active') !== 'active');
 
   useEffect(() => {
     if (selected.length === 0) {
@@ -119,7 +120,7 @@ export default function MatchFloatingBar() {
 
   if (selected.length === 0) return null;
 
-  const hasBlockingIssue = !!duplicateMatch || pairHistory.length > 0;
+  const hasBlockingIssue = !!duplicateMatch || pairHistory.length > 0 || inactiveClients.length > 0;
   const createDisabled = selected.length !== 2 || !genderValid || creating || hasBlockingIssue;
 
   return (
@@ -186,6 +187,13 @@ export default function MatchFloatingBar() {
                 {selected[1] && activeMatches.B.length > 0 && (
                   <span>{selected[1].nickname || selected[1].name}: 진행 중 {activeMatches.B.length}건</span>
                 )}
+              </div>
+            )}
+
+            {inactiveClients.length > 0 && (
+              <div className={styles.warning}>
+                <AlertTriangle size={12} />
+                <span>{inactiveClients.map((c) => c.nickname || c.name).join(', ')} 회원이 비활성/휴면 상태입니다. 매칭할 수 없습니다.</span>
               </div>
             )}
 

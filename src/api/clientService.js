@@ -73,6 +73,7 @@ export async function listClients(params = {}) {
   if (params.phone) query.set('phone', params.phone);
   if (params.gender) query.set('gender', params.gender);
   if (params.approval) query.set('approval', params.approval);
+  if (params.status) query.set('status', params.status);
   if (params.owner) query.set('owner', params.owner);
   if (params.sort) query.set('sort', params.sort);
   if (params.page) query.set('page', String(params.page));
