@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  User, Phone, Edit3, Save, X, Check,
+  User, Phone, Edit3, Save, X,
   MapPin, Briefcase, GraduationCap, Heart, Camera, MessageCircle,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
+import PhoneVerifyField from '../../components/PhoneVerifyField';
 import { toast } from '../../store/toastStore';
 import styles from './MyProfile.module.css';
 
@@ -21,13 +22,6 @@ function formatPhone(raw = '') {
   if (digits.length === 11) return digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
   if (digits.length === 10) return digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
   return raw;
-}
-
-function formatPhoneInput(val) {
-  const digits = val.replace(/\D/g, '');
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
 }
 
 const GENDER_LABEL = { male: '남성', female: '여성' };
@@ -90,7 +84,6 @@ export default function MyProfile() {
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
-  const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState('');
 
   /* ── profile state ── */
@@ -145,22 +138,16 @@ export default function MyProfile() {
     setDeletingPhotoId(null);
   };
 
-  /* ─── verify handler ─── */
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  /* ─── phone verified handler (called after OTP success) ─── */
+  const handlePhoneVerified = async () => {
     if (!token) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
     const rawPhone = phone.replace(/-/g, '');
-    if (rawPhone.length < 10) {
-      setVerifyError('올바른 전화번호를 입력해주세요.');
-      return;
-    }
-    setVerifying(true);
+    setLoading(true);
     setVerifyError('');
     try {
-      setLoading(true);
       const data = await getMyProfile(token, rawPhone);
       setProfile(data);
       setVerifiedPhone(rawPhone);
@@ -174,7 +161,6 @@ export default function MyProfile() {
         setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
     } finally {
-      setVerifying(false);
       setLoading(false);
     }
   };
@@ -249,27 +235,16 @@ export default function MyProfile() {
             </div>
             <h1 className={styles.verifyTitle}>내 프로필 조회</h1>
             <p className={styles.verifyDesc}>
-              본인 확인을 위해 가입 시 등록한<br />전화번호를 입력해주세요.
+              본인 확인을 위해 가입 시 등록한<br />전화번호를 인증해주세요.
             </p>
 
-            <form onSubmit={handleVerify} className={styles.verifyForm}>
-              <div className={`${styles.inputWrap} ${verifyError ? styles.inputWrapError : ''}`}>
-                <Phone size={16} className={styles.inputIcon} />
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="010-0000-0000"
-                  value={phone}
-                  onChange={(e) => {
-                    setVerifyError('');
-                    setPhone(formatPhoneInput(e.target.value));
-                  }}
-                  maxLength={13}
-                  className={styles.phoneInput}
-                  autoComplete="tel"
-                  autoFocus
-                />
-              </div>
+            <div className={styles.verifyForm}>
+              <PhoneVerifyField
+                value={phone}
+                onChange={setPhone}
+                onVerified={handlePhoneVerified}
+                disabled={loading}
+              />
 
               {verifyError && (
                 <div className={styles.verifyError}>
@@ -278,21 +253,12 @@ export default function MyProfile() {
                 </div>
               )}
 
-              <button
-                type="submit"
-                className={styles.verifyBtn}
-                disabled={verifying || phone.replace(/-/g, '').length < 10}
-              >
-                {verifying ? (
+              {loading && (
+                <div style={{ textAlign: 'center', padding: '12px 0' }}>
                   <span className={styles.btnSpinner} />
-                ) : (
-                  <>
-                    <Check size={16} />
-                    프로필 조회
-                  </>
-                )}
-              </button>
-            </form>
+                </div>
+              )}
+            </div>
 
             <p className={styles.verifyFootnote}>
               개인정보는 안전하게 보호됩니다.
