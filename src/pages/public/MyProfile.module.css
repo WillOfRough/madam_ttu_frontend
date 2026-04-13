@@ -686,6 +686,39 @@
   cursor: not-allowed;
 }
 
+/* ── inquiry banner ── */
+.inquiryBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  color: var(--charcoal-pale);
+  font-size: 0.86rem;
+  font-weight: 500;
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.inquiryLink {
+  margin-left: auto;
+  color: var(--coral);
+  font-weight: 700;
+  font-size: 0.86rem;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.inquiryLink:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
 /* ── bottom share ── */
 .bottomShare {
   margin-top: var(--space-sm);
