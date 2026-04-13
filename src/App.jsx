@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
@@ -41,18 +41,24 @@ function AuthListener() {
   const location = useLocation();
   const logout = useAuthStore((s) => s.logout);
   const checkSession = useAuthStore((s) => s.checkSession);
+  const locationRef = useRef(location);
+  locationRef.current = location;
 
   useEffect(() => {
     let checking = false;
+    let lastCheckTime = 0;
     const handleUnauthorized = async () => {
       if (checking) return;
+      // 60초 내 중복 호출 방지
+      const now = Date.now();
+      if (now - lastCheckTime < 60000) return;
+      lastCheckTime = now;
       checking = true;
       try {
-        // 즉시 로그아웃하지 않고 세션 재검증 시도
         const valid = await checkSession();
         if (!valid) {
           logout();
-          navigate('/login', { state: { from: location } });
+          navigate('/login', { state: { from: locationRef.current } });
         }
       } finally {
         checking = false;
@@ -60,7 +66,7 @@ function AuthListener() {
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
-  }, [navigate, logout, checkSession, location]);
+  }, [navigate, logout, checkSession]);
 
   return null;
 }
