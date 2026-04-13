@@ -154,7 +154,7 @@ export default function ClientList() {
               <span>이름</span>
               <span>성별</span>
               <span>나이</span>
-              <span>직업</span>
+              <span>회사(직업)</span>
               <span>매칭</span>
             </div>
             {clients.map((client) => (
@@ -169,7 +169,7 @@ export default function ClientList() {
                   </span>
                   <span className={client.gender === 'female' ? styles.genderFemaleCell : styles.genderMaleCell}>{client.gender === 'male' ? '남' : '여'}</span>
                   <span>{client.age ? `${client.age}세` : '-'}</span>
-                  <span>{client.occupation || '-'}</span>
+                  <span>{client.company && client.occupation ? `${client.company}(${client.occupation})` : client.company || client.occupation || '-'}</span>
                   <span>
                     {client.activeMatchCount > 0 ? (
                       <span className={styles.matchingActive}>매칭 진행중</span>

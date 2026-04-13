@@ -3,7 +3,7 @@ import * as verificationService from '../api/verificationService';
 import styles from './PhoneVerifyField.module.css';
 
 const PHONE_REGEX = /^010-\d{4}-\d{4}$/;
-const TIMER_SECONDS = 210; // 3분 30초
+const TIMER_SECONDS = 180; // 3분
 
 function formatPhone(value) {
   const digits = value.replace(/\D/g, '').slice(0, 11);
