@@ -34,10 +34,10 @@ const useAuthStore = create(
         }
       },
 
-      register: async ({ token, email, password, name, nickname, bankName, bankNumber }) => {
+      register: async ({ token, email, password, name, nickname, phone, verificationId, bankName, bankNumber }) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await authService.register({ token, email, password, name, nickname, bankName, bankNumber });
+          const data = await authService.register({ token, email, password, name, nickname, phone, verificationId, bankName, bankNumber });
           await authService.login({ email, password });
           const mgr = data.manager || data;
           set({
@@ -55,10 +55,10 @@ const useAuthStore = create(
         }
       },
 
-      signup: async ({ email, password, name, nickname, inviteCode, bankName, bankNumber }) => {
+      signup: async ({ email, password, name, nickname, phone, verificationId, inviteCode, bankName, bankNumber }) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await authService.signup({ email, password, name, nickname, inviteCode, bankName, bankNumber });
+          const data = await authService.signup({ email, password, name, nickname, phone, verificationId, inviteCode, bankName, bankNumber });
           await authService.login({ email, password });
           const mgr = data.manager || data;
           set({

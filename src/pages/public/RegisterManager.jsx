@@ -3,6 +3,7 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { RefreshCw, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname, BANK_OPTIONS } from '../../data/constants';
+import PhoneVerifyField from '../../components/PhoneVerifyField';
 import styles from './RegisterManager.module.css';
 import oathStyles from './ClientOath.module.css';
 
@@ -30,6 +31,8 @@ export default function RegisterManager() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
+  const [phone, setPhone] = useState('');
+  const [verificationId, setVerificationId] = useState(null);
   const [bankName, setBankName] = useState('');
   const [bankNumber, setBankNumber] = useState('');
   const [error, setError] = useState(null);
@@ -64,9 +67,14 @@ export default function RegisterManager() {
       return;
     }
 
+    if (!verificationId) {
+      setError('휴대폰 인증을 완료해주세요.');
+      return;
+    }
+
     const finalNickname = nickname.trim() || suggestedNickname;
     try {
-      await register({ token, email, password, name: name.trim(), nickname: finalNickname, bankName: bankName || undefined, bankNumber: bankNumber.trim() || undefined });
+      await register({ token, email, password, name: name.trim(), nickname: finalNickname, phone, verificationId, bankName: bankName || undefined, bankNumber: bankNumber.trim() || undefined });
       navigate('/dashboard/guide');
     } catch (err) {
       setError(err.message || '가입에 실패했습니다.');
@@ -163,6 +171,16 @@ export default function RegisterManager() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               required
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>전화번호 <span className={styles.required}>*</span></label>
+            <PhoneVerifyField
+              value={phone}
+              onChange={setPhone}
+              onVerified={setVerificationId}
+              inputClassName={styles.input}
             />
           </div>
 

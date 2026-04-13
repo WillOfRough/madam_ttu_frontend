@@ -1300,6 +1300,21 @@ export async function mockFetch(path, options = {}) {
   const pathname = url.pathname;
   const params = url.searchParams;
 
+  // POST /api/v1/verification/send (인증번호 발송 — mock)
+  if (method === 'POST' && pathname === '/api/v1/verification/send') {
+    const body = options.body || {};
+    if (!body.phone) throw Object.assign(new Error('전화번호를 입력해주세요.'), { status: 400 });
+    return { success: true, message: '인증번호가 발송되었습니다.' };
+  }
+
+  // POST /api/v1/verification/verify (인증번호 확인 — mock: 아무 6자리 수락)
+  if (method === 'POST' && pathname === '/api/v1/verification/verify') {
+    const body = options.body || {};
+    if (!body.phone || !body.code) throw Object.assign(new Error('전화번호와 인증번호를 입력해주세요.'), { status: 400 });
+    if (body.code.length !== 6) throw Object.assign(new Error('인증번호가 일치하지 않습니다.'), { status: 400 });
+    return { verificationId: crypto.randomUUID ? crypto.randomUUID() : `mock-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+  }
+
   // POST /api/v1/auth/login
   if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};

@@ -1,0 +1,137 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phoneRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.phoneRow .input {
+  flex: 1;
+}
+
+.input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  background: var(--white);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.input::placeholder { color: var(--charcoal-pale); }
+.input:hover { border-color: var(--charcoal-pale); }
+.input:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.inputVerified {
+  border-color: #059669;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.sendBtn {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--navy);
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+}
+
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.verifiedBadge {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  white-space: nowrap;
+}
+
+.codeRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.codeInputWrap {
+  flex: 1;
+  position: relative;
+}
+
+.codeInputWrap .input {
+  width: 100%;
+  padding-right: 60px;
+}
+
+.timer {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.timerUrgent {
+  color: var(--danger);
+}
+
+.verifyBtn {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--coral);
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.verifyBtn:hover:not(:disabled) {
+  background: var(--coral-light);
+}
+
+.verifyBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--danger);
+  margin: 0;
+}
+
+.expired {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--charcoal-pale);
+  margin: 0;
+}

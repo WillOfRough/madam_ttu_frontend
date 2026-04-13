@@ -6,6 +6,7 @@ import useManagerStore from '../../store/managerStore';
 import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
 import { BANK_OPTIONS } from '../../data/constants';
+import PhoneVerifyField from '../../components/PhoneVerifyField';
 import Settlement from './Settlement';
 import styles from './Settings.module.css';
 
@@ -26,6 +27,7 @@ export default function Settings() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', phone: '', bankName: '', bankNumber: '' });
   const [saving, setSaving] = useState(false);
+  const [phoneVerificationId, setPhoneVerificationId] = useState(null);
 
   const [pwOpen, setPwOpen] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' });
@@ -59,8 +61,8 @@ export default function Settings() {
       return;
     }
     const phoneChanged = (form.phone.trim() || '') !== (info?.phone || '');
-    if (phoneChanged) {
-      toast.error('전화번호 변경은 본인인증이 필요합니다. (추후 지원 예정)');
+    if (phoneChanged && !phoneVerificationId) {
+      toast.error('전화번호 변경은 본인인증이 필요합니다.');
       return;
     }
     setSaving(true);
@@ -68,12 +70,14 @@ export default function Settings() {
       const payload = {
         name: form.name.trim(),
         nickname: form.nickname.trim() || undefined,
+        ...(phoneChanged ? { phone: form.phone.trim(), verificationId: phoneVerificationId } : {}),
         bankName: form.bankName || undefined,
         bankNumber: form.bankNumber.trim() || undefined,
       };
       await updateInfo(payload);
       toast.success('정보가 수정되었습니다.');
       setEditing(false);
+      setPhoneVerificationId(null);
     } catch (err) {
       toast.error(err.message || '정보 수정에 실패했습니다.');
     }
@@ -176,16 +180,13 @@ export default function Settings() {
             </div>
             <div className={styles.formField}>
               <label className={styles.formLabel}>연락처</label>
-              <input
-                className={styles.formInput}
+              <PhoneVerifyField
                 value={form.phone}
-                readOnly
-                style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                placeholder="010-0000-0000"
+                onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
+                onVerified={setPhoneVerificationId}
+                inputClassName={styles.formInput}
+                initialVerified={!!info?.phone && form.phone === info.phone}
               />
-              <span style={{ fontSize: '0.7rem', color: 'var(--charcoal-pale)', marginTop: 2 }}>
-                전화번호 변경은 본인인증이 필요합니다
-              </span>
             </div>
             <div className={styles.formField}>
               <label className={styles.formLabel}>은행명</label>

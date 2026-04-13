@@ -5,6 +5,7 @@ import useClientFormStore, { NAME_PATTERN } from '../../store/clientFormStore';
 import * as clientService from '../../api/clientService';
 import TextField from '../../components/TextField';
 import SelectField from '../../components/SelectField';
+import PhoneVerifyField from '../../components/PhoneVerifyField';
 import RadioGroup from '../../components/RadioGroup';
 import ProgressBar from '../../components/ProgressBar';
 import StepTransition from '../../components/StepTransition';
@@ -123,6 +124,7 @@ export default function ClientForm() {
   const [error, setError] = useState(null);
   const [touched, setTouched] = useState({});
   const [loadedPhotos, setLoadedPhotos] = useState({});
+  const [verificationId, setVerificationId] = useState(null);
 
   useEffect(() => {
     setToken(token);
@@ -157,10 +159,14 @@ export default function ClientForm() {
   const getError = (field) => (touched[field] ? errors[field] : undefined);
 
   const handleSubmit = async () => {
+    if (!verificationId) {
+      setError('휴대폰 인증을 완료해주세요.');
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
-      const payload = getPayload();
+      const payload = { ...getPayload(), verificationId };
       await clientService.createClient(payload, form.photos);
       navigate('/apply/complete');
     } catch (err) {
@@ -281,22 +287,15 @@ export default function ClientForm() {
                 error={getError('birthYear')}
               />
 
-              <TextField
-                label="연락처"
-                value={form.phone}
-                onChange={(v) => {
-                  const nums = v.replace(/\D/g, '').slice(0, 11);
-                  let formatted = nums;
-                  if (nums.length > 7) formatted = `${nums.slice(0, 3)}-${nums.slice(3, 7)}-${nums.slice(7)}`;
-                  else if (nums.length > 3) formatted = `${nums.slice(0, 3)}-${nums.slice(3)}`;
-                  setField('phone', formatted);
-                  markTouched('phone');
-                }}
-                placeholder="010-0000-0000"
-                type="tel"
-                required
-                error={getError('phone')}
-              />
+              <div className={styles.fieldWrap}>
+                <label className={styles.fieldLabel}>연락처 <span className={styles.required}>*</span></label>
+                <PhoneVerifyField
+                  value={form.phone}
+                  onChange={(v) => { setField('phone', v); markTouched('phone'); }}
+                  onVerified={setVerificationId}
+                />
+                {getError('phone') && <p className={styles.fieldError}>{getError('phone')}</p>}
+              </div>
               <p className={styles.phoneHint}>
                 연락처는 매칭 성사 시에만 상대방에게 공유됩니다. 그 전에는 절대 노출되지 않으니 안심하세요.
               </p>
