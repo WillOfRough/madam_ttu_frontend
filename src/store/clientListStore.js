@@ -66,7 +66,7 @@ const useClientListStore = create((set, get) => ({
       }
 
       // 매칭 목록에서 각 회원별 진행 중 매칭 수 계산
-      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
+      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
       let activeMatchMap = {};
       try {
         const matchRes = await matchService.listMatches({ size: 200 });

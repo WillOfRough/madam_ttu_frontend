@@ -46,12 +46,12 @@
   color: #8a5e00;
 }
 
-.scheduling {
+.awaiting_payment {
   background: #f3e5f5;
   color: #7b1fa2;
 }
 
-.payment_confirmed {
+.scheduling {
   background: #e0f7fa;
   color: #00695c;
 }
