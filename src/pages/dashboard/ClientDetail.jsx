@@ -315,7 +315,7 @@ export default function ClientDetail() {
         </div>
 
         <div className={styles.actions}>
-          {client.approvalStatus === 'approved' && (
+          {client.approvalStatus === 'approved' && (client.status || 'active') === 'active' && (
             <MatchButton client={client} />
           )}
           {client.isOwner && (
@@ -732,6 +732,7 @@ function MatchButton({ client }) {
       name: client.name,
       nickname: client.nickname,
       gender: client.gender,
+      status: client.status || 'active',
     };
     toggleSelectForMatch(clientForMatch);
   };

@@ -85,6 +85,13 @@ const useClientListStore = create((set, get) => ({
         activeMatchCount: c.activeMatchCount ?? activeMatchMap[c.id] ?? 0,
       }));
 
+      // 비활성/휴면 회원을 맨 뒤로 정렬
+      enrichedClients.sort((a, b) => {
+        const aActive = (a.status || 'active') === 'active' ? 0 : 1;
+        const bActive = (b.status || 'active') === 'active' ? 0 : 1;
+        return aActive - bActive;
+      });
+
       set({
         clients: enrichedClients,
         filteredCount,

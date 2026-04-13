@@ -351,7 +351,7 @@ function CreateMatchModal({ onClose, onCreated }) {
 
   useEffect(() => {
     if (searchQuery.length >= 1) {
-      clientService.listClients({ name: searchQuery, limit: 10, approval: 'approved' }).then((res) => {
+      clientService.listClients({ name: searchQuery, limit: 10, approval: 'approved', status: 'active' }).then((res) => {
         const list = res.data || res.clients || res;
         setSearchResults(list);
       });
@@ -455,6 +455,10 @@ function CreateMatchModal({ onClose, onCreated }) {
 
   const handleSubmit = async () => {
     if (!clientA || !clientB || duplicateMatch) return;
+    if ((clientA.status || 'active') !== 'active' || (clientB.status || 'active') !== 'active') {
+      toast.error('비활성/휴면 상태 회원은 매칭할 수 없습니다.');
+      return;
+    }
     setSubmitting(true);
     try {
       await matchService.createMatch({ clientAId: clientA.id, clientBId: clientB.id, note });
