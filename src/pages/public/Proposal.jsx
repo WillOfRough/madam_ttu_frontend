@@ -316,25 +316,6 @@ export default function Proposal() {
   const responded = myResponse !== 'pending';
 
   // ══════════════════════════════════════════
-  // ── Awaiting Payment: 입금 대기 중 ──
-  // ══════════════════════════════════════════
-  if (matchStatus === 'awaiting_payment') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
-          <div className={styles.respondedBanner}>
-            <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
-            <p className={styles.respondedStatus}>
-              입금 확인 후 일정 조율이 시작됩니다. 잠시만 기다려주세요.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ══════════════════════════════════════════
   // ── Scheduling: 양쪽 가용시간 등록 ──
   // ══════════════════════════════════════════
   // 매니저가 보낸 /available-times 링크로 접근했을 때만 일정조율 UI 표시

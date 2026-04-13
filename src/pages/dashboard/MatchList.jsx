@@ -14,8 +14,8 @@ import styles from './MatchList.module.css';
 const STATUS_STEP_LABELS = {
   proposal_sent: 'A 프로필 확인 대기',
   proposal_accepted: 'B 프로필 확인 대기',
-  awaiting_payment: '입금 대기 중',
-  scheduling: '일정 조율 중',
+  scheduling: '입금 대기 중',
+  payment_confirmed: '일정 조율 중',
   arranging: '매니저 확정 대기',
   scheduled: '약속 확정됨',
   completed: '미팅 완료',
@@ -147,8 +147,8 @@ export default function MatchList() {
           <option value="active">진행 중</option>
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
-          <option value="awaiting_payment">입금대기</option>
-          <option value="scheduling">일정조율</option>
+          <option value="scheduling">입금대기</option>
+          <option value="payment_confirmed">입금확인</option>
           <option value="arranging">조율확정</option>
           <option value="scheduled">약속확정</option>
           <option value="completed">완료</option>
@@ -372,7 +372,7 @@ function CreateMatchModal({ onClose, onCreated }) {
     matchService.listMatches({ size: 200 }).then((res) => {
       if (cancelled) return;
       const list = res.data || res.matches || [];
-      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
+      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'payment_confirmed', 'arranging', 'scheduled'];
 
       // Duplicate pair check
       if (clientA && clientB) {

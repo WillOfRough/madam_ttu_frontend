@@ -82,8 +82,8 @@ const RESPONSE_MAP = {
 const STEPS = [
   { key: 'proposal_sent', label: 'A확인' },
   { key: 'proposal_accepted', label: 'B확인' },
-  { key: 'awaiting_payment', label: '입금대기' },
-  { key: 'scheduling', label: '일정조율' },
+  { key: 'scheduling', label: '입금대기' },
+  { key: 'payment_confirmed', label: '일정조율' },
   { key: 'arranging', label: '매니저확정' },
   { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
@@ -92,8 +92,8 @@ const STEPS = [
 function getStepIndex(status) {
   if (status === 'proposal_sent') return 0;
   if (status === 'proposal_accepted') return 1;
-  if (status === 'awaiting_payment') return 2;
-  if (status === 'scheduling') return 3;
+  if (status === 'scheduling') return 2;
+  if (status === 'payment_confirmed') return 3;
   if (status === 'arranging') return 4;
   if (status === 'scheduled') return 5;
   if (status === 'completed') return 6;
@@ -415,7 +415,7 @@ export default function MatchDetail() {
       </div>
 
       {/* 양식 3: 만남 성사(입금) 안내 메시지 복사 — 입금 확인 전에 먼저 표시 */}
-      {match.status === 'awaiting_payment' && (
+      {match.status === 'scheduling' && (
         <GuideMessageCard
           title="만남 성사 안내 (입금 요청)"
           hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
@@ -426,7 +426,7 @@ export default function MatchDetail() {
       )}
 
       {/* 입금확인 게이트 */}
-      {match.status === 'awaiting_payment' && (
+      {match.status === 'scheduling' && (
         <div className={styles.paymentCard}>
           <h3 className={styles.cardTitle}>
             <Check size={16} /> 입금 확인
@@ -439,7 +439,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling Link Card */}
-      {match.status === 'scheduling' && (
+      {match.status === 'payment_confirmed' && (
         <SchedulingLinkCard match={match} />
       )}
 
@@ -671,7 +671,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling: waiting for available times */}
-      {match.status === 'scheduling' && (
+      {match.status === 'payment_confirmed' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
@@ -817,7 +817,7 @@ export default function MatchDetail() {
             </button>
           </>
         )}
-        {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
+        {(match.status === 'scheduling' || match.status === 'payment_confirmed' || match.status === 'arranging') && (
           <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
             매칭 취소
           </button>

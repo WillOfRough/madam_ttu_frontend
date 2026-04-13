@@ -33,7 +33,7 @@ export default function MatchFloatingBar() {
     matchService.listMatches({ size: 200 }).then((res) => {
       if (cancelled) return;
       const list = res.data || res.matches || [];
-      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
+      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'arranging', 'scheduled'];
 
       if (selected.length === 2) {
         const [a, b] = selected;

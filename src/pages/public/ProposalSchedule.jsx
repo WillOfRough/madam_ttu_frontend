@@ -157,9 +157,7 @@ export default function ProposalSchedule() {
   // 일정조율 단계가 아니면 안내 메시지
   if (matchStatus !== 'scheduling') {
     let message = '일정 조율이 아직 시작되지 않았습니다.';
-    if (matchStatus === 'awaiting_payment') {
-      message = '입금 확인 후 일정 조율이 시작됩니다. 잠시만 기다려주세요.';
-    } else if (matchStatus === 'arranging' || matchStatus === 'scheduled') {
+    if (matchStatus === 'arranging' || matchStatus === 'scheduled') {
       message = '일정이 이미 확정되었습니다. 매니저 안내를 확인해주세요.';
     } else if (matchStatus === 'completed') {
       message = '미팅이 완료되었습니다.';

@@ -7,7 +7,7 @@ import styles from './Settlement.module.css';
 const SETTLEMENT_MATCH_CREATOR = 10000; // 매칭을 만든 매니저 수당
 const SETTLEMENT_CLIENT_OWNER = 5000;   // 회원을 등록한 매니저 수당
 
-const SETTLEMENT_STATUSES = ['awaiting_payment', 'scheduling', 'arranging', 'scheduled', 'completed'];
+const SETTLEMENT_STATUSES = ['scheduling', 'payment_confirmed', 'arranging', 'scheduled', 'completed'];
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
 function formatCurrency(amount) {
