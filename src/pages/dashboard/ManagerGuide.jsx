@@ -307,6 +307,23 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 
 정보가 정확할수록 더 어울리는 인연을 찾아드릴 수 있어요.
 궁금한 점이 있으시면 언제든 연락 주세요! 💛`,
+
+  welcomeMessage: `[Knots & Links]
+{name}님, 가입을 축하드립니다. 인연을 찾는 여정이 시작되었습니다.
+
+{name}님의 가치관과 취향을 바탕으로 어울리는 상대방을 찾아드리겠습니다.
+
+매칭이 준비되면 프로필 확인 링크를 보내드릴게요.
+설레는 만남이 찾아올 때까지 조금만 기다려 주세요.
+
+⚠️ 알림 설정을 확인해 주세요
+매칭 완료 소식은 공식 번호(070-8095-3662)를 통해 문자로 발송됩니다.
+스팸으로 오해하여 소중한 인연의 연락을 놓치지 않도록, 미리 'Knots & Links'로 번호를 저장해 주시면 감사하겠습니다.
+
+[진행 상황 및 문의하기 안내]
+• 매칭 완료 시 프로필 확인 링크가 발송됩니다.
+• 더 정교한 매칭을 원하신다면 프로필을 보완해 보세요.
+🔗 프로필 관리하기: {profileLink}`,
 };
 
 const TEMPLATE_META = [
@@ -325,6 +342,7 @@ const TEMPLATE_META = [
   { key: 'matchResponseNotice', label: '매칭 응답 안내', badge: '양식 13' },
   { key: 'paymentReminder', label: '미입금 리마인드', badge: '양식 14' },
   { key: 'profileEditGuide', label: '프로필 수정 안내', badge: '양식 15' },
+  { key: 'welcomeMessage', label: '가입 축하 안내', badge: '양식 16' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
