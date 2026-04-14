@@ -1436,25 +1436,31 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/clients/me (본인 프로필 조회)
   if (method === 'GET' && pathname === '/api/v1/clients/me') {
+    const id = params.get('id');
     const token = params.get('token');
     const phone = params.get('phone');
-    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
+    if ((!id && !token) || !phone) throw Object.assign(new Error('id(또는 token)와 phone은 필수입니다.'), { status: 400 });
     const normalizePhone = (p) => (p || '').replace(/-/g, '');
     let found = null;
-    // 초대 토큰으로 조회
-    const invite = invites.find((inv) => inv.token === token);
-    if (invite) {
-      found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    // id로 직접 조회 (문의하기 링크)
+    if (id) {
+      found = clients.find((c) => c.id === id && normalizePhone(c.phone) === normalizePhone(phone));
     }
-    // proposal 토큰으로 조회 (inquiry 링크 등)
-    if (!found) {
-      for (const match of matches) {
-        const side = match.clientA?.proposalToken === token ? match.clientA
-                   : match.clientB?.proposalToken === token ? match.clientB
-                   : null;
-        if (side) {
-          found = clients.find((c) => c.id === side.clientId && normalizePhone(c.phone) === normalizePhone(phone));
-          break;
+    // token으로 조회 (프로필 페이지)
+    if (!found && token) {
+      const invite = invites.find((inv) => inv.token === token);
+      if (invite) {
+        found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+      }
+      if (!found) {
+        for (const match of matches) {
+          const side = match.clientA?.proposalToken === token ? match.clientA
+                     : match.clientB?.proposalToken === token ? match.clientB
+                     : null;
+          if (side) {
+            found = clients.find((c) => c.id === side.clientId && normalizePhone(c.phone) === normalizePhone(phone));
+            break;
+          }
         }
       }
     }
@@ -1562,7 +1568,8 @@ export async function mockFetch(path, options = {}) {
   if (method === 'POST' && pathname === '/api/v1/inquiries') {
     const clientId = params.get('id');
     const phone = params.get('phone');
-    if (!clientId || !phone) throw Object.assign(new Error('id와 phone은 필수입니다.'), { status: 400 });
+    const verificationId = params.get('verificationId');
+    if (!clientId || !phone || !verificationId) throw Object.assign(new Error('id, phone, verificationId는 필수입니다.'), { status: 400 });
     const normalizePhone = (p) => (p || '').replace(/-/g, '');
     const found = clients.find((c) => c.id === clientId && normalizePhone(c.phone) === normalizePhone(phone));
     if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });

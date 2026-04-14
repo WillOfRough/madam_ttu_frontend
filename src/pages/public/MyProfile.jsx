@@ -103,7 +103,7 @@ export default function MyProfile() {
   /* ─── photo handlers ─── */
   const refreshProfile = async () => {
     try {
-      const data = await getMyProfile(token, verifiedPhone);
+      const data = await getMyProfile({ token, phone: verifiedPhone });
       setProfile(data);
     } catch { /* silent */ }
   };
@@ -148,7 +148,7 @@ export default function MyProfile() {
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile(token, rawPhone);
+      const data = await getMyProfile({ token, phone: rawPhone });
       setProfile(data);
       setVerifiedPhone(rawPhone);
     } catch (err) {
@@ -207,7 +207,7 @@ export default function MyProfile() {
         }
       }
       await updateMyProfile(token, verifiedPhone, payload);
-      const updated = await getMyProfile(token, verifiedPhone);
+      const updated = await getMyProfile({ token, phone: verifiedPhone });
       setProfile(updated);
       setEditMode(false);
       toast.success('프로필이 저장되었습니다.');

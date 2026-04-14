@@ -22,14 +22,14 @@ const MAX_TITLE = 100;
 /* ══════════════════════════════════════════════ */
 export default function ClientInquiry() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const clientId = searchParams.get('id');
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyError, setVerifyError] = useState('');
   const [verifiedPhone, setVerifiedPhone] = useState('');
-  const [clientId, setClientId] = useState('');
+  const [verificationId, setVerificationId] = useState('');
 
   /* ── form state ── */
   const [category, setCategory] = useState('');
@@ -41,25 +41,24 @@ export default function ClientInquiry() {
   const [step, setStep] = useState('verify');
 
   /* ─── OTP 인증 완료 후 프로필 조회 ─── */
-  const handlePhoneVerified = async () => {
-    if (!token) {
+  const handlePhoneVerified = async (verId) => {
+    if (!clientId) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
+    if (!verId) return;
     const rawPhone = phone.replace(/-/g, '');
     setVerifyLoading(true);
     setVerifyError('');
     try {
-      const profile = await getMyProfile(token, rawPhone);
+      await getMyProfile({ id: clientId, phone: rawPhone });
       setVerifiedPhone(rawPhone);
-      setClientId(profile.id);
+      setVerificationId(verId);
       setStep('form');
     } catch (err) {
       const msg = err.message || '';
       if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
         setVerifyError('전화번호가 일치하지 않습니다. 다시 확인해주세요.');
-      } else if (msg.includes('토큰') || msg.includes('초대')) {
-        setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       } else {
         setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -74,7 +73,7 @@ export default function ClientInquiry() {
     if (!category || !title.trim() || content.length < MIN_CONTENT) return;
     setSubmitting(true);
     try {
-      await submitInquiry(clientId, verifiedPhone, { category, title: title.trim(), content });
+      await submitInquiry(clientId, verifiedPhone, verificationId, { category, title: title.trim(), content });
       toast.success('문의가 등록되었습니다.');
       setStep('done');
     } catch (err) {
@@ -84,12 +83,16 @@ export default function ClientInquiry() {
     }
   };
 
-  /* ─── reset for additional inquiry ─── */
+  /* ─── reset for additional inquiry (verificationId는 1회성이므로 재인증 필요) ─── */
   const handleAdditional = () => {
     setCategory('');
     setTitle('');
     setContent('');
-    setStep('form');
+    setPhone('');
+    setVerifiedPhone('');
+    setVerificationId('');
+    setVerifyError('');
+    setStep('verify');
   };
 
   /* ══ STATE 1: phone verification ══ */

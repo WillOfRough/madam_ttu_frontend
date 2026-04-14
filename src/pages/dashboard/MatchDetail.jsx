@@ -1271,7 +1271,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const [tokenOpen, setTokenOpen] = useState(isProposalPhase);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
-  const inquiryUrl = `${window.location.origin}/inquiry?token=${participant.proposalToken}`;
+  const inquiryUrl = `${window.location.origin}/inquiry?id=${participant.clientId}`;
   const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {
