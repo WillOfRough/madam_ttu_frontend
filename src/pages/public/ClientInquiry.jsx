@@ -47,12 +47,11 @@ export default function ClientInquiry() {
       return;
     }
     if (!verId) return;
-    const rawPhone = phone.replace(/-/g, '');
     setVerifyLoading(true);
     setVerifyError('');
     try {
-      await getMyProfile({ id: clientId, phone: rawPhone });
-      setVerifiedPhone(rawPhone);
+      await getMyProfile({ id: clientId, phone });
+      setVerifiedPhone(phone);
       setVerificationId(verId);
       setStep('form');
     } catch (err) {

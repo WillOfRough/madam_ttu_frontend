@@ -144,13 +144,12 @@ export default function MyProfile() {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
-    const rawPhone = phone.replace(/-/g, '');
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile({ token, phone: rawPhone });
+      const data = await getMyProfile({ token, phone });
       setProfile(data);
-      setVerifiedPhone(rawPhone);
+      setVerifiedPhone(phone);
     } catch (err) {
       const msg = err.message || '';
       if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
