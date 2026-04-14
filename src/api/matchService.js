@@ -84,6 +84,12 @@ export async function deleteMatch(matchId) {
   });
 }
 
+export async function startMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/start`, {
+    method: 'POST',
+  });
+}
+
 // ── After APIs ──
 
 export async function getAfterStatus(token) {

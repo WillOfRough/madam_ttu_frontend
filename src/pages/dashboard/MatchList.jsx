@@ -12,6 +12,7 @@ import { toast } from '../../store/toastStore';
 import styles from './MatchList.module.css';
 
 const STATUS_STEP_LABELS = {
+  draft: '매칭 시작 전',
   proposal_sent: 'A 프로필 확인 대기',
   proposal_accepted: 'B 프로필 확인 대기',
   awaiting_payment: '입금 대기 중',
@@ -144,6 +145,7 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
+          <option value="draft">대기중</option>
           <option value="active">진행 중</option>
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
@@ -372,7 +374,7 @@ function CreateMatchModal({ onClose, onCreated }) {
     matchService.listMatches({ size: 200 }).then((res) => {
       if (cancelled) return;
       const list = res.data || res.matches || [];
-      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
+      const activeStatuses = ['draft', 'proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
 
       // Duplicate pair check
       if (clientA && clientB) {

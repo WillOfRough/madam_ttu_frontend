@@ -308,6 +308,18 @@ export default function MatchDetail() {
     return Date.now() >= meetingEnd.getTime();
   };
 
+  const handleStartMatch = async () => {
+    setActionLoading(true);
+    try {
+      await matchService.startMatch(matchId);
+      toast.success('매칭이 시작되었습니다. A에게 프로필 제안 메시지를 보내주세요.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '매칭 시작에 실패했습니다.');
+    }
+    setActionLoading(false);
+  };
+
   const handleCompleteClick = () => {
     if (!isMeetingTimeReached()) {
       setShowCompleteWarning(true);
@@ -394,6 +406,19 @@ export default function MatchDetail() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Draft 안내 */}
+      {match.status === 'draft' && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <AlertTriangle size={16} /> 매칭 시작 전 (대기중)
+          </h3>
+          <p className={styles.waitingText}>
+            아직 회원에게 제안이 발송되지 않았습니다.<br />
+            내용을 확인한 후 아래 <strong>매칭 시작</strong> 버튼을 눌러주세요.
+          </p>
         </div>
       )}
 
@@ -817,6 +842,11 @@ export default function MatchDetail() {
               약속 취소
             </button>
           </>
+        )}
+        {match.status === 'draft' && (
+          <button className={styles.actionBtn} onClick={handleStartMatch} disabled={actionLoading}>
+            {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
+          </button>
         )}
         {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
           <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>

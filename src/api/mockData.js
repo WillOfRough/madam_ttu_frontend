@@ -538,6 +538,28 @@ const feedbacks = {};
 const availableTimes = {};
 
 const matches = [
+  // 0) draft — 매칭 시작 전 (매니저만 확인 가능)
+  {
+    matchId: 'match000',
+    type: '1:1 소개팅',
+    status: 'draft',
+    note: '신규 매칭 — 시작 전 검토 중',
+    clientA: {
+      clientId: 's003', clientName: '박지민', clientNickname: '지민', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: null, respondedAt: null,
+      proposalToken: 'DraftTkAA1111',
+    },
+    clientB: {
+      clientId: 's004', clientName: '최현우', clientNickname: null, clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: null, respondedAt: null,
+      proposalToken: 'DraftTkBB2222',
+    },
+    createdAt: '2026-04-14T09:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
   // 1) proposal_sent — B(receiver)만 프로필 조회 가능
   {
     matchId: 'match001',
@@ -1736,7 +1758,7 @@ export async function mockFetch(path, options = {}) {
 
   // ── Match APIs ──
 
-  // POST /api/v1/matches (create) → proposal_sent
+  // POST /api/v1/matches (create) → draft
   if (method === 'POST' && pathname === '/api/v1/matches') {
     const body = options.body || {};
     const foundA = clients.find((c) => c.id === body.clientAId);
@@ -1745,7 +1767,7 @@ export async function mockFetch(path, options = {}) {
     const tokenA = randomToken();
     const tokenB = randomToken();
     const newMatch = {
-      matchId: `match${Date.now()}`, type: body.type || null, status: 'proposal_sent', note: body.note || '',
+      matchId: `match${Date.now()}`, type: body.type || null, status: 'draft', note: body.note || '',
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
       createdAt: new Date().toISOString(),
@@ -1753,7 +1775,17 @@ export async function mockFetch(path, options = {}) {
       createdByManagerName: currentUser.name,
     };
     matches.unshift(newMatch);
-    return { matchId: newMatch.matchId, status: 'proposal_sent', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
+    return { matchId: newMatch.matchId, status: 'draft', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
+  }
+
+  // POST /api/v1/matches/:matchId/start (draft → proposal_sent)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/start$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    if (m.status !== 'draft') throw Object.assign(new Error('draft 상태의 매칭만 시작할 수 있습니다. (MATCH_NOT_DRAFT)'), { status: 400 });
+    m.status = 'proposal_sent';
+    return { status: 'success', message: '매칭이 시작되었습니다.' };
   }
 
   // DELETE /api/v1/matches/:matchId
@@ -2190,16 +2222,17 @@ export async function mockFetch(path, options = {}) {
     { id: 'noti-012', type: 'match_completed', title: '매칭이 완료되었습니다', message: '오태양님과 김서연님의 매칭이 완료 처리되었습니다.', referenceType: 'match', referenceId: 'match009', read: true, createdAt: '2026-03-31T17:00:00Z' },
   ];
 
-  // GET /api/v1/notifications
+  // GET /api/v1/notifications — 읽지 않은 알림만 반환
   if (method === 'GET' && pathname === '/api/v1/notifications') {
     if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
     const page = parseInt(params.get('page') || '0', 10);
     const size = parseInt(params.get('size') || '20', 10);
+    const unread = mockNotifications.filter((n) => !n.read);
     const start = page * size;
-    const paged = mockNotifications.slice(start, start + size);
+    const paged = unread.slice(start, start + size);
     return {
       data: paged,
-      pagination: { page, limit: size, total: mockNotifications.length, totalPages: Math.ceil(mockNotifications.length / size) },
+      pagination: { page, limit: size, total: unread.length, totalPages: Math.ceil(unread.length / size) },
     };
   }
 

@@ -1,6 +1,7 @@
 import styles from './StatusBadge.module.css';
 
 const LABELS = {
+  draft: '대기중',
   pending: '대기',
   approved: '승인',
   rejected: '거절',
