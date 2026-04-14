@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { RefreshCw, ShieldCheck } from 'lucide-react';
+import { RefreshCw, ShieldCheck, Smartphone } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname, BANK_OPTIONS } from '../../data/constants';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
@@ -182,6 +182,13 @@ export default function RegisterManager() {
               onVerified={setVerificationId}
               inputClassName={styles.input}
             />
+            <div className={styles.smsHint}>
+              <Smartphone size={14} className={styles.smsHintIcon} />
+              <p className={styles.smsHintText}>
+                매칭 알림은 <strong>070-8095-3662</strong> 번호로 발송됩니다.
+                스팸 번호가 아니니, 문자를 받으실 수 있도록 수신 차단을 해제해 주세요.
+              </p>
+            </div>
           </div>
 
           <div className={styles.field}>
