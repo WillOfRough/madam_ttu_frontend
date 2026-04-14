@@ -239,12 +239,10 @@ export default function Settings() {
               <span className={styles.fieldLabel}>이메일</span>
               <span className={styles.fieldValue}>{info?.email || email || '-'}</span>
             </div>
-            {info?.phone && (
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>연락처</span>
-                <span className={styles.fieldValue}>{info.phone}</span>
-              </div>
-            )}
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>연락처</span>
+              <span className={styles.fieldValue}>{info?.phone || '-'}</span>
+            </div>
             {info?.connections != null && (
               <div className={styles.field}>
                 <span className={styles.fieldLabel}>네트워크</span>

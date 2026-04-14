@@ -10,8 +10,9 @@
   align-items: center;
 }
 
-.phoneRow .input {
+.phoneRow input {
   flex: 1;
+  min-width: 0;
 }
 
 .input {
@@ -81,7 +82,7 @@
   position: relative;
 }
 
-.codeInputWrap .input {
+.codeInputWrap input {
   width: 100%;
   padding-right: 60px;
 }
