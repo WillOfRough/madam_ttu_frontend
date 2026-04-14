@@ -138,6 +138,36 @@
   color: var(--navy);
 }
 
+.matchBadge {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.matchLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--navy);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navy);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.matchLink:hover {
+  background: var(--navy-glow, #eef2ff);
+}
+
 .clientName {
   flex-shrink: 0;
   font-size: 0.85rem;

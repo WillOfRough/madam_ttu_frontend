@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { MessageSquare, ChevronDown, ChevronUp, Send, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MessageSquare, ChevronDown, ChevronUp, Send, X, ExternalLink } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
@@ -33,6 +34,7 @@ function formatDate(iso) {
 }
 
 export default function InquiryList() {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
   const [statusFilter, setStatusFilter] = useState('');
@@ -56,7 +58,7 @@ export default function InquiryList() {
         page,
         limit: pagination.limit,
       });
-      setItems(res.data || []);
+      setItems(res.content || res.data || []);
       setPagination((prev) => ({ ...prev, ...res.pagination, page }));
     } catch (err) {
       toast.error(err.message || '문의 목록을 불러오지 못했습니다.');
@@ -182,6 +184,9 @@ export default function InquiryList() {
                     <span className={`${styles.categoryBadge}`}>
                       {CATEGORY_LABELS[item.category] || item.category}
                     </span>
+                    {item.matchId && (
+                      <span className={styles.matchBadge}>매칭</span>
+                    )}
                     <span className={styles.clientName}>{item.clientName}</span>
                     <span className={styles.itemTitle}>{item.title}</span>
                     <span className={styles.itemDate}>{formatDate(item.createdAt)}</span>
@@ -199,6 +204,15 @@ export default function InquiryList() {
                             <p className={styles.detailLabel}>문의 내용</p>
                             <p className={styles.detailContent}>{detail.content}</p>
                             <p className={styles.detailMeta}>등록일: {formatDate(detail.createdAt)}</p>
+                            {detail.matchId && (
+                              <button
+                                className={styles.matchLink}
+                                onClick={() => navigate(`/dashboard/matches/${detail.matchId}`)}
+                              >
+                                <ExternalLink size={13} />
+                                해당 매칭 보기
+                              </button>
+                            )}
                           </div>
 
                           {detail.answer && (

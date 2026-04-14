@@ -158,10 +158,19 @@ export async function submitInquiry(clientId, phone, verificationId, data) {
   });
 }
 
-export async function listInquiries({ status, category, page = 1, limit = 20 } = {}) {
+export async function submitProposalInquiry(token, phone, verificationId, data) {
+  const query = new URLSearchParams({ phone, verificationId });
+  return apiFetch(`/api/v1/proposals/${token}/inquiries?${query}`, {
+    method: 'POST',
+    body: data,
+  });
+}
+
+export async function listInquiries({ status, category, matchId, page = 1, limit = 20 } = {}) {
   const query = new URLSearchParams();
   if (status) query.set('status', status);
   if (category) query.set('category', category);
+  if (matchId) query.set('matchId', matchId);
   query.set('page', String(page));
   query.set('limit', String(limit));
   return apiFetch(`/api/v1/inquiries?${query}`);

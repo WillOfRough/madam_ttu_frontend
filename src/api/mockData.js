@@ -1524,6 +1524,27 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '문의가 종료되었습니다.' };
   }
 
+  // POST /api/v1/proposals/:token/inquiries (매칭 기반 문의 등록)
+  if (method === 'POST' && /^\/api\/v1\/proposals\/[^/]+\/inquiries$/.test(pathname)) {
+    const token = pathname.split('/').slice(-2, -1)[0];
+    const phone = params.get('phone');
+    const verificationId = params.get('verificationId');
+    if (!phone || !verificationId) throw Object.assign(new Error('phone, verificationId는 필수입니다.'), { status: 400 });
+    const proposal = findProposalByToken(token);
+    if (!proposal) throw Object.assign(new Error('유효하지 않은 제안 토큰입니다.'), { status: 404 });
+    const { category, title, content } = options.body || {};
+    if (!category || !title || !content) throw Object.assign(new Error('category, title, content는 필수입니다.'), { status: 400 });
+    const clientId = proposal.participant.clientId;
+    const newInquiry = {
+      id: crypto.randomUUID(),
+      clientId, matchId: proposal.match.id, category, title, content,
+      status: 'pending', answer: null, answeredAt: null, updatedAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    inquiries.push(newInquiry);
+    return { status: 'success', message: '문의가 등록되었습니다.', data: newInquiry.id };
+  }
+
   // GET /api/v1/inquiries/:id (문의 상세)
   if (method === 'GET' && /^\/api\/v1\/inquiries\/[^/]+$/.test(pathname)) {
     const inquiryId = pathname.split('/').pop();
@@ -1533,6 +1554,7 @@ export async function mockFetch(path, options = {}) {
     return {
       id: inq.id, clientId: inq.clientId,
       clientName: client?.nickname || client?.name || '알 수 없음',
+      matchId: inq.matchId || null,
       category: inq.category, title: inq.title, content: inq.content,
       status: inq.status, answer: inq.answer || null,
       createdAt: inq.createdAt, updatedAt: inq.updatedAt || inq.createdAt,
@@ -1545,26 +1567,29 @@ export async function mockFetch(path, options = {}) {
     const myClientIds = new Set(clients.filter((c) => c.ownerManagerId === currentUser.id).map((c) => c.id));
     const statusFilter = params.get('status');
     const categoryFilter = params.get('category');
+    const matchIdFilter = params.get('matchId');
     const page = parseInt(params.get('page') || '1', 10);
-    const limit = parseInt(params.get('limit') || '20', 10);
+    const size = parseInt(params.get('limit') || '20', 10);
     let filtered = inquiries.filter((inq) => myClientIds.has(inq.clientId));
     if (statusFilter) filtered = filtered.filter((inq) => inq.status === statusFilter);
     if (categoryFilter) filtered = filtered.filter((inq) => inq.category === categoryFilter);
+    if (matchIdFilter) filtered = filtered.filter((inq) => inq.matchId === matchIdFilter);
     filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const total = filtered.length;
-    const data = filtered.slice((page - 1) * limit, page * limit).map((inq) => {
+    const totalElements = filtered.length;
+    const content = filtered.slice((page - 1) * size, page * size).map((inq) => {
       const client = clients.find((c) => c.id === inq.clientId);
       return {
         id: inq.id, clientId: inq.clientId,
         clientName: client?.nickname || client?.name || '알 수 없음',
+        matchId: inq.matchId || null,
         category: inq.category, title: inq.title,
         status: inq.status, createdAt: inq.createdAt, answeredAt: inq.answeredAt || null,
       };
     });
-    return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    return { content, pagination: { page, size, totalElements, totalPages: Math.ceil(totalElements / size) } };
   }
 
-  // POST /api/v1/inquiries (문의 등록 - Client 공개 API)
+  // POST /api/v1/inquiries (일반 문의 등록 - Client 공개 API)
   if (method === 'POST' && pathname === '/api/v1/inquiries') {
     const clientId = params.get('id');
     const phone = params.get('phone');
@@ -1577,12 +1602,12 @@ export async function mockFetch(path, options = {}) {
     if (!category || !title || !content) throw Object.assign(new Error('category, title, content는 필수입니다.'), { status: 400 });
     const newInquiry = {
       id: crypto.randomUUID(),
-      clientId, category, title, content,
+      clientId, matchId: null, category, title, content,
       status: 'pending', answer: null, answeredAt: null, updatedAt: null,
       createdAt: new Date().toISOString(),
     };
     inquiries.push(newInquiry);
-    return { success: true, message: '문의가 등록되었습니다.', data: newInquiry.id };
+    return { status: 'success', message: '문의가 등록되었습니다.', data: newInquiry.id };
   }
 
   // PATCH /api/v1/clients/:id/status (회원 상태 변경)
