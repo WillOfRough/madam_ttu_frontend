@@ -150,10 +150,36 @@ export async function updateClientStatus(clientId, status) {
   });
 }
 
-export async function submitInquiry(token, phone, data) {
-  const query = new URLSearchParams({ token, phone });
-  return apiFetch(`/api/v1/clients/me/inquiry?${query}`, {
+export async function submitInquiry(clientId, phone, data) {
+  const query = new URLSearchParams({ id: clientId, phone });
+  return apiFetch(`/api/v1/inquiries?${query}`, {
     method: 'POST',
     body: data,
+  });
+}
+
+export async function listInquiries({ status, category, page = 1, limit = 20 } = {}) {
+  const query = new URLSearchParams();
+  if (status) query.set('status', status);
+  if (category) query.set('category', category);
+  query.set('page', String(page));
+  query.set('limit', String(limit));
+  return apiFetch(`/api/v1/inquiries?${query}`);
+}
+
+export async function getInquiry(inquiryId) {
+  return apiFetch(`/api/v1/inquiries/${inquiryId}`);
+}
+
+export async function answerInquiry(inquiryId, answer) {
+  return apiFetch(`/api/v1/inquiries/${inquiryId}/answer`, {
+    method: 'POST',
+    body: { answer },
+  });
+}
+
+export async function closeInquiry(inquiryId) {
+  return apiFetch(`/api/v1/inquiries/${inquiryId}/close`, {
+    method: 'PATCH',
   });
 }

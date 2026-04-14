@@ -9,11 +9,12 @@ import { SkeletonLine } from '../../components/Skeleton';
 import { loadTemplates } from './ManagerGuide';
 import styles from './MatchDetail.module.css';
 
-function generateProposalMessage(clientName, proposalUrl) {
+function generateProposalMessage(clientName, proposalUrl, inquiryUrl) {
   const templates = loadTemplates();
   return templates.proposalIntro
     .replace(/OO\(별명\)/, clientName)
-    .replace('[프로포절 링크 첨부]', proposalUrl);
+    .replace('[프로포절 링크 첨부]', proposalUrl)
+    .replace('[문의 링크 첨부]', inquiryUrl);
 }
 
 function generateReminderMessage(clientName, partnerName, proposalUrl) {
@@ -1240,6 +1241,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const [tokenOpen, setTokenOpen] = useState(isProposalPhase);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
+  const inquiryUrl = `${window.location.origin}/inquiry?token=${participant.proposalToken}`;
   const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {
@@ -1257,7 +1259,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const handleMsgCopy = async () => {
     if (!isLinkActive) return;
     try {
-      const msg = generateProposalMessage(participant.clientNickname || participant.clientName, proposalUrl);
+      const msg = generateProposalMessage(participant.clientNickname || participant.clientName, proposalUrl, inquiryUrl);
       await navigator.clipboard.writeText(msg);
       setMsgCopied(true);
       toast.success('안내 메시지가 복사되었습니다.');

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   User, Phone, Edit3, Save, X,
-  MapPin, Briefcase, GraduationCap, Heart, Camera, MessageCircle,
+  MapPin, Briefcase, GraduationCap, Heart, Camera,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
@@ -460,15 +460,6 @@ export default function MyProfile() {
                 </p>
               )}
             </SectionCard>
-
-            {/* ── 문의 안내 배너 ── */}
-            <div className={styles.inquiryBanner}>
-              <MessageCircle size={16} />
-              <span>문의사항이 있으신가요?</span>
-              <a href={`/inquiry?token=${token}`} className={styles.inquiryLink}>
-                문의 등록하기 →
-              </a>
-            </div>
 
           </>
         )}
