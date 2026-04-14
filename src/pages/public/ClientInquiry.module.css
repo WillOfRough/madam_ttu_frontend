@@ -223,6 +223,13 @@
   font-size: 0.72rem;
 }
 
+.verifyLoadingMsg {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--charcoal-pale);
+  text-align: center;
+}
+
 /* ─── spinner ─── */
 .btnSpinner {
   display: inline-block;
@@ -367,6 +374,28 @@
 
 .charCountWarn {
   color: var(--danger);
+}
+
+.titleInput {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--charcoal);
+  transition: border-color var(--duration-fast) var(--ease-out);
+  box-sizing: border-box;
+}
+
+.titleInput:focus {
+  outline: none;
+  border-color: var(--navy);
+}
+
+.titleInput::placeholder {
+  color: var(--charcoal-pale);
 }
 
 .textarea {

@@ -138,6 +138,48 @@
   word-break: keep-all;
 }
 
+/* ── SMS Notice Banner ── */
+.smsBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--navy-glow);
+  border: 1px solid rgba(26, 43, 75, 0.14);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.smsBannerIcon {
+  flex-shrink: 0;
+  color: var(--navy);
+  margin-top: 1px;
+}
+
+.smsBannerText {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.smsBannerText strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .smsBanner {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .smsBannerText {
+    font-size: 0.77rem;
+  }
+}
+
 /* ── CTA ── */
 .ctaWrap {
   position: sticky;

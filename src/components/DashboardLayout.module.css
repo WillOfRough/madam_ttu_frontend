@@ -10,9 +10,79 @@
   max-width: 1200px;
 }
 
+/* ── Mobile Header (알림 벨) ── */
+.mobileHeader {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .main {
     margin-left: 0;
     padding: 20px 16px 88px;
+    padding-top: 72px;
+  }
+
+  .mobileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    padding: 0 16px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border-light);
+    z-index: 99;
+    box-shadow: 0 1px 8px rgba(26, 43, 75, 0.05);
+  }
+
+  .mobileHeaderLogo {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+  }
+
+  .mobileHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mobileHeaderIcon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    color: var(--charcoal-mid);
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .mobileHeaderIcon:hover {
+    background: var(--bg);
+    color: var(--navy);
+  }
+
+  .mobileHeaderBadge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    border-radius: var(--radius-full);
+    background: var(--coral);
+    color: var(--white);
+    font-size: 0.55rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
   }
 }

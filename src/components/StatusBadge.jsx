@@ -1,6 +1,7 @@
 import styles from './StatusBadge.module.css';
 
 const LABELS = {
+  draft: '대기중',
   pending: '대기',
   approved: '승인',
   rejected: '거절',
@@ -11,8 +12,8 @@ const LABELS = {
   revoked: '폐기',
   proposal_sent: '제안발송',
   proposal_accepted: '상대수락',
-  scheduling: '입금대기',
-  payment_confirmed: '입금확인',
+  awaiting_payment: '입금대기',
+  scheduling: '일정조율',
   arranging: '조율확정',
   scheduled: '약속확정',
   completed: '만남',

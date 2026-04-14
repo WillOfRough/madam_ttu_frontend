@@ -107,6 +107,35 @@
   background: rgba(26, 43, 75, 0.12);
 }
 
+.smsHint {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 12px;
+  background: var(--navy-glow);
+  border: 1px solid rgba(26, 43, 75, 0.14);
+  border-radius: var(--radius-sm);
+}
+
+.smsHintIcon {
+  flex-shrink: 0;
+  color: var(--navy);
+  margin-top: 1px;
+}
+
+.smsHintText {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--charcoal-mid);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.smsHintText strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
 .required {
   color: var(--danger);
   font-weight: 700;

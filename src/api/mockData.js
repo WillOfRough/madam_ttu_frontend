@@ -538,6 +538,28 @@ const feedbacks = {};
 const availableTimes = {};
 
 const matches = [
+  // 0) draft — 매칭 시작 전 (매니저만 확인 가능)
+  {
+    matchId: 'match000',
+    type: '1:1 소개팅',
+    status: 'draft',
+    note: '신규 매칭 — 시작 전 검토 중',
+    clientA: {
+      clientId: 's003', clientName: '박지민', clientNickname: '지민', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: null, respondedAt: null,
+      proposalToken: 'DraftTkAA1111',
+    },
+    clientB: {
+      clientId: 's004', clientName: '최현우', clientNickname: null, clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: null, respondedAt: null,
+      proposalToken: 'DraftTkBB2222',
+    },
+    createdAt: '2026-04-14T09:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
   // 1) proposal_sent — B(receiver)만 프로필 조회 가능
   {
     matchId: 'match001',
@@ -929,7 +951,7 @@ const matches = [
   {
     matchId: 'match-apr01',
     type: '1:1 소개팅',
-    status: 'payment_confirmed',
+    status: 'scheduling',
     note: '4월 입금확인 완료 — 일정조율 대기',
     clientA: {
       clientId: 's001', clientName: '김서연', clientNickname: '반짝이는 서연', clientGender: 'female',
@@ -1207,7 +1229,7 @@ function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
   const birthYear = c.birthDate ? new Date(c.birthDate).getFullYear() : null;
   const age = birthYear ? new Date().getFullYear() - birthYear : null;
-  const activeStatuses = ['proposal_sent', 'proposal_accepted', 'scheduling', 'payment_confirmed', 'arranging', 'scheduled'];
+  const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
   const activeMatchCount = matches.filter((m) =>
     activeStatuses.includes(m.status) &&
     (m.clientA.clientId === c.id || m.clientB.clientId === c.id)
@@ -1417,10 +1439,25 @@ export async function mockFetch(path, options = {}) {
     const token = params.get('token');
     const phone = params.get('phone');
     if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
-    const invite = invites.find((inv) => inv.token === token);
-    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
     const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    let found = null;
+    // 초대 토큰으로 조회
+    const invite = invites.find((inv) => inv.token === token);
+    if (invite) {
+      found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    }
+    // proposal 토큰으로 조회 (inquiry 링크 등)
+    if (!found) {
+      for (const match of matches) {
+        const side = match.clientA?.proposalToken === token ? match.clientA
+                   : match.clientB?.proposalToken === token ? match.clientB
+                   : null;
+        if (side) {
+          found = clients.find((c) => c.id === side.clientId && normalizePhone(c.phone) === normalizePhone(phone));
+          break;
+        }
+      }
+    }
     if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
     const birthYear = found.birthDate ? new Date(found.birthDate).getFullYear() : null;
     const age = birthYear ? new Date().getFullYear() - birthYear : null;
@@ -1456,28 +1493,89 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '프로필이 수정되었습니다.' };
   }
 
-  // POST /api/v1/clients/me/inquiry (문의 등록)
-  if (method === 'POST' && pathname === '/api/v1/clients/me/inquiry') {
-    const token = params.get('token');
+  // POST /api/v1/inquiries/:id/answer (답변 등록)
+  if (method === 'POST' && /^\/api\/v1\/inquiries\/[^/]+\/answer$/.test(pathname)) {
+    const inquiryId = pathname.split('/').slice(-2)[0];
+    const inq = inquiries.find((i) => i.id === inquiryId);
+    if (!inq) throw Object.assign(new Error('해당 문의를 찾을 수 없습니다.'), { status: 404 });
+    if (inq.status !== 'pending') throw Object.assign(new Error('이미 답변이 등록된 문의입니다.'), { status: 409 });
+    const { answer } = options.body || {};
+    if (!answer) throw Object.assign(new Error('answer는 필수입니다.'), { status: 400 });
+    inq.answer = answer;
+    inq.status = 'answered';
+    inq.answeredAt = new Date().toISOString();
+    inq.updatedAt = new Date().toISOString();
+    return { success: true, message: '답변이 등록되었습니다.' };
+  }
+
+  // PATCH /api/v1/inquiries/:id/close (문의 종료)
+  if (method === 'PATCH' && /^\/api\/v1\/inquiries\/[^/]+\/close$/.test(pathname)) {
+    const inquiryId = pathname.split('/').slice(-2)[0];
+    const inq = inquiries.find((i) => i.id === inquiryId);
+    if (!inq) throw Object.assign(new Error('해당 문의를 찾을 수 없습니다.'), { status: 404 });
+    inq.status = 'closed';
+    inq.updatedAt = new Date().toISOString();
+    return { success: true, message: '문의가 종료되었습니다.' };
+  }
+
+  // GET /api/v1/inquiries/:id (문의 상세)
+  if (method === 'GET' && /^\/api\/v1\/inquiries\/[^/]+$/.test(pathname)) {
+    const inquiryId = pathname.split('/').pop();
+    const inq = inquiries.find((i) => i.id === inquiryId);
+    if (!inq) throw Object.assign(new Error('해당 문의를 찾을 수 없습니다.'), { status: 404 });
+    const client = clients.find((c) => c.id === inq.clientId);
+    return {
+      id: inq.id, clientId: inq.clientId,
+      clientName: client?.nickname || client?.name || '알 수 없음',
+      category: inq.category, title: inq.title, content: inq.content,
+      status: inq.status, answer: inq.answer || null,
+      createdAt: inq.createdAt, updatedAt: inq.updatedAt || inq.createdAt,
+      answeredAt: inq.answeredAt || null,
+    };
+  }
+
+  // GET /api/v1/inquiries (매니저 문의 목록)
+  if (method === 'GET' && pathname === '/api/v1/inquiries') {
+    const myClientIds = new Set(clients.filter((c) => c.ownerManagerId === currentUser.id).map((c) => c.id));
+    const statusFilter = params.get('status');
+    const categoryFilter = params.get('category');
+    const page = parseInt(params.get('page') || '1', 10);
+    const limit = parseInt(params.get('limit') || '20', 10);
+    let filtered = inquiries.filter((inq) => myClientIds.has(inq.clientId));
+    if (statusFilter) filtered = filtered.filter((inq) => inq.status === statusFilter);
+    if (categoryFilter) filtered = filtered.filter((inq) => inq.category === categoryFilter);
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const total = filtered.length;
+    const data = filtered.slice((page - 1) * limit, page * limit).map((inq) => {
+      const client = clients.find((c) => c.id === inq.clientId);
+      return {
+        id: inq.id, clientId: inq.clientId,
+        clientName: client?.nickname || client?.name || '알 수 없음',
+        category: inq.category, title: inq.title,
+        status: inq.status, createdAt: inq.createdAt, answeredAt: inq.answeredAt || null,
+      };
+    });
+    return { data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  }
+
+  // POST /api/v1/inquiries (문의 등록 - Client 공개 API)
+  if (method === 'POST' && pathname === '/api/v1/inquiries') {
+    const clientId = params.get('id');
     const phone = params.get('phone');
-    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
-    const invite = invites.find((inv) => inv.token === token);
-    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
+    if (!clientId || !phone) throw Object.assign(new Error('id와 phone은 필수입니다.'), { status: 400 });
     const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    const found = clients.find((c) => c.id === clientId && normalizePhone(c.phone) === normalizePhone(phone));
     if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
-    const body = options.body || {};
-    const { category, content } = body;
-    if (!category || !content) throw Object.assign(new Error('category와 content는 필수입니다.'), { status: 400 });
+    const { category, title, content } = options.body || {};
+    if (!category || !title || !content) throw Object.assign(new Error('category, title, content는 필수입니다.'), { status: 400 });
     const newInquiry = {
       id: crypto.randomUUID(),
-      clientId: found.id,
-      category,
-      content,
+      clientId, category, title, content,
+      status: 'pending', answer: null, answeredAt: null, updatedAt: null,
       createdAt: new Date().toISOString(),
     };
     inquiries.push(newInquiry);
-    return { id: newInquiry.id, category, content, createdAt: newInquiry.createdAt };
+    return { success: true, message: '문의가 등록되었습니다.', data: newInquiry.id };
   }
 
   // PATCH /api/v1/clients/:id/status (회원 상태 변경)
@@ -1660,7 +1758,7 @@ export async function mockFetch(path, options = {}) {
 
   // ── Match APIs ──
 
-  // POST /api/v1/matches (create) → proposal_sent
+  // POST /api/v1/matches (create) → draft
   if (method === 'POST' && pathname === '/api/v1/matches') {
     const body = options.body || {};
     const foundA = clients.find((c) => c.id === body.clientAId);
@@ -1669,7 +1767,7 @@ export async function mockFetch(path, options = {}) {
     const tokenA = randomToken();
     const tokenB = randomToken();
     const newMatch = {
-      matchId: `match${Date.now()}`, type: body.type || null, status: 'proposal_sent', note: body.note || '',
+      matchId: `match${Date.now()}`, type: body.type || null, status: 'draft', note: body.note || '',
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
       createdAt: new Date().toISOString(),
@@ -1677,7 +1775,17 @@ export async function mockFetch(path, options = {}) {
       createdByManagerName: currentUser.name,
     };
     matches.unshift(newMatch);
-    return { matchId: newMatch.matchId, status: 'proposal_sent', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
+    return { matchId: newMatch.matchId, status: 'draft', clientA: { clientId: foundA.id, clientName: foundA.name, proposalToken: tokenA }, clientB: { clientId: foundB.id, clientName: foundB.name, proposalToken: tokenB } };
+  }
+
+  // POST /api/v1/matches/:matchId/start (draft → proposal_sent)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/start$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
+    if (m.status !== 'draft') throw Object.assign(new Error('draft 상태의 매칭만 시작할 수 있습니다. (MATCH_NOT_DRAFT)'), { status: 400 });
+    m.status = 'proposal_sent';
+    return { status: 'success', message: '매칭이 시작되었습니다.' };
   }
 
   // DELETE /api/v1/matches/:matchId
@@ -1757,8 +1865,8 @@ export async function mockFetch(path, options = {}) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (m.status !== 'scheduling') throw Object.assign(new Error('scheduling 상태에서만 입금 확인할 수 있습니다.'), { status: 400 });
-    m.status = 'payment_confirmed';
+    if (m.status !== 'awaiting_payment') throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 400 });
+    m.status = 'scheduling';
     return { success: true, message: '입금이 확인되었습니다. 일정조율 안내가 발송되었습니다.' };
   }
 
@@ -1791,10 +1899,10 @@ export async function mockFetch(path, options = {}) {
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
     if (m.status !== 'arranging') throw Object.assign(new Error('arranging 상태에서만 재등록 요청할 수 있습니다.'), { status: 400 });
-    // Clear available times and revert to payment_confirmed
+    // Clear available times and revert to scheduling
     delete availableTimes[m.clientA.proposalToken];
     delete availableTimes[m.clientB.proposalToken];
-    m.status = 'payment_confirmed';
+    m.status = 'scheduling';
     return { success: true, message: '가용시간 재등록이 요청되었습니다.' };
   }
 
@@ -1928,7 +2036,7 @@ export async function mockFetch(path, options = {}) {
     }));
     // Auto-transition to arranging if both sides have submitted
     const otherToken = result.side === 'A' ? m.clientB.proposalToken : m.clientA.proposalToken;
-    if ((availableTimes[otherToken] || []).length > 0 && (m.status === 'scheduling' || m.status === 'payment_confirmed')) {
+    if ((availableTimes[otherToken] || []).length > 0 && m.status === 'scheduling') {
       m.status = 'arranging';
     }
     return { success: true, message: '가용시간이 등록되었습니다.' };
@@ -2114,16 +2222,17 @@ export async function mockFetch(path, options = {}) {
     { id: 'noti-012', type: 'match_completed', title: '매칭이 완료되었습니다', message: '오태양님과 김서연님의 매칭이 완료 처리되었습니다.', referenceType: 'match', referenceId: 'match009', read: true, createdAt: '2026-03-31T17:00:00Z' },
   ];
 
-  // GET /api/v1/notifications
+  // GET /api/v1/notifications — 읽지 않은 알림만 반환
   if (method === 'GET' && pathname === '/api/v1/notifications') {
     if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
     const page = parseInt(params.get('page') || '0', 10);
     const size = parseInt(params.get('size') || '20', 10);
+    const unread = mockNotifications.filter((n) => !n.read);
     const start = page * size;
-    const paged = mockNotifications.slice(start, start + size);
+    const paged = unread.slice(start, start + size);
     return {
       data: paged,
-      pagination: { page, limit: size, total: mockNotifications.length, totalPages: Math.ceil(mockNotifications.length / size) },
+      pagination: { page, limit: size, total: unread.length, totalPages: Math.ceil(unread.length / size) },
     };
   }
 

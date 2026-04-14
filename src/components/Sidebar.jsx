@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen, Bell } from 'lucide-react';
+import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen, Bell, MessageSquare } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
 import styles from './Sidebar.module.css';
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/connections', icon: Link2, label: '네트워크' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
   { to: '/dashboard/notifications', icon: Bell, label: '알림', badge: true },
+  { to: '/dashboard/inquiries', icon: MessageSquare, label: '문의' },
   { to: '/dashboard/guide', icon: BookOpen, label: '가이드' },
   { to: '/dashboard/settings', icon: Settings, label: '설정' },
 ];

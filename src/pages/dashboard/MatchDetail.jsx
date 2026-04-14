@@ -9,11 +9,12 @@ import { SkeletonLine } from '../../components/Skeleton';
 import { loadTemplates } from './ManagerGuide';
 import styles from './MatchDetail.module.css';
 
-function generateProposalMessage(clientName, proposalUrl) {
+function generateProposalMessage(clientName, proposalUrl, inquiryUrl) {
   const templates = loadTemplates();
   return templates.proposalIntro
     .replace(/OO\(별명\)/, clientName)
-    .replace('[프로포절 링크 첨부]', proposalUrl);
+    .replace('[프로포절 링크 첨부]', proposalUrl)
+    .replace('[문의 링크 첨부]', inquiryUrl);
 }
 
 function generateReminderMessage(clientName, partnerName, proposalUrl) {
@@ -82,8 +83,8 @@ const RESPONSE_MAP = {
 const STEPS = [
   { key: 'proposal_sent', label: 'A확인' },
   { key: 'proposal_accepted', label: 'B확인' },
-  { key: 'scheduling', label: '입금대기' },
-  { key: 'payment_confirmed', label: '일정조율' },
+  { key: 'awaiting_payment', label: '입금대기' },
+  { key: 'scheduling', label: '일정조율' },
   { key: 'arranging', label: '매니저확정' },
   { key: 'scheduled', label: '약속확정' },
   { key: 'completed', label: '미팅완료' },
@@ -92,8 +93,8 @@ const STEPS = [
 function getStepIndex(status) {
   if (status === 'proposal_sent') return 0;
   if (status === 'proposal_accepted') return 1;
-  if (status === 'scheduling') return 2;
-  if (status === 'payment_confirmed') return 3;
+  if (status === 'awaiting_payment') return 2;
+  if (status === 'scheduling') return 3;
   if (status === 'arranging') return 4;
   if (status === 'scheduled') return 5;
   if (status === 'completed') return 6;
@@ -307,6 +308,18 @@ export default function MatchDetail() {
     return Date.now() >= meetingEnd.getTime();
   };
 
+  const handleStartMatch = async () => {
+    setActionLoading(true);
+    try {
+      await matchService.startMatch(matchId);
+      toast.success('매칭이 시작되었습니다. A에게 프로필 제안 메시지를 보내주세요.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '매칭 시작에 실패했습니다.');
+    }
+    setActionLoading(false);
+  };
+
   const handleCompleteClick = () => {
     if (!isMeetingTimeReached()) {
       setShowCompleteWarning(true);
@@ -396,6 +409,19 @@ export default function MatchDetail() {
         </div>
       )}
 
+      {/* Draft 안내 */}
+      {match.status === 'draft' && (
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
+            <AlertTriangle size={16} /> 매칭 시작 전 (대기중)
+          </h3>
+          <p className={styles.waitingText}>
+            아직 회원에게 제안이 발송되지 않았습니다.<br />
+            내용을 확인한 후 아래 <strong>매칭 시작</strong> 버튼을 눌러주세요.
+          </p>
+        </div>
+      )}
+
       {/* Participants */}
       <div className={styles.participants}>
         <ParticipantCard
@@ -415,7 +441,7 @@ export default function MatchDetail() {
       </div>
 
       {/* 양식 3: 만남 성사(입금) 안내 메시지 복사 — 입금 확인 전에 먼저 표시 */}
-      {match.status === 'scheduling' && (
+      {match.status === 'awaiting_payment' && (
         <GuideMessageCard
           title="만남 성사 안내 (입금 요청)"
           hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
@@ -426,7 +452,7 @@ export default function MatchDetail() {
       )}
 
       {/* 입금확인 게이트 */}
-      {match.status === 'scheduling' && (
+      {match.status === 'awaiting_payment' && (
         <div className={styles.paymentCard}>
           <h3 className={styles.cardTitle}>
             <Check size={16} /> 입금 확인
@@ -439,7 +465,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling Link Card */}
-      {match.status === 'payment_confirmed' && (
+      {match.status === 'scheduling' && (
         <SchedulingLinkCard match={match} />
       )}
 
@@ -671,7 +697,7 @@ export default function MatchDetail() {
       )}
 
       {/* Scheduling: waiting for available times */}
-      {match.status === 'payment_confirmed' && (
+      {match.status === 'scheduling' && (
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>
             <Calendar size={16} /> 일정 조율
@@ -817,7 +843,12 @@ export default function MatchDetail() {
             </button>
           </>
         )}
-        {(match.status === 'scheduling' || match.status === 'payment_confirmed' || match.status === 'arranging') && (
+        {match.status === 'draft' && (
+          <button className={styles.actionBtn} onClick={handleStartMatch} disabled={actionLoading}>
+            {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
+          </button>
+        )}
+        {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
           <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
             매칭 취소
           </button>
@@ -1240,6 +1271,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const [tokenOpen, setTokenOpen] = useState(isProposalPhase);
 
   const proposalUrl = `${window.location.origin}/proposal/${participant.proposalToken}`;
+  const inquiryUrl = `${window.location.origin}/inquiry?token=${participant.proposalToken}`;
   const isLinkActive = side === 'A' || matchStatus !== 'proposal_sent';
 
   const handleCopy = async () => {
@@ -1257,7 +1289,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const handleMsgCopy = async () => {
     if (!isLinkActive) return;
     try {
-      const msg = generateProposalMessage(participant.clientNickname || participant.clientName, proposalUrl);
+      const msg = generateProposalMessage(participant.clientNickname || participant.clientName, proposalUrl, inquiryUrl);
       await navigator.clipboard.writeText(msg);
       setMsgCopied(true);
       toast.success('안내 메시지가 복사되었습니다.');

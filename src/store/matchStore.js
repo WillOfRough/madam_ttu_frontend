@@ -3,13 +3,14 @@ import * as matchService from '../api/matchService';
 
 // 진행 상태 우선순위: 가장 진행된 상태가 먼저, 종료 상태는 맨 뒤
 const STATUS_PRIORITY = {
-  scheduled: 0,       // 일정 확정
-  arranging: 1,       // 일정 조율 중
-  scheduling: 2,      // 가용시간 수집 중
-  proposal_accepted: 3, // 프로포절 수락
-  proposal_sent: 4,     // 프로포절 발송
-  completed: 5,       // 만남 완료 (애프터 대기/성사)
-  cancelled: 6,       // 취소 (맨 마지막)
+  scheduled: 0,         // 일정 확정
+  arranging: 1,         // 일정 조율 중
+  scheduling: 2,        // 입금 확인 완료, 일정조율 진행
+  awaiting_payment: 3,  // 양쪽 수락 완료, 입금 대기
+  proposal_accepted: 4, // 프로포절 수락
+  proposal_sent: 5,     // 프로포절 발송
+  completed: 6,         // 만남 완료 (애프터 대기/성사)
+  cancelled: 7,         // 취소 (맨 마지막)
 };
 
 function hasDeletedMember(match) {

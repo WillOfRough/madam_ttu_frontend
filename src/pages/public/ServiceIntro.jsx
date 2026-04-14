@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Smartphone } from 'lucide-react';
 import styles from './ServiceIntro.module.css';
 
 const SECTIONS = [
@@ -130,6 +131,15 @@ export default function ServiceIntro() {
             </div>
           );
         })}
+
+        {/* SMS Notice */}
+        <div className={styles.smsBanner}>
+          <Smartphone size={18} className={styles.smsBannerIcon} />
+          <p className={styles.smsBannerText}>
+            매칭 알림은 <strong>070-8095-3662</strong> 번호로 발송됩니다.
+            스팸 번호가 아니니, 문자를 받으실 수 있도록 수신 차단을 해제해 주세요.
+          </p>
+        </div>
 
         {/* CTA */}
         <div className={styles.ctaWrap}>

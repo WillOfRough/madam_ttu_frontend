@@ -1,29 +1,23 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Phone, MessageCircle, Check, Send, AlertCircle, X } from 'lucide-react';
-import { getMyProfile } from '../../api/clientService';
-import { submitInquiry } from '../../api/clientService';
+import { MessageCircle, Check, Send, AlertCircle, X } from 'lucide-react';
+import { getMyProfile, submitInquiry } from '../../api/clientService';
+import PhoneVerifyField from '../../components/PhoneVerifyField';
 import { toast } from '../../store/toastStore';
 import styles from './ClientInquiry.module.css';
-
-/* ─── helpers ─── */
-function formatPhoneInput(val) {
-  const digits = val.replace(/\D/g, '');
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-}
 
 /* ─── category constants ─── */
 const CATEGORIES = [
   { value: 'matching', label: '매칭 관련' },
-  { value: 'profile', label: '프로필 관련' },
-  { value: 'payment', label: '결제 관련' },
+  { value: 'profile_edit', label: '프로필 수정' },
+  { value: 'schedule', label: '일정' },
+  { value: 'payment', label: '입금/결제' },
   { value: 'other', label: '기타' },
 ];
 
 const MAX_CONTENT = 1000;
 const MIN_CONTENT = 10;
+const MAX_TITLE = 100;
 
 /* ══════════════════════════════════════════════ */
 export default function ClientInquiry() {
@@ -32,35 +26,33 @@ export default function ClientInquiry() {
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
-  const [verifying, setVerifying] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyError, setVerifyError] = useState('');
   const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [clientId, setClientId] = useState('');
 
   /* ── form state ── */
   const [category, setCategory] = useState('');
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   /* ── step: 'verify' | 'form' | 'done' ── */
   const [step, setStep] = useState('verify');
 
-  /* ─── verify handler ─── */
-  const handleVerify = async (e) => {
-    e.preventDefault();
+  /* ─── OTP 인증 완료 후 프로필 조회 ─── */
+  const handlePhoneVerified = async () => {
     if (!token) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
     const rawPhone = phone.replace(/-/g, '');
-    if (rawPhone.length < 10) {
-      setVerifyError('올바른 전화번호를 입력해주세요.');
-      return;
-    }
-    setVerifying(true);
+    setVerifyLoading(true);
     setVerifyError('');
     try {
-      await getMyProfile(token, rawPhone);
+      const profile = await getMyProfile(token, rawPhone);
       setVerifiedPhone(rawPhone);
+      setClientId(profile.id);
       setStep('form');
     } catch (err) {
       const msg = err.message || '';
@@ -72,18 +64,18 @@ export default function ClientInquiry() {
         setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
     } finally {
-      setVerifying(false);
+      setVerifyLoading(false);
     }
   };
 
   /* ─── submit handler ─── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!category || content.length < MIN_CONTENT) return;
+    if (!category || !title.trim() || content.length < MIN_CONTENT) return;
     setSubmitting(true);
     try {
-      await submitInquiry(token, verifiedPhone, { category, content });
-      alert('담당 매니저에게 문의사항이 등록되었습니다.\n최대한 빠르게 답변 드리도록 하겠습니다.');
+      await submitInquiry(clientId, verifiedPhone, { category, title: title.trim(), content });
+      toast.success('문의가 등록되었습니다.');
       setStep('done');
     } catch (err) {
       toast.error(err.message || '문의 등록에 실패했습니다. 다시 시도해주세요.');
@@ -95,6 +87,7 @@ export default function ClientInquiry() {
   /* ─── reset for additional inquiry ─── */
   const handleAdditional = () => {
     setCategory('');
+    setTitle('');
     setContent('');
     setStep('form');
   };
@@ -112,31 +105,24 @@ export default function ClientInquiry() {
 
           <div className={styles.verifyCard}>
             <div className={styles.verifyIconRing}>
-              <Phone size={26} strokeWidth={1.8} />
+              <MessageCircle size={26} strokeWidth={1.8} />
             </div>
             <h1 className={styles.verifyTitle}>본인 확인이 필요합니다</h1>
             <p className={styles.verifyDesc}>
-              문의 등록을 위해 가입 시 등록한<br />전화번호를 입력해주세요.
+              문의 등록을 위해 가입 시 등록한<br />전화번호로 인증을 진행해주세요.
             </p>
 
-            <form onSubmit={handleVerify} className={styles.verifyForm}>
-              <div className={`${styles.inputWrap} ${verifyError ? styles.inputWrapError : ''}`}>
-                <Phone size={16} className={styles.inputIcon} />
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="010-0000-0000"
-                  value={phone}
-                  onChange={(e) => {
-                    setVerifyError('');
-                    setPhone(formatPhoneInput(e.target.value));
-                  }}
-                  maxLength={13}
-                  className={styles.phoneInput}
-                  autoComplete="tel"
-                  autoFocus
-                />
-              </div>
+            <div className={styles.verifyForm}>
+              <PhoneVerifyField
+                value={phone}
+                onChange={(v) => { setPhone(v); setVerifyError(''); }}
+                onVerified={handlePhoneVerified}
+                disabled={verifyLoading}
+              />
+
+              {verifyLoading && (
+                <p className={styles.verifyLoadingMsg}>프로필을 확인하는 중입니다...</p>
+              )}
 
               {verifyError && (
                 <div className={styles.verifyError}>
@@ -144,22 +130,7 @@ export default function ClientInquiry() {
                   <span>{verifyError}</span>
                 </div>
               )}
-
-              <button
-                type="submit"
-                className={styles.verifyBtn}
-                disabled={verifying || phone.replace(/-/g, '').length < 10}
-              >
-                {verifying ? (
-                  <span className={styles.btnSpinner} />
-                ) : (
-                  <>
-                    <Check size={16} />
-                    확인
-                  </>
-                )}
-              </button>
-            </form>
+            </div>
 
             <p className={styles.verifyFootnote}>
               개인정보는 안전하게 보호됩니다.
@@ -200,7 +171,7 @@ export default function ClientInquiry() {
   }
 
   /* ══ STATE 2: inquiry form ══ */
-  const isSubmittable = category && content.length >= MIN_CONTENT;
+  const isSubmittable = category && title.trim().length > 0 && content.length >= MIN_CONTENT;
 
   return (
     <div className={styles.page}>
@@ -239,6 +210,22 @@ export default function ClientInquiry() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* ── title input ── */}
+            <div className={styles.fieldGroup}>
+              <div className={styles.textareaHeader}>
+                <span className={styles.fieldLabel}>제목</span>
+                <span className={styles.charCount}>{title.length} / {MAX_TITLE}</span>
+              </div>
+              <input
+                type="text"
+                className={styles.titleInput}
+                value={title}
+                onChange={(e) => setTitle(e.target.value.slice(0, MAX_TITLE))}
+                placeholder="문의 제목을 입력해주세요."
+                maxLength={MAX_TITLE}
+              />
             </div>
 
             {/* ── content textarea ── */}
