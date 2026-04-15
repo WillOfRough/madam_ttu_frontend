@@ -284,40 +284,34 @@ function ClientSlot({ client, side, onRemove, searchQuery, onSearchChange, onFoc
 
       {client ? (
         <div className={styles.slotBody}>
-          <div className={styles.slotAvatar}>
-            {(client.name || client.nickname || '?').charAt(0)}
-          </div>
           <span className={styles.slotName}>
             {client.name || client.nickname}
             {client.nickname && client.name && <span className={styles.slotNickname}>{client.nickname}</span>}
           </span>
           <div className={styles.slotMeta}>
-            <span className={styles.slotGender}>
-              {client.gender === 'female' ? '여성' : '남성'}
+            <span className={client.gender === 'female' ? styles.slotGenderFemale : styles.slotGenderMale}>
+              {client.gender === 'female' ? '여' : '남'}
             </span>
             {client.occupation && <span className={styles.slotOccupation}>{client.occupation}</span>}
           </div>
         </div>
       ) : (
         <div className={styles.slotBody}>
-          <div className={styles.slotAvatarEmpty}>
-            <Search size={18} />
-          </div>
           <div className={styles.slotSearchWrap}>
+            {!searchQuery && (
+              <Search className={styles.slotSearchIcon} size={15} />
+            )}
             <input
               className={styles.slotSearchInput}
               value={searchQuery}
               onChange={onSearchChange}
               onFocus={onFocus}
-              placeholder="이름으로 검색..."
+              placeholder=""
             />
             {searchResults.length > 0 && (
               <div className={styles.slotDropdown}>
                 {searchResults.filter((c) => c.id !== excludeId).map((c) => (
                   <div key={c.id} className={styles.slotDropdownItem} onClick={() => onSelect(c)}>
-                    <div className={styles.dropdownAvatar}>
-                      {(c.name || c.nickname || '?').charAt(0)}
-                    </div>
                     <div className={styles.dropdownInfo}>
                       <span className={styles.dropdownName}>
                         {c.name || c.nickname}
@@ -353,14 +347,20 @@ function CreateMatchModal({ onClose, onCreated }) {
 
   useEffect(() => {
     if (searchQuery.length >= 1) {
-      clientService.listClients({ name: searchQuery, limit: 10, approval: 'approved', status: 'active' }).then((res) => {
+      const params = { name: searchQuery, limit: 10, approval: 'approved', status: 'active' };
+      // A 선택 시 B는 반대 성별만, B 선택 시 A는 반대 성별만
+      const selectedClient = selectingFor === 'B' ? clientA : clientB;
+      if (selectedClient?.gender) {
+        params.gender = selectedClient.gender === 'female' ? 'male' : 'female';
+      }
+      clientService.listClients(params).then((res) => {
         const list = res.data || res.clients || res;
         setSearchResults(list);
       });
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectingFor, clientA, clientB]);
 
   // Check for duplicate match & active matches per client
   useEffect(() => {

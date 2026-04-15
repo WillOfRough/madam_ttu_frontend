@@ -666,13 +666,34 @@
   justify-content: center;
 }
 
-.slotGender {
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 2px 8px;
+.slotGenderMale {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   border-radius: var(--radius-full);
   background: #f0f4ff;
   color: var(--navy);
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.slotGenderFemale {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: #fff0f5;
+  color: #c44f7a;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .slotOccupation {
@@ -704,6 +725,15 @@
 
 .slotSearchInput::placeholder {
   color: var(--charcoal-pale);
+}
+
+.slotSearchIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--charcoal-pale);
+  pointer-events: none;
 }
 
 .slotSearchInput:focus {
@@ -1127,22 +1157,19 @@
   }
 
   .pairingArea {
-    flex-direction: column;
-    padding: 20px;
+    padding: 16px 12px;
     gap: 0;
   }
 
   .pairingConnector {
-    flex-direction: row;
-    width: 100%;
-    height: 40px;
-    padding: 4px 0;
+    width: 32px;
+    padding: 0 2px;
+    overflow: visible;
   }
 
-  .connectorLine {
-    width: auto;
-    height: 2px;
-    flex: 1;
+  .connectorHeart {
+    width: 26px;
+    height: 26px;
   }
 
   .noteSection {
@@ -1154,12 +1181,28 @@
   }
 
   .clientSlot {
-    padding: 14px;
+    padding: 12px 10px;
+  }
+
+  .slotHeader {
+    margin-bottom: 8px;
+  }
+
+  .slotAvatar,
+  .slotAvatarEmpty {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .slotSearchInput {
+    font-size: 16px; /* iOS 자동 확대 방지: 16px 미만이면 Safari가 줌 */
+    padding: 7px 8px;
   }
 
   .slotDropdown {
-    left: -14px;
-    right: -14px;
+    left: -10px;
+    right: -10px;
   }
 
   .duplicateWarn {
