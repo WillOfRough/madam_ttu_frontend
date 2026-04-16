@@ -222,6 +222,8 @@ export default function ClientDetail() {
 
     const actionsEl = certRef.current.querySelector(`.${styles.certActions}`);
     if (actionsEl) actionsEl.style.display = 'none';
+    certRef.current.style.animation = 'none';
+    certRef.current.querySelectorAll('*').forEach(el => el.style.animation = 'none');
 
     try {
       await html2pdf()
@@ -236,6 +238,8 @@ export default function ClientDetail() {
         .save();
     } finally {
       if (actionsEl) actionsEl.style.display = '';
+      certRef.current.style.animation = '';
+      certRef.current.querySelectorAll('*').forEach(el => el.style.animation = '');
     }
   };
 
