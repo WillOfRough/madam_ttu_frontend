@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, X, Heart, Edit3, Trash2, ShieldCheck, Download, Copy, Link2, MessageSquare } from 'lucide-react';
 import PhotoGallery from '../../components/PhotoGallery';
@@ -9,6 +9,7 @@ import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonLine } from '../../components/Skeleton';
+import html2pdf from 'html2pdf.js';
 import styles from './ClientDetail.module.css';
 
 export default function ClientDetail() {
@@ -29,6 +30,7 @@ export default function ClientDetail() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletionCert, setDeletionCert] = useState(null);
+  const certRef = useRef(null);
   const [copiedKey, setCopiedKey] = useState(null);
 
   useEffect(() => {
@@ -214,46 +216,27 @@ export default function ClientDetail() {
     }
   };
 
-  const handleDownloadCert = () => {
-    if (!deletionCert) return;
+  const handleDownloadCert = async () => {
+    if (!deletionCert || !certRef.current) return;
     const { name, deletedAt } = deletionCert;
-    const dateStr = deletedAt.toLocaleString('ko-KR', {
-      year: 'numeric', month: 'long', day: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-    const content = `
-═══════════════════════════════════════
-       개인정보 삭제 확인서
-       Knots & Links
-═══════════════════════════════════════
 
-처리일시: ${dateStr}
-삭제 대상: ${name}
+    const actionsEl = certRef.current.querySelector(`.${styles.certActions}`);
+    if (actionsEl) actionsEl.style.display = 'none';
 
-삭제 항목:
-  • 프로필 정보 (이름, 연락처, 이메일 등)
-  • 등록 사진 전체
-  • 매칭 이력 및 관련 데이터
-  • 매니저 메모
-
-처리 상태: 영구 삭제 완료
-
-법적 근거: 개인정보보호법 제36조
-          (개인정보의 정정·삭제)
-
-───────────────────────────────────────
-본 확인서는 개인정보 삭제 처리를
-증빙하기 위해 발급되었습니다.
-═══════════════════════════════════════
-`.trim();
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `삭제확인서_${name}_${deletedAt.toISOString().slice(0, 10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: `삭제확인서_${name}_${deletedAt.toISOString().slice(0, 10)}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        })
+        .from(certRef.current)
+        .save();
+    } finally {
+      if (actionsEl) actionsEl.style.display = '';
+    }
   };
 
   if (loading) return (
@@ -638,7 +621,7 @@ export default function ClientDetail() {
 
       {deletionCert && (
         <div className={styles.certOverlay}>
-          <div className={styles.certModal}>
+          <div className={styles.certModal} ref={certRef}>
 
             {/* Top accent bar */}
             <div className={styles.certAccentBar} />
