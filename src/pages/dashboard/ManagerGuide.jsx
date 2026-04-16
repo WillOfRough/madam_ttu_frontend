@@ -324,6 +324,20 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 • 매칭 완료 시 프로필 확인 링크가 발송됩니다.
 • 더 정교한 매칭을 원하신다면 프로필을 보완해 보세요.
 🔗 프로필 관리하기: {profileLink}`,
+
+  refundNotice: `안녕하세요, OO(별명)님. Knots & Links 매니저입니다.
+
+이번 매칭 상대방 측의 입금 지연으로 인해 아쉽게도 매칭이 취소되었음을 안내드립니다.
+기대하셨을 만남이 무산되어 정말 죄송합니다.
+
+입금하신 금액의 환불을 위해 아래 정보를 회신해 주시면 감사하겠습니다.
+• 예금주 성함
+• 환불받으실 계좌번호 (은행명 포함)
+
+확인하는 대로 신속히 환불 처리해 드리겠습니다.
+
+다음번에는 더 좋은 인연으로 찾아뵙겠습니다.
+언제든 새로운 매칭이 필요하시면 편하게 말씀해 주세요! 💛`,
 };
 
 const TEMPLATE_META = [
@@ -343,6 +357,7 @@ const TEMPLATE_META = [
   { key: 'paymentReminder', label: '미입금 리마인드', badge: '양식 14' },
   { key: 'profileEditGuide', label: '프로필 수정 안내', badge: '양식 15' },
   { key: 'welcomeMessage', label: '가입 축하 안내', badge: '양식 16' },
+  { key: 'refundNotice', label: '환불 안내', badge: '양식 17' },
 ];
 
 const LS_KEY = 'knl_manager_templates';
