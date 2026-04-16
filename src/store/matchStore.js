@@ -40,6 +40,7 @@ function sortByStatusPriority(matches) {
 const useMatchStore = create((set, get) => ({
   matches: [],
   totalCount: 0,
+  allManagerNames: [],
   page: 1,
   size: 20,
   filters: {
@@ -64,6 +65,9 @@ const useMatchStore = create((set, get) => ({
       const result = await matchService.listMatches({ page: 0, size: 9999 });
       const raw = result.data || result.matches || [];
 
+      // 전체 데이터에서 매니저 목록 추출 (상태 필터와 무관)
+      const allManagerNames = [...new Set(raw.map((m) => m.createdByManagerName).filter(Boolean))].sort();
+
       let filtered = raw;
       if (filters.status) {
         filtered = raw.filter((m) =>
@@ -78,6 +82,7 @@ const useMatchStore = create((set, get) => ({
       set({
         matches: sorted.slice(start, start + size),
         totalCount: filtered.length,
+        allManagerNames,
         isLoading: false,
       });
     } catch (err) {
@@ -89,6 +94,7 @@ const useMatchStore = create((set, get) => ({
     set({
       matches: [],
       totalCount: 0,
+      allManagerNames: [],
       page: 1,
       filters: { status: null },
       error: null,

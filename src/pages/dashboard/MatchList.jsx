@@ -29,7 +29,7 @@ function formatDate(iso) {
 }
 
 export default function MatchList() {
-  const { matches, totalCount, page, size, filters, isLoading, error, setFilter, setPage, fetchMatches } =
+  const { matches, totalCount, allManagerNames, page, size, filters, isLoading, error, setFilter, setPage, fetchMatches } =
     useMatchStore();
   const navigate = useNavigate();
   const myName = useAuthStore((s) => s.name);
@@ -53,16 +53,13 @@ export default function MatchList() {
     fetchMatches();
   }, [page, filters, fetchMatches]);
 
-  // 고유 매니저 목록 추출
-  const managerNames = [...new Set(matches.map((m) => m.createdByManagerName).filter(Boolean))].sort();
-
   // 매칭 로드 후 로그인 매니저로 기본 필터 적용
   useEffect(() => {
-    if (!managerDefaultApplied && myName && managerNames.includes(myName)) {
+    if (!managerDefaultApplied && myName && allManagerNames.includes(myName)) {
       setManagerFilter(myName);
       setManagerDefaultApplied(true);
     }
-  }, [managerNames, myName, managerDefaultApplied]);
+  }, [allManagerNames, myName, managerDefaultApplied]);
 
   const filteredMatches = matches.filter((m) => {
     if (managerFilter && m.createdByManagerName !== managerFilter) return false;
@@ -156,14 +153,14 @@ export default function MatchList() {
           <option value="completed">완료</option>
           <option value="cancelled">취소</option>
         </select>
-        {managerNames.length > 1 && (
+        {allManagerNames.length > 0 && (
           <select
             className={styles.filterSelect}
             value={managerFilter}
             onChange={(e) => setManagerFilter(e.target.value)}
           >
             <option value="">매니저 전체</option>
-            {managerNames.map((name) => (
+            {allManagerNames.map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}
           </select>
