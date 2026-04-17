@@ -11,6 +11,11 @@ export async function listMatches(params = {}) {
   const query = new URLSearchParams();
   if (params.page != null) query.set('page', String(params.page));
   if (params.size != null) query.set('size', String(params.size));
+  if (params.clientId) query.set('clientId', params.clientId);
+  if (params.clientName) query.set('clientName', params.clientName);
+  if (params.managerName) query.set('managerName', params.managerName);
+  if (params.status) query.set('status', params.status);
+  if (params.note) query.set('note', params.note);
 
   const qs = query.toString();
   return apiFetch(`/api/v1/matches${qs ? `?${qs}` : ''}`, { method: 'GET' });

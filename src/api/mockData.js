@@ -1879,17 +1879,72 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
-  // GET /api/v1/matches (list) — 자신의 매칭만 반환
+  // GET /api/v1/matches (list) — 필터·페이징 지원
   if (method === 'GET' && pathname === '/api/v1/matches') {
     const rawPage = parseInt(params.get('page') || '0', 10);
-    const page = rawPage < 1 ? 0 : rawPage;
+    const page = rawPage < 0 ? 0 : rawPage;
     const size = parseInt(params.get('size') || '20', 10);
-    const myMatches = currentUser.role === 'admin'
-      ? matches
-      : matches.filter(m => m.createdByManagerName === currentUser.name);
-    const sorted = [...myMatches].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const clientIdParam = params.get('clientId');
+    const clientNameParam = params.get('clientName');
+    const managerNameParam = params.get('managerName');
+    const statusParam = params.get('status');
+    const noteParam = params.get('note');
+
+    let filtered;
+    if (clientIdParam) {
+      // clientId가 있으면 다른 필터 무시 (동명이인 구분용)
+      filtered = matches.filter(
+        (m) => m.clientA?.clientId === clientIdParam || m.clientB?.clientId === clientIdParam
+      );
+    } else {
+      filtered = currentUser.role === 'admin'
+        ? [...matches]
+        : matches.filter((m) => m.createdByManagerName === currentUser.name);
+
+      if (managerNameParam) {
+        const q = managerNameParam.toLowerCase();
+        filtered = filtered.filter((m) => {
+          const created = (m.createdByManagerName || '').toLowerCase();
+          const ownerA = (m.clientA?.ownerManagerName || '').toLowerCase();
+          const ownerB = (m.clientB?.ownerManagerName || '').toLowerCase();
+          return created.includes(q) || ownerA.includes(q) || ownerB.includes(q);
+        });
+      }
+      if (clientNameParam) {
+        const q = clientNameParam.toLowerCase();
+        filtered = filtered.filter(
+          (m) =>
+            (m.clientA?.clientName || '').toLowerCase().includes(q) ||
+            (m.clientB?.clientName || '').toLowerCase().includes(q)
+        );
+      }
+      if (noteParam) {
+        const q = noteParam.toLowerCase();
+        filtered = filtered.filter((m) => (m.note || '').toLowerCase().includes(q));
+      }
+      if (statusParam) {
+        if (statusParam === 'active') {
+          filtered = filtered.filter((m) => !['completed', 'cancelled'].includes(m.status));
+        } else if (statusParam === 'after_pending') {
+          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'pending');
+        } else if (statusParam === 'after_accepted') {
+          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'accepted');
+        } else if (statusParam === 'after_rejected') {
+          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'rejected');
+        } else if (statusParam === 'has_deleted_member') {
+          filtered = filtered.filter((m) => m.clientA?.deleted || m.clientB?.deleted);
+        } else {
+          filtered = filtered.filter((m) => m.status === statusParam);
+        }
+      }
+    }
+
+    const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const start = page * size;
-    return { data: sorted.slice(start, start + size), pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) } };
+    return {
+      data: sorted.slice(start, start + size),
+      pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) },
+    };
   }
 
   // POST /api/v1/matches/:matchId/confirm-payment (입금 확인)

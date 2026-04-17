@@ -89,15 +89,13 @@ export default function ClientDetail() {
         .catch(() => navigate('/dashboard/clients'))
         .finally(() => setLoading(false));
 
-      // Fetch match history for this client
+      // Fetch match history for this client (clientId 필터로 동명이인·페이지 누락 이슈 없이 조회)
       setMatchLoading(true);
-      matchService.listMatches({ size: 100 })
+      matchService.listMatches({ clientId, size: 100 })
         .then((res) => {
-          const matches = (res.data || []).filter(
-            (m) => m.clientA?.clientId === clientId || m.clientB?.clientId === clientId
-          );
-          matches.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          setMatchHistory(matches);
+          const list = res.data || res.matches || [];
+          const sorted = [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setMatchHistory(sorted);
         })
         .catch(() => {})
         .finally(() => setMatchLoading(false));

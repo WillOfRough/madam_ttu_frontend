@@ -29,55 +29,50 @@ function formatDate(iso) {
 }
 
 export default function MatchList() {
-  const { matches, totalCount, allManagerNames, page, size, filters, isLoading, error, setFilter, setPage, fetchMatches } =
+  const { matches, totalCount, page, size, filters, isLoading, error, setFilter, setFilters, setPage, fetchMatches } =
     useMatchStore();
   const navigate = useNavigate();
   const myName = useAuthStore((s) => s.name);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [managerFilter, setManagerFilter] = useState('');
-  const [managerDefaultApplied, setManagerDefaultApplied] = useState(false);
+  const [searchInput, setSearchInput] = useState(filters.clientName || '');
+  const [onlyMine, setOnlyMine] = useState(Boolean(myName));
   const [showGuide, setShowGuide] = useState(false);
 
-  // URL 파라미터에서 필터 적용
+  // URL 파라미터 + 로그인 매니저 기본값 (최초 1회)
   useEffect(() => {
     const statusParam = searchParams.get('status');
-    if (statusParam) {
-      setFilter('status', statusParam);
-      setSearchParams({}, { replace: true });
+    const patch = {};
+    if (statusParam) patch.status = statusParam;
+    if (myName) patch.managerName = myName;
+    if (Object.keys(patch).length > 0) {
+      setFilters(patch);
+      if (statusParam) setSearchParams({}, { replace: true });
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 검색어 debounce → 서버 쿼리(clientName)로 반영
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (filters.clientName !== searchInput) {
+        setFilter('clientName', searchInput);
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput, filters.clientName, setFilter]);
 
   useEffect(() => {
     fetchMatches();
   }, [page, filters, fetchMatches]);
 
-  // 매칭 로드 후 로그인 매니저로 기본 필터 적용
-  useEffect(() => {
-    if (!managerDefaultApplied && myName && allManagerNames.includes(myName)) {
-      setManagerFilter(myName);
-      setManagerDefaultApplied(true);
-    }
-  }, [allManagerNames, myName, managerDefaultApplied]);
+  const handleOnlyMineToggle = (e) => {
+    const checked = e.target.checked;
+    setOnlyMine(checked);
+    setFilter('managerName', checked && myName ? myName : '');
+  };
 
-  const filteredMatches = matches.filter((m) => {
-    if (managerFilter && m.createdByManagerName !== managerFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      return (
-        m.clientA.clientName?.toLowerCase().includes(q) ||
-        m.clientB.clientName?.toLowerCase().includes(q) ||
-        m.note?.toLowerCase().includes(q) ||
-        (STATUS_STEP_LABELS[m.status] || '').includes(q)
-      );
-    }
-    return true;
-  });
-
-  // 매니저/검색 필터 적용 시 filteredMatches 기준, 아닐 때 totalCount 기준
-  const effectiveTotal = (managerFilter || searchQuery.trim()) ? filteredMatches.length : totalCount;
-  const totalPages = Math.ceil(effectiveTotal / size);
+  const totalPages = Math.ceil(totalCount / size);
 
   return (
     <div className={styles.page}>
@@ -131,9 +126,9 @@ export default function MatchList() {
           <input
             className={styles.searchInput}
             type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="이름, 메모로 검색..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="회원 이름으로 검색..."
           />
         </div>
         <select
@@ -142,8 +137,9 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
+          <option value="active">진행중 전체</option>
+          <option value="after_pending">에프터 응답 대기</option>
           <option value="draft">대기중</option>
-          <option value="active">진행 중</option>
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
           <option value="awaiting_payment">입금대기</option>
@@ -151,19 +147,20 @@ export default function MatchList() {
           <option value="arranging">조율확정</option>
           <option value="scheduled">약속확정</option>
           <option value="completed">완료</option>
+          <option value="after_accepted">에프터 성사</option>
+          <option value="after_rejected">에프터 미성사</option>
           <option value="cancelled">취소</option>
+          <option value="has_deleted_member">삭제 회원 포함</option>
         </select>
-        {allManagerNames.length > 0 && (
-          <select
-            className={styles.filterSelect}
-            value={managerFilter}
-            onChange={(e) => setManagerFilter(e.target.value)}
-          >
-            <option value="">매니저 전체</option>
-            {allManagerNames.map((name) => (
-              <option key={name} value={name}>{name}</option>
-            ))}
-          </select>
+        {myName && (
+          <label className={styles.filterSelect} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={onlyMine}
+              onChange={handleOnlyMineToggle}
+            />
+            내 매칭만
+          </label>
         )}
       </div>
 
@@ -175,15 +172,15 @@ export default function MatchList() {
 
       {isLoading ? (
         <SkeletonTable rows={4} columns={3} />
-      ) : filteredMatches.length === 0 && !error ? (
+      ) : matches.length === 0 && !error ? (
         <div className={styles.empty}>
           <Heart size={40} strokeWidth={1} />
-          <p>{searchQuery ? '검색 결과가 없습니다.' : '매칭 내역이 없습니다.'}</p>
+          <p>{(searchInput || filters.status || filters.managerName) ? '검색 결과가 없습니다.' : '매칭 내역이 없습니다.'}</p>
         </div>
       ) : (
         <>
           <div className={styles.cardGrid}>
-            {filteredMatches.map((m) => (
+            {matches.map((m) => (
               <div
                 key={m.matchId}
                 className={styles.matchCard}
