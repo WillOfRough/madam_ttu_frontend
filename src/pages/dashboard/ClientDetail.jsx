@@ -12,6 +12,18 @@ import { SkeletonLine } from '../../components/Skeleton';
 import html2pdf from 'html2pdf.js';
 import styles from './ClientDetail.module.css';
 
+function parseKeywordsText(str) {
+  if (!str) return { keywords: [], text: '' };
+  const match = str.match(/^\[([^\]]+)\]\s*([\s\S]*)$/);
+  if (match) {
+    return {
+      keywords: match[1].split(',').map((k) => k.trim()).filter(Boolean),
+      text: match[2].trim(),
+    };
+  }
+  return { keywords: [], text: str };
+}
+
 export default function ClientDetail() {
   const { clientId } = useParams();
   const navigate = useNavigate();
@@ -435,19 +447,39 @@ export default function ClientDetail() {
         />
       </div>
 
-      {client.introduction && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>자기소개</h3>
-          <p className={styles.text}>{client.introduction}</p>
-        </div>
-      )}
+      {client.introduction && (() => {
+        const { keywords, text } = parseKeywordsText(client.introduction);
+        return (
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>자기소개</h3>
+            {keywords.length > 0 && (
+              <div className={styles.narrativeKeywords}>
+                {keywords.map((kw) => (
+                  <span key={kw} className={`${styles.narrativeTag} ${styles.narrativeTagCoral}`}>{kw}</span>
+                ))}
+              </div>
+            )}
+            {text && <p className={styles.text}>{text}</p>}
+          </div>
+        );
+      })()}
 
-      {client.idealType && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>이상형</h3>
-          <p className={styles.text}>{client.idealType}</p>
-        </div>
-      )}
+      {client.idealType && (() => {
+        const { keywords, text } = parseKeywordsText(client.idealType);
+        return (
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>이상형</h3>
+            {keywords.length > 0 && (
+              <div className={styles.narrativeKeywords}>
+                {keywords.map((kw) => (
+                  <span key={kw} className={`${styles.narrativeTag} ${styles.narrativeTagNavy}`}>{kw}</span>
+                ))}
+              </div>
+            )}
+            {text && <p className={styles.text}>{text}</p>}
+          </div>
+        );
+      })()}
 
       {client.isOwner && client.inviteToken && (
         <div className={styles.card}>
