@@ -62,6 +62,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호"
               required
+              enterKeyHint="go"
             />
           </div>
 
@@ -80,6 +81,7 @@ export default function Login() {
             className={styles.submitBtn}
             type="submit"
             disabled={isLoading}
+            onMouseDown={(e) => e.preventDefault()}
           >
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
