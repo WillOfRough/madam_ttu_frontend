@@ -32,11 +32,11 @@ export default function MatchList() {
   const { matches, totalCount, page, size, filters, isLoading, error, setFilter, setFilters, setPage, fetchMatches } =
     useMatchStore();
   const navigate = useNavigate();
-  const myName = useAuthStore((s) => s.name);
+  const myManagerId = useAuthStore((s) => s.managerId);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.clientName || '');
-  const [onlyMine, setOnlyMine] = useState(Boolean(myName));
+  const [onlyMine, setOnlyMine] = useState(Boolean(myManagerId));
   const [showGuide, setShowGuide] = useState(false);
 
   // URL 파라미터 + 로그인 매니저 기본값 (최초 1회)
@@ -44,7 +44,7 @@ export default function MatchList() {
     const statusParam = searchParams.get('status');
     const patch = {};
     if (statusParam) patch.status = statusParam;
-    if (myName) patch.managerName = myName;
+    if (myManagerId) patch.managerId = myManagerId;
     if (Object.keys(patch).length > 0) {
       setFilters(patch);
       if (statusParam) setSearchParams({}, { replace: true });
@@ -69,7 +69,7 @@ export default function MatchList() {
   const handleOnlyMineToggle = (e) => {
     const checked = e.target.checked;
     setOnlyMine(checked);
-    setFilter('managerName', checked && myName ? myName : '');
+    setFilter('managerId', checked && myManagerId ? myManagerId : '');
   };
 
   const totalPages = Math.ceil(totalCount / size);
@@ -138,7 +138,6 @@ export default function MatchList() {
         >
           <option value="">상태 전체</option>
           <option value="active">진행중 전체</option>
-          <option value="after_pending">에프터 응답 대기</option>
           <option value="draft">대기중</option>
           <option value="proposal_sent">제안발송</option>
           <option value="proposal_accepted">상대수락</option>
@@ -147,13 +146,16 @@ export default function MatchList() {
           <option value="arranging">조율확정</option>
           <option value="scheduled">약속확정</option>
           <option value="completed">완료</option>
-          <option value="after_accepted">에프터 성사</option>
-          <option value="after_rejected">에프터 미성사</option>
           <option value="cancelled">취소</option>
           <option value="has_deleted_member">삭제 회원 포함</option>
+          <optgroup label="에프터">
+            <option value="pending">에프터 응답 대기</option>
+            <option value="accepted">에프터 성사</option>
+            <option value="rejected">에프터 미성사</option>
+          </optgroup>
         </select>
-        {myName && (
-          <label className={styles.filterSelect} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+        {myManagerId && (
+          <label className={styles.myMatchCheckbox}>
             <input
               type="checkbox"
               checked={onlyMine}
@@ -175,16 +177,24 @@ export default function MatchList() {
       ) : matches.length === 0 && !error ? (
         <div className={styles.empty}>
           <Heart size={40} strokeWidth={1} />
-          <p>{(searchInput || filters.status || filters.managerName) ? '검색 결과가 없습니다.' : '매칭 내역이 없습니다.'}</p>
+          <p>{(searchInput || filters.status || filters.managerId) ? '검색 결과가 없습니다.' : '매칭 내역이 없습니다.'}</p>
         </div>
       ) : (
         <>
           <div className={styles.cardGrid}>
-            {matches.map((m) => (
+            {matches.map((m) => {
+              const accessible = m.accessible !== false;
+              return (
               <div
                 key={m.matchId}
-                className={styles.matchCard}
-                onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
+                className={`${styles.matchCard} ${!accessible ? styles.readOnly : ''}`}
+                onClick={() => {
+                  if (!accessible) {
+                    toast.info('연결된 매니저의 매칭입니다. 열람 권한이 없습니다.');
+                    return;
+                  }
+                  navigate(`/dashboard/matches/${m.matchId}`);
+                }}
               >
                 {/* ── 상단: 날짜 + 단계 (좌) / 상태 배지 (우) ── */}
                 <div className={styles.cardTop}>
@@ -193,6 +203,7 @@ export default function MatchList() {
                     <span className={styles.cardStep}>{STATUS_STEP_LABELS[m.status] || ''}</span>
                   </div>
                   <div className={styles.badgeGroup}>
+                    {!accessible && <span className={styles.readOnlyBadge}>열람 불가</span>}
                     <StatusBadge status={m.status} />
                     {m.status === 'completed' && m.afterStatus && (
                       <StatusBadge status={`after_${m.afterStatus}`} />
@@ -249,7 +260,8 @@ export default function MatchList() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </>

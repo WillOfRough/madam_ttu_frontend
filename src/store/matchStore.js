@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import * as matchService from '../api/matchService';
 
+const AFTER_VALUES = ['pending', 'accepted', 'rejected'];
+
 const useMatchStore = create((set, get) => ({
   matches: [],
   totalCount: 0,
@@ -9,7 +11,7 @@ const useMatchStore = create((set, get) => ({
   filters: {
     status: null,
     clientName: '',
-    managerName: '',
+    managerId: '',
   },
   isLoading: false,
   error: null,
@@ -35,9 +37,15 @@ const useMatchStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const params = { page: page - 1, size };
-      if (filters.status) params.status = filters.status;
+      if (filters.status) {
+        if (AFTER_VALUES.includes(filters.status)) {
+          params.afterStatus = filters.status;
+        } else {
+          params.status = filters.status;
+        }
+      }
       if (filters.clientName?.trim()) params.clientName = filters.clientName.trim();
-      if (filters.managerName?.trim()) params.managerName = filters.managerName.trim();
+      if (filters.managerId) params.managerId = filters.managerId;
 
       const result = await matchService.listMatches(params);
       const raw = result.data || result.matches || [];
@@ -58,7 +66,7 @@ const useMatchStore = create((set, get) => ({
       matches: [],
       totalCount: 0,
       page: 1,
-      filters: { status: null, clientName: '', managerName: '' },
+      filters: { status: null, clientName: '', managerId: '' },
       error: null,
     }),
 }));

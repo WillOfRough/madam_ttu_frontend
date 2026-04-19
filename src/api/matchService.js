@@ -13,8 +13,9 @@ export async function listMatches(params = {}) {
   if (params.size != null) query.set('size', String(params.size));
   if (params.clientId) query.set('clientId', params.clientId);
   if (params.clientName) query.set('clientName', params.clientName);
-  if (params.managerName) query.set('managerName', params.managerName);
+  if (params.managerId) query.set('managerId', params.managerId);
   if (params.status) query.set('status', params.status);
+  if (params.afterStatus) query.set('afterStatus', params.afterStatus);
   if (params.note) query.set('note', params.note);
 
   const qs = query.toString();

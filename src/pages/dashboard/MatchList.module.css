@@ -184,6 +184,37 @@
   box-shadow: 0 0 0 3px var(--navy-glow);
 }
 
+.myMatchCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  background: var(--white);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  line-height: 1;
+}
+
+.myMatchCheckbox:hover {
+  border-color: var(--navy);
+}
+
+.myMatchCheckbox:focus-within {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px var(--navy-glow);
+}
+
+.myMatchCheckbox input[type='checkbox'] {
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 .error {
   padding: var(--space-lg) var(--space-xl);
   text-align: center;
@@ -230,6 +261,31 @@
   border-color: rgba(26, 43, 75, 0.18);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+}
+
+.readOnly {
+  cursor: not-allowed;
+  opacity: 0.62;
+  background: var(--bg);
+}
+
+.readOnly:hover {
+  border-color: var(--border-light);
+  box-shadow: var(--shadow-card);
+  transform: none;
+}
+
+.readOnlyBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: #f3f4f6;
+  color: var(--charcoal-pale);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--border-light);
 }
 
 /* ── Card Top: 날짜/단계(좌) + 배지(우) ── */

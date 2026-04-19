@@ -1887,7 +1887,9 @@ export async function mockFetch(path, options = {}) {
     const clientIdParam = params.get('clientId');
     const clientNameParam = params.get('clientName');
     const managerNameParam = params.get('managerName');
+    const managerIdParam = params.get('managerId');
     const statusParam = params.get('status');
+    const afterStatusParam = params.get('afterStatus');
     const noteParam = params.get('note');
 
     let filtered;
@@ -1910,6 +1912,9 @@ export async function mockFetch(path, options = {}) {
           return created.includes(q) || ownerA.includes(q) || ownerB.includes(q);
         });
       }
+      if (managerIdParam) {
+        filtered = filtered.filter((m) => m.createdByManagerId === managerIdParam);
+      }
       if (clientNameParam) {
         const q = clientNameParam.toLowerCase();
         filtered = filtered.filter(
@@ -1925,24 +1930,32 @@ export async function mockFetch(path, options = {}) {
       if (statusParam) {
         if (statusParam === 'active') {
           filtered = filtered.filter((m) => !['completed', 'cancelled'].includes(m.status));
-        } else if (statusParam === 'after_pending') {
-          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'pending');
-        } else if (statusParam === 'after_accepted') {
-          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'accepted');
-        } else if (statusParam === 'after_rejected') {
-          filtered = filtered.filter((m) => m.status === 'completed' && m.afterStatus === 'rejected');
         } else if (statusParam === 'has_deleted_member') {
           filtered = filtered.filter((m) => m.clientA?.deleted || m.clientB?.deleted);
         } else {
           filtered = filtered.filter((m) => m.status === statusParam);
         }
       }
+      if (afterStatusParam) {
+        filtered = filtered.filter(
+          (m) => m.status === 'completed' && m.afterStatus === afterStatusParam
+        );
+      }
     }
 
     const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const start = page * size;
+    const myId = currentUser.id;
+    const myName = currentUser.name;
+    const withAccessible = sorted.slice(start, start + size).map((m) => ({
+      ...m,
+      accessible:
+        m.createdByManagerId === myId ||
+        m.clientA?.ownerManagerName === myName ||
+        m.clientB?.ownerManagerName === myName,
+    }));
     return {
-      data: sorted.slice(start, start + size),
+      data: withAccessible,
       pagination: { page, limit: size, total: sorted.length, totalPages: Math.ceil(sorted.length / size) },
     };
   }
