@@ -1366,6 +1366,66 @@ function buildPaymentSummary(m) {
   };
 }
 
+// ── Settlement helpers ──
+// completed 매칭마다 매니저 share 집계해서 Settlement row 생성.
+// 분배: clientA 매물=3, clientB 매물=3, 매칭 생성자=4 (겸직 시 합산 → 'both')
+// baseAmount: 결제 건수 × 10,000 (양쪽 paid 가정 → 20,000)
+let _settlementsCache = null;
+
+function computeSettlementsForMatch(m) {
+  if (m.status !== 'completed') return [];
+  const nameToId = Object.fromEntries(Object.values(managerMap).map((mg) => [mg.name, mg.id]));
+  const ownerAId = nameToId[m.clientA?.managerName] || null;
+  const ownerBId = nameToId[m.clientB?.managerName] || null;
+  const creatorId = m.createdByManagerId || null;
+
+  const shares = new Map();
+  if (ownerAId) shares.set(ownerAId, (shares.get(ownerAId) || 0) + 3);
+  if (ownerBId) shares.set(ownerBId, (shares.get(ownerBId) || 0) + 3);
+  if (creatorId) shares.set(creatorId, (shares.get(creatorId) || 0) + 4);
+
+  const baseAmount = 20000;
+  const createdAt = m.completedAt || m.meetingDate || m.createdAt;
+  const rows = [];
+  let idx = 0;
+  for (const [managerId, share] of shares) {
+    const mgr = managerMap[managerId] || { id: managerId, name: '알 수 없음' };
+    const isOwner = managerId === ownerAId || managerId === ownerBId;
+    const isCreator = managerId === creatorId;
+    let role;
+    if (isOwner && isCreator) role = 'both';
+    else if (isOwner) role = 'client_owner';
+    else role = 'matchmaker';
+    rows.push({
+      id: `stl-${m.matchId}-${idx++}`,
+      matchId: m.matchId,
+      managerId,
+      managerName: mgr.name,
+      role,
+      share,
+      baseAmount,
+      amount: Math.floor((baseAmount * share) / 10),
+      status: 'pending',
+      settledAt: null,
+      settledById: null,
+      memo: null,
+      createdAt,
+    });
+  }
+  return rows;
+}
+
+function buildAllSettlements() {
+  if (!_settlementsCache) {
+    _settlementsCache = matches.flatMap(computeSettlementsForMatch);
+  }
+  return _settlementsCache;
+}
+
+function buildMySettlements() {
+  return buildAllSettlements().filter((s) => s.managerId === currentUser.id);
+}
+
 export async function mockFetch(path, options = {}) {
   await delay(150 + Math.random() * 200);
 
@@ -2444,6 +2504,109 @@ export async function mockFetch(path, options = {}) {
   if (method === 'POST' && pathname === '/api/v1/notifications/read-all') {
     mockNotifications.forEach((n) => { n.read = true; });
     return { success: true };
+  }
+
+  // ── Settlement APIs ──
+
+  // GET /api/v1/settlements (페이징 + 필터)
+  if (method === 'GET' && pathname === '/api/v1/settlements') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const all = buildMySettlements();
+    const statusParam = params.get('status');
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    let filtered = all;
+    if (statusParam) filtered = filtered.filter((s) => s.status === statusParam);
+    if (fromParam) {
+      const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() >= fromTs);
+    }
+    if (toParam) {
+      const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() <= toTs);
+    }
+    const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const start = page * size;
+    return {
+      data: sorted.slice(start, start + size),
+      pagination: {
+        page, size, totalElements: sorted.length, totalPages: Math.ceil(sorted.length / size) || 1,
+      },
+    };
+  }
+
+  // GET /api/v1/settlements/daily
+  if (method === 'GET' && pathname === '/api/v1/settlements/daily') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    if (!fromParam || !toParam) {
+      throw Object.assign(new Error('from, to는 필수 파라미터입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
+    const all = buildMySettlements();
+    const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+    const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+    const inRange = all.filter((s) => {
+      const t = new Date(s.createdAt).getTime();
+      return t >= fromTs && t <= toTs;
+    });
+    const byDate = {};
+    for (const s of inRange) {
+      const date = new Date(s.createdAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+      if (!byDate[date]) byDate[date] = { date, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
+      byDate[date].count += 1;
+      byDate[date].totalAmount += s.amount;
+      if (s.status === 'paid') byDate[date].paidAmount += s.amount;
+      else if (s.status === 'pending') byDate[date].pendingAmount += s.amount;
+    }
+    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  // GET /api/v1/settlements/monthly
+  if (method === 'GET' && pathname === '/api/v1/settlements/monthly') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const year = parseInt(params.get('year') || String(new Date().getFullYear()), 10);
+    const all = buildMySettlements();
+    const byMonth = {};
+    for (const s of all) {
+      const d = new Date(s.createdAt);
+      if (d.getFullYear() !== year) continue;
+      const month = d.getMonth() + 1;
+      if (!byMonth[month]) byMonth[month] = { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
+      byMonth[month].count += 1;
+      byMonth[month].totalAmount += s.amount;
+      if (s.status === 'paid') byMonth[month].paidAmount += s.amount;
+      else if (s.status === 'pending') byMonth[month].pendingAmount += s.amount;
+    }
+    return { year, items: Object.values(byMonth).sort((a, b) => a.month - b.month) };
+  }
+
+  // GET /api/v1/settlements/match/:matchId
+  if (method === 'GET' && /^\/api\/v1\/settlements\/match\/[^/]+$/.test(pathname)) {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const matchId = pathname.split('/').pop();
+    const all = buildAllSettlements();
+    return all.filter((s) => s.matchId === matchId);
+  }
+
+  // POST /api/v1/settlements/:id/settle (지급 완료 처리)
+  if (method === 'POST' && /^\/api\/v1\/settlements\/[^/]+\/settle$/.test(pathname)) {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const memo = params.get('memo') || null;
+    const all = buildAllSettlements();
+    const target = all.find((s) => s.id === id);
+    if (!target) throw Object.assign(new Error('정산 내역을 찾을 수 없습니다.'), { status: 404, body: { error: 'SETTLEMENT_NOT_FOUND' } });
+    if (target.status === 'paid') {
+      throw Object.assign(new Error('이미 지급 완료된 정산입니다.'), { status: 409, body: { error: 'SETTLEMENT_INVALID_STATUS' } });
+    }
+    target.status = 'paid';
+    target.settledAt = new Date().toISOString();
+    target.settledById = currentUser.id;
+    if (memo) target.memo = memo;
+    return { success: true, message: '정산 지급이 완료 처리되었습니다.' };
   }
 
   // fallback

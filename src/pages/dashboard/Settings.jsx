@@ -10,8 +10,6 @@ import PhoneVerifyField from '../../components/PhoneVerifyField';
 import Settlement from './Settlement';
 import styles from './Settings.module.css';
 
-const SETTLEMENT_EMAIL = 'minting118@naver.com';
-
 export default function Settings() {
   const email = useAuthStore((s) => s.email);
   const name = useAuthStore((s) => s.name);
@@ -21,7 +19,8 @@ export default function Settings() {
   const updateInfo = useManagerStore((s) => s.updateInfo);
   const navigate = useNavigate();
 
-  const canSeeSettlement = email === SETTLEMENT_EMAIL;
+  // dev 환경에서는 모든 매니저가 정산 탭을 볼 수 있도록 개방
+  const canSeeSettlement = true;
   const [settingsTab, setSettingsTab] = useState('settings');
 
   const [editing, setEditing] = useState(false);
