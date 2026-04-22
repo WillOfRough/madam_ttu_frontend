@@ -5,6 +5,37 @@ import styles from './Login.module.css';
 
 const REMEMBER_KEY = 'knl_remember_email';
 
+const LOGIN_ERROR_MESSAGES = {
+  '1.001': '이메일 또는 비밀번호가 올바르지 않습니다.',
+  '1.002': '로그인 시도가 너무 많습니다. 15분 후 다시 시도해주세요.',
+  VALIDATION_ERROR: '이메일과 비밀번호를 올바르게 입력해주세요.',
+};
+
+function resolveLoginErrorMessage(err) {
+  const code = err?.body?.error;
+  if (code && LOGIN_ERROR_MESSAGES[code]) return LOGIN_ERROR_MESSAGES[code];
+
+  switch (err?.status) {
+    case 400:
+      return '이메일과 비밀번호를 올바르게 입력해주세요.';
+    case 401:
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    case 429:
+      return '로그인 시도가 너무 많습니다. 15분 후 다시 시도해주세요.';
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return '일시적인 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    default:
+      break;
+  }
+
+  const raw = err?.message;
+  if (raw && /[가-힣]/.test(raw)) return raw;
+  return '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +60,7 @@ export default function Login() {
       await login({ email, password });
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || '로그인에 실패했습니다.');
+      setError(resolveLoginErrorMessage(err));
     }
   };
 
