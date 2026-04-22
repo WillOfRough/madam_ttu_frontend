@@ -137,6 +137,7 @@ export default function MatchList() {
           onChange={(e) => setFilter('status', e.target.value || null)}
         >
           <option value="">상태 전체</option>
+          <option value="todo">매니저 할일</option>
           <option value="active">진행중 전체</option>
           <option value="draft">대기중</option>
           <option value="proposal_sent">제안발송</option>
