@@ -181,6 +181,7 @@ export default function MatchDetail() {
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const [payments, setPayments] = useState(null); // PaymentResponse[] — awaiting_payment 단계에서만 조회
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -201,6 +202,19 @@ export default function MatchDetail() {
         .finally(() => setLoading(false));
     }
   }, [matchId, navigate]);
+
+  // awaiting_payment 상태에서만 실제 Payment 목록 조회 — matchParticipantId를 얻기 위함
+  useEffect(() => {
+    if (!matchId || match?.status !== 'awaiting_payment') {
+      setPayments(null);
+      return;
+    }
+    let cancelled = false;
+    matchService.getMatchPayments(matchId)
+      .then((res) => { if (!cancelled) setPayments(Array.isArray(res) ? res : []); })
+      .catch(() => { if (!cancelled) setPayments([]); });
+    return () => { cancelled = true; };
+  }, [matchId, match?.status]);
 
   if (loading)
     return (
@@ -238,16 +252,21 @@ export default function MatchDetail() {
 
   const handleParticipantPaymentConfirm = async (side) => {
     const client = side === 'A' ? match.clientA : match.clientB;
-    const participantId = match.paymentSummary?.[`client${side}`]?.matchParticipantId || client.clientId;
+    // payments 배열에서 해당 참가자의 PaymentResponse를 찾아 matchParticipantId 추출
+    const payment = (payments || []).find((p) => p.clientId === client.clientId);
+    const participantId = payment?.matchParticipantId;
     if (!participantId) {
-      toast.error('참가자 정보를 찾을 수 없습니다.');
+      toast.error('결제 정보를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
       return;
     }
     setActionLoading(true);
     try {
       const res = await matchService.confirmParticipantPayment(matchId, participantId);
-      toast.success(res?.message || '입금이 확인되었습니다.');
+      const msg = res?.message || res?.data || '입금이 확인되었습니다.';
+      toast.success(typeof msg === 'string' ? msg : '입금이 확인되었습니다.');
       reload();
+      // 결제 목록도 최신화 (matchParticipantId는 불변이지만 status 반영)
+      matchService.getMatchPayments(matchId).then((r) => setPayments(Array.isArray(r) ? r : []));
     } catch (err) {
       toast.error(err.message || '입금 확인에 실패했습니다.');
     }
@@ -479,8 +498,11 @@ export default function MatchDetail() {
           <div className={styles.paymentRows}>
             {['A', 'B'].map((side) => {
               const client = side === 'A' ? match.clientA : match.clientB;
-              const payment = match.paymentSummary?.[`client${side}`];
-              const isPaid = payment?.status === 'paid';
+              const paymentDetail = (payments || []).find((p) => p.clientId === client.clientId);
+              const paymentSummary = match.paymentSummary?.[`client${side}`];
+              const status = paymentDetail?.status || paymentSummary?.status || 'pending';
+              const isPaid = status === 'paid';
+              const hasParticipantId = Boolean(paymentDetail?.matchParticipantId);
               return (
                 <div key={side} className={styles.paymentRow}>
                   <div className={styles.paymentRowLabel}>
@@ -493,7 +515,8 @@ export default function MatchDetail() {
                   <button
                     className={styles.paymentBtn}
                     onClick={() => handleParticipantPaymentConfirm(side)}
-                    disabled={actionLoading || isPaid}
+                    disabled={actionLoading || isPaid || !hasParticipantId}
+                    title={!hasParticipantId && !isPaid ? '결제 정보 로딩 중...' : ''}
                   >
                     {isPaid ? <><Check size={14} /> 확인됨</> : actionLoading ? '처리 중...' : `${side} 입금 확인`}
                   </button>
