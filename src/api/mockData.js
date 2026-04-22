@@ -1317,6 +1317,55 @@ function getReceiverToken(m) {
   return m.clientA.role === 'receiver' ? m.clientA.proposalToken : m.clientB.proposalToken;
 }
 
+// ── Payment helpers ──
+// 매칭 상태로부터 각 참가자의 결제 상태를 도출.
+// - 'scheduling' 이후 상태: 양쪽 모두 이미 paid (역산)
+// - 'awaiting_payment': m.payments.A/B 에 저장된 값 (기본 'pending')
+// - 'cancelled': pending 이었다면 cancelled, paid 였다면 그대로 paid
+// - 그 외 상태: pending (아직 결제 단계 진입 전)
+const POST_PAYMENT_STATUSES = ['scheduling', 'arranging', 'scheduled', 'completed'];
+
+function derivePaymentStatus(m, side) {
+  if (POST_PAYMENT_STATUSES.includes(m.status)) return 'paid';
+  if (m.status === 'cancelled') {
+    return m.payments?.[side] === 'paid' ? 'paid' : 'cancelled';
+  }
+  if (m.status === 'awaiting_payment') return m.payments?.[side] || 'pending';
+  return 'pending';
+}
+
+function buildPaymentResponse(m, side) {
+  const client = side === 'A' ? m.clientA : m.clientB;
+  const status = derivePaymentStatus(m, side);
+  const paidAt = status === 'paid' ? (m.paidAts?.[side] || m.createdAt) : null;
+  return {
+    id: `pay-${m.matchId}-${side}`,
+    matchId: m.matchId,
+    matchParticipantId: client.clientId,
+    clientId: client.clientId,
+    clientName: client.deleted ? '삭제한 회원' : (client.clientName || null),
+    orderId: `ORD-${m.matchId.slice(-6)}-${side}`,
+    amount: 19900,
+    currency: 'KRW',
+    paymentMethod: 'manual',
+    status,
+    attemptNo: 1,
+    paidAt,
+    confirmedByManagerId: status === 'paid' ? MANAGER_ID : null,
+    refundedAt: null,
+    refundAmount: null,
+    cancelledAt: status === 'cancelled' ? (m.cancelledAt || null) : null,
+    createdAt: m.createdAt,
+  };
+}
+
+function buildPaymentSummary(m) {
+  return {
+    clientA: buildPaymentResponse(m, 'A'),
+    clientB: buildPaymentResponse(m, 'B'),
+  };
+}
+
 export async function mockFetch(path, options = {}) {
   await delay(150 + Math.random() * 200);
 
@@ -1876,6 +1925,7 @@ export async function mockFetch(path, options = {}) {
       availableTimes: allAvailableTimes,
       confirmedSchedule,
       afterStatus: found.afterStatus || null,
+      paymentSummary: buildPaymentSummary(found),
     };
   }
 
@@ -1953,6 +2003,7 @@ export async function mockFetch(path, options = {}) {
         m.createdByManagerId === myId ||
         m.clientA?.ownerManagerName === myName ||
         m.clientB?.ownerManagerName === myName,
+      paymentSummary: buildPaymentSummary(m),
     }));
     return {
       data: withAccessible,
@@ -1960,12 +2011,50 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
-  // POST /api/v1/matches/:matchId/confirm-payment (입금 확인)
+  // GET /api/v1/matches/:matchId/payments (결제 현황 조회)
+  if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+\/payments$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    return [buildPaymentResponse(m, 'A'), buildPaymentResponse(m, 'B')];
+  }
+
+  // POST /api/v1/matches/:matchId/payments/:participantId/confirm (개별 입금 확인)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/payments\/[^/]+\/confirm$/.test(pathname)) {
+    const segments = pathname.split('/');
+    const id = segments[4];
+    const participantId = segments[6];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (m.status !== 'awaiting_payment') {
+      throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 409, body: { error: 'MATCH_INVALID_STATUS' } });
+    }
+    const side = m.clientA.clientId === participantId ? 'A' : m.clientB.clientId === participantId ? 'B' : null;
+    if (!side) throw Object.assign(new Error('해당 참가자를 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (!m.payments) m.payments = { A: 'pending', B: 'pending' };
+    if (!m.paidAts) m.paidAts = {};
+    m.payments[side] = 'paid';
+    m.paidAts[side] = new Date().toISOString();
+    if (m.payments.A === 'paid' && m.payments.B === 'paid') {
+      m.status = 'scheduling';
+      return { success: true, message: '입금 확인 완료. 양쪽 결제 완료로 일정조율 단계로 전이되었습니다.' };
+    }
+    return { success: true, message: '입금이 확인되었습니다.' };
+  }
+
+  // POST /api/v1/matches/:matchId/confirm-payment (입금 확인 — 양쪽 한번에, fallback)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/confirm-payment$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const m = matches.find((match) => match.matchId === id);
-    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (m.status !== 'awaiting_payment') throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 400 });
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (m.status !== 'awaiting_payment') {
+      throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 409, body: { error: 'MATCH_INVALID_STATUS' } });
+    }
+    if (!m.payments) m.payments = { A: 'pending', B: 'pending' };
+    if (!m.paidAts) m.paidAts = {};
+    const now = new Date().toISOString();
+    if (m.payments.A !== 'paid') { m.payments.A = 'paid'; m.paidAts.A = now; }
+    if (m.payments.B !== 'paid') { m.payments.B = 'paid'; m.paidAts.B = now; }
     m.status = 'scheduling';
     return { success: true, message: '입금이 확인되었습니다. 일정조율 안내가 발송되었습니다.' };
   }
@@ -2100,8 +2189,9 @@ export async function mockFetch(path, options = {}) {
       m.status = 'proposal_accepted';
       return { success: true, message: '응답이 등록되었습니다.' };
     } else {
-      // receiver(B) 수락 → scheduling
-      m.status = 'scheduling';
+      // receiver(B) 수락 → awaiting_payment (양쪽 수락 완료, 입금 대기)
+      m.status = 'awaiting_payment';
+      m.payments = { A: 'pending', B: 'pending' };
       return { success: true, message: '응답이 등록되었습니다.' };
     }
   }

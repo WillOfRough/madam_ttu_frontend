@@ -78,6 +78,16 @@ export async function confirmPayment(matchId) {
   });
 }
 
+export async function getMatchPayments(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/payments`, { method: 'GET' });
+}
+
+export async function confirmParticipantPayment(matchId, participantId) {
+  return apiFetch(`/api/v1/matches/${matchId}/payments/${participantId}/confirm`, {
+    method: 'POST',
+  });
+}
+
 export async function rescheduleMatch(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}/reschedule`, {
     method: 'POST',

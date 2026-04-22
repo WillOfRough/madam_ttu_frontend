@@ -236,6 +236,24 @@ export default function MatchDetail() {
     setActionLoading(false);
   };
 
+  const handleParticipantPaymentConfirm = async (side) => {
+    const client = side === 'A' ? match.clientA : match.clientB;
+    const participantId = match.paymentSummary?.[`client${side}`]?.matchParticipantId || client.clientId;
+    if (!participantId) {
+      toast.error('참가자 정보를 찾을 수 없습니다.');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const res = await matchService.confirmParticipantPayment(matchId, participantId);
+      toast.success(res?.message || '입금이 확인되었습니다.');
+      reload();
+    } catch (err) {
+      toast.error(err.message || '입금 확인에 실패했습니다.');
+    }
+    setActionLoading(false);
+  };
+
   const handleCancel = async () => {
     if (!cancelReason.trim()) {
       toast.error('취소 사유를 입력해주세요.');
@@ -451,15 +469,44 @@ export default function MatchDetail() {
         />
       )}
 
-      {/* 입금확인 게이트 */}
+      {/* 입금확인 게이트 — 참가자별 개별 확인 */}
       {match.status === 'awaiting_payment' && (
         <div className={styles.paymentCard}>
           <h3 className={styles.cardTitle}>
             <Check size={16} /> 입금 확인
           </h3>
-          <p className={styles.paymentHint}>양쪽 회원에게 입금 안내 메시지를 보낸 후, 입금이 확인되면 아래 버튼을 눌러주세요.</p>
-          <button className={styles.paymentBtn} onClick={handlePaymentConfirm} disabled={actionLoading}>
-            {actionLoading ? '확인 중...' : '입금 확인 완료'}
+          <p className={styles.paymentHint}>양쪽 회원에게 입금 안내 메시지를 보낸 후, 입금이 확인된 회원부터 개별 확인해 주세요.</p>
+          <div className={styles.paymentRows}>
+            {['A', 'B'].map((side) => {
+              const client = side === 'A' ? match.clientA : match.clientB;
+              const payment = match.paymentSummary?.[`client${side}`];
+              const isPaid = payment?.status === 'paid';
+              return (
+                <div key={side} className={styles.paymentRow}>
+                  <div className={styles.paymentRowLabel}>
+                    <span className={styles.paymentRowSide}>{side}</span>
+                    <span className={styles.paymentRowName}>{client.clientNickname || client.clientName}</span>
+                    <span className={`${styles.paymentRowStatus} ${isPaid ? styles.paymentRowStatusPaid : styles.paymentRowStatusPending}`}>
+                      {isPaid ? '입금 완료' : '입금 대기'}
+                    </span>
+                  </div>
+                  <button
+                    className={styles.paymentBtn}
+                    onClick={() => handleParticipantPaymentConfirm(side)}
+                    disabled={actionLoading || isPaid}
+                  >
+                    {isPaid ? <><Check size={14} /> 확인됨</> : actionLoading ? '처리 중...' : `${side} 입금 확인`}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          <button
+            className={styles.paymentFallbackBtn}
+            onClick={handlePaymentConfirm}
+            disabled={actionLoading}
+          >
+            양쪽 한 번에 확인 (fallback)
           </button>
         </div>
       )}
