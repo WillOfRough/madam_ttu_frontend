@@ -1544,38 +1544,40 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
         </>
       )}
 
-      <div className={styles.tokenSection}>
-        <button className={styles.tokenToggle} onClick={() => setTokenOpen(!tokenOpen)}>
-          <Link2 size={13} />
-          <span>프로포절 링크</span>
-          {tokenOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-        </button>
-        {tokenOpen && (
-          isLinkActive ? (
-            <>
-              <div className={styles.tokenRow}>
-                <span className={styles.tokenValue}>{proposalUrl}</span>
-                <button className={styles.copyBtn} onClick={handleCopy}>
-                  {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? '복사됨' : '복사'}
-                </button>
-              </div>
-              <div className={styles.msgCopyBtnRow}>
-                <button className={styles.msgCopyBtn} onClick={handleMsgCopy}>
-                  <FileText size={13} />
-                  {msgCopied ? '복사됨' : '안내 메시지 복사'}
-                </button>
-                <button className={styles.msgCopyBtn} onClick={handleReminderCopy}>
-                  <RefreshCw size={13} />
-                  {reminderCopied ? '복사됨' : '리마인드 복사'}
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className={styles.tokenInactive}>A 수락 후 활성화</div>
-          )
-        )}
-      </div>
+      {matchStatus !== 'draft' && (
+        <div className={styles.tokenSection}>
+          <button className={styles.tokenToggle} onClick={() => setTokenOpen(!tokenOpen)}>
+            <Link2 size={13} />
+            <span>프로포절 링크</span>
+            {tokenOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          </button>
+          {tokenOpen && (
+            isLinkActive ? (
+              <>
+                <div className={styles.tokenRow}>
+                  <span className={styles.tokenValue}>{proposalUrl}</span>
+                  <button className={styles.copyBtn} onClick={handleCopy}>
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? '복사됨' : '복사'}
+                  </button>
+                </div>
+                <div className={styles.msgCopyBtnRow}>
+                  <button className={styles.msgCopyBtn} onClick={handleMsgCopy}>
+                    <FileText size={13} />
+                    {msgCopied ? '복사됨' : '안내 메시지 복사'}
+                  </button>
+                  <button className={styles.msgCopyBtn} onClick={handleReminderCopy}>
+                    <RefreshCw size={13} />
+                    {reminderCopied ? '복사됨' : '리마인드 복사'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.tokenInactive}>A 수락 후 활성화</div>
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }
