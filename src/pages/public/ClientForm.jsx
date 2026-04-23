@@ -187,7 +187,13 @@ export default function ClientForm() {
     fields.forEach((f) => { newTouched[f] = true; });
     setTouched(newTouched);
 
+    if (step === 0 && !verificationId) {
+      setError('휴대폰 인증을 완료해주세요.');
+      return;
+    }
+
     if (!hasErrors) {
+      setError(null);
       nextStep();
       setTouched({});
     }
@@ -288,13 +294,25 @@ export default function ClientForm() {
               />
 
               <div className={styles.fieldWrap}>
-                <label className={styles.fieldLabel}>연락처 <span className={styles.required}>*</span></label>
+                <label className={styles.fieldLabel}>
+                  연락처
+                  <span className={styles.requiredBadge}>필수</span>
+                </label>
                 <PhoneVerifyField
                   value={form.phone}
                   onChange={(v) => { setField('phone', v); markTouched('phone'); }}
                   onVerified={setVerificationId}
                 />
-                {getError('phone') && <p className={styles.fieldError}>{getError('phone')}</p>}
+                {getError('phone') && (
+                  <p className={styles.verifyHint}>
+                    <span>{getError('phone')}</span>
+                  </p>
+                )}
+                {!getError('phone') && !verificationId && form.phone && /^010-\d{4}-\d{4}$/.test(form.phone) && (
+                  <p className={styles.verifyHint}>
+                    <span>휴대폰 인증을 완료해야 다음 단계로 넘어갈 수 있어요.</span>
+                  </p>
+                )}
               </div>
               <p className={styles.phoneHint}>
                 연락처는 매칭 성사 시에만 상대방에게 공유됩니다. 그 전에는 절대 노출되지 않으니 안심하세요.
@@ -536,7 +554,7 @@ export default function ClientForm() {
             <button
               className={styles.nextBtn}
               onClick={handleNext}
-              disabled={hasErrors && Object.keys(touched).length > 0}
+              disabled={(hasErrors && Object.keys(touched).length > 0) || (step === 0 && !verificationId)}
             >
               다음 →
             </button>

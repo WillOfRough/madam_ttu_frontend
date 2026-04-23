@@ -94,6 +94,12 @@
   gap: 10px;
 }
 
+.fieldWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .fieldLabel {
   font-size: 0.84rem;
   font-weight: 500;
@@ -102,6 +108,7 @@
   align-items: center;
   gap: 8px;
   letter-spacing: -0.01em;
+  line-height: 1.5;
 }
 
 .requiredMark {
@@ -118,6 +125,19 @@
   border-radius: var(--radius-full);
   color: var(--charcoal-pale);
   background: var(--bg-warm);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.requiredBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  color: var(--coral);
+  background: var(--coral-dim);
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
@@ -601,4 +621,42 @@
   color: var(--danger);
   margin-top: -4px;
   line-height: 1.4;
+}
+
+.verifyHint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding: 11px 14px 11px 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--coral);
+  background: var(--coral-dim);
+  border-left: 3px solid var(--coral);
+  border-radius: 8px;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+}
+
+.verifyHint::before {
+  content: "";
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: var(--coral);
+  box-shadow: 0 0 0 4px var(--coral-glow);
+  animation: verifyHintPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes verifyHintPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px var(--coral-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 126, 103, 0.08);
+  }
 }
