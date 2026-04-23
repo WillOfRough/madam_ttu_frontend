@@ -976,35 +976,53 @@ export default function MatchDetail() {
 
       {/* Manager Action Buttons */}
       <div className={styles.actionBar}>
-        <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
-          <Trash2 size={14} /> 매칭 삭제
-        </button>
+        {/* Zone 1 — 진행 액션 (primary) */}
+        {(match.status === 'scheduled' || match.status === 'draft') && (
+          <div className={styles.actionSectionPrimary}>
+            {match.status === 'scheduled' && (
+              <button className={styles.primaryBtn} onClick={handleCompleteClick} disabled={actionLoading}>
+                미팅 완료 처리
+              </button>
+            )}
+            {match.status === 'draft' && (
+              <button className={styles.primaryBtn} onClick={handleStartMatch} disabled={actionLoading}>
+                {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Zone 2 — 일정 관리 (schedule edits) */}
         {match.status === 'scheduled' && (
-          <>
-            <button className={styles.actionBtn} onClick={handleCompleteClick} disabled={actionLoading}>
-              미팅 완료 처리
-            </button>
-            <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
-              <Calendar size={14} /> 일정 수정
-            </button>
-            <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
-              <RefreshCw size={14} /> 일정 재조율
-            </button>
+          <div className={styles.actionSectionEdit}>
+            <p className={styles.actionSectionLabel}>일정 관리</p>
+            <div className={styles.actionSectionRow}>
+              <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
+                <Calendar size={14} /> 일정 수정
+              </button>
+              <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
+                <RefreshCw size={14} /> 일정 재조율
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Zone 3 — 종료/삭제 (destructive) */}
+        <div className={styles.actionSectionDestructive}>
+          {match.status === 'scheduled' && (
             <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
               약속 취소
             </button>
-          </>
-        )}
-        {match.status === 'draft' && (
-          <button className={styles.actionBtn} onClick={handleStartMatch} disabled={actionLoading}>
-            {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
+          )}
+          {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
+            <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
+              매칭 취소
+            </button>
+          )}
+          <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
+            <Trash2 size={14} /> 매칭 삭제
           </button>
-        )}
-        {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
-          <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
-            매칭 취소
-          </button>
-        )}
+        </div>
       </div>
 
       {/* Cancelled info */}
