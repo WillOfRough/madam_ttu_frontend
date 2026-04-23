@@ -189,6 +189,7 @@ export default function MatchDetail() {
   const [editLocationLink, setEditLocationLink] = useState('');
   const [submittedTimes, setSubmittedTimes] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -343,11 +344,16 @@ export default function MatchDetail() {
     }
   };
 
-  const handleUpdateSchedule = async () => {
+  const handleUpdateScheduleClick = () => {
     if (!editDate || !editStartTime || !editVenue.trim()) {
       toast.error('날짜 / 시작 시간 / 장소는 필수입니다.');
       return;
     }
+    setShowEditConfirm(true);
+  };
+
+  const handleUpdateSchedule = async () => {
+    setShowEditConfirm(false);
     setActionLoading(true);
     try {
       await matchService.updateMatchSchedule(matchId, {
@@ -1096,7 +1102,7 @@ export default function MatchDetail() {
           >
             <h3 className={styles.modalTitle}>약속 일정 수정</h3>
             <p className={styles.editScheduleHint}>
-              확정된 일정을 즉시 덮어씁니다. 가용시간 재등록은 &ldquo;일정 재조율&rdquo;을 이용하세요.
+              확정된 일정을 즉시 덮어쓰고, 양쪽 회원에게 새 일정 안내가 재발송됩니다. 먼저 양쪽 회원과 합의 후 진행해주세요. 가용시간 재등록이 필요하면 &ldquo;일정 재조율&rdquo;을 이용하세요.
             </p>
             <div className={styles.editScheduleLayout}>
               <div className={styles.editScheduleLeft}>
@@ -1191,7 +1197,7 @@ export default function MatchDetail() {
               </button>
               <button
                 className={styles.confirmModalBtn}
-                onClick={handleUpdateSchedule}
+                onClick={handleUpdateScheduleClick}
                 disabled={actionLoading || !editDate || !editStartTime || !editVenue.trim()}
               >
                 {actionLoading ? '저장 중...' : '저장'}
@@ -1199,6 +1205,19 @@ export default function MatchDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Schedule Confirm Alert — 저장 직전 사전 합의 확인 */}
+      {showEditConfirm && (
+        <ConfirmModal
+          title="약속 일정 수정"
+          message="양쪽 회원과 변경 사항을 합의하셨나요? 저장하면 새 일정이 즉시 적용되고, 양쪽 회원에게 변경 안내 메시지가 재발송됩니다."
+          confirmLabel="네, 저장합니다"
+          cancelLabel="돌아가기"
+          danger
+          onConfirm={handleUpdateSchedule}
+          onCancel={() => setShowEditConfirm(false)}
+        />
       )}
     </div>
   );
