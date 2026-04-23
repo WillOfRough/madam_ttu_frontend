@@ -1104,14 +1104,18 @@ export default function MatchDetail() {
           </div>
         )}
 
-        {/* Zone 2 — 일정 관리 (schedule edits) */}
-        {match.status === 'scheduled' && (
+        {/* Zone 2 — 일정 관리 (schedule edits)
+            - 일정 수정: scheduled 만 (PATCH /schedule)
+            - 일정 재조율: arranging / scheduled 둘 다 (POST /reschedule) */}
+        {(match.status === 'scheduled' || match.status === 'arranging') && (
           <div className={styles.actionSectionEdit}>
             <p className={styles.actionSectionLabel}>일정 관리</p>
             <div className={styles.actionSectionRow}>
-              <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
-                <Calendar size={14} /> 일정 수정
-              </button>
+              {match.status === 'scheduled' && (
+                <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
+                  <Calendar size={14} /> 일정 수정
+                </button>
+              )}
               <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
                 <RefreshCw size={14} /> 일정 재조율
               </button>

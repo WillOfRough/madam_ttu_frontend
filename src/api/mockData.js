@@ -2157,15 +2157,22 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '일정이 확정되었습니다.' };
   }
 
-  // POST /api/v1/matches/:matchId/reschedule (가용시간 재등록 요청)
+  // POST /api/v1/matches/:matchId/reschedule (가용시간 재등록 요청 — arranging / scheduled 모두 허용)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/reschedule$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (m.status !== 'arranging') throw Object.assign(new Error('arranging 상태에서만 재등록 요청할 수 있습니다.'), { status: 400 });
-    // Clear available times and revert to scheduling
+    if (m.status !== 'arranging' && m.status !== 'scheduled') {
+      throw Object.assign(new Error('arranging 또는 scheduled 상태에서만 재등록 요청할 수 있습니다.'), { status: 400, body: { errorCode: '9.007' } });
+    }
+    // Clear available times and any confirmed schedule, revert to scheduling
     delete availableTimes[m.clientA.proposalToken];
     delete availableTimes[m.clientB.proposalToken];
+    m.confirmedAt = null;
+    m.meetingDate = null;
+    m.location = '';
+    m.locationLink = null;
+    m.endTime = '';
     m.status = 'scheduling';
     return { success: true, message: '가용시간 재등록이 요청되었습니다.' };
   }
