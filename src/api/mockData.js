@@ -1411,6 +1411,7 @@ function computeSettlementsForMatch(m) {
     if (isOwner && isCreator) role = 'both';
     else if (isOwner) role = 'client_owner';
     else role = 'matchmaker';
+    const { status: stlStatus, matchEndedAt, settledAt } = deriveSettlementStatus(m);
     rows.push({
       id: `stl-${m.matchId}-${idx++}`,
       matchId: m.matchId,
@@ -1420,14 +1421,36 @@ function computeSettlementsForMatch(m) {
       share,
       baseAmount,
       amount: Math.floor((baseAmount * share) / 10),
-      status: 'pending',
-      settledAt: null,
+      status: stlStatus,
+      settledAt,
       settledById: null,
       memo: null,
       createdAt,
+      matchEndedAt,
     });
   }
   return rows;
+}
+
+function deriveSettlementStatus(m) {
+  if (m.status === 'cancelled') {
+    const endedAt = m.cancelledAt || m.meetingDate || m.createdAt;
+    return { status: 'cancelled', matchEndedAt: endedAt, settledAt: null };
+  }
+  if (m.status === 'completed') {
+    const endedAt = m.completedAt || m.meetingDate || m.createdAt;
+    // 샘플 다양성을 위해 일부는 settled, 대부분은 ready_to_settle로 세팅
+    const settledSample = /[02]$/.test(m.matchId);
+    if (settledSample) {
+      return { status: 'settled', matchEndedAt: endedAt, settledAt: endedAt };
+    }
+    return { status: 'ready_to_settle', matchEndedAt: endedAt, settledAt: null };
+  }
+  if (m.status === 'scheduled' || m.status === 'arranging' || m.status === 'scheduling') {
+    return { status: 'confirmed', matchEndedAt: null, settledAt: null };
+  }
+  // draft / proposal_sent / proposal_accepted / awaiting_payment → 입금 전
+  return { status: 'pending', matchEndedAt: null, settledAt: null };
 }
 
 function buildAllSettlements() {
@@ -2687,8 +2710,8 @@ export async function mockFetch(path, options = {}) {
       if (!byDate[date]) byDate[date] = { date, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
       byDate[date].count += 1;
       byDate[date].totalAmount += s.amount;
-      if (s.status === 'paid') byDate[date].paidAmount += s.amount;
-      else if (s.status === 'pending') byDate[date].pendingAmount += s.amount;
+      if (s.status === 'settled' || s.status === 'paid') byDate[date].paidAmount += s.amount;
+      else if (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle') byDate[date].pendingAmount += s.amount;
     }
     return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
   }
@@ -2706,8 +2729,8 @@ export async function mockFetch(path, options = {}) {
       if (!byMonth[month]) byMonth[month] = { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
       byMonth[month].count += 1;
       byMonth[month].totalAmount += s.amount;
-      if (s.status === 'paid') byMonth[month].paidAmount += s.amount;
-      else if (s.status === 'pending') byMonth[month].pendingAmount += s.amount;
+      if (s.status === 'settled' || s.status === 'paid') byMonth[month].paidAmount += s.amount;
+      else if (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle') byMonth[month].pendingAmount += s.amount;
     }
     return { year, items: Object.values(byMonth).sort((a, b) => a.month - b.month) };
   }
@@ -2728,14 +2751,14 @@ export async function mockFetch(path, options = {}) {
     const all = buildAllSettlements();
     const target = all.find((s) => s.id === id);
     if (!target) throw Object.assign(new Error('정산 내역을 찾을 수 없습니다.'), { status: 404, body: { error: 'SETTLEMENT_NOT_FOUND' } });
-    if (target.status === 'paid') {
-      throw Object.assign(new Error('이미 지급 완료된 정산입니다.'), { status: 409, body: { error: 'SETTLEMENT_INVALID_STATUS' } });
+    if (target.status === 'settled' || target.status === 'paid') {
+      throw Object.assign(new Error('이미 정산 완료된 건입니다.'), { status: 409, body: { error: 'SETTLEMENT_INVALID_STATUS' } });
     }
-    target.status = 'paid';
+    target.status = 'settled';
     target.settledAt = new Date().toISOString();
     target.settledById = currentUser.id;
     if (memo) target.memo = memo;
-    return { success: true, message: '정산 지급이 완료 처리되었습니다.' };
+    return { success: true, message: '정산이 완료 처리되었습니다.' };
   }
 
   // fallback

@@ -3,7 +3,17 @@ import { DollarSign, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import * as settlementService from '../../api/settlementService';
 import styles from './Settlement.module.css';
 
-const STATUS_LABELS = { pending: '대기', paid: '지급 완료', cancelled: '취소' };
+const STATUS_LABELS = {
+  pending: '입금대기',
+  confirmed: '입금완료',
+  ready_to_settle: '정산대상',
+  settled: '정산완료',
+  paid: '정산완료',
+  cancelled: '취소',
+  refunded: '환불',
+};
+
+const FILTER_OPTIONS = ['', 'ready_to_settle', 'settled', 'confirmed', 'pending', 'cancelled'];
 const ROLE_LABELS = { client_owner: '매물', matchmaker: '매칭', both: '매물+매칭' };
 
 function formatCurrency(amount) {
@@ -50,7 +60,7 @@ export default function Settlement() {
   const [daily, setDaily] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalElements: 0 });
-  const [statusFilter, setStatusFilter] = useState('pending');
+  const [statusFilter, setStatusFilter] = useState('ready_to_settle');
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,7 +161,7 @@ export default function Settlement() {
         <div className={styles.listHeader}>
           <span className={styles.listTitle}>정산 내역 {pagination.totalElements > 0 && `(${pagination.totalElements}건)`}</span>
           <div className={styles.filterBar}>
-            {['', 'pending', 'paid', 'cancelled'].map((s) => (
+            {FILTER_OPTIONS.map((s) => (
               <button
                 key={s || 'all'}
                 className={`${styles.filterChip} ${statusFilter === s ? styles.filterChipActive : ''}`}
@@ -175,6 +185,7 @@ export default function Settlement() {
               <thead>
                 <tr>
                   <th>생성일</th>
+                  <th>매칭 종료일</th>
                   <th>역할</th>
                   <th className={styles.shareCol}>비율</th>
                   <th className={styles.amountCol}>금액</th>
@@ -185,6 +196,7 @@ export default function Settlement() {
                 {settlements.map((s) => (
                   <tr key={s.id}>
                     <td>{formatDate(s.createdAt)}</td>
+                    <td className={styles.endedAtCol}>{formatDate(s.matchEndedAt)}</td>
                     <td>
                       <span className={`${styles.roleBadge} ${styles[`role_${s.role}`] || ''}`}>
                         {ROLE_LABELS[s.role] || s.role}

@@ -299,9 +299,19 @@
   color: #4b5563;
 }
 
-.status_pending   { background: #fff3e0; color: #c9730c; }
-.status_paid      { background: #e6f4ea; color: #1e7a3a; }
-.status_cancelled { background: #f3f4f6; color: #6b7280; }
+.status_pending         { background: #fff3e0; color: #c9730c; }
+.status_confirmed       { background: #e3f2fd; color: #1565c0; }
+.status_ready_to_settle { background: var(--coral-dim, #fff1ee); color: var(--coral, #ff7e67); font-weight: 700; }
+.status_settled         { background: #e6f4ea; color: #1e7a3a; }
+.status_paid            { background: #e6f4ea; color: #1e7a3a; }
+.status_cancelled       { background: #f3f4f6; color: #6b7280; }
+.status_refunded        { background: #f5f5f5; color: #9ca3af; font-style: italic; }
+
+.endedAtCol {
+  color: var(--charcoal-light, #6b7280);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
 
 /* ── States ── */
 .loadingRow,
