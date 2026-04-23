@@ -1755,3 +1755,141 @@
     flex-wrap: wrap;
   }
 }
+
+/* ── Edit Schedule Modal ── */
+.editScheduleModal {
+  max-width: 640px;
+}
+
+.editScheduleHint {
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  margin-bottom: var(--space-lg);
+  line-height: 1.5;
+}
+
+.editScheduleLayout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.editScheduleLeft {
+  flex: 3;
+  min-width: 0;
+}
+
+.editTimeRow {
+  display: flex;
+  gap: 12px;
+}
+
+.editTimeRow .modalField {
+  flex: 1;
+  min-width: 0;
+}
+
+.editTimesPanel {
+  flex: 2;
+  min-width: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border-left: 1.5px dashed var(--border);
+  padding-left: 18px;
+}
+
+.editTimesPanelTitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.editTimeChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-light);
+  background: var(--bg);
+  cursor: pointer;
+  margin-bottom: 6px;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.editTimeChip:hover {
+  border-color: var(--coral, #e8654a);
+  background: var(--coral-pale, #fff4f1);
+}
+
+.editTimeChipActive {
+  border-color: var(--coral, #e8654a);
+  background: var(--coral-dim, #fde8e3);
+}
+
+.editTimeChipName {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--navy-glow);
+  color: var(--navy);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.editTimeChipDate {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--charcoal);
+  flex: 1;
+  min-width: 0;
+}
+
+.editTimeChipCurrent {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: var(--coral-pale, #fff4f1);
+  color: var(--coral, #e8654a);
+  border: 1px solid var(--coral, #e8654a);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.editTimesEmpty {
+  font-size: 0.78rem;
+  color: var(--charcoal-pale);
+  font-style: italic;
+  line-height: 1.5;
+  margin-top: var(--space-sm);
+}
+
+@media (max-width: 640px) {
+  .editScheduleModal {
+    max-width: 100%;
+  }
+
+  .editScheduleLayout {
+    flex-direction: column;
+  }
+
+  .editTimesPanel {
+    border-left: none;
+    border-top: 1.5px dashed var(--border);
+    padding-left: 0;
+    padding-top: 16px;
+    max-height: 200px;
+    width: 100%;
+  }
+}

@@ -181,6 +181,14 @@ export default function MatchDetail() {
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const [showEditSchedule, setShowEditSchedule] = useState(false);
+  const [editDate, setEditDate] = useState('');
+  const [editStartTime, setEditStartTime] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
+  const [editVenue, setEditVenue] = useState('');
+  const [editLocationLink, setEditLocationLink] = useState('');
+  const [submittedTimes, setSubmittedTimes] = useState([]);
+  const [loadingTimes, setLoadingTimes] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -297,6 +305,71 @@ export default function MatchDetail() {
     setActionLoading(false);
   };
 
+
+  const openEditScheduleModal = async () => {
+    const cs = match.confirmedSchedule || {};
+    setEditDate(cs.date || '');
+    setEditStartTime(cs.startTime ? cs.startTime.slice(0, 5) : '');
+    setEditEndTime(cs.endTime ? cs.endTime.slice(0, 5) : '');
+    setEditVenue(cs.location || '');
+    setEditLocationLink(cs.locationLink || '');
+    setShowEditSchedule(true);
+    setLoadingTimes(true);
+    try {
+      const res = await matchService.getMatchAvailableTimes(matchId);
+      setSubmittedTimes(res?.times || []);
+    } catch {
+      setSubmittedTimes([]);
+    }
+    setLoadingTimes(false);
+  };
+
+  const closeEditScheduleModal = () => {
+    setShowEditSchedule(false);
+    setEditDate('');
+    setEditStartTime('');
+    setEditEndTime('');
+    setEditVenue('');
+    setEditLocationLink('');
+    setSubmittedTimes([]);
+  };
+
+  const applyTimeSlotToEdit = (slot) => {
+    setEditDate(slot.date);
+    setEditStartTime(slot.startTime ? slot.startTime.slice(0, 5) : '');
+    if (slot.startTime) {
+      const hhmm = slot.startTime.slice(0, 5);
+      setEditEndTime(addHour(hhmm));
+    }
+  };
+
+  const handleUpdateSchedule = async () => {
+    if (!editDate || !editStartTime || !editVenue.trim()) {
+      toast.error('날짜 / 시작 시간 / 장소는 필수입니다.');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await matchService.updateMatchSchedule(matchId, {
+        date: editDate,
+        startTime: editStartTime,
+        endTime: editEndTime || null,
+        location: editVenue.trim(),
+        locationLink: editLocationLink.trim() || null,
+      });
+      toast.success('약속 일정이 변경되었습니다.');
+      closeEditScheduleModal();
+      reload();
+    } catch (err) {
+      const code = err?.body?.errorCode;
+      if (code === '9.007') {
+        toast.error('scheduled 상태에서만 수정 가능합니다.');
+      } else {
+        toast.error(err.message || '일정 수정에 실패했습니다.');
+      }
+    }
+    setActionLoading(false);
+  };
 
   const isMeetingTimeReached = () => {
     const schedule = match?.confirmedSchedule;
@@ -835,6 +908,9 @@ export default function MatchDetail() {
             <button className={styles.actionBtn} onClick={handleCompleteClick} disabled={actionLoading}>
               미팅 완료 처리
             </button>
+            <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
+              <Calendar size={14} /> 일정 수정
+            </button>
             <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
               <RefreshCw size={14} /> 일정 재조율
             </button>
@@ -1005,6 +1081,120 @@ export default function MatchDetail() {
                 disabled={actionLoading || !selectedTimeId}
               >
                 {actionLoading ? '확정 중...' : '약속 확정'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Schedule Modal */}
+      {showEditSchedule && (
+        <div className={styles.overlay} onClick={closeEditScheduleModal}>
+          <div
+            className={`${styles.modal} ${styles.editScheduleModal}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className={styles.modalTitle}>약속 일정 수정</h3>
+            <p className={styles.editScheduleHint}>
+              확정된 일정을 즉시 덮어씁니다. 가용시간 재등록은 &ldquo;일정 재조율&rdquo;을 이용하세요.
+            </p>
+            <div className={styles.editScheduleLayout}>
+              <div className={styles.editScheduleLeft}>
+                <div className={styles.modalField}>
+                  <label className={styles.modalLabel}>날짜</label>
+                  <input
+                    type="date"
+                    className={styles.modalInput}
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                  />
+                </div>
+                <div className={styles.editTimeRow}>
+                  <div className={styles.modalField}>
+                    <label className={styles.modalLabel}>시작 시간</label>
+                    <input
+                      type="time"
+                      className={styles.modalInput}
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.modalField}>
+                    <label className={styles.modalLabel}>종료 시간 (선택)</label>
+                    <input
+                      type="time"
+                      className={styles.modalInput}
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className={styles.modalField}>
+                  <label className={styles.modalLabel}>장소</label>
+                  <input
+                    type="text"
+                    className={styles.modalInput}
+                    value={editVenue}
+                    onChange={(e) => setEditVenue(e.target.value)}
+                    placeholder="예: 청담동 르카페"
+                  />
+                </div>
+                <div className={styles.modalField}>
+                  <label className={styles.modalLabel}>장소 링크 (선택)</label>
+                  <input
+                    type="url"
+                    className={styles.modalInput}
+                    value={editLocationLink}
+                    onChange={(e) => setEditLocationLink(e.target.value)}
+                    placeholder="예: https://naver.me/abc123"
+                  />
+                </div>
+                {!loadingTimes && submittedTimes.length === 0 && (
+                  <p className={styles.editTimesEmpty}>
+                    제출된 가용시간이 없어요. 날짜·시간을 직접 입력해주세요.
+                  </p>
+                )}
+              </div>
+              {(loadingTimes || submittedTimes.length > 0) && (
+                <div className={styles.editTimesPanel}>
+                  <p className={styles.editTimesPanelTitle}>회원 제출 가용시간</p>
+                  {loadingTimes ? (
+                    <p className={styles.editTimesEmpty}>불러오는 중...</p>
+                  ) : (
+                    submittedTimes.map((slot) => {
+                      const isActive =
+                        slot.date === editDate &&
+                        slot.startTime &&
+                        slot.startTime.slice(0, 5) === editStartTime;
+                      return (
+                        <button
+                          key={slot.timeId}
+                          type="button"
+                          className={`${styles.editTimeChip} ${isActive ? styles.editTimeChipActive : ''}`}
+                          onClick={() => applyTimeSlotToEdit(slot)}
+                        >
+                          <span className={styles.editTimeChipName}>{slot.clientName}</span>
+                          <span className={styles.editTimeChipDate}>{formatSlotDisplay(slot)}</span>
+                          {slot.selected && (
+                            <span className={styles.editTimeChipCurrent}>현재</span>
+                          )}
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+            <div className={styles.modalActions}>
+              <button className={styles.cancelModalBtn} onClick={closeEditScheduleModal}>
+                취소
+              </button>
+              <button
+                className={styles.confirmModalBtn}
+                onClick={handleUpdateSchedule}
+                disabled={actionLoading || !editDate || !editStartTime || !editVenue.trim()}
+              >
+                {actionLoading ? '저장 중...' : '저장'}
               </button>
             </div>
           </div>

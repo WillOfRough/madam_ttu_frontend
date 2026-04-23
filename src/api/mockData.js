@@ -13,7 +13,7 @@ const accounts = {
     password: 'hancom123',
     name: '김성중',
     nickname: '',
-    phone: '010-1234-5678',
+    phone: '010-4540-7441',
     role: 'manager',
     bankName: 'KB국민은행',
     bankNumber: '123-456-789012',
@@ -24,7 +24,7 @@ const accounts = {
     password: 'hancom123',
     name: '관리자',
     nickname: '',
-    phone: '010-0000-0000',
+    phone: '010-4540-7441',
     role: 'admin',
   },
   'minting118@naver.com': {
@@ -33,7 +33,7 @@ const accounts = {
     password: 'hancom123',
     name: '정산관리자',
     nickname: '',
-    phone: '010-9999-9999',
+    phone: '010-4540-7441',
     role: 'admin',
   },
 };
@@ -61,7 +61,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c001', 'ef1b2c3d-1234-5678-9abc-def012345001'],
     gender: 'female',
     birthDate: '1995-03-12',
-    phone: '010-9876-5432',
+    phone: '010-4540-7441',
 
     location: '서울 강남구',
     workLocation: '서울 용산구',
@@ -90,7 +90,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c002'],
     gender: 'male',
     birthDate: '1993-07-22',
-    phone: '010-1234-5678',
+    phone: '010-4540-7441',
 
     location: '서울 서초구',
     workLocation: '경기 성남시 분당구',
@@ -119,7 +119,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c003', 'ef1b2c3d-1234-5678-9abc-def012345003', 'ab2d3e4f-5678-9abc-def0-123456789003'],
     gender: 'female',
     birthDate: '1996-11-05',
-    phone: '010-5555-1234',
+    phone: '010-4540-7441',
 
     location: '서울 마포구',
     workLocation: '서울 강남구',
@@ -147,7 +147,7 @@ const clients = [
     photoIds: [],
     gender: 'male',
     birthDate: '1992-01-30',
-    phone: '010-7777-8888',
+    phone: '010-4540-7441',
 
     location: '서울 용산구',
     workLocation: '서울 서초구',
@@ -175,7 +175,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c005', 'ef1b2c3d-1234-5678-9abc-def012345005'],
     gender: 'female',
     birthDate: '1994-08-18',
-    phone: '010-3333-4444',
+    phone: '010-4540-7441',
 
     location: '서울 성동구',
     workLocation: '서울 성동구',
@@ -203,7 +203,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c006'],
     gender: 'male',
     birthDate: '1991-04-09',
-    phone: '010-2222-9999',
+    phone: '010-4540-7441',
 
     location: '서울 강남구',
     workLocation: '서울 강남구 일원동',
@@ -230,7 +230,7 @@ const clients = [
     photoIds: [],
     gender: 'female',
     birthDate: '1997-06-25',
-    phone: '010-8888-1111',
+    phone: '010-4540-7441',
 
     location: '서울 송파구',
     workLocation: '서울 서초구',
@@ -257,7 +257,7 @@ const clients = [
     photoIds: [],
     gender: 'male',
     birthDate: '1993-12-03',
-    phone: '010-6666-5555',
+    phone: '010-4540-7441',
 
     location: '서울 영등포구',
     workLocation: '서울 마포구 상암동',
@@ -284,7 +284,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c009', 'ef1b2c3d-1234-5678-9abc-def012345009', 'ab2d3e4f-5678-9abc-def0-123456789009', 'ff3c38a7-8465-4a6a-81a3-73c917990009'],
     gender: 'female',
     birthDate: '1995-09-14',
-    phone: '010-4444-7777',
+    phone: '010-4540-7441',
 
     location: '서울 중구',
     workLocation: '서울 중구',
@@ -311,7 +311,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c010', 'ef1b2c3d-1234-5678-9abc-def012345010', 'ab2d3e4f-5678-9abc-def0-123456789010'],
     gender: 'male',
     birthDate: '1990-02-28',
-    phone: '010-1111-2222',
+    phone: '010-4540-7441',
 
     location: '서울 강남구',
     workLocation: '서울 강남구 역삼동',
@@ -338,7 +338,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c011', 'ef1b2c3d-1234-5678-9abc-def012345011'],
     gender: 'female',
     birthDate: '1994-05-20',
-    phone: '010-3333-1111',
+    phone: '010-4540-7441',
     location: '서울 강남구',
     workLocation: '경기 성남시 판교',
     height: 167,
@@ -362,7 +362,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c012'],
     gender: 'male',
     birthDate: '1991-11-15',
-    phone: '010-7777-2222',
+    phone: '010-4540-7441',
     location: '서울 서초구',
     workLocation: '서울 영등포구 여의도',
     height: 181,
@@ -386,7 +386,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c013', 'ef1b2c3d-1234-5678-9abc-def012345013'],
     gender: 'female',
     birthDate: '1996-03-08',
-    phone: '010-5555-9999',
+    phone: '010-4540-7441',
     location: '서울 마포구',
     workLocation: '서울 서초구',
     height: 164,
@@ -410,7 +410,7 @@ const clients = [
     photoIds: ['cd3c38a7-8465-4a6a-81a3-73c91799c014', 'ef1b2c3d-1234-5678-9abc-def012345014', 'ab2d3e4f-5678-9abc-def0-123456789014'],
     gender: 'male',
     birthDate: '1992-08-25',
-    phone: '010-2222-8888',
+    phone: '010-4540-7441',
     location: '서울 용산구',
     workLocation: '서울 강남구',
     height: 179,
@@ -1200,6 +1200,21 @@ availableTimes['PrTk13cMp7A1'] = [
 availableTimes['PrTk14dNq8B2'] = [
   { timeId: 'time-e01', date: '2026-03-01', startTime: '18:00:00', clientName: '배진우', selected: false },
   { timeId: 'time-e02', date: '2026-03-01', startTime: '19:00:00', clientName: '배진우', selected: false },
+];
+
+// match004: scheduled — 양쪽 가용시간 제출 + 2026-03-18 19:00 확정 (일정 수정 API 테스트용)
+availableTimes['PrTk09gH1iJ9'] = [
+  { timeId: 'time-f01', date: '2026-03-17', startTime: '18:00:00', clientName: '임수아', selected: false },
+  { timeId: 'time-f02', date: '2026-03-17', startTime: '20:00:00', clientName: '임수아', selected: false },
+  { timeId: 'time-f03', date: '2026-03-18', startTime: '19:00:00', clientName: '임수아', selected: true },
+  { timeId: 'time-f04', date: '2026-03-19', startTime: '20:00:00', clientName: '임수아', selected: false },
+  { timeId: 'time-f05', date: '2026-03-20', startTime: '19:00:00', clientName: '임수아', selected: false },
+];
+availableTimes['PrTk10kL2mN0'] = [
+  { timeId: 'time-g01', date: '2026-03-17', startTime: '19:00:00', clientName: '강도윤', selected: false },
+  { timeId: 'time-g02', date: '2026-03-18', startTime: '19:00:00', clientName: '강도윤', selected: false },
+  { timeId: 'time-g03', date: '2026-03-19', startTime: '18:00:00', clientName: '강도윤', selected: false },
+  { timeId: 'time-g04', date: '2026-03-20', startTime: '19:00:00', clientName: '강도윤', selected: false },
 ];
 
 // Build proposal lookup from matches
@@ -2004,6 +2019,55 @@ export async function mockFetch(path, options = {}) {
     delete availableTimes[m.clientB.proposalToken];
     m.status = 'scheduling';
     return { success: true, message: '가용시간 재등록이 요청되었습니다.' };
+  }
+
+  // PATCH /api/v1/matches/:matchId/schedule (매니저 약속 일정 직접 수정 — scheduled 상태에서만)
+  if (method === 'PATCH' && /^\/api\/v1\/matches\/[^/]+\/schedule$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { errorCode: '9.001' } });
+    if (m.status !== 'scheduled') throw Object.assign(new Error('scheduled 상태에서만 수정할 수 있습니다.'), { status: 400, body: { errorCode: '9.007' } });
+    if (!body.date || !body.startTime || !body.location) {
+      throw Object.assign(new Error('date / startTime / location 은 필수입니다.'), { status: 400, body: { errorCode: 'COMMON_INVALID_INPUT' } });
+    }
+    // Overwrite confirmed fields; keep status and available_times untouched
+    m.location = body.location;
+    m.locationLink = body.locationLink || null;
+    m.endTime = body.endTime || '';
+    m.meetingDate = `${body.date}T${body.startTime}`;
+    // Preserve existing selected row; DO NOT modify availableTimes `selected` flags
+    return { success: true, message: '약속 일정이 변경되었습니다.', data: null };
+  }
+
+  // GET /api/v1/matches/:matchId/available-times (매니저용 가용시간 조회 — 상태 제한 없음)
+  if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+\/available-times$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { errorCode: '9.001' } });
+    const tokenA = m.clientA?.proposalToken;
+    const tokenB = m.clientB?.proposalToken;
+    const rawA = (availableTimes[tokenA] || []).map((t) => ({
+      timeId: t.timeId,
+      clientId: m.clientA?.clientId ?? null,
+      clientName: m.clientA?.clientName || '삭제한 회원',
+      date: t.date,
+      startTime: t.startTime,
+      selected: !!t.selected,
+    }));
+    const rawB = (availableTimes[tokenB] || []).map((t) => ({
+      timeId: t.timeId,
+      clientId: m.clientB?.clientId ?? null,
+      clientName: m.clientB?.clientName || '삭제한 회원',
+      date: t.date,
+      startTime: t.startTime,
+      selected: !!t.selected,
+    }));
+    const times = [...rawA, ...rawB].sort((x, y) => {
+      if (x.date !== y.date) return x.date < y.date ? -1 : 1;
+      return x.startTime < y.startTime ? -1 : 1;
+    });
+    return { times };
   }
 
   // POST /api/v1/matches/:matchId/cancel
