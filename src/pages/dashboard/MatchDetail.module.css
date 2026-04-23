@@ -2078,3 +2078,72 @@
     width: 100%;
   }
 }
+
+.remindStatusLine {
+  font-size: 0.82rem;
+  color: var(--charcoal-light);
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+}
+
+.remindStatusLine strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.remindDescLine {
+  font-size: 0.9rem;
+  color: var(--charcoal);
+  margin: 0 0 14px 0;
+  line-height: 1.6;
+}
+
+.remindDescLine strong {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.remindRecipientList {
+  list-style: none;
+  padding: 12px 14px;
+  margin: 0 0 20px 0;
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.remindRecipientItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+}
+
+.remindRecipientName {
+  font-weight: 700;
+  color: var(--charcoal);
+  min-width: 60px;
+}
+
+.remindRecipientReason {
+  font-size: 0.76rem;
+  padding: 2px 8px;
+  background: var(--coral-dim);
+  color: var(--coral);
+  border-radius: var(--radius-full);
+  letter-spacing: -0.005em;
+}
+
+.remindEmptyMsg {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  line-height: 1.6;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin: 0 0 20px 0;
+  text-align: center;
+}

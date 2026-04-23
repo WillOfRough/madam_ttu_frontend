@@ -154,6 +154,67 @@ function generateTimeOptions(fromTime) {
   return options;
 }
 
+const REMIND_STATUS_LABEL = {
+  proposal_sent: '프로필 제안 발송 · 응답 대기',
+  proposal_accepted: '프로필 제안 단계 · 상대방 응답 대기',
+  awaiting_payment: '입금 대기',
+  scheduling: '일정 조율 중',
+  scheduled: '약속 확정',
+  completed: '만남 완료 · 에프터 응답 대기',
+};
+
+const REMIND_ACTION_LABEL = {
+  proposal_sent: '프로필 제안 안내',
+  proposal_accepted: '프로필 제안 안내',
+  awaiting_payment: '입금 안내',
+  scheduling: '일정 등록 안내',
+  scheduled: '만남 확정 안내',
+  completed: '에프터 응답 안내',
+};
+
+function getRemindPreview(match, payments) {
+  const empty = { statusLabel: '-', actionLabel: '진행 안내', recipients: [] };
+  if (!match) return empty;
+  const A = match.clientA || {};
+  const B = match.clientB || {};
+  const st = match.status;
+  const recipients = [];
+  if (st === 'proposal_sent') {
+    const p = A.role === 'proposer' ? A : B.role === 'proposer' ? B : null;
+    if (p?.clientName) recipients.push({ name: p.clientName, reason: '프로필 제안 응답 전' });
+  } else if (st === 'proposal_accepted') {
+    const r = A.role === 'receiver' ? A : B.role === 'receiver' ? B : null;
+    if (r?.clientName) recipients.push({ name: r.clientName, reason: '프로필 제안 응답 전' });
+  } else if (st === 'awaiting_payment') {
+    const pA = (payments || []).find((p) => p.clientId === A.clientId);
+    const pB = (payments || []).find((p) => p.clientId === B.clientId);
+    const unpaidA = pA ? pA.status !== 'confirmed' : true;
+    const unpaidB = pB ? pB.status !== 'confirmed' : true;
+    if (unpaidA && A.clientName) recipients.push({ name: A.clientName, reason: '입금 미확인' });
+    if (unpaidB && B.clientName) recipients.push({ name: B.clientName, reason: '입금 미확인' });
+  } else if (st === 'scheduling') {
+    const pendingA = A.clientName && !A.availableTimesSubmitted;
+    const pendingB = B.clientName && !B.availableTimesSubmitted;
+    if (pendingA) recipients.push({ name: A.clientName, reason: '가용시간 미제출' });
+    if (pendingB) recipients.push({ name: B.clientName, reason: '가용시간 미제출' });
+    if (recipients.length === 0) {
+      if (A.clientName) recipients.push({ name: A.clientName, reason: '일정 등록 재안내' });
+      if (B.clientName) recipients.push({ name: B.clientName, reason: '일정 등록 재안내' });
+    }
+  } else if (st === 'scheduled') {
+    if (A.clientName) recipients.push({ name: A.clientName, reason: '확정 일정 재안내' });
+    if (B.clientName) recipients.push({ name: B.clientName, reason: '확정 일정 재안내' });
+  } else if (st === 'completed') {
+    if (A.clientName && (A.afterResponse || 'pending') === 'pending') recipients.push({ name: A.clientName, reason: '에프터 응답 대기' });
+    if (B.clientName && (B.afterResponse || 'pending') === 'pending') recipients.push({ name: B.clientName, reason: '에프터 응답 대기' });
+  }
+  return {
+    statusLabel: REMIND_STATUS_LABEL[st] || '-',
+    actionLabel: REMIND_ACTION_LABEL[st] || '진행 안내',
+    recipients,
+  };
+}
+
 function getRefundStatus(meetingDate) {
   if (!meetingDate) return null;
   const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
@@ -191,6 +252,7 @@ export default function MatchDetail() {
   const [submittedTimes, setSubmittedTimes] = useState([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [showRemindConfirm, setShowRemindConfirm] = useState(false);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -381,7 +443,12 @@ export default function MatchDetail() {
     }
   };
 
+  const handleRemindClick = () => {
+    setShowRemindConfirm(true);
+  };
+
   const handleRemind = async () => {
+    setShowRemindConfirm(false);
     setActionLoading(true);
     try {
       const res = await matchService.remindMatch(matchId);
@@ -1028,7 +1095,7 @@ export default function MatchDetail() {
             <div className={styles.actionSectionRow}>
               <button
                 className={styles.actionBtn}
-                onClick={handleRemind}
+                onClick={handleRemindClick}
                 disabled={actionLoading || match.status === 'draft' || match.status === 'arranging'}
               >
                 <Send size={14} /> 진행 안내 재발송
@@ -1352,6 +1419,51 @@ export default function MatchDetail() {
           onCancel={() => setShowEditConfirm(false)}
         />
       )}
+
+      {/* Remind Preview Modal — 재발송 전 누구에게/왜 보내는지 미리보기 */}
+      {showRemindConfirm && (() => {
+        const preview = getRemindPreview(match, payments);
+        const empty = preview.recipients.length === 0;
+        return (
+          <div className={styles.overlay} onClick={() => setShowRemindConfirm(false)}>
+            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <h3 className={styles.modalTitle}>진행 안내 재발송</h3>
+              <p className={styles.remindStatusLine}>
+                현재 단계: <strong>{preview.statusLabel}</strong>
+              </p>
+              {empty ? (
+                <p className={styles.remindEmptyMsg}>
+                  현재 재발송이 필요한 회원이 없어요. 모두 응답 완료 상태입니다.
+                </p>
+              ) : (
+                <>
+                  <p className={styles.remindDescLine}>
+                    아래 회원에게 <strong>{preview.actionLabel}</strong> LMS를 재발송합니다.
+                  </p>
+                  <ul className={styles.remindRecipientList}>
+                    {preview.recipients.map((r) => (
+                      <li key={r.name} className={styles.remindRecipientItem}>
+                        <span className={styles.remindRecipientName}>{r.name}</span>
+                        <span className={styles.remindRecipientReason}>{r.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <div className={styles.modalActions}>
+                <button className={styles.cancelModalBtn} onClick={() => setShowRemindConfirm(false)}>
+                  {empty ? '확인' : '취소'}
+                </button>
+                {!empty && (
+                  <button className={styles.confirmModalBtn} onClick={handleRemind} disabled={actionLoading}>
+                    {actionLoading ? '재발송 중...' : '재발송'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
