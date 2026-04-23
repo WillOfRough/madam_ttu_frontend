@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { DollarSign, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { DollarSign, TrendingUp, Clock, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as settlementService from '../../api/settlementService';
 import styles from './Settlement.module.css';
 
@@ -15,6 +16,7 @@ const STATUS_LABELS = {
 
 const FILTER_OPTIONS = ['', 'ready_to_settle', 'settled', 'confirmed', 'pending', 'cancelled'];
 const ROLE_LABELS = { client_owner: '매물', matchmaker: '매칭', both: '매물+매칭' };
+const DAY_HEADERS = ['일', '월', '화', '수', '목', '금', '토'];
 
 function formatCurrency(amount) {
   return (amount ?? 0).toLocaleString('ko-KR');
@@ -30,34 +32,59 @@ function toYmd(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-// 월 전체 기간에 0으로 채운 일별 배열 생성
-function fillDailyRange(rawDaily, fromDate, toDate) {
-  const byDate = Object.fromEntries((rawDaily || []).map((d) => [d.date, d]));
-  const out = [];
-  const cursor = new Date(fromDate);
-  cursor.setHours(0, 0, 0, 0);
-  const end = new Date(toDate);
-  end.setHours(0, 0, 0, 0);
-  while (cursor <= end) {
-    const key = toYmd(cursor);
-    out.push(byDate[key] || { date: key, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 });
+// Returns date string "YYYY-MM-DD" from ISO string, treating as local time
+function isoToLocalYmd(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return toYmd(d);
+}
+
+// Build 35-42 calendar cells for the given year/month
+function getCalendarCells(year, month, items) {
+  const todayStr = toYmd(new Date());
+  const firstDay = new Date(year, month - 1, 1);
+  const lastDay = new Date(year, month, 0);
+
+  // Group items by date key: prefer matchEndedAt, fallback createdAt
+  const byDate = {};
+  items.forEach((s) => {
+    const key = isoToLocalYmd(s.matchEndedAt) || isoToLocalYmd(s.createdAt);
+    if (!key) return;
+    if (!byDate[key]) byDate[key] = [];
+    byDate[key].push(s);
+  });
+
+  // Start from the Sunday of the week containing the 1st
+  const startDow = firstDay.getDay(); // 0=Sun
+  const cells = [];
+  const cursor = new Date(year, month - 1, 1 - startDow);
+
+  // Determine total rows needed
+  const totalDays = startDow + lastDay.getDate();
+  const totalCells = Math.ceil(totalDays / 7) * 7;
+
+  for (let i = 0; i < totalCells; i++) {
+    const dateStr = toYmd(cursor);
+    cells.push({
+      date: new Date(cursor),
+      dateStr,
+      inMonth: cursor.getMonth() === month - 1,
+      isToday: dateStr === todayStr,
+      matches: byDate[dateStr] || [],
+    });
     cursor.setDate(cursor.getDate() + 1);
   }
-  return out;
+  return cells;
 }
 
 export default function Settlement() {
+  const navigate = useNavigate();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  // 최근 30일 범위
-  const to = new Date(now);
-  const from = new Date(now);
-  from.setDate(from.getDate() - 29);
-
   const [monthly, setMonthly] = useState(null);
-  const [daily, setDaily] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalElements: 0 });
   const [statusFilter, setStatusFilter] = useState('ready_to_settle');
@@ -65,23 +92,30 @@ export default function Settlement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Calendar state
+  const [calendarMonth, setCalendarMonth] = useState(() => ({
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+  }));
+  const [calendarItems, setCalendarItems] = useState([]);
+  const [calendarFading, setCalendarFading] = useState(false);
+
+  // Main data: monthly summary + paginated list
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     Promise.all([
       settlementService.getMonthlySummary({ year }),
-      settlementService.getDailySummary({ from: toYmd(from), to: toYmd(to) }),
       settlementService.listSettlements({
         status: statusFilter || undefined,
         page,
         size: 20,
       }),
     ])
-      .then(([monthlyRes, dailyRes, listRes]) => {
+      .then(([monthlyRes, listRes]) => {
         if (cancelled) return;
         setMonthly(monthlyRes);
-        setDaily(fillDailyRange(dailyRes, from, to));
         setSettlements(listRes?.data || []);
         setPagination(listRes?.pagination || { page: 0, totalPages: 1, totalElements: 0 });
       })
@@ -91,18 +125,67 @@ export default function Settlement() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, statusFilter, page]);
+
+  // Calendar data: full month fetch
+  useEffect(() => {
+    let cancelled = false;
+    const { year: y, month: m } = calendarMonth;
+    const lastDay = new Date(y, m, 0);
+    const fromStr = `${y}-${String(m).padStart(2, '0')}-01`;
+    const toStr = `${y}-${String(m).padStart(2, '0')}-${String(lastDay.getDate()).padStart(2, '0')}`;
+    settlementService.listSettlements({ from: fromStr, to: toStr, size: 500 })
+      .then((res) => {
+        if (cancelled) return;
+        setCalendarItems(res?.data || []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCalendarItems([]);
+      });
+    return () => { cancelled = true; };
+  }, [calendarMonth]);
 
   const thisMonth = useMemo(() => {
     const item = (monthly?.items || []).find((i) => i.month === month);
     return item || { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
   }, [monthly, month]);
 
-  const maxDaily = useMemo(
-    () => Math.max(1, ...daily.map((d) => d.totalAmount)),
-    [daily],
+  // Calendar display: only settled + ready_to_settle
+  const calendarDisplayItems = useMemo(
+    () => calendarItems.filter((s) => s.status === 'settled' || s.status === 'ready_to_settle'),
+    [calendarItems],
   );
+
+  const calendarCells = useMemo(
+    () => getCalendarCells(calendarMonth.year, calendarMonth.month, calendarDisplayItems),
+    [calendarMonth, calendarDisplayItems],
+  );
+
+  // Calendar month summary
+  const calendarSummary = useMemo(() => {
+    let readyCount = 0; let readyAmt = 0;
+    let settledCount = 0; let settledAmt = 0;
+    calendarDisplayItems.forEach((s) => {
+      if (s.status === 'ready_to_settle') { readyCount++; readyAmt += s.amount ?? 0; }
+      if (s.status === 'settled') { settledCount++; settledAmt += s.amount ?? 0; }
+    });
+    return { readyCount, readyAmt, settledCount, settledAmt };
+  }, [calendarDisplayItems]);
+
+  function changeMonth(delta) {
+    setCalendarFading(true);
+    setTimeout(() => {
+      setCalendarMonth((prev) => {
+        let m = prev.month + delta;
+        let y = prev.year;
+        if (m > 12) { m = 1; y++; }
+        if (m < 1) { m = 12; y--; }
+        return { year: y, month: m };
+      });
+      setCalendarFading(false);
+    }, 180);
+  }
 
   return (
     <div className={styles.page}>
@@ -125,34 +208,96 @@ export default function Settlement() {
         </div>
       </div>
 
-      {/* 최근 30일 일별 추이 차트 */}
-      <div className={styles.chartCard}>
-        <div className={styles.chartHeader}>
-          <span className={styles.chartTitle}>최근 30일 일별 정산 추이</span>
-          <span className={styles.chartLegend}>
-            <span className={styles.legendPaid} /> 지급 완료
-            <span className={styles.legendPending} /> 대기
-          </span>
+      {/* 월별 캘린더 */}
+      <div className={styles.calendarCard}>
+        {/* Header: month navigation */}
+        <div className={styles.calendarHeader}>
+          <button
+            className={styles.calendarNavBtn}
+            onClick={() => changeMonth(-1)}
+            aria-label="이전 달"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <div className={styles.calendarHeaderCenter}>
+            <span className={styles.calendarMonthTitle}>
+              {calendarMonth.year}년 {calendarMonth.month}월
+            </span>
+            <div className={styles.calendarSummaryRow}>
+              <span className={`${styles.calendarSummaryChip} ${styles.calendarSummaryChipReady}`}>
+                정산대상 {calendarSummary.readyCount}건 · ₩{formatCurrency(calendarSummary.readyAmt)}
+              </span>
+              <span className={styles.calendarSummarySep}>·</span>
+              <span className={`${styles.calendarSummaryChip} ${styles.calendarSummaryChipSettled}`}>
+                정산완료 {calendarSummary.settledCount}건 · ₩{formatCurrency(calendarSummary.settledAmt)}
+              </span>
+              <span className={styles.calendarSummarySep}>·</span>
+              <span className={styles.calendarSummaryTotal}>
+                월 합계 ₩{formatCurrency(calendarSummary.readyAmt + calendarSummary.settledAmt)}
+              </span>
+            </div>
+          </div>
+          <button
+            className={styles.calendarNavBtn}
+            onClick={() => changeMonth(1)}
+            aria-label="다음 달"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
-        <div className={styles.chart}>
-          {daily.length === 0 ? (
-            <div className={styles.chartEmpty}>기간 내 정산 내역이 없습니다.</div>
-          ) : (
-            daily.map((d) => {
-              const paidPct = Math.round((d.paidAmount / maxDaily) * 100);
-              const pendingPct = Math.round((d.pendingAmount / maxDaily) * 100);
-              const day = Number(d.date.slice(-2));
-              return (
-                <div key={d.date} className={styles.chartCol} title={`${d.date}\n총 ${formatCurrency(d.totalAmount)}원\n지급 ${formatCurrency(d.paidAmount)}원\n대기 ${formatCurrency(d.pendingAmount)}원`}>
-                  <div className={styles.chartBarStack}>
-                    <div className={styles.chartBarPaid} style={{ height: `${paidPct}%` }} />
-                    <div className={styles.chartBarPending} style={{ height: `${pendingPct}%` }} />
-                  </div>
-                  <div className={styles.chartXLabel}>{day}</div>
+
+        {/* Day-of-week headers */}
+        <div className={styles.calendarDayHeaders}>
+          {DAY_HEADERS.map((d, i) => (
+            <div
+              key={d}
+              className={`${styles.calendarDayHeader} ${i === 0 ? styles.calendarDayHeaderSun : i === 6 ? styles.calendarDayHeaderSat : ''}`}
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div
+          className={`${styles.calendarGrid} ${calendarFading ? styles.calendarFading : ''}`}
+          style={{ gridTemplateRows: `repeat(${calendarCells.length / 7}, minmax(80px, auto))` }}
+        >
+          {calendarCells.map(({ dateStr, date, inMonth, isToday, matches }) => {
+            const dayNum = date.getDate();
+            const dow = date.getDay();
+            const visibleMatches = matches.slice(0, 3);
+            const overflow = matches.length - 3;
+            return (
+              <div
+                key={dateStr}
+                className={[
+                  styles.calendarCell,
+                  !inMonth ? styles.calendarCellDimmed : '',
+                  isToday ? styles.calendarCellToday : '',
+                  dow === 0 ? styles.calendarCellSun : dow === 6 ? styles.calendarCellSat : '',
+                ].filter(Boolean).join(' ')}
+              >
+                <span className={styles.calendarDayNum}>{dayNum}</span>
+                <div className={styles.calendarPills}>
+                  {visibleMatches.map((s) => (
+                    <button
+                      key={s.id}
+                      className={`${styles.calendarMatchPill} ${s.status === 'settled' ? styles.calendarMatchPillSettled : styles.calendarMatchPillReady}`}
+                      onClick={() => navigate(`/dashboard/matches/${s.matchId}`)}
+                      title={`₩${formatCurrency(s.amount)} · ${STATUS_LABELS[s.status] || s.status}`}
+                      aria-label={`매칭 ${s.matchId} 정산 ${formatCurrency(s.amount)}원`}
+                    >
+                      <span className={styles.calendarPillAmt}>₩{formatCurrency(s.amount)}</span>
+                    </button>
+                  ))}
+                  {overflow > 0 && (
+                    <span className={styles.calendarMoreCount}>+{overflow}</span>
+                  )}
                 </div>
-              );
-            })
-          )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
