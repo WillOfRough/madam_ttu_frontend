@@ -94,6 +94,17 @@ export async function rescheduleMatch(matchId) {
   });
 }
 
+export async function updateMatchSchedule(matchId, { date, startTime, endTime, location, locationLink }) {
+  return apiFetch(`/api/v1/matches/${matchId}/schedule`, {
+    method: 'PATCH',
+    body: { date, startTime, endTime, location, locationLink },
+  });
+}
+
+export async function getMatchAvailableTimes(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/available-times`, { method: 'GET' });
+}
+
 export async function deleteMatch(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}`, {
     method: 'DELETE',
