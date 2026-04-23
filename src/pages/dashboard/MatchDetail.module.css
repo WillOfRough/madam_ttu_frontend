@@ -862,8 +862,71 @@
 /* ── Action Buttons ── */
 .actionBar {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 16px;
   margin-top: var(--space-md);
+}
+
+/* Zone 1 — 진행 액션 */
+.actionSectionPrimary {
+  display: flex;
+}
+
+/* Zone 2 — 일정 관리 */
+.actionSectionEdit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actionSectionLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--charcoal-pale);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.actionSectionRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Zone 3 — 종료/삭제 */
+.actionSectionDestructive {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Primary action button — slightly stronger than .actionBtn */
+.primaryBtn {
+  padding: 11px 24px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all var(--duration-fast) var(--ease-out);
+  box-shadow: 0 2px 8px rgba(26, 43, 75, 0.18);
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(26, 43, 75, 0.22);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .actionBtn {
@@ -1689,7 +1752,36 @@
   }
 
   .actionBar {
-    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actionSectionPrimary {
+    width: 100%;
+  }
+
+  .primaryBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .actionSectionRow {
+    gap: 8px;
+  }
+
+  .actionSectionRow .actionBtn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .actionSectionDestructive {
+    justify-content: flex-start;
+  }
+
+  .actionSectionDestructive .dangerBtn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
   }
 
   .modal {
