@@ -2189,6 +2189,64 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '약속 일정이 변경되었습니다.', data: null };
   }
 
+  // POST /api/v1/matches/:matchId/remind (상태별 안내 LMS 재발송)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/remind$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { errorCode: '9.001' } });
+    const tokenA = m.clientA?.proposalToken;
+    const tokenB = m.clientB?.proposalToken;
+    const idA = m.clientA?.clientId;
+    const idB = m.clientB?.clientId;
+    let action;
+    let sentToParticipantIds = [];
+    switch (m.status) {
+      case 'proposal_sent':
+        action = 'proposal';
+        if (m.clientA?.role === 'proposer' && idA) sentToParticipantIds = [idA];
+        else if (m.clientB?.role === 'proposer' && idB) sentToParticipantIds = [idB];
+        break;
+      case 'proposal_accepted':
+        action = 'proposal';
+        if (m.clientA?.role === 'receiver' && idA) sentToParticipantIds = [idA];
+        else if (m.clientB?.role === 'receiver' && idB) sentToParticipantIds = [idB];
+        break;
+      case 'awaiting_payment': {
+        action = 'payment';
+        const pA = (m.paymentA?.status || 'pending') !== 'confirmed';
+        const pB = (m.paymentB?.status || 'pending') !== 'confirmed';
+        sentToParticipantIds = [pA && idA, pB && idB].filter(Boolean);
+        break;
+      }
+      case 'scheduling': {
+        action = 'scheduling';
+        const submittedA = (availableTimes[tokenA] || []).length > 0;
+        const submittedB = (availableTimes[tokenB] || []).length > 0;
+        const pendingA = !submittedA && idA;
+        const pendingB = !submittedB && idB;
+        sentToParticipantIds = [pendingA, pendingB].filter(Boolean);
+        if (sentToParticipantIds.length === 0) {
+          sentToParticipantIds = [idA, idB].filter(Boolean);
+        }
+        break;
+      }
+      case 'scheduled':
+        action = 'meeting';
+        sentToParticipantIds = [idA, idB].filter(Boolean);
+        break;
+      case 'completed': {
+        action = 'after';
+        const pendA = (m.afterResponses?.A || 'pending') === 'pending';
+        const pendB = (m.afterResponses?.B || 'pending') === 'pending';
+        sentToParticipantIds = [pendA && idA, pendB && idB].filter(Boolean);
+        break;
+      }
+      default:
+        throw Object.assign(new Error('리마인드 대상 상태가 아닙니다.'), { status: 400, body: { errorCode: '9.007' } });
+    }
+    return { action, sentToParticipantIds };
+  }
+
   // GET /api/v1/matches/:matchId/available-times (매니저용 가용시간 조회 — 상태 제한 없음)
   if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+\/available-times$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];

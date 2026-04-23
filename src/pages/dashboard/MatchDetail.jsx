@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText, Phone } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText, Phone, Send } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -379,6 +379,35 @@ export default function MatchDetail() {
       const hhmm = slot.startTime.slice(0, 5);
       setEditEndTime(addHour(hhmm));
     }
+  };
+
+  const handleRemind = async () => {
+    setActionLoading(true);
+    try {
+      const res = await matchService.remindMatch(matchId);
+      const action = res?.action;
+      const sent = res?.sentToParticipantIds || [];
+      if (sent.length === 0) {
+        toast.success('재발송할 대상이 없어요.');
+      } else {
+        const actionLabel = {
+          proposal: '프로필 제안 안내',
+          payment: '입금 안내',
+          scheduling: '일정 등록 안내',
+          meeting: '만남 확정 안내',
+          after: '에프터 응답 안내',
+        }[action] || '진행 안내';
+        toast.success(`${actionLabel}를 재발송했어요.`);
+      }
+    } catch (err) {
+      const code = err?.body?.errorCode;
+      if (code === '9.007') {
+        toast.error('현재 상태에서는 재발송할 수 없어요.');
+      } else {
+        toast.error(err.message || '재발송에 실패했습니다.');
+      }
+    }
+    setActionLoading(false);
   };
 
   const handleUpdateScheduleClick = () => {
@@ -989,6 +1018,22 @@ export default function MatchDetail() {
                 {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
               </button>
             )}
+          </div>
+        )}
+
+        {/* Zone — 진행 안내 (LMS 재발송) */}
+        {match.status !== 'cancelled' && (
+          <div className={styles.actionSectionEdit}>
+            <p className={styles.actionSectionLabel}>진행 안내</p>
+            <div className={styles.actionSectionRow}>
+              <button
+                className={styles.actionBtn}
+                onClick={handleRemind}
+                disabled={actionLoading || match.status === 'draft' || match.status === 'arranging'}
+              >
+                <Send size={14} /> 진행 안내 재발송
+              </button>
+            </div>
           </div>
         )}
 

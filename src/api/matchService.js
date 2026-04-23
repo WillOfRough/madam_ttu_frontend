@@ -105,6 +105,10 @@ export async function getMatchAvailableTimes(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}/available-times`, { method: 'GET' });
 }
 
+export async function remindMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/remind`, { method: 'POST' });
+}
+
 export async function deleteMatch(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}`, {
     method: 'DELETE',
