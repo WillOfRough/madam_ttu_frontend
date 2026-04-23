@@ -245,6 +245,29 @@
   line-height: 1.7;
 }
 
+.idealTypeWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.idealPrivacyNotice {
+  display: block;
+  padding: 11px 14px;
+  background: var(--coral-dim);
+  border: 1px solid var(--coral-pale);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--charcoal-mid);
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+}
+
+.idealPrivacyNotice strong {
+  color: var(--coral);
+  font-weight: 700;
+}
+
 /* ── Guided Intro Section ── */
 .guidedIntro {
   display: flex;

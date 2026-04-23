@@ -477,17 +477,22 @@ export default function ClientForm() {
                   required={false}
                 />
 
-                <TextField
-                  label="어떤 사람이 이상형인가요?"
-                  hint="외모, 성격, 재력, 거주지, 종교 등 구체적으로 적을수록 딱 맞는 사람을 만날 확률이 올라가요."
-                  value={form.idealType}
-                  onChange={(v) => { setField('idealType', v); markTouched('idealType'); }}
-                  placeholder="예) 눈이 큰 사람, 키 175 이상, 좋은 회사 다니는 사람, 강남 근처 거주, MBTI E인 사람"
-                  multiline
-                  maxLength={500}
-                  required
-                  error={getError('idealType')}
-                />
+                <div className={styles.idealTypeWrap}>
+                  <p className={styles.idealPrivacyNotice}>
+                    🔒 이상형은 <strong>담당 매니저만 확인</strong>하며, 상대방에게는 공개되지 않아요. 부담 없이 솔직하게 적어주세요.
+                  </p>
+                  <TextField
+                    label="어떤 사람이 이상형인가요?"
+                    hint="외모, 성격, 재력, 거주지, 종교 등 구체적으로 적을수록 딱 맞는 사람을 만날 확률이 올라가요."
+                    value={form.idealType}
+                    onChange={(v) => { setField('idealType', v); markTouched('idealType'); }}
+                    placeholder="예) 눈이 큰 사람, 키 175 이상, 좋은 회사 다니는 사람, 강남 근처 거주, MBTI E인 사람"
+                    multiline
+                    maxLength={500}
+                    required
+                    error={getError('idealType')}
+                  />
+                </div>
               </div>
 
               <div className={styles.photoSection}>
