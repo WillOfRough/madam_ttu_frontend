@@ -163,7 +163,7 @@ export default function RegisterManager() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>이메일</label>
+            <label className={styles.label}>이메일 <span className={styles.required}>*</span></label>
             <input
               className={styles.input}
               type="email"
