@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, Calendar, MapPin, Clock, AlertTriangle, Link2, ChevronDown, ChevronUp, User, Briefcase, RefreshCw, Trash2, Heart, MessageSquare, FileText, Phone, Send } from 'lucide-react';
+import {
+  ChevronLeft,
+  Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
+  Link2, ChevronDown, ChevronUp, User, RefreshCw, Trash2,
+  Heart, MessageSquare, FileText, Phone, Send, MoreVertical,
+  ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2,
+} from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
@@ -9,6 +15,7 @@ import { SkeletonLine } from '../../components/Skeleton';
 import { loadTemplates } from './ManagerGuide';
 import styles from './MatchDetail.module.css';
 
+/* ─── message helpers ─────────────────────────────── */
 function generateProposalMessage(clientName, proposalUrl, inquiryUrl) {
   const templates = loadTemplates();
   return templates.proposalIntro
@@ -49,15 +56,9 @@ function generateAfterResultMessage(clientName, resultUrl, afterStatus) {
     .replace(/\[결과 확인 링크\]/g, resultUrl);
 }
 
-function generateOpenChatMessage(clientName) {
-  const templates = loadTemplates();
-  return templates.openChatGuide.replace(/OO님/g, `${clientName}님`);
-}
-
 function generateMeetingMessage(clientName, schedule) {
   const templates = loadTemplates();
   let msg = templates.meeting.replace(/OO님/g, `${clientName}님`);
-
   if (schedule) {
     if (schedule.date && schedule.startTime) {
       const d = new Date(schedule.date + 'T00:00:00');
@@ -75,40 +76,83 @@ function generateMeetingMessage(clientName, schedule) {
   return msg;
 }
 
+/* ─── constants ──────────────────────────────────── */
 const RESPONSE_MAP = {
   accepted: { label: '수락', className: 'responseAccepted' },
   rejected: { label: '거절', className: 'responseRejected' },
 };
 
 const STEPS = [
-  { key: 'proposal_sent', label: 'A확인' },
+  { key: 'draft',             label: '대기' },
+  { key: 'proposal_sent',     label: 'A확인' },
   { key: 'proposal_accepted', label: 'B확인' },
-  { key: 'awaiting_payment', label: '입금대기' },
-  { key: 'scheduling', label: '일정조율' },
-  { key: 'arranging', label: '매니저확정' },
-  { key: 'scheduled', label: '약속확정' },
-  { key: 'completed', label: '미팅완료' },
+  { key: 'awaiting_payment',  label: '입금' },
+  { key: 'scheduling',        label: '조율' },
+  { key: 'arranging',         label: '확정' },
+  { key: 'scheduled',         label: '약속' },
+  { key: 'completed',         label: '완료' },
 ];
 
 function getStepIndex(status) {
-  if (status === 'proposal_sent') return 0;
-  if (status === 'proposal_accepted') return 1;
-  if (status === 'awaiting_payment') return 2;
-  if (status === 'scheduling') return 3;
-  if (status === 'arranging') return 4;
-  if (status === 'scheduled') return 5;
-  if (status === 'completed') return 6;
-  return -1; // cancelled
+  const idx = STEPS.findIndex((s) => s.key === status);
+  return idx === -1 ? -1 : idx;
 }
 
+/* hero card stage config */
+function getStageHero(status) {
+  const map = {
+    draft:            { color: 'lilac',     icon: 'send',     title: '매칭을 시작할 준비가 되었어요', sub: '시작하면 A님께 프로필 링크 문자가 자동 발송돼요.' },
+    proposal_sent:    { color: 'lilac',     icon: 'clock',    title: 'A님의 응답을 기다리고 있어요',  sub: '프로필 링크 전달 후 응답 대기 중입니다.' },
+    proposal_accepted:{ color: 'lilac',     icon: 'check',    title: 'B님의 응답을 기다리고 있어요',  sub: 'A님이 수락했습니다.' },
+    awaiting_payment: { color: 'amber',     icon: 'money',    title: '두 분 모두 입금을 확인해 주세요', sub: 'A · B 모두 입금이 완료되면 처리 버튼을 눌러주세요.' },
+    scheduling:       { color: 'tangerine', icon: 'calendar', title: '양쪽 가용시간을 기다리고 있어요', sub: '둘 다 제출하면 공통 시간으로 자동 확정돼요.' },
+    arranging:        { color: 'tangerine', icon: 'calendar', title: '공통 시간이 확정되었어요',        sub: '아래에서 약속 일시를 확인하고 확정하세요.' },
+    scheduled:        { color: 'mint',      icon: 'mapPin',   title: '약속이 확정되었어요',             sub: '미팅 당일 두 분이 잘 만날 수 있도록 챙겨주세요.' },
+    completed:        { color: 'lilac',     icon: 'heart',    title: '미팅이 완료되었어요',             sub: '에프터 응답을 기다리고 있어요.' },
+    cancelled:        { color: 'rose',      icon: 'x',        title: '매칭이 취소되었어요',             sub: '' },
+  };
+  return map[status] || map.draft;
+}
+
+function getHeroGradient(color) {
+  const g = {
+    amber:     'linear-gradient(135deg, #FBE7C7 0%, #FFF2DB 100%)',
+    mint:      'linear-gradient(135deg, #D4F1E2 0%, #E8F8EE 100%)',
+    tangerine: 'linear-gradient(135deg, #FFE5DA 0%, #FFF2EB 100%)',
+    lilac:     'linear-gradient(135deg, #E3DBF8 0%, #EEE7FB 100%)',
+    rose:      'linear-gradient(135deg, #FBDDE3 0%, #FDEBEF 100%)',
+  };
+  return g[color] || 'linear-gradient(135deg, #EFF1F7 0%, #F6F7FB 100%)';
+}
+
+function getHeroIconColor(color) {
+  const m = {
+    amber:     'var(--amber-600)',
+    mint:      'var(--mint-600)',
+    tangerine: 'var(--tangerine-600)',
+    lilac:     'var(--lilac-600)',
+    rose:      'var(--rose-600)',
+  };
+  return m[color] || 'var(--ink-500)';
+}
+
+function getHeroKickerColor(color) {
+  const m = {
+    amber:     '#9A5E0E',
+    mint:      '#1A7A50',
+    tangerine: 'var(--tangerine-700)',
+    lilac:     '#4F3DA0',
+    rose:      '#B13149',
+  };
+  return m[color] || 'var(--ink-500)';
+}
+
+/* ─── format helpers ────────────────────────────── */
 function formatDate(iso) {
   if (!iso) return '-';
   return new Date(iso).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
   });
 }
 
@@ -130,6 +174,12 @@ function formatDateHeader(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
   const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
   return `${d.getMonth() + 1}/${d.getDate()} (${dayNames[d.getDay()]})`;
+}
+
+function formatCreatedAt(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
 function addHour(timeStr) {
@@ -155,21 +205,21 @@ function generateTimeOptions(fromTime) {
 }
 
 const REMIND_STATUS_LABEL = {
-  proposal_sent: '프로필 제안 발송 · 응답 대기',
+  proposal_sent:     '프로필 제안 발송 · 응답 대기',
   proposal_accepted: '프로필 제안 단계 · 상대방 응답 대기',
-  awaiting_payment: '입금 대기',
-  scheduling: '일정 조율 중',
-  scheduled: '약속 확정',
-  completed: '만남 완료 · 에프터 응답 대기',
+  awaiting_payment:  '입금 대기',
+  scheduling:        '일정 조율 중',
+  scheduled:         '약속 확정',
+  completed:         '만남 완료 · 에프터 응답 대기',
 };
 
 const REMIND_ACTION_LABEL = {
-  proposal_sent: '프로필 제안 안내',
+  proposal_sent:     '프로필 제안 안내',
   proposal_accepted: '프로필 제안 안내',
-  awaiting_payment: '입금 안내',
-  scheduling: '일정 등록 안내',
-  scheduled: '만남 확정 안내',
-  completed: '에프터 응답 안내',
+  awaiting_payment:  '입금 안내',
+  scheduling:        '일정 등록 안내',
+  scheduled:         '만남 확정 안내',
+  completed:         '에프터 응답 안내',
 };
 
 function getRemindPreview(match, payments) {
@@ -219,15 +269,19 @@ function getRefundStatus(meetingDate) {
   if (!meetingDate) return null;
   const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
   if (hours >= 168) return { label: '전액 환불 가능', type: 'safe', hours: Math.floor(hours) };
-  if (hours >= 72) return { label: '80% 환불 가능', type: 'safe', hours: Math.floor(hours) };
-  if (hours >= 24) return { label: '환불 불가 · 일정 변경 가능', type: 'warn', hours: Math.floor(hours) };
-  if (hours > 0) return { label: '환불 불가', type: 'danger', hours: Math.floor(hours) };
+  if (hours >= 72)  return { label: '80% 환불 가능',  type: 'safe', hours: Math.floor(hours) };
+  if (hours >= 24)  return { label: '환불 불가 · 일정 변경 가능', type: 'warn',   hours: Math.floor(hours) };
+  if (hours > 0)    return { label: '환불 불가',       type: 'danger', hours: Math.floor(hours) };
   return { label: '미팅 시간 경과', type: 'past', hours: 0 };
 }
 
+/* ═══════════════════════════════════════════════════
+   Main Component
+═══════════════════════════════════════════════════ */
 export default function MatchDetail() {
   const { matchId } = useParams();
   const navigate = useNavigate();
+
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCancel, setShowCancel] = useState(false);
@@ -242,7 +296,7 @@ export default function MatchDetail() {
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const [payments, setPayments] = useState(null); // PaymentResponse[] — awaiting_payment 단계에서만 조회
+  const [payments, setPayments] = useState(null);
   const [showEditSchedule, setShowEditSchedule] = useState(false);
   const [editDate, setEditDate] = useState('');
   const [editStartTime, setEditStartTime] = useState('');
@@ -253,6 +307,7 @@ export default function MatchDetail() {
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showRemindConfirm, setShowRemindConfirm] = useState(false);
+  const [participantTab, setParticipantTab] = useState('profile');
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -274,7 +329,6 @@ export default function MatchDetail() {
     }
   }, [matchId, navigate]);
 
-  // awaiting_payment 상태에서만 실제 Payment 목록 조회 — matchParticipantId를 얻기 위함
   useEffect(() => {
     if (!matchId || match?.status !== 'awaiting_payment') {
       setPayments(null);
@@ -290,25 +344,35 @@ export default function MatchDetail() {
   if (loading)
     return (
       <div className={styles.page}>
-        <SkeletonLine width="100px" height="16px" />
-        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <SkeletonLine width="40%" height="28px" />
-          <SkeletonLine width="100%" height="200px" />
+        <div className={styles.skeletonWrap}>
+          <SkeletonLine width="100px" height="16px" />
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <SkeletonLine width="40%" height="28px" />
+            <SkeletonLine width="100%" height="200px" />
+          </div>
         </div>
       </div>
     );
 
   if (!match) return null;
 
-  // 삭제된 회원 안전 처리: clientA/clientB가 null이면 기본값
-  const safeClient = { clientId: null, clientName: '삭제된 회원', clientNickname: null, clientPhone: null, clientGender: null, clientAge: 0, clientLocation: null, clientCompany: null, clientWorkLocation: null, clientOccupation: null, clientEducation: null, clientPhotoUrls: [], proposalToken: null, response: null, afterResponse: null, deleted: true, availableTimesSubmitted: false, managerName: null, respondedAt: null, feedbackAt: null, feedbackRating: null, feedbackComment: null };
+  const safeClient = {
+    clientId: null, clientName: '삭제된 회원', clientNickname: null, clientPhone: null,
+    clientGender: null, clientAge: 0, clientLocation: null, clientCompany: null,
+    clientWorkLocation: null, clientOccupation: null, clientEducation: null,
+    clientPhotoUrls: [], proposalToken: null, response: null, afterResponse: null,
+    deleted: true, availableTimesSubmitted: false, managerName: null,
+    respondedAt: null, feedbackAt: null, feedbackRating: null, feedbackComment: null,
+  };
   if (!match.clientA) match.clientA = { ...safeClient };
   if (!match.clientB) match.clientB = { ...safeClient };
 
   const stepIndex = getStepIndex(match.status);
   const isCancelled = match.status === 'cancelled';
   const refundStatus = getRefundStatus(match.meetingDate);
+  const heroConfig = getStageHero(match.status);
 
+  /* ── handlers ── */
   const handlePaymentConfirm = async () => {
     setActionLoading(true);
     try {
@@ -323,7 +387,6 @@ export default function MatchDetail() {
 
   const handleParticipantPaymentConfirm = async (side) => {
     const client = side === 'A' ? match.clientA : match.clientB;
-    // payments 배열에서 해당 참가자의 PaymentResponse를 찾아 matchParticipantId 추출
     const payment = (payments || []).find((p) => p.clientId === client.clientId);
     const participantId = payment?.matchParticipantId;
     if (!participantId) {
@@ -336,7 +399,6 @@ export default function MatchDetail() {
       const msg = res?.message || res?.data || '입금이 확인되었습니다.';
       toast.success(typeof msg === 'string' ? msg : '입금이 확인되었습니다.');
       reload();
-      // 결제 목록도 최신화 (matchParticipantId는 불변이지만 status 반영)
       matchService.getMatchPayments(matchId).then((r) => setPayments(Array.isArray(r) ? r : []));
     } catch (err) {
       toast.error(err.message || '입금 확인에 실패했습니다.');
@@ -379,7 +441,10 @@ export default function MatchDetail() {
     if (!selectedTimeId) return;
     setActionLoading(true);
     try {
-      await matchService.confirmMatch(matchId, { timeId: selectedTimeId, location: venue, locationLink: locationLinkInput || null, endTime: endTimeInput || null });
+      await matchService.confirmMatch(matchId, {
+        timeId: selectedTimeId, location: venue,
+        locationLink: locationLinkInput || null, endTime: endTimeInput || null,
+      });
       toast.success('약속이 확정되었습니다.');
       reload();
     } catch (err) {
@@ -404,7 +469,6 @@ export default function MatchDetail() {
     }
     setActionLoading(false);
   };
-
 
   const openEditScheduleModal = async () => {
     const cs = match.confirmedSchedule || {};
@@ -553,12 +617,11 @@ export default function MatchDetail() {
     setActionLoading(false);
   };
 
-  // Compute available times and groupings for arranging
+  /* ── derived data ── */
   const allTimes = match.availableTimes || [];
   const timesA = allTimes.filter((t) => t.clientId === match.clientA.clientId);
   const timesB = allTimes.filter((t) => t.clientId === match.clientB.clientId);
 
-  // Find common date+startTime combinations
   const commonKeys = new Set();
   timesA.forEach((a) => {
     timesB.forEach((b) => {
@@ -568,10 +631,6 @@ export default function MatchDetail() {
     });
   });
 
-  // All unique dates sorted
-  const allDates = [...new Set(allTimes.map((t) => t.date))].sort();
-
-  // Selected time for modal display
   const selectedSlot = allTimes.find((t) => t.timeId === selectedTimeId);
 
   const openConfirmModal = () => {
@@ -582,519 +641,603 @@ export default function MatchDetail() {
     setShowConfirm(true);
   };
 
-  // confirmedSchedule (new format) with fallback
   const confirmedSchedule = match.confirmedSchedule || null;
 
+  /* ── hero icon render ── */
+  const HeroIcon = () => {
+    const iconMap = {
+      send:     <Send size={18} />,
+      clock:    <Clock size={18} />,
+      check:    <Check size={18} />,
+      money:    <Wallet size={18} />,
+      calendar: <Calendar size={18} />,
+      mapPin:   <MapPin size={18} />,
+      heart:    <Heart size={18} />,
+      x:        <X size={18} />,
+    };
+    return iconMap[heroConfig.icon] || <CheckCircle2 size={18} />;
+  };
+
+  /* ════════════════════ JSX ════════════════════ */
   return (
     <div className={styles.page}>
-      <button className={styles.back} onClick={() => navigate('/dashboard/matches')}>
-        <ArrowLeft size={18} /> 목록으로
-      </button>
 
-      <div className={styles.header}>
-        <h1 className={styles.title}>
-          {match.clientA.clientName} &harr; {match.clientB.clientName}
-        </h1>
-        <StatusBadge status={match.status} />
+      {/* ── Sticky Top Nav ── */}
+      <div className={styles.topNav}>
+        <button className={styles.backBtn} onClick={() => navigate('/dashboard/matches')}>
+          <ChevronLeft size={22} />
+        </button>
+        <div className={styles.topNavMeta}>
+          <div className={styles.topNavKicker}>매칭 · {formatCreatedAt(match.createdAt)}</div>
+          <div className={styles.topNavTitle}>
+            {match.clientA.clientName} ↔ {match.clientB.clientName}
+          </div>
+        </div>
+        <button className={styles.moreBtn}>
+          <MoreVertical size={20} />
+        </button>
       </div>
 
-      {/* Step Indicator */}
-      {!isCancelled && (
-        <div className={styles.stepIndicator}>
-          {STEPS.map((step, idx) => (
-            <div key={step.key} className={styles.stepItem}>
-              {idx > 0 && (
-                <div className={`${styles.stepLine} ${idx <= stepIndex ? styles.stepLineDone : ''}`} />
-              )}
-              <div className={styles.stepDotWrap}>
-                <div
-                  className={`${styles.stepDot} ${idx < stepIndex ? styles.stepDone : ''} ${idx === stepIndex ? styles.stepCurrent : ''}`}
-                >
-                  {idx < stepIndex ? <Check size={11} /> : idx + 1}
-                </div>
-                <span className={`${styles.stepLabel} ${idx === stepIndex ? styles.stepLabelCurrent : ''}`}>
+      <div className={styles.content}>
+
+        {/* ── 8-Stage Stepper ── */}
+        {!isCancelled && (
+          <div className={styles.stepperCard}>
+            <div className={styles.stepperHeader}>
+              <div className={styles.stepperKicker}>현재 단계 {Math.max(stepIndex + 1, 1)}/8</div>
+              <StatusBadge status={match.status} />
+            </div>
+            <div className={styles.stepperNodes}>
+              {STEPS.map((step, i) => {
+                const done = i < stepIndex;
+                const now  = i === stepIndex;
+                return (
+                  <div key={step.key} className={styles.stepperNodeWrap}>
+                    {i > 0 && (
+                      <div className={`${styles.stepperLine} ${i <= stepIndex ? styles.stepperLineDone : ''}`} />
+                    )}
+                    <div className={`${styles.stepperNode} ${done ? styles.stepperNodeDone : ''} ${now ? styles.stepperNodeCurrent : ''}`}>
+                      {done && <Check size={10} strokeWidth={3} />}
+                      {now  && <span className={styles.stepperNodeDot} />}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={styles.stepperLabels}>
+              {STEPS.map((step, i) => (
+                <div key={step.key} className={`${styles.stepperLabel} ${i === stepIndex ? styles.stepperLabelCurrent : ''}`}>
                   {step.label}
-                </span>
-              </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Draft 안내 */}
-      {match.status === 'draft' && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <AlertTriangle size={16} /> 매칭 시작 전 (대기중)
-          </h3>
-          <p className={styles.waitingText}>
-            아직 회원에게 제안이 발송되지 않았습니다.<br />
-            내용을 확인한 후 아래 <strong>매칭 시작</strong> 버튼을 눌러주세요.
-          </p>
-        </div>
-      )}
-
-      {/* Participants */}
-      <div className={styles.participants}>
-        <ParticipantCard
-          participant={match.clientA}
-          partner={match.clientB}
-          label="회원 A"
-          matchStatus={match.status}
-          side="A"
-        />
-        <ParticipantCard
-          participant={match.clientB}
-          partner={match.clientA}
-          label="회원 B"
-          matchStatus={match.status}
-          side="B"
-        />
-      </div>
-
-      {/* 양식 3: 만남 성사(입금) 안내 메시지 복사 — 입금 확인 전에 먼저 표시 */}
-      {match.status === 'awaiting_payment' && (
-        <GuideMessageCard
-          title="만남 성사 안내 (입금 요청)"
-          hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
-          badge="양식 3"
-          participants={[match.clientA, match.clientB]}
-          generateMsg={(p) => generateAfterSuccessMessage(p.clientNickname || p.clientName)}
-        />
-      )}
-
-      {/* 입금확인 게이트 — 참가자별 개별 확인 */}
-      {match.status === 'awaiting_payment' && (
-        <div className={styles.paymentCard}>
-          <h3 className={styles.cardTitle}>
-            <Check size={16} /> 입금 확인
-          </h3>
-          <p className={styles.paymentHint}>양쪽 회원에게 입금 안내 메시지를 보낸 후, 입금이 확인된 회원부터 개별 확인해 주세요.</p>
-          <div className={styles.paymentRows}>
-            {['A', 'B'].map((side) => {
-              const client = side === 'A' ? match.clientA : match.clientB;
-              const paymentDetail = (payments || []).find((p) => p.clientId === client.clientId);
-              const paymentSummary = match.paymentSummary?.[`client${side}`];
-              const status = paymentDetail?.status || paymentSummary?.status || 'pending';
-              const isPaid = status === 'paid';
-              const hasParticipantId = Boolean(paymentDetail?.matchParticipantId);
-              return (
-                <div key={side} className={styles.paymentRow}>
-                  <div className={styles.paymentRowLabel}>
-                    <span className={styles.paymentRowSide}>{side}</span>
-                    <span className={styles.paymentRowName}>{client.clientNickname || client.clientName}</span>
-                    <span className={`${styles.paymentRowStatus} ${isPaid ? styles.paymentRowStatusPaid : styles.paymentRowStatusPending}`}>
-                      {isPaid ? '입금 완료' : '입금 대기'}
-                    </span>
-                  </div>
-                  <button
-                    className={styles.paymentBtn}
-                    onClick={() => handleParticipantPaymentConfirm(side)}
-                    disabled={actionLoading || isPaid || !hasParticipantId}
-                    title={!hasParticipantId && !isPaid ? '결제 정보 로딩 중...' : ''}
-                  >
-                    {isPaid ? <><Check size={14} /> 확인됨</> : actionLoading ? '처리 중...' : `${side} 입금 확인`}
-                  </button>
-                </div>
-              );
-            })}
           </div>
-          <button
-            className={styles.paymentFallbackBtn}
-            onClick={handlePaymentConfirm}
-            disabled={actionLoading}
-          >
-            양쪽 한 번에 확인 (fallback)
-          </button>
-        </div>
-      )}
+        )}
 
-      {/* Scheduling Link Card */}
-      {match.status === 'scheduling' && (
-        <SchedulingLinkCard match={match} />
-      )}
-
-      {/* Arranging: Manager confirms time + venue */}
-      {match.status === 'arranging' && allTimes.length > 0 && (
-        <div className={styles.arrangingContainer}>
-          {/* Section 1: Common Available Times */}
-          <div className={styles.commonTimesCard}>
-            <h3 className={styles.cardTitle}>
-              <Calendar size={16} /> 공통 가용시간
-            </h3>
-            {commonKeys.size > 0 ? (
-              <>
-                <p className={styles.commonTimesHint}>양쪽 회원이 모두 가능한 시간입니다</p>
-                <div className={styles.slotTags}>
-                  {[...commonKeys].sort().map((key) => {
-                    const [date, time] = key.split('_');
-                    const matchingSlots = allTimes.filter((t) => t.date === date && formatTimeOnly(t.startTime) === time);
-                    const firstSlot = matchingSlots[0];
-                    const isSelected = matchingSlots.some((s) => s.timeId === selectedTimeId);
-                    return (
-                      <label
-                        key={key}
-                        className={`${styles.slotTag} ${styles.slotTagCommon} ${isSelected ? styles.slotTagPicked : ''}`}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <input
-                          type="radio"
-                          name="confirmTime"
-                          value={firstSlot.timeId}
-                          checked={isSelected}
-                          onChange={() => setSelectedTimeId(firstSlot.timeId)}
-                          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0 }}
-                        />
-                        {formatDateHeader(date)} {time}
-                      </label>
-                    );
-                  })}
-                </div>
-                <div className={styles.confirmSection}>
-                  <button className={styles.actionBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
-                    약속 확정하기
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className={styles.noCommonInline}>
-                <AlertTriangle size={16} />
-                <p>겹치는 가용시간이 없습니다. 아래 각 회원의 시간을 확인해주세요.</p>
-                <button
-                  className={styles.rescheduleBtn}
-                  onClick={() => setShowReschedule(true)}
-                  disabled={actionLoading}
-                >
-                  <RefreshCw size={14} />
-                  일정 재조율 요청
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Section 2: Client A Times */}
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>
-              <span className={styles.schedulingRoleBadge}>A</span> {match.clientA.clientName} 가용시간
-            </h3>
-            {timesA.length > 0 ? (
-              <div className={styles.slotTags}>
-                {timesA.map((slot) => {
-                  const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
-                  return (
-                    <span
-                      key={slot.timeId}
-                      className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''}`}
-                    >
-                      {isCommon && <span className={styles.commonDot} />}
-                      {formatDateHeader(slot.date)} {formatTimeOnly(slot.startTime)}
-                    </span>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className={styles.waitingText}>아직 등록된 시간이 없습니다.</p>
-            )}
-          </div>
-
-          {/* Section 3: Client B Times */}
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>
-              <span className={styles.schedulingRoleBadge}>B</span> {match.clientB.clientName} 가용시간
-            </h3>
-            {timesB.length > 0 ? (
-              <div className={styles.slotTags}>
-                {timesB.map((slot) => {
-                  const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
-                  return (
-                    <span
-                      key={slot.timeId}
-                      className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''}`}
-                    >
-                      {isCommon && <span className={styles.commonDot} />}
-                      {formatDateHeader(slot.date)} {formatTimeOnly(slot.startTime)}
-                    </span>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className={styles.waitingText}>아직 등록된 시간이 없습니다.</p>
-            )}
-          </div>
-
-          {/* Location Comparison */}
-          {(match.clientA.clientLocation || match.clientB.clientLocation) && (
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <MapPin size={16} /> 위치 정보
-              </h3>
-              <div className={styles.locationCompare}>
-                <div className={styles.locationCol}>
-                  <div className={styles.locationColHeader}>
-                    <span className={styles.schedulingRoleBadge}>A</span>
-                    <span>{match.clientA.clientName}</span>
-                  </div>
-                  {match.clientA.clientLocation && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>거주지</span>
-                      <span>{match.clientA.clientLocation}</span>
-                      <MapLinks address={match.clientA.clientLocation} />
-                    </div>
-                  )}
-                  {match.clientA.clientCompany && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>회사</span>
-                      <span>{match.clientA.clientCompany}</span>
-                    </div>
-                  )}
-                  {match.clientA.clientWorkLocation && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>회사 위치</span>
-                      <span>{match.clientA.clientWorkLocation}</span>
-                    </div>
-                  )}
-                </div>
-                <div className={styles.locationDivider} />
-                <div className={styles.locationCol}>
-                  <div className={styles.locationColHeader}>
-                    <span className={styles.schedulingRoleBadge}>B</span>
-                    <span>{match.clientB.clientName}</span>
-                  </div>
-                  {match.clientB.clientLocation && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>거주지</span>
-                      <span>{match.clientB.clientLocation}</span>
-                      <MapLinks address={match.clientB.clientLocation} />
-                    </div>
-                  )}
-                  {match.clientB.clientCompany && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>회사</span>
-                      <span>{match.clientB.clientCompany}</span>
-                    </div>
-                  )}
-                  {match.clientB.clientWorkLocation && (
-                    <div className={styles.locationItem}>
-                      <span className={styles.locationLabel}>회사 위치</span>
-                      <span>{match.clientB.clientWorkLocation}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+        {/* ── Hero Action Card ── */}
+        <div
+          className={styles.heroCard}
+          style={{ background: getHeroGradient(heroConfig.color) }}
+        >
+          <div className={styles.heroTop}>
+            <div
+              className={styles.heroIconBlock}
+              style={{ background: getHeroIconColor(heroConfig.color) }}
+            >
+              <HeroIcon />
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Schedule Section (scheduled / completed) */}
-      {(match.status === 'scheduled' || match.status === 'completed') && confirmedSchedule && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <Calendar size={16} /> 일정 정보
-          </h3>
-          <div className={styles.scheduleInfo}>
-            {confirmedSchedule.date && (
-              <div className={styles.scheduleField}>
-                <span className={styles.fieldLabel}>확정된 시간</span>
-                <span className={styles.fieldValue}>
-                  <Clock size={14} /> {formatSlotDisplay(confirmedSchedule)}
-                </span>
-              </div>
-            )}
-            {confirmedSchedule.location && (
-              <div className={styles.scheduleField}>
-                <span className={styles.fieldLabel}>장소</span>
-                <span className={styles.fieldValue}>
-                  <MapPin size={14} /> {confirmedSchedule.location}
-                </span>
-              </div>
-            )}
-            {confirmedSchedule.locationLink && (
-              <div className={styles.scheduleField}>
-                <span className={styles.fieldLabel}>장소 링크</span>
-                <span className={styles.fieldValue}>
-                  <Link2 size={14} />
-                  <a href={confirmedSchedule.locationLink} target="_blank" rel="noopener noreferrer" className={styles.locationLinkAnchor}>
-                    {confirmedSchedule.locationLink}
-                  </a>
-                </span>
-              </div>
-            )}
-            {confirmedSchedule.confirmedAt && (
-              <div className={styles.scheduleField}>
-                <span className={styles.fieldLabel}>확정일</span>
-                <span className={styles.fieldValue}>{formatDate(confirmedSchedule.confirmedAt)}</span>
-              </div>
-            )}
+            <div
+              className={styles.heroKicker}
+              style={{ color: getHeroKickerColor(heroConfig.color) }}
+            >
+              지금 할 일
+            </div>
           </div>
-        </div>
-      )}
+          <div className={styles.heroTitle}>{heroConfig.title}</div>
+          <div className={styles.heroSub}>{heroConfig.sub}</div>
 
-      {/* 양식 4: 만남 장소 확정 안내 메시지 복사 */}
-      {match.status === 'scheduled' && confirmedSchedule && (
-        <GuideMessageCard
-          title="만남 장소 확정 안내"
-          hint="확정된 일정과 장소가 반영된 안내 메시지를 복사하세요"
-          badge="양식 4"
-          participants={[match.clientA, match.clientB]}
-          generateMsg={(p) => generateMeetingMessage(p.clientNickname || p.clientName, confirmedSchedule)}
-        />
-      )}
-
-      {/* Scheduling: waiting for available times */}
-      {match.status === 'scheduling' && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <Calendar size={16} /> 일정 조율
-          </h3>
-          <p className={styles.waitingText}>양쪽 회원의 가용시간 등록을 기다리고 있습니다.</p>
-        </div>
-      )}
-
-      {/* Refund Status (scheduled) */}
-      {match.status === 'scheduled' && refundStatus && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <AlertTriangle size={16} /> 취소/환불 규정
-          </h3>
-          <div className={styles.refundInfo}>
-            <span className={`${styles.refundBadge} ${styles[`refund_${refundStatus.type}`]}`}>
-              {refundStatus.label}
-            </span>
-            <span className={styles.refundHours}>
-              약속까지 {refundStatus.hours}시간 남음
-            </span>
-          </div>
-          <ul className={styles.policyList}>
-            <li>만남 7일 전까지: 전액 환불 가능</li>
-            <li>만남 3일 전까지: 80% 환불 가능</li>
-            <li>만남 24시간 전까지: 환불 불가</li>
-            <li>약속 24시간 전까지: 일정 1회 변경 가능</li>
-          </ul>
-        </div>
-      )}
-
-      {/* After Link Card (completed only) */}
-      {match.status === 'completed' && (
-        <AfterLinkCard match={match} />
-      )}
-
-      {/* After Status Card (completed only) */}
-      {match.status === 'completed' && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>
-            <Heart size={16} /> 에프터 현황
-          </h3>
-          {match.afterStatus ? (
+          {/* awaiting_payment: payment slots */}
+          {match.status === 'awaiting_payment' && (
             <>
-              <div className={styles.afterStatusRow}>
-                <span className={styles.fieldLabel}>에프터 상태</span>
-                <StatusBadge status={`after_${match.afterStatus}`} />
-              </div>
-              <div className={styles.afterResponses}>
-                <div className={styles.afterTableHeader}>
-                  <span className={styles.afterTableCol} />
-                  <span className={styles.afterTableCol}>회원</span>
-                  <span className={styles.afterTableCol}>매칭 응답</span>
-                  <span className={styles.afterTableCol}>에프터 응답</span>
-                </div>
-                <div className={styles.afterResponseItem}>
-                  <span className={styles.schedulingRoleBadge}>A</span>
-                  <span className={styles.afterName}>{match.clientA.clientName}</span>
-                  <span className={styles[RESPONSE_MAP[match.clientA.response]?.className || 'responseWaiting']}>
-                    {RESPONSE_MAP[match.clientA.response]?.label || '대기'}
-                  </span>
-                  <span className={styles[`afterResp_${match.clientA.afterResponse || 'pending'}`]}>
-                    {match.clientA.afterResponse === 'accepted' ? '만나볼래요' : match.clientA.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
-                  </span>
-                </div>
-                <div className={styles.afterResponseItem}>
-                  <span className={styles.schedulingRoleBadge}>B</span>
-                  <span className={styles.afterName}>{match.clientB.clientName}</span>
-                  <span className={styles[RESPONSE_MAP[match.clientB.response]?.className || 'responseWaiting']}>
-                    {RESPONSE_MAP[match.clientB.response]?.label || '대기'}
-                  </span>
-                  <span className={styles[`afterResp_${match.clientB.afterResponse || 'pending'}`]}>
-                    {match.clientB.afterResponse === 'accepted' ? '만나볼래요' : match.clientB.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
-                  </span>
-                </div>
-              </div>
-              {/* Feedback Section - afterStatus rejected일 때 */}
-              {match.afterStatus === 'rejected' && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
-                <div className={styles.feedbackSection}>
-                  <h4 className={styles.feedbackSectionTitle}>
-                    <MessageSquare size={14} /> 만남 피드백
-                  </h4>
-                  {[
-                    { side: 'A', participant: match.clientA },
-                    { side: 'B', participant: match.clientB },
-                  ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
-                    <div key={side} className={styles.feedbackItem}>
-                      <div className={styles.feedbackItemHeader}>
-                        <span className={styles.schedulingRoleBadge}>{side}</span>
-                        <span className={styles.feedbackItemName}>{participant.clientName}</span>
-                        {participant.feedbackRating != null && (
-                          <span className={styles.feedbackRatingBadge}>{participant.feedbackRating}/10</span>
-                        )}
+              <div className={styles.paymentSlots}>
+                {['A', 'B'].map((side) => {
+                  const client = side === 'A' ? match.clientA : match.clientB;
+                  const paymentDetail = (payments || []).find((p) => p.clientId === client.clientId);
+                  const paymentSummary = match.paymentSummary?.[`client${side}`];
+                  const status = paymentDetail?.status || paymentSummary?.status || 'pending';
+                  const isPaid = status === 'paid';
+                  const hasParticipantId = Boolean(paymentDetail?.matchParticipantId);
+                  return (
+                    <div key={side} className={`${styles.paymentSlot} ${isPaid ? styles.paymentSlotPaid : styles.paymentSlotPending}`}>
+                      <div className={styles.paymentSlotHeader}>
+                        <span className={styles.paymentSlotAvatar} style={{
+                          background: client.clientGender === 'female' ? 'var(--female-100)' : 'var(--male-100)',
+                          color: client.clientGender === 'female' ? 'var(--female)' : 'var(--male)',
+                        }}>
+                          {client.clientName?.slice(1) || side}
+                        </span>
+                        <span className={styles.paymentSlotName}>{client.clientNickname || client.clientName}</span>
                       </div>
-                      {participant.feedbackComment && (
-                        <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
+                      <div className={styles.paymentSlotAmount}>19,900원</div>
+                      <div className={`${styles.paymentSlotStatus} ${isPaid ? styles.paymentSlotStatusPaid : styles.paymentSlotStatusPending}`}>
+                        {isPaid ? <><Check size={12} strokeWidth={2.5} /> 입금 완료</> : <>● 입금 대기</>}
+                      </div>
+                      {!isPaid && (
+                        <button
+                          className={styles.paymentSlotBtn}
+                          onClick={() => handleParticipantPaymentConfirm(side)}
+                          disabled={actionLoading || !hasParticipantId}
+                          title={!hasParticipantId ? '결제 정보 로딩 중...' : ''}
+                        >
+                          {actionLoading ? '확인 중...' : `${side} 입금 확인`}
+                        </button>
                       )}
-                      <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                })}
+              </div>
+              <div className={styles.paymentNote}>
+                <Info size={11} style={{ color: 'var(--amber-600)', flexShrink: 0 }} />
+                계좌 내역에서 두 분 입금을 직접 확인해주세요 · 19,900원 × 2
+              </div>
+              <button
+                className={styles.heroCtaBtn}
+                onClick={handlePaymentConfirm}
+                disabled={actionLoading}
+              >
+                두 분 모두 입금 확인 완료
+                <ArrowRight size={16} />
+              </button>
             </>
-          ) : (
-            <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
+          )}
+
+          {/* draft: start CTA */}
+          {match.status === 'draft' && (
+            <button
+              className={styles.heroCtaBtn}
+              onClick={handleStartMatch}
+              disabled={actionLoading}
+            >
+              {actionLoading ? '시작 중...' : '매칭 시작하기'}
+              <ArrowRight size={16} />
+            </button>
+          )}
+
+          {/* scheduled: complete CTA */}
+          {match.status === 'scheduled' && (
+            <button
+              className={styles.heroCtaBtn}
+              onClick={handleCompleteClick}
+              disabled={actionLoading}
+            >
+              {actionLoading ? '처리 중...' : '미팅 완료 처리'}
+              <ArrowRight size={16} />
+            </button>
+          )}
+
+          {/* cancel text button */}
+          {!['cancelled', 'completed'].includes(match.status) && (
+            <button
+              className={styles.heroCancelBtn}
+              onClick={() => setShowCancel(true)}
+            >
+              <X size={12} /> 매칭 취소
+            </button>
           )}
         </div>
-      )}
 
-      {/* After Result Link Card (양쪽 에프터 응답 완료 시에만 표시) */}
-      {match.status === 'completed' && (match.afterStatus === 'accepted' || match.afterStatus === 'rejected') && (
-        <AfterResultLinkCard match={match} />
-      )}
-
-      {match.note && (
-        <div className={styles.card}>
-          <h3 className={styles.cardTitle}>매니저 메모</h3>
-          <p className={styles.text}>{match.note}</p>
-        </div>
-      )}
-
-      <div className={styles.card}>
-        <h3 className={styles.cardTitle}>매칭 정보</h3>
-        <p className={styles.meta}>생성일: {formatDate(match.createdAt)}</p>
-        {match.meetingDate && <p className={styles.meta}>미팅일: {formatDate(match.meetingDate)}</p>}
-      </div>
-
-      {/* Manager Action Buttons */}
-      <div className={styles.actionBar}>
-        {/* Zone 1 — 진행 액션 (primary) */}
-        {(match.status === 'scheduled' || match.status === 'draft') && (
-          <div className={styles.actionSectionPrimary}>
-            {match.status === 'scheduled' && (
-              <button className={styles.primaryBtn} onClick={handleCompleteClick} disabled={actionLoading}>
-                미팅 완료 처리
-              </button>
+        {/* ── Cancelled Banner ── */}
+        {isCancelled && (match.cancelReason || match.cancelledByName) && (
+          <div className={styles.cancelledBanner}>
+            <div className={styles.cancelledBannerTitle}>매칭 종료</div>
+            {match.cancelledByName && (
+              <div className={styles.cancelledBannerRow}>취소자: {match.cancelledByName}</div>
             )}
-            {match.status === 'draft' && (
-              <button className={styles.primaryBtn} onClick={handleStartMatch} disabled={actionLoading}>
-                {actionLoading ? '시작 중...' : '▶ 매칭 시작'}
-              </button>
+            {match.cancelledAt && (
+              <div className={styles.cancelledBannerRow}>취소일: {formatDate(match.cancelledAt)}</div>
+            )}
+            {match.cancelReason && (
+              <div className={styles.cancelledBannerRow}>{match.cancelReason}</div>
             )}
           </div>
         )}
 
-        {/* Zone — 진행 안내 (LMS 재발송) */}
-        {match.status !== 'cancelled' && (
-          <div className={styles.actionSectionEdit}>
-            <p className={styles.actionSectionLabel}>진행 안내</p>
-            <div className={styles.actionSectionRow}>
+        {/* ── Participants Section ── */}
+        <div className={styles.participantsCard}>
+          {/* Tab header */}
+          <div className={styles.participantsTabs}>
+            {[
+              { k: 'profile',  label: '프로필' },
+              { k: 'response', label: '응답' },
+              { k: 'links',    label: '링크' },
+            ].map((t) => (
               <button
-                className={styles.actionBtn}
+                key={t.k}
+                className={`${styles.participantsTab} ${participantTab === t.k ? styles.participantsTabActive : ''}`}
+                onClick={() => setParticipantTab(t.k)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className={styles.participantsBody}>
+            {participantTab === 'profile' && (
+              <div className={styles.participantsList}>
+                <ParticipantCard
+                  participant={match.clientA}
+                  partner={match.clientB}
+                  label="회원 A"
+                  matchStatus={match.status}
+                  side="A"
+                />
+                <ParticipantCard
+                  participant={match.clientB}
+                  partner={match.clientA}
+                  label="회원 B"
+                  matchStatus={match.status}
+                  side="B"
+                />
+              </div>
+            )}
+
+            {participantTab === 'response' && (
+              <div className={styles.responsePanel}>
+                {[
+                  { client: match.clientA, side: 'A' },
+                  { client: match.clientB, side: 'B' },
+                ].map(({ client, side }) => {
+                  const resp = client.response;
+                  const after = client.afterResponse;
+                  return (
+                    <div key={side} className={styles.responseRow}>
+                      <span className={styles.responseSideBadge}>{side}</span>
+                      <span className={styles.responseClientName}>{client.clientName}</span>
+                      <span className={`${styles.responseBadge} ${resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
+                        {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
+                      </span>
+                      {match.status === 'completed' && (
+                        <span className={`${styles.responseBadge} ${after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
+                          에프터 {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {participantTab === 'links' && (
+              <div className={styles.linksPanel}>
+                {/* proposal sent — show proposal links */}
+                {['proposal_sent', 'proposal_accepted'].includes(match.status) && (
+                  <div className={styles.linksPanelSection}>
+                    <div className={styles.linksPanelLabel}>프로포절 링크</div>
+                    {[
+                      { side: 'A', client: match.clientA },
+                      { side: 'B', client: match.clientB },
+                    ].map(({ side, client }) => {
+                      const url = `${window.location.origin}/proposal/${client.proposalToken}`;
+                      return (
+                        <div key={side} className={styles.linkRow}>
+                          <span className={styles.responseSideBadge}>{side}</span>
+                          <span className={styles.linkValue}>{url}</span>
+                          <button className={styles.linkCopyBtn} onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(url);
+                              toast.success('링크가 복사되었습니다.');
+                            } catch { toast.error('복사에 실패했습니다.'); }
+                          }}>
+                            <Copy size={12} /> 복사
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* scheduling */}
+                {match.status === 'scheduling' && (
+                  <SchedulingLinkCard match={match} />
+                )}
+                {/* after */}
+                {match.status === 'completed' && (
+                  <AfterLinkCard match={match} />
+                )}
+                {/* after result */}
+                {match.status === 'completed' && (match.afterStatus === 'accepted' || match.afterStatus === 'rejected') && (
+                  <AfterResultLinkCard match={match} />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Guide Message (awaiting_payment) ── */}
+        {match.status === 'awaiting_payment' && (
+          <GuideMessageCard
+            title="만남 성사 안내 (입금 요청)"
+            hint="양쪽 모두 수락했습니다. 아래 입금 안내 메시지를 각 회원에게 보내주세요"
+            badge="양식 3"
+            participants={[match.clientA, match.clientB]}
+            generateMsg={(p) => generateAfterSuccessMessage(p.clientNickname || p.clientName)}
+          />
+        )}
+
+        {/* ── Confirmed Schedule Section ── */}
+        {(match.status === 'scheduled' || match.status === 'completed') && confirmedSchedule && (
+          <div className={styles.scheduleCard}>
+            <div className={styles.scheduleCardHeader}>
+              <div className={styles.scheduleCardTitle}>확정된 일정</div>
+            </div>
+            <div className={styles.scheduleRows}>
+              {confirmedSchedule.date && (
+                <div className={styles.scheduleRow}>
+                  <div className={styles.scheduleRowIcon}><Calendar size={14} /></div>
+                  <div className={styles.scheduleRowLabel}>날짜</div>
+                  <div className={styles.scheduleRowValue}>{formatSlotDisplay(confirmedSchedule)}</div>
+                </div>
+              )}
+              {confirmedSchedule.location && (
+                <div className={styles.scheduleRow}>
+                  <div className={styles.scheduleRowIcon}><MapPin size={14} /></div>
+                  <div className={styles.scheduleRowLabel}>장소</div>
+                  <div className={styles.scheduleRowValue}>{confirmedSchedule.location}</div>
+                </div>
+              )}
+              {confirmedSchedule.locationLink && (
+                <div className={styles.scheduleRow}>
+                  <div className={styles.scheduleRowIcon}><Link2 size={14} /></div>
+                  <div className={styles.scheduleRowLabel}>링크</div>
+                  <div className={styles.scheduleRowValue}>
+                    <a href={confirmedSchedule.locationLink} target="_blank" rel="noopener noreferrer" className={styles.locationLinkAnchor}>
+                      {confirmedSchedule.locationLink}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            {match.status === 'scheduled' && (
+              <div className={styles.scheduleActions}>
+                <button className={styles.scheduleGhostBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
+                  <Pencil size={13} /> 일정 수정
+                </button>
+                <button className={styles.scheduleGhostBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
+                  <RefreshCw size={13} /> 일정 재조율
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Guide Message (scheduled) ── */}
+        {match.status === 'scheduled' && confirmedSchedule && (
+          <GuideMessageCard
+            title="만남 장소 확정 안내"
+            hint="확정된 일정과 장소가 반영된 안내 메시지를 복사하세요"
+            badge="양식 4"
+            participants={[match.clientA, match.clientB]}
+            generateMsg={(p) => generateMeetingMessage(p.clientNickname || p.clientName, confirmedSchedule)}
+          />
+        )}
+
+        {/* ── Arranging: Common Times + Confirm ── */}
+        {match.status === 'arranging' && allTimes.length > 0 && (
+          <div className={styles.arrangingSection}>
+            <div className={styles.sectionLabel}>공통 가용시간</div>
+            <div className={styles.arrangingCard}>
+              {commonKeys.size > 0 ? (
+                <>
+                  <div className={styles.slotGrid}>
+                    {[...commonKeys].sort().map((key) => {
+                      const [date, time] = key.split('_');
+                      const matchingSlots = allTimes.filter((t) => t.date === date && formatTimeOnly(t.startTime) === time);
+                      const firstSlot = matchingSlots[0];
+                      const isSelected = matchingSlots.some((s) => s.timeId === selectedTimeId);
+                      return (
+                        <label
+                          key={key}
+                          className={`${styles.slotTag} ${styles.slotTagCommon} ${isSelected ? styles.slotTagPicked : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="confirmTime"
+                            value={firstSlot.timeId}
+                            checked={isSelected}
+                            onChange={() => setSelectedTimeId(firstSlot.timeId)}
+                            style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden', opacity: 0 }}
+                          />
+                          {formatDateHeader(date)} {time}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <button className={styles.confirmScheduleBtn} onClick={openConfirmModal} disabled={!selectedTimeId}>
+                    약속 확정하기
+                  </button>
+                </>
+              ) : (
+                <div className={styles.noCommon}>
+                  <AlertTriangle size={16} />
+                  <span>겹치는 가용시간이 없습니다.</span>
+                  <button className={styles.rescheduleInlineBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
+                    <RefreshCw size={14} /> 일정 재조율
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.sectionLabel}>각자 가용시간</div>
+            <div className={styles.availTimesGrid}>
+              {[
+                { side: 'A', client: match.clientA, times: timesA },
+                { side: 'B', client: match.clientB, times: timesB },
+              ].map(({ side, client, times }) => (
+                <div key={side} className={styles.availTimesSide}>
+                  <div className={styles.availTimesSideHeader}>
+                    <span className={styles.responseSideBadge}>{side}</span>
+                    <span className={styles.availTimesSideName}>{client.clientName}</span>
+                  </div>
+                  {times.length > 0 ? (
+                    <div className={styles.slotGrid}>
+                      {times.map((slot) => {
+                        const isCommon = commonKeys.has(`${slot.date}_${formatTimeOnly(slot.startTime)}`);
+                        return (
+                          <span key={slot.timeId} className={`${styles.slotTag} ${isCommon ? styles.slotTagCommon : ''}`}>
+                            {formatDateHeader(slot.date)} {formatTimeOnly(slot.startTime)}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className={styles.waitingText}>아직 등록 없음</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Location Compare */}
+            {(match.clientA.clientLocation || match.clientB.clientLocation) && (
+              <div className={styles.locationCard}>
+                <div className={styles.sectionLabel}>위치 정보</div>
+                <div className={styles.locationCompare}>
+                  {[
+                    { side: 'A', client: match.clientA },
+                    { side: 'B', client: match.clientB },
+                  ].map(({ side, client }) => (
+                    <div key={side} className={styles.locationCol}>
+                      <div className={styles.locationColHeader}>
+                        <span className={styles.responseSideBadge}>{side}</span>
+                        <span>{client.clientName}</span>
+                      </div>
+                      {client.clientLocation && (
+                        <div className={styles.locationItem}>
+                          <span className={styles.locationLabel}>거주지</span>
+                          <span>{client.clientLocation}</span>
+                          <MapLinks address={client.clientLocation} />
+                        </div>
+                      )}
+                      {client.clientCompany && (
+                        <div className={styles.locationItem}>
+                          <span className={styles.locationLabel}>회사</span>
+                          <span>{client.clientCompany}</span>
+                        </div>
+                      )}
+                      {client.clientWorkLocation && (
+                        <div className={styles.locationItem}>
+                          <span className={styles.locationLabel}>회사 위치</span>
+                          <span>{client.clientWorkLocation}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Scheduling: Waiting ── */}
+        {match.status === 'scheduling' && (
+          <div className={styles.infoCard}>
+            <div className={styles.infoCardIcon}><Calendar size={16} /></div>
+            <div className={styles.infoCardText}>
+              <div className={styles.infoCardTitle}>일정 조율 중</div>
+              <div className={styles.infoCardSub}>양쪽 회원의 가용시간 등록을 기다리고 있습니다.</div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Refund Status ── */}
+        {match.status === 'scheduled' && refundStatus && (
+          <div className={styles.refundCard}>
+            <div className={styles.refundHeader}>
+              <AlertTriangle size={14} />
+              <span>취소/환불 규정</span>
+            </div>
+            <div className={styles.refundBody}>
+              <span className={`${styles.refundBadge} ${styles[`refund_${refundStatus.type}`]}`}>
+                {refundStatus.label}
+              </span>
+              <span className={styles.refundHours}>약속까지 {refundStatus.hours}시간 남음</span>
+            </div>
+          </div>
+        )}
+
+        {/* ── After Status (completed) ── */}
+        {match.status === 'completed' && (
+          <div className={styles.afterCard}>
+            <div className={styles.afterCardTitle}><Heart size={14} /> 에프터 현황</div>
+            {match.afterStatus ? (
+              <>
+                <div className={styles.afterStatusRow}>
+                  <span className={styles.afterStatusLabel}>에프터 상태</span>
+                  <StatusBadge status={`after_${match.afterStatus}`} />
+                </div>
+                <div className={styles.afterResponses}>
+                  {[
+                    { side: 'A', participant: match.clientA },
+                    { side: 'B', participant: match.clientB },
+                  ].map(({ side, participant }) => (
+                    <div key={side} className={styles.afterResponseItem}>
+                      <span className={styles.responseSideBadge}>{side}</span>
+                      <span className={styles.afterName}>{participant.clientName}</span>
+                      <span className={styles[RESPONSE_MAP[participant.response]?.className || 'responseWaiting']}>
+                        {RESPONSE_MAP[participant.response]?.label || '대기'}
+                      </span>
+                      <span className={styles[`afterResp_${participant.afterResponse || 'pending'}`]}>
+                        {participant.afterResponse === 'accepted' ? '만나볼래요' : participant.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {match.afterStatus === 'rejected' && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
+                  <div className={styles.feedbackSection}>
+                    <div className={styles.feedbackSectionTitle}><MessageSquare size={14} /> 만남 피드백</div>
+                    {[
+                      { side: 'A', participant: match.clientA },
+                      { side: 'B', participant: match.clientB },
+                    ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
+                      <div key={side} className={styles.feedbackItem}>
+                        <div className={styles.feedbackItemHeader}>
+                          <span className={styles.responseSideBadge}>{side}</span>
+                          <span className={styles.feedbackItemName}>{participant.clientName}</span>
+                          {participant.feedbackRating != null && (
+                            <span className={styles.feedbackRatingBadge}>{participant.feedbackRating}/10</span>
+                          )}
+                        </div>
+                        {participant.feedbackComment && (
+                          <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
+                        )}
+                        <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
+            )}
+          </div>
+        )}
+
+        {/* ── Remind Card ── */}
+        {match.status !== 'cancelled' && (
+          <div className={styles.remindCard}>
+            <div className={styles.remindCardHeader}>
+              <div className={styles.remindCardIcon}><Bell size={14} /></div>
+              <div className={styles.remindCardMeta}>
+                <div className={styles.remindCardKicker}>진행 안내 재발송</div>
+                <div className={styles.remindCardTitle}>{REMIND_ACTION_LABEL[match.status] || '진행 안내'}</div>
+              </div>
+            </div>
+            <div className={styles.remindCardBody}>
+              <div className={styles.remindStatusLine}>
+                현재 단계: <strong>{REMIND_STATUS_LABEL[match.status] || '-'}</strong>
+              </div>
+            </div>
+            <div className={styles.remindCardFoot}>
+              <button
+                className={styles.remindSendBtn}
                 onClick={handleRemindClick}
                 disabled={actionLoading || match.status === 'draft' || match.status === 'arranging'}
               >
@@ -1104,58 +1247,39 @@ export default function MatchDetail() {
           </div>
         )}
 
-        {/* Zone 2 — 일정 관리 (schedule edits)
-            - 일정 수정: scheduled 만 (PATCH /schedule)
-            - 일정 재조율: arranging / scheduled 둘 다 (POST /reschedule) */}
-        {(match.status === 'scheduled' || match.status === 'arranging') && (
-          <div className={styles.actionSectionEdit}>
-            <p className={styles.actionSectionLabel}>일정 관리</p>
-            <div className={styles.actionSectionRow}>
-              {match.status === 'scheduled' && (
-                <button className={styles.actionBtn} onClick={openEditScheduleModal} disabled={actionLoading}>
-                  <Calendar size={14} /> 일정 수정
-                </button>
-              )}
-              <button className={styles.actionBtn} onClick={() => setShowReschedule(true)} disabled={actionLoading}>
-                <RefreshCw size={14} /> 일정 재조율
-              </button>
+        {/* ── Match Info ── */}
+        {match.note && (
+          <div className={styles.infoCard}>
+            <div className={styles.infoCardIcon}><FileText size={16} /></div>
+            <div className={styles.infoCardText}>
+              <div className={styles.infoCardTitle}>매니저 메모</div>
+              <div className={styles.infoCardSub}>{match.note}</div>
             </div>
           </div>
         )}
 
-        {/* Zone 3 — 종료/삭제 (destructive) */}
-        <div className={styles.actionSectionDestructive}>
-          {match.status === 'scheduled' && (
-            <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
-              약속 취소
-            </button>
-          )}
-          {(match.status === 'awaiting_payment' || match.status === 'scheduling' || match.status === 'arranging') && (
-            <button className={styles.dangerBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
+        <div className={styles.matchMeta}>
+          <span>생성일: {formatDate(match.createdAt)}</span>
+          {match.meetingDate && <span>미팅일: {formatDate(match.meetingDate)}</span>}
+        </div>
+
+        {/* ── Destructive Actions ── */}
+        <div className={styles.destructiveSection}>
+          {(match.status === 'scheduled' || match.status === 'awaiting_payment' ||
+            match.status === 'scheduling' || match.status === 'arranging' ||
+            match.status === 'proposal_sent' || match.status === 'proposal_accepted') && (
+            <button className={styles.destructiveBtn} onClick={() => setShowCancel(true)} disabled={actionLoading}>
               매칭 취소
             </button>
           )}
-          <button className={styles.dangerBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
+          <button className={styles.destructiveBtn} onClick={() => setShowDelete(true)} disabled={actionLoading}>
             <Trash2 size={14} /> 매칭 삭제
           </button>
         </div>
-      </div>
 
-      {/* Cancelled info */}
-      {isCancelled && (match.cancelReason || match.cancelledByName) && (
-        <div className={styles.cancelledBanner}>
-          <p className={styles.cancelledTitle}>매칭 종료</p>
-          {match.cancelledByName && (
-            <p className={styles.cancelledReason}>취소자: {match.cancelledByName}</p>
-          )}
-          {match.cancelledAt && (
-            <p className={styles.cancelledReason}>취소일: {formatDate(match.cancelledAt)}</p>
-          )}
-          {match.cancelReason && (
-            <p className={styles.cancelledReason}>{match.cancelReason}</p>
-          )}
-        </div>
-      )}
+      </div>{/* /content */}
+
+      {/* ════════════ Modals ════════════ */}
 
       {/* Delete Modal */}
       {showDelete && (
@@ -1173,49 +1297,51 @@ export default function MatchDetail() {
       {/* Cancel Modal */}
       {showCancel && (
         <div className={styles.overlay} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>매칭 취소</h3>
-            {refundStatus && (
-              <p className={styles.modalDesc}>현재 {refundStatus.label} 상태입니다.</p>
-            )}
-            <div className={styles.cancelReasonSection}>
-              <label className={styles.cancelReasonLabel}>취소 사유</label>
-              <div className={styles.cancelReasonPresets}>
-                {['노쇼 (약속 불이행)', '회원 요청으로 취소', '일정 조율 실패', '상대방 거절'].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    className={`${styles.cancelReasonChip} ${cancelReason === preset ? styles.cancelReasonChipActive : ''}`}
-                    onClick={() => setCancelReason(preset)}
-                  >
-                    {preset}
-                  </button>
-                ))}
+          <div className={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.sheetHandle} />
+            <div className={styles.sheetContent}>
+              <h3 className={styles.sheetTitle}>매칭 취소</h3>
+              {refundStatus && (
+                <p className={styles.sheetDesc}>현재 {refundStatus.label} 상태입니다.</p>
+              )}
+              <div className={styles.cancelReasonSection}>
+                <label className={styles.cancelReasonLabel}>취소 사유</label>
+                <div className={styles.cancelReasonPresets}>
+                  {['노쇼 (약속 불이행)', '회원 요청으로 취소', '일정 조율 실패', '상대방 거절'].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className={`${styles.cancelReasonChip} ${cancelReason === preset ? styles.cancelReasonChipActive : ''}`}
+                      onClick={() => setCancelReason(preset)}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  className={styles.cancelReasonInput}
+                  placeholder="취소 사유를 입력하거나 위에서 선택해주세요"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  rows={3}
+                />
               </div>
-              <textarea
-                className={styles.cancelReasonInput}
-                placeholder="취소 사유를 입력하거나 위에서 선택해주세요"
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className={styles.modalActions}>
-              <button className={styles.cancelModalBtn} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
-                돌아가기
-              </button>
-              <button
-                className={styles.dangerBtn}
-                onClick={handleCancel}
-                disabled={actionLoading || !cancelReason.trim()}
-              >
-                취소 진행
-              </button>
+              <div className={styles.sheetActions}>
+                <button className={styles.sheetCancelBtn} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
+                  돌아가기
+                </button>
+                <button
+                  className={styles.sheetConfirmBtn}
+                  onClick={handleCancel}
+                  disabled={actionLoading || !cancelReason.trim()}
+                >
+                  취소 진행
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-
 
       {/* Complete Match Warning Modal */}
       {showCompleteWarning && (
@@ -1245,12 +1371,10 @@ export default function MatchDetail() {
       {/* Confirm Schedule Modal */}
       {showConfirm && (
         <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.centeredModal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>약속 확정</h3>
             {selectedSlot && (
-              <p className={styles.modalDesc}>
-                선택된 시간: {formatSlotDisplay(selectedSlot)}
-              </p>
+              <p className={styles.modalDesc}>선택된 시간: {formatSlotDisplay(selectedSlot)}</p>
             )}
             <div className={styles.modalField}>
               <label className={styles.modalLabel}>장소</label>
@@ -1284,9 +1408,9 @@ export default function MatchDetail() {
               </select>
             </div>
             <div className={styles.modalActions}>
-              <button className={styles.cancelModalBtn} onClick={() => setShowConfirm(false)}>취소</button>
+              <button className={styles.sheetCancelBtn} onClick={() => setShowConfirm(false)}>취소</button>
               <button
-                className={styles.confirmModalBtn}
+                className={styles.sheetConfirmBtn}
                 onClick={handleConfirmSchedule}
                 disabled={actionLoading || !selectedTimeId}
               >
@@ -1301,117 +1425,84 @@ export default function MatchDetail() {
       {showEditSchedule && (
         <div className={styles.overlay} onClick={closeEditScheduleModal}>
           <div
-            className={`${styles.modal} ${styles.editScheduleModal}`}
+            className={`${styles.sheetModal} ${styles.editScheduleModal}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className={styles.modalTitle}>약속 일정 수정</h3>
-            <p className={styles.editScheduleHint}>
-              확정된 일정을 즉시 덮어쓰고, 양쪽 회원에게 새 일정 안내가 재발송됩니다. 먼저 양쪽 회원과 합의 후 진행해주세요. 가용시간 재등록이 필요하면 &ldquo;일정 재조율&rdquo;을 이용하세요.
-            </p>
-            <div className={styles.editScheduleLayout}>
-              <div className={styles.editScheduleLeft}>
-                <div className={styles.modalField}>
-                  <label className={styles.modalLabel}>날짜</label>
-                  <input
-                    type="date"
-                    className={styles.modalInput}
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                  />
-                </div>
-                <div className={styles.editTimeRow}>
+            <div className={styles.sheetHandle} />
+            <div className={styles.sheetContent}>
+              <h3 className={styles.sheetTitle}>약속 일정 수정</h3>
+              <p className={styles.sheetDesc}>
+                확정된 일정을 즉시 덮어쓰고, 양쪽 회원에게 새 일정 안내가 재발송됩니다. 먼저 양쪽 회원과 합의 후 진행해주세요.
+              </p>
+              <div className={styles.editScheduleLayout}>
+                <div className={styles.editScheduleLeft}>
                   <div className={styles.modalField}>
-                    <label className={styles.modalLabel}>시작 시간</label>
-                    <input
-                      type="time"
-                      className={styles.modalInput}
-                      value={editStartTime}
-                      onChange={(e) => setEditStartTime(e.target.value)}
-                    />
+                    <label className={styles.modalLabel}>날짜</label>
+                    <input type="date" className={styles.modalInput} value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+                  </div>
+                  <div className={styles.editTimeRow}>
+                    <div className={styles.modalField}>
+                      <label className={styles.modalLabel}>시작 시간</label>
+                      <input type="time" className={styles.modalInput} value={editStartTime} onChange={(e) => setEditStartTime(e.target.value)} />
+                    </div>
+                    <div className={styles.modalField}>
+                      <label className={styles.modalLabel}>종료 시간 (선택)</label>
+                      <input type="time" className={styles.modalInput} value={editEndTime} onChange={(e) => setEditEndTime(e.target.value)} />
+                    </div>
                   </div>
                   <div className={styles.modalField}>
-                    <label className={styles.modalLabel}>종료 시간 (선택)</label>
-                    <input
-                      type="time"
-                      className={styles.modalInput}
-                      value={editEndTime}
-                      onChange={(e) => setEditEndTime(e.target.value)}
-                    />
+                    <label className={styles.modalLabel}>장소</label>
+                    <input type="text" className={styles.modalInput} value={editVenue} onChange={(e) => setEditVenue(e.target.value)} placeholder="예: 청담동 르카페" />
                   </div>
-                </div>
-                <div className={styles.modalField}>
-                  <label className={styles.modalLabel}>장소</label>
-                  <input
-                    type="text"
-                    className={styles.modalInput}
-                    value={editVenue}
-                    onChange={(e) => setEditVenue(e.target.value)}
-                    placeholder="예: 청담동 르카페"
-                  />
-                </div>
-                <div className={styles.modalField}>
-                  <label className={styles.modalLabel}>장소 링크 (선택)</label>
-                  <input
-                    type="url"
-                    className={styles.modalInput}
-                    value={editLocationLink}
-                    onChange={(e) => setEditLocationLink(e.target.value)}
-                    placeholder="예: https://naver.me/abc123"
-                  />
-                </div>
-                {!loadingTimes && submittedTimes.length === 0 && (
-                  <p className={styles.editTimesEmpty}>
-                    제출된 가용시간이 없어요. 날짜·시간을 직접 입력해주세요.
-                  </p>
-                )}
-              </div>
-              {(loadingTimes || submittedTimes.length > 0) && (
-                <div className={styles.editTimesPanel}>
-                  <p className={styles.editTimesPanelTitle}>회원 제출 가용시간</p>
-                  {loadingTimes ? (
-                    <p className={styles.editTimesEmpty}>불러오는 중...</p>
-                  ) : (
-                    submittedTimes.map((slot) => {
-                      const isActive =
-                        slot.date === editDate &&
-                        slot.startTime &&
-                        slot.startTime.slice(0, 5) === editStartTime;
-                      return (
-                        <button
-                          key={slot.timeId}
-                          type="button"
-                          className={`${styles.editTimeChip} ${isActive ? styles.editTimeChipActive : ''}`}
-                          onClick={() => applyTimeSlotToEdit(slot)}
-                        >
-                          <span className={styles.editTimeChipName}>{slot.clientName}</span>
-                          <span className={styles.editTimeChipDate}>{formatSlotDisplay(slot)}</span>
-                          {slot.selected && (
-                            <span className={styles.editTimeChipCurrent}>현재</span>
-                          )}
-                        </button>
-                      );
-                    })
+                  <div className={styles.modalField}>
+                    <label className={styles.modalLabel}>장소 링크 (선택)</label>
+                    <input type="url" className={styles.modalInput} value={editLocationLink} onChange={(e) => setEditLocationLink(e.target.value)} placeholder="예: https://naver.me/abc123" />
+                  </div>
+                  {!loadingTimes && submittedTimes.length === 0 && (
+                    <p className={styles.editTimesEmpty}>제출된 가용시간이 없어요. 날짜·시간을 직접 입력해주세요.</p>
                   )}
                 </div>
-              )}
-            </div>
-            <div className={styles.modalActions}>
-              <button className={styles.cancelModalBtn} onClick={closeEditScheduleModal}>
-                취소
-              </button>
-              <button
-                className={styles.confirmModalBtn}
-                onClick={handleUpdateScheduleClick}
-                disabled={actionLoading || !editDate || !editStartTime || !editVenue.trim()}
-              >
-                {actionLoading ? '저장 중...' : '저장'}
-              </button>
+                {(loadingTimes || submittedTimes.length > 0) && (
+                  <div className={styles.editTimesPanel}>
+                    <p className={styles.editTimesPanelTitle}>회원 제출 가용시간</p>
+                    {loadingTimes ? (
+                      <p className={styles.editTimesEmpty}>불러오는 중...</p>
+                    ) : (
+                      submittedTimes.map((slot) => {
+                        const isActive = slot.date === editDate && slot.startTime && slot.startTime.slice(0, 5) === editStartTime;
+                        return (
+                          <button
+                            key={slot.timeId}
+                            type="button"
+                            className={`${styles.editTimeChip} ${isActive ? styles.editTimeChipActive : ''}`}
+                            onClick={() => applyTimeSlotToEdit(slot)}
+                          >
+                            <span className={styles.editTimeChipName}>{slot.clientName}</span>
+                            <span className={styles.editTimeChipDate}>{formatSlotDisplay(slot)}</span>
+                            {slot.selected && <span className={styles.editTimeChipCurrent}>현재</span>}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className={styles.modalActions}>
+                <button className={styles.sheetCancelBtn} onClick={closeEditScheduleModal}>취소</button>
+                <button
+                  className={styles.sheetConfirmBtn}
+                  onClick={handleUpdateScheduleClick}
+                  disabled={actionLoading || !editDate || !editStartTime || !editVenue.trim()}
+                >
+                  {actionLoading ? '저장 중...' : '저장'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Edit Schedule Confirm Alert — 저장 직전 사전 합의 확인 */}
+      {/* Edit Schedule Confirm */}
       {showEditConfirm && (
         <ConfirmModal
           title="약속 일정 수정"
@@ -1424,53 +1515,61 @@ export default function MatchDetail() {
         />
       )}
 
-      {/* Remind Preview Modal — 재발송 전 누구에게/왜 보내는지 미리보기 */}
+      {/* Remind Preview Modal */}
       {showRemindConfirm && (() => {
         const preview = getRemindPreview(match, payments);
         const empty = preview.recipients.length === 0;
         return (
           <div className={styles.overlay} onClick={() => setShowRemindConfirm(false)}>
-            <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-              <h3 className={styles.modalTitle}>진행 안내 재발송</h3>
-              <p className={styles.remindStatusLine}>
-                현재 단계: <strong>{preview.statusLabel}</strong>
-              </p>
-              {empty ? (
-                <p className={styles.remindEmptyMsg}>
-                  현재 재발송이 필요한 회원이 없어요. 모두 응답 완료 상태입니다.
+            <div className={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.sheetHandle} />
+              <div className={styles.sheetContent}>
+                <h3 className={styles.sheetTitle}>진행 안내 재발송</h3>
+                <p className={styles.remindStatusLine}>
+                  현재 단계: <strong>{preview.statusLabel}</strong>
                 </p>
-              ) : (
-                <>
-                  <p className={styles.remindDescLine}>
-                    아래 회원에게 <strong>{preview.actionLabel}</strong> LMS를 재발송합니다.
+                {empty ? (
+                  <p className={styles.remindEmptyMsg}>
+                    현재 재발송이 필요한 회원이 없어요. 모두 응답 완료 상태입니다.
                   </p>
-                  <ul className={styles.remindRecipientList}>
-                    {preview.recipients.map((r) => (
-                      <li key={r.name} className={styles.remindRecipientItem}>
-                        <span className={styles.remindRecipientName}>{r.name}</span>
-                        <span className={styles.remindRecipientReason}>{r.reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              <div className={styles.modalActions}>
-                <button className={styles.cancelModalBtn} onClick={() => setShowRemindConfirm(false)}>
-                  {empty ? '확인' : '취소'}
-                </button>
-                {!empty && (
-                  <button className={styles.confirmModalBtn} onClick={handleRemind} disabled={actionLoading}>
-                    {actionLoading ? '재발송 중...' : '재발송'}
-                  </button>
+                ) : (
+                  <>
+                    <p className={styles.remindDescLine}>
+                      아래 회원에게 <strong>{preview.actionLabel}</strong> LMS를 재발송합니다.
+                    </p>
+                    <ul className={styles.remindRecipientList}>
+                      {preview.recipients.map((r) => (
+                        <li key={r.name} className={styles.remindRecipientItem}>
+                          <span className={styles.remindRecipientName}>{r.name}</span>
+                          <span className={styles.remindRecipientReason}>{r.reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
                 )}
+                <div className={styles.modalActions}>
+                  <button className={styles.sheetCancelBtn} onClick={() => setShowRemindConfirm(false)}>
+                    {empty ? '확인' : '취소'}
+                  </button>
+                  {!empty && (
+                    <button className={styles.sheetConfirmBtn} onClick={handleRemind} disabled={actionLoading}>
+                      {actionLoading ? '재발송 중...' : '재발송'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         );
       })()}
+
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════
+   Sub-components
+═══════════════════════════════════════════════════ */
 
 function AfterLinkCard({ match }) {
   const [copiedKey, setCopiedKey] = useState(null);
@@ -1504,51 +1603,34 @@ function AfterLinkCard({ match }) {
 
   return (
     <div className={styles.schedulingLinkCard}>
-      <h3 className={styles.schedulingLinkTitle}>
-        <Heart size={16} /> 에프터 링크
-      </h3>
+      <h3 className={styles.schedulingLinkTitle}><Heart size={16} /> 에프터 링크</h3>
       <p className={styles.schedulingLinkHint}>미팅 후 아래 링크를 각 회원에게 전달해주세요</p>
       <div className={styles.schedulingLinkRows}>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.clientA.clientName} — 에프터 응답</span>
-            {match.clientA.afterResponse === 'accepted' && <span className={styles.submittedBadge}>만나볼래요</span>}
-            {match.clientA.afterResponse === 'rejected' && <span className={styles.rejectedSubmitBadge}>괜찮아요</span>}
-            {(!match.clientA.afterResponse || match.clientA.afterResponse === 'pending') && <span className={styles.pendingSubmitBadge}>미응답</span>}
+        {[
+          { side: 'A', client: match.clientA, url: urlA },
+          { side: 'B', client: match.clientB, url: urlB },
+        ].map(({ side, client, url }) => (
+          <div key={side} className={styles.schedulingLinkRow}>
+            <div className={styles.schedulingLinkLabel}>
+              <span className={styles.schedulingRoleBadge}>{side}</span>
+              <span>{client.clientName} — 에프터 응답</span>
+              {client.afterResponse === 'accepted' && <span className={styles.submittedBadge}>만나볼래요</span>}
+              {client.afterResponse === 'rejected' && <span className={styles.rejectedSubmitBadge}>괜찮아요</span>}
+              {(!client.afterResponse || client.afterResponse === 'pending') && <span className={styles.pendingSubmitBadge}>미응답</span>}
+            </div>
+            <div className={styles.schedulingLinkUrl}>
+              <span className={styles.schedulingLinkValue}>{url}</span>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(url, side)}>
+                {copiedKey === side ? <Check size={13} /> : <Copy size={13} />}
+                {copiedKey === side ? '복사됨' : '링크 복사'}
+              </button>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(url, side)}>
+                {msgCopiedKey === side ? <Check size={13} /> : <FileText size={13} />}
+                {msgCopiedKey === side ? '복사됨' : '안내 메시지 복사'}
+              </button>
+            </div>
           </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlA}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
-              {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, 'A')}>
-              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.clientB.clientName} — 에프터 응답</span>
-            {match.clientB.afterResponse === 'accepted' && <span className={styles.submittedBadge}>만나볼래요</span>}
-            {match.clientB.afterResponse === 'rejected' && <span className={styles.rejectedSubmitBadge}>괜찮아요</span>}
-            {(!match.clientB.afterResponse || match.clientB.afterResponse === 'pending') && <span className={styles.pendingSubmitBadge}>미응답</span>}
-          </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlB}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
-              {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, 'B')}>
-              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -1560,7 +1642,6 @@ function AfterResultLinkCard({ match }) {
 
   const urlA = `${window.location.origin}/proposal/${match.clientA.proposalToken}/after/result`;
   const urlB = `${window.location.origin}/proposal/${match.clientB.proposalToken}/after/result`;
-
   const bothResponded = match.afterStatus === 'accepted' || match.afterStatus === 'rejected';
 
   const handleCopy = async (url, key) => {
@@ -1588,49 +1669,33 @@ function AfterResultLinkCard({ match }) {
 
   return (
     <div className={styles.schedulingLinkCard}>
-      <h3 className={styles.schedulingLinkTitle}>
-        <Heart size={16} /> 만남 성사 결과 링크
-      </h3>
+      <h3 className={styles.schedulingLinkTitle}><Heart size={16} /> 만남 성사 결과 링크</h3>
       <p className={styles.schedulingLinkHint}>
-        {bothResponded
-          ? '에프터 응답이 완료되었습니다. 아래 링크로 결과를 전달해주세요'
-          : '양쪽 에프터 응답 완료 후 결과 링크를 전달해주세요'}
+        {bothResponded ? '에프터 응답이 완료되었습니다. 아래 링크로 결과를 전달해주세요' : '양쪽 에프터 응답 완료 후 결과 링크를 전달해주세요'}
       </p>
       <div className={styles.schedulingLinkRows}>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.clientA.clientName} — 결과 확인</span>
+        {[
+          { side: 'A', client: match.clientA, url: urlA },
+          { side: 'B', client: match.clientB, url: urlB },
+        ].map(({ side, client, url }) => (
+          <div key={side} className={styles.schedulingLinkRow}>
+            <div className={styles.schedulingLinkLabel}>
+              <span className={styles.schedulingRoleBadge}>{side}</span>
+              <span>{client.clientName} — 결과 확인</span>
+            </div>
+            <div className={styles.schedulingLinkUrl}>
+              <span className={styles.schedulingLinkValue}>{url}</span>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(url, side)} disabled={!bothResponded}>
+                {copiedKey === side ? <Check size={13} /> : <Copy size={13} />}
+                {copiedKey === side ? '복사됨' : '링크 복사'}
+              </button>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(url, client.clientNickname || client.clientName, side)} disabled={!bothResponded}>
+                {msgCopiedKey === side ? <Check size={13} /> : <FileText size={13} />}
+                {msgCopiedKey === side ? '복사됨' : '안내 메시지 복사'}
+              </button>
+            </div>
           </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlA}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')} disabled={!bothResponded}>
-              {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, match.clientA.clientNickname || match.clientA.clientName, 'A')} disabled={!bothResponded}>
-              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.clientB.clientName} — 결과 확인</span>
-          </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlB}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')} disabled={!bothResponded}>
-              {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, match.clientB.clientNickname || match.clientB.clientName, 'B')} disabled={!bothResponded}>
-              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -1668,55 +1733,37 @@ function SchedulingLinkCard({ match }) {
 
   return (
     <div className={styles.schedulingLinkCard}>
-      <h3 className={styles.schedulingLinkTitle}>
-        <Link2 size={16} /> 일정 조율 링크
-      </h3>
+      <h3 className={styles.schedulingLinkTitle}><Link2 size={16} /> 일정 조율 링크</h3>
       <p className={styles.schedulingLinkHint}>아래 링크를 각 회원에게 전달해주세요</p>
       <div className={styles.schedulingLinkRows}>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>A</span>
-            <span>{match.clientA.clientName} — 가용시간 등록</span>
-            {match.clientA.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
-            {match.clientA.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
+        {[
+          { side: 'A', client: match.clientA, url: urlA },
+          { side: 'B', client: match.clientB, url: urlB },
+        ].map(({ side, client, url }) => (
+          <div key={side} className={styles.schedulingLinkRow}>
+            <div className={styles.schedulingLinkLabel}>
+              <span className={styles.schedulingRoleBadge}>{side}</span>
+              <span>{client.clientName} — 가용시간 등록</span>
+              {client.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
+              {client.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
+            </div>
+            <div className={styles.schedulingLinkUrl}>
+              <span className={styles.schedulingLinkValue}>{url}</span>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(url, side)}>
+                {copiedKey === side ? <Check size={13} /> : <Copy size={13} />}
+                {copiedKey === side ? '복사됨' : '링크 복사'}
+              </button>
+              <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(url, client.clientNickname || client.clientName, side)}>
+                {msgCopiedKey === side ? <Check size={13} /> : <FileText size={13} />}
+                {msgCopiedKey === side ? '복사됨' : '안내 메시지 복사'}
+              </button>
+            </div>
           </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlA}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlA, 'A')}>
-              {copiedKey === 'A' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'A' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlA, match.clientA.clientNickname || match.clientA.clientName, 'A')}>
-              {msgCopiedKey === 'A' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'A' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
-        <div className={styles.schedulingLinkRow}>
-          <div className={styles.schedulingLinkLabel}>
-            <span className={styles.schedulingRoleBadge}>B</span>
-            <span>{match.clientB.clientName} — 가용시간 등록</span>
-            {match.clientB.availableTimesSubmitted && <span className={styles.submittedBadge}>등록 완료</span>}
-            {match.clientB.availableTimesSubmitted === false && <span className={styles.pendingSubmitBadge}>미완료</span>}
-          </div>
-          <div className={styles.schedulingLinkUrl}>
-            <span className={styles.schedulingLinkValue}>{urlB}</span>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleCopy(urlB, 'B')}>
-              {copiedKey === 'B' ? <Check size={13} /> : <Copy size={13} />}
-              {copiedKey === 'B' ? '복사됨' : '링크 복사'}
-            </button>
-            <button className={styles.schedulingCopyBtn} onClick={() => handleMsgCopy(urlB, match.clientB.clientNickname || match.clientB.clientName, 'B')}>
-              {msgCopiedKey === 'B' ? <Check size={13} /> : <FileText size={13} />}
-              {msgCopiedKey === 'B' ? '복사됨' : '안내 메시지 복사'}
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 }
-
-
 
 function ParticipantCard({ participant, partner, label, matchStatus, side }) {
   const navigate = useNavigate();
@@ -1789,7 +1836,6 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
     ? RESPONSE_MAP[participant.response] || { label: participant.response, className: '' }
     : null;
 
-  // Sequential status text
   let statusText = null;
   if (matchStatus === 'proposal_sent') {
     statusText = side === 'A' ? '프로필 확인 대기' : 'A 확인 후 전달 예정';
@@ -1808,9 +1854,7 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
           <span className={styles.participantLabel}>{label}</span>
         </div>
         <div className={styles.participantBody}>
-          <div className={styles.deletedNotice}>
-            이 회원의 정보는 삭제되었습니다.
-          </div>
+          <div className={styles.deletedNotice}>이 회원의 정보는 삭제되었습니다.</div>
           {participant.response && participant.response !== 'pending' && (
             <div className={styles.participantField}>
               <span className={styles.fieldLabel}>응답 상태</span>
@@ -1870,22 +1914,17 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
         )}
       </div>
 
-      {/* Phone Quick Copy */}
       {participant.clientPhone && (
         <div className={styles.phoneQuickRow}>
           <Phone size={13} />
           <span className={styles.phoneQuickValue}>{participant.clientPhone}</span>
-          <button
-            className={styles.phoneQuickCopyBtn}
-            onClick={handlePhoneCopy}
-          >
+          <button className={styles.phoneQuickCopyBtn} onClick={handlePhoneCopy}>
             {phoneCopied ? <Check size={12} /> : <Copy size={12} />}
             {phoneCopied ? '복사됨' : '복사'}
           </button>
         </div>
       )}
 
-      {/* Profile Toggle */}
       {hasProfile && (
         <>
           <button className={styles.profileToggle} onClick={() => setProfileOpen(!profileOpen)}>
@@ -1896,7 +1935,6 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
 
           {profileOpen && (
             <div className={styles.profileDetail}>
-              {/* Photos */}
               {photos.length > 0 && (
                 <div className={styles.profilePhotos}>
                   {photos.map((url, i) => (
@@ -1904,8 +1942,6 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
                   ))}
                 </div>
               )}
-
-              {/* Fields Grid */}
               <div className={styles.profileFields}>
                 {participant.clientAge && (
                   <div className={styles.profileFieldItem}>
@@ -1962,35 +1998,24 @@ function ParticipantCard({ participant, partner, label, matchStatus, side }) {
                   </div>
                 )}
               </div>
-
-              {/* Phone */}
               {participant.clientPhone && (
                 <div className={styles.phoneSection}>
-                  <span className={styles.profileFieldLabel}>
-                    <Phone size={12} /> 연락처
-                  </span>
+                  <span className={styles.profileFieldLabel}><Phone size={12} /> 연락처</span>
                   <div className={styles.phoneRow}>
                     <span className={styles.phoneValue}>{participant.clientPhone}</span>
-                    <button
-                      className={styles.phoneCopyBtn}
-                      onClick={handlePhoneCopy}
-                    >
+                    <button className={styles.phoneCopyBtn} onClick={handlePhoneCopy}>
                       {phoneCopied ? <Check size={12} /> : <Copy size={12} />}
                       {phoneCopied ? '복사됨' : '번호 복사'}
                     </button>
                   </div>
                 </div>
               )}
-
-              {/* Introduction */}
               {participant.clientIntroduction && (
                 <div className={styles.profileTextSection}>
                   <span className={styles.profileTextLabel}>자기소개</span>
                   <p className={styles.profileTextContent}>{participant.clientIntroduction}</p>
                 </div>
               )}
-
-              {/* Ideal Type */}
               {participant.clientIdealType && (
                 <div className={styles.profileTextSection}>
                   <span className={styles.profileTextLabel}>이상형</span>
@@ -2059,9 +2084,7 @@ function GuideMessageCard({ title, hint, badge, participants, generateMsg }) {
     <div className={styles.guideMessageCard}>
       <h3 className={styles.guideMessageTitle}>
         <FileText size={16} /> {title}
-        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '999px', background: 'var(--bg-warm)', color: 'var(--charcoal-pale)' }}>
-          {badge}
-        </span>
+        <span className={styles.guideBadge}>{badge}</span>
       </h3>
       <p className={styles.guideMessageHint}>{hint}</p>
       <div className={styles.guideMessageRows}>
@@ -2071,9 +2094,7 @@ function GuideMessageCard({ title, hint, badge, participants, generateMsg }) {
           return (
             <div key={side} className={styles.guideMessageRow}>
               <span className={styles.schedulingRoleBadge}>{side}</span>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--charcoal)' }}>
-                {p.clientName}
-              </span>
+              <span className={styles.guideMessageClientName}>{p.clientName}</span>
               <button className={styles.msgCopyBtn} onClick={() => handleCopy(p, side)}>
                 {isCopied ? <Check size={13} /> : <FileText size={13} />}
                 {isCopied ? '복사됨' : '안내 메시지 복사'}
@@ -2097,4 +2118,3 @@ function MapLinks({ address }) {
     </span>
   );
 }
-

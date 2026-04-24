@@ -1,56 +1,114 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Copy, Trash2, Mail, X, Pencil, Sparkles } from 'lucide-react';
+import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
 import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
-import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
-import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './InviteManagement.module.css';
 
+// ── Type parser ──────────────────────────────────────────────────────────────
+function parseInviteType(label) {
+  if (!label) return { type: 'general', partner: null, displayLabel: '' };
+  const m = label.match(/^\[EVENT\]\s*([^/]+?)(?:\s*\/\s*(.*))?$/);
+  if (m) {
+    return {
+      type: 'event',
+      partner: m[1].trim(),
+      displayLabel: m[2]?.trim() || m[1].trim(),
+    };
+  }
+  return { type: 'general', partner: null, displayLabel: label };
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function formatDate(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  } catch {
+    return iso;
+  }
+}
+
 export default function InviteManagement() {
   const navigate = useNavigate();
-  const { invites, isLoading, page, totalPages, statusFilter, fetchInvites, createInvite, revokeInvite, setStatusFilter } = useInviteStore();
-  const [label, setLabel] = useState('');
+  const {
+    invites,
+    isLoading,
+    page,
+    totalPages,
+    fetchInvites,
+    createInvite,
+    revokeInvite,
+    setStatusFilter,
+  } = useInviteStore();
+
+  // ── Local state ──────────────────────────────────────────────────────────
+  const [filter, setFilter] = useState('all'); // all | general | event | revoked
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
-  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editingLabel, setEditingLabel] = useState('');
-  const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideInviteDesc') !== '1');
-  const [eventTarget, setEventTarget] = useState(null);
-  const [partnerName, setPartnerName] = useState('');
 
+  // General sheet
+  const [showGeneral, setShowGeneral] = useState(false);
+  const [generalLabel, setGeneralLabel] = useState('');
+
+  // Event sheet
+  const [showEvent, setShowEvent] = useState(false);
+  const [eventPartner, setEventPartner] = useState('');
+  const [eventLabel, setEventLabel] = useState('');
+
+  // ── Initial fetch (load all, filter client-side) ─────────────────────────
   useEffect(() => {
-    fetchInvites({ page: 1, status: statusFilter || undefined });
-  }, [fetchInvites, statusFilter]);
+    fetchInvites({ page: 1, limit: 100 });
+    setStatusFilter('');
+  }, [fetchInvites, setStatusFilter]);
 
-  const handleCreateClick = () => {
-    setShowCreateConfirm(true);
+  // ── Derived data ─────────────────────────────────────────────────────────
+  const enriched = invites.map((inv) => ({
+    ...inv,
+    ...parseInviteType(inv.label),
+  }));
+
+  const counts = {
+    all: enriched.length,
+    general: enriched.filter((l) => l.type === 'general' && l.status === 'active').length,
+    event: enriched.filter((l) => l.type === 'event' && l.status === 'active').length,
+    revoked: enriched.filter((l) => l.status === 'revoked').length,
   };
 
-  const handleCreateConfirm = async () => {
-    setShowCreateConfirm(false);
-    try {
-      await createInvite({ label: label || undefined });
-      setLabel('');
-      fetchInvites({ page: 1, status: statusFilter || undefined });
-      toast.success('초대 링크가 생성되었습니다.');
-    } catch (err) {
-      toast.error(err.message || '초대 링크 생성에 실패했습니다.');
-    }
-  };
+  const filtered = enriched.filter((l) => {
+    if (filter === 'all') return true;
+    if (filter === 'revoked') return l.status === 'revoked';
+    return l.type === filter && l.status === 'active';
+  });
 
-  const handleCopy = (invite) => {
+  // KPI: active this month (naive: count invites created this month)
+  const now = new Date();
+  const thisMonthJoined = enriched.reduce((sum, inv) => {
+    return sum + (inv.useCount ?? 0);
+  }, 0);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleCopy = useCallback((invite) => {
     const token = invite.token || invite.id;
     const url = `${window.location.origin}/invite/${token}`;
     navigator.clipboard.writeText(url);
     setCopiedId(invite.id);
     toast.success('링크가 복사되었습니다.');
     setTimeout(() => setCopiedId(null), 2000);
-  };
+  }, []);
+
+  const handleEventCopy = useCallback((invite) => {
+    const token = invite.token || invite.id;
+    const partner = invite.partner || '';
+    let url = `${window.location.origin}/event/${token}`;
+    if (partner) url += `?partner=${encodeURIComponent(partner)}`;
+    navigator.clipboard.writeText(url);
+    toast.success('이벤트 링크가 복사되었습니다.');
+  }, []);
 
   const handleRevoke = async () => {
     if (!revokeTarget) return;
@@ -63,196 +121,248 @@ export default function InviteManagement() {
     setRevokeTarget(null);
   };
 
-  const handleStartEdit = (invite) => {
-    setEditingId(invite.id);
-    setEditingLabel(invite.label || '');
+  const closeGeneral = () => {
+    setShowGeneral(false);
+    setGeneralLabel('');
   };
 
-  const handleSaveLabel = async (inviteId) => {
+  const handleCreateGeneral = async () => {
     try {
-      await updateInviteLabel(inviteId, editingLabel);
-      toast.success('라벨이 수정되었습니다.');
-      fetchInvites({ page, status: statusFilter || undefined });
+      await createInvite({ label: generalLabel || undefined });
+      fetchInvites({ page: 1, limit: 100 });
+      toast.success('초대 링크가 생성되었습니다.');
     } catch (err) {
-      toast.error(err.message || '라벨 수정에 실패했습니다.');
+      toast.error(err.message || '초대 링크 생성에 실패했습니다.');
     }
-    setEditingId(null);
+    closeGeneral();
   };
 
-  const handleLabelKeyDown = (e, inviteId) => {
-    if (e.key === 'Enter') handleSaveLabel(inviteId);
-    if (e.key === 'Escape') setEditingId(null);
+  const closeEvent = () => {
+    setShowEvent(false);
+    setEventPartner('');
+    setEventLabel('');
   };
 
-  const handleEventCopy = () => {
-    const token = eventTarget.token || eventTarget.id;
-    let url = `${window.location.origin}/event/${token}`;
-    if (partnerName.trim()) {
-      url += `?partner=${encodeURIComponent(partnerName.trim())}`;
+  const handleCreateEvent = async () => {
+    if (!eventPartner.trim()) {
+      toast.error('파트너사명을 입력해주세요.');
+      return;
     }
-    navigator.clipboard.writeText(url);
-    toast.success('이벤트 링크가 복사되었습니다.');
-    setEventTarget(null);
-    setPartnerName('');
+    const labelStr = `[EVENT] ${eventPartner.trim()}${eventLabel.trim() ? ` / ${eventLabel.trim()}` : ''}`;
+    try {
+      await createInvite({ label: labelStr });
+      fetchInvites({ page: 1, limit: 100 });
+      toast.success('이벤트 링크가 생성되었습니다.');
+    } catch (err) {
+      toast.error(err.message || '이벤트 링크 생성에 실패했습니다.');
+    }
+    closeEvent();
   };
 
-  const getEventPreviewUrl = () => {
-    if (!eventTarget) return '';
-    const token = eventTarget.token || eventTarget.id;
-    let url = `${window.location.origin}/event/${token}`;
-    if (partnerName.trim()) {
-      url += `?partner=${encodeURIComponent(partnerName.trim())}`;
-    }
-    return url;
-  };
+  const eventPreviewUrl = eventPartner.trim()
+    ? `${window.location.origin}/event/...?partner=${encodeURIComponent(eventPartner.trim())}`
+    : '';
+
+  const TABS = [
+    { k: 'all', l: '전체', n: counts.all },
+    { k: 'general', l: '일반', n: counts.general },
+    { k: 'event', l: '이벤트', n: counts.event },
+    { k: 'revoked', l: '폐기', n: counts.revoked },
+  ];
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>초대 관리</h1>
+      {/* ── Sticky header ── */}
+      <div className={styles.header}>
+        <h1 className={styles.title}>초대 관리</h1>
+      </div>
 
-      {showDesc && (
-        <div className={styles.descBox}>
-          <div className={styles.descHeader}>
-            <p className={styles.descTitle}>회원 초대란?</p>
-            <button
-              className={styles.descClose}
-              onClick={() => { setShowDesc(false); localStorage.setItem('hideInviteDesc', '1'); }}
-            >
-              <X size={14} />
-            </button>
+      <div className={styles.body}>
+        {/* ── 소개 배너 ── */}
+        <div className={styles.introBanner}>
+          <div className={styles.introKicker}>INVITE · 두 가지 링크</div>
+          <div className={styles.introCopy}>
+            <span className={styles.introEmphasis}>일반 링크</span>는 내가 직접 회원을 모실 때,<br />
+            <span className={styles.introAccent}>이벤트 링크</span>는 파트너사와 공동 개최할 때 쓰세요.
           </div>
-          <p className={styles.descText}>
-            소개를 희망하는 분(회원)에게 초대 링크를 전달하면, 상대방이 프로필을 직접 등록할 수 있습니다.
-            라벨을 붙여 어떤 용도로 생성한 링크인지 관리하고, 더 이상 필요 없는 링크는 폐기하세요.
-          </p>
         </div>
-      )}
 
-      <div className={styles.createBox}>
-        <div className={styles.createRow}>
-          <input
-            className={styles.labelInput}
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="라벨 (선택, 예: 홍길동 소개용)"
-          />
-          <button className={styles.createBtn} onClick={handleCreateClick}>
-            <Plus size={16} /> 생성
+        {/* ── KPI 3칸 ── */}
+        <div className={styles.kpiRow}>
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>이번 달 가입</div>
+            <div className={styles.kpiValue}>
+              {thisMonthJoined}
+              <span className={styles.kpiUnit}>명</span>
+            </div>
+          </div>
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiLabel}>활성 링크</div>
+            <div className={styles.kpiValue}>
+              {counts.general + counts.event}
+              <span className={styles.kpiUnit}>개</span>
+            </div>
+          </div>
+          <div className={`${styles.kpiCard} ${styles.kpiCardEvent}`}>
+            <div className={styles.kpiLabelEvent}>이벤트</div>
+            <div className={`${styles.kpiValue} ${styles.kpiValueEvent}`}>
+              {counts.event}
+              <span className={styles.kpiUnit}>개</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 링크 생성 2-버튼 CTA ── */}
+        <div className={styles.createGrid}>
+          <button className={styles.createGeneral} onClick={() => setShowGeneral(true)}>
+            <div className={styles.createHeader}>
+              <Link2 size={14} />
+              <span>일반 링크</span>
+            </div>
+            <span className={styles.createSubText}>회원 초대용 기본 링크</span>
+          </button>
+          <button className={styles.createEvent} onClick={() => setShowEvent(true)}>
+            <div className={styles.createEventHeader}>
+              <Sparkles size={14} />
+              <span>이벤트 링크</span>
+            </div>
+            <span className={styles.createEventSubText}>파트너사 이벤트 공동개최</span>
           </button>
         </div>
-      </div>
 
-      <div className={styles.filters}>
-        <select
-          className={styles.filterSelect}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">상태 전체</option>
-          <option value="active">활성</option>
-          <option value="revoked">폐기</option>
-        </select>
-      </div>
-
-      {isLoading ? (
-        <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
-      ) : invites.length === 0 ? (
-        <div className={styles.empty}>
-          <Mail size={40} strokeWidth={1} />
-          <p>생성된 초대가 없습니다.</p>
+        {/* ── 필터 탭 ── */}
+        <div className={styles.filterTabs}>
+          {TABS.map((t) => (
+            <button
+              key={t.k}
+              className={`${styles.filterTab} ${filter === t.k ? styles.filterTabActive : ''}`}
+              onClick={() => setFilter(t.k)}
+            >
+              {t.l}
+              <span className={`${styles.filterBadge} ${filter === t.k ? styles.filterBadgeActive : ''}`}>
+                {t.n}
+              </span>
+            </button>
+          ))}
         </div>
-      ) : (
-        <>
-          <div className={styles.list}>
-            {invites.map((invite) => (
-              <div key={invite.id} className={styles.card}>
-                <div className={styles.cardMain}>
-                  <div className={styles.cardInfo}>
-                    {editingId === invite.id ? (
-                      <input
-                        className={styles.labelEditInput}
-                        value={editingLabel}
-                        onChange={(e) => setEditingLabel(e.target.value)}
-                        onBlur={() => handleSaveLabel(invite.id)}
-                        onKeyDown={(e) => handleLabelKeyDown(e, invite.id)}
-                        autoFocus
-                        placeholder="라벨 입력..."
-                      />
-                    ) : (
-                      <span
-                        className={styles.inviteLabel}
-                        onClick={() => invite.status === 'active' && handleStartEdit(invite)}
-                        title={invite.status === 'active' ? '클릭하여 수정' : ''}
-                        style={invite.status === 'active' ? { cursor: 'pointer' } : {}}
-                      >
-                        {invite.label || '라벨 없음'}
-                        {invite.status === 'active' && <Pencil size={12} className={styles.editIcon} />}
-                      </span>
-                    )}
-                    <StatusBadge status={invite.status} />
-                  </div>
-                  <span className={styles.cardMeta}>
-                    생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
-                    {invite.useCount != null && ` · 등록 ${invite.useCount}명`}
-                  </span>
-                  {invite.registeredClients && invite.registeredClients.length > 0 && (
-                    <div className={styles.registeredClients}>
-                      <span className={styles.registeredLabel}>등록 회원:</span>
-                      {invite.registeredClients.map((client) => (
-                        <span
-                          key={client.id}
-                          className={styles.registeredChip}
-                          onClick={() => navigate(`/dashboard/clients/${client.id}`)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {client.name}
-                          <span className={styles.registeredStatus}>
-                            {client.approvalStatus === 'approved' ? '승인' : client.approvalStatus === 'rejected' ? '거절' : '대기'}
-                          </span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.cardActions}>
-                  {invite.status === 'active' && (
-                    <>
-                      <button className={styles.iconBtn} onClick={() => handleCopy(invite)}>
-                        <Copy size={14} />
-                        {copiedId === invite.id ? '복사됨!' : '복사'}
-                      </button>
-                      <button
-                        className={`${styles.iconBtn} ${styles.eventBtn}`}
-                        onClick={() => { setEventTarget(invite); setPartnerName(''); }}
-                      >
-                        <Sparkles size={14} /> 이벤트
-                      </button>
-                      <button
-                        className={`${styles.iconBtn} ${styles.dangerBtn}`}
-                        onClick={() => setRevokeTarget(invite)}
-                      >
-                        <Trash2 size={14} /> 폐기
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+
+        {/* ── 링크 리스트 ── */}
+        <div className={styles.list}>
+          {isLoading ? (
+            [1, 2, 3].map((i) => <SkeletonListItem key={i} />)
+          ) : filtered.length === 0 ? (
+            <div className={styles.empty}>
+              <Link2 size={20} color="var(--ink-300)" />
+              <p className={styles.emptyText}>해당하는 링크가 없어요</p>
+            </div>
+          ) : (
+            filtered.map((invite) => (
+              <InviteCard
+                key={invite.id}
+                invite={invite}
+                copiedId={copiedId}
+                onCopy={handleCopy}
+                onEventCopy={handleEventCopy}
+                onRevoke={setRevokeTarget}
+                navigate={navigate}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* ── 일반 링크 생성 시트 ── */}
+      {showGeneral && (
+        <div className={styles.sheetOverlay} onClick={closeGeneral}>
+          <div className={styles.sheetPanel} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.sheetHandle} />
+            <div className={styles.sheetHeaderRow}>
+              <Link2 size={18} color="var(--ink-900)" />
+              <h2 className={styles.sheetTitle}>일반 초대링크</h2>
+            </div>
+            <p className={styles.sheetDesc}>라벨을 지정하면 어떤 용도의 링크인지 구분하기 쉬워요.</p>
+
+            <div className={styles.sheetField}>
+              <div className={styles.sheetFieldLabel}>라벨 (선택)</div>
+              <input
+                className={styles.sheetInput}
+                value={generalLabel}
+                onChange={(e) => setGeneralLabel(e.target.value)}
+                placeholder="예: 홍길동 소개용"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateGeneral()}
+              />
+            </div>
+
+            <div className={styles.sheetActions}>
+              <button className={styles.btnGhost} onClick={closeGeneral}>취소</button>
+              <button className={styles.btnPrimary} onClick={handleCreateGeneral}>생성</button>
+            </div>
           </div>
-          <Pagination page={page} totalPages={totalPages} onPageChange={(p) => fetchInvites({ page: p, status: statusFilter || undefined })} />
-        </>
+        </div>
       )}
 
-      {showCreateConfirm && (
-        <ConfirmModal
-          title="초대 링크 생성"
-          message="초대 링크 1개를 생성하시겠습니까?"
-          confirmLabel="생성"
-          onConfirm={handleCreateConfirm}
-          onCancel={() => setShowCreateConfirm(false)}
-        />
+      {/* ── 이벤트 링크 생성 시트 ── */}
+      {showEvent && (
+        <div className={styles.sheetOverlay} onClick={closeEvent}>
+          <div className={`${styles.sheetPanel} ${styles.sheetPanelEvent}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.sheetHandle} />
+            <div className={styles.sheetHeaderRow}>
+              <div className={styles.sheetEventIcon}>
+                <Sparkles size={16} color="var(--tangerine-700)" />
+              </div>
+              <div>
+                <h2 className={styles.sheetTitle}>이벤트 링크 만들기</h2>
+                <div className={styles.sheetEventSub}>파트너사 공동개최용</div>
+              </div>
+            </div>
+            <p className={styles.sheetDesc}>
+              입점 업체명을 입력하면 업체명이 표시된 <strong style={{ color: 'var(--ink-700)' }}>이벤트 페이지</strong>와 링크가 생성됩니다.
+            </p>
+
+            <div className={styles.sheetField}>
+              <div className={styles.sheetFieldLabel}>입점 업체명</div>
+              <input
+                className={styles.sheetInput}
+                value={eventPartner}
+                onChange={(e) => setEventPartner(e.target.value)}
+                placeholder="예: 와인주막차차 여의도"
+                autoFocus
+              />
+              <div className={styles.sheetHint}>이벤트 페이지 배너에 "OOO와 함께하는 특별 이벤트"로 표시돼요</div>
+            </div>
+
+            <div className={styles.sheetField}>
+              <div className={styles.sheetFieldLabel}>라벨 (선택)</div>
+              <input
+                className={styles.sheetInput}
+                value={eventLabel}
+                onChange={(e) => setEventLabel(e.target.value)}
+                placeholder="내부용 메모"
+              />
+            </div>
+
+            {eventPartner.trim() && (
+              <div className={styles.previewUrlBox}>
+                <div className={styles.previewUrlLabel}>생성 URL</div>
+                <div className={styles.previewUrl}>{eventPreviewUrl}</div>
+              </div>
+            )}
+
+            <div className={styles.sheetActions}>
+              <button className={styles.btnGhost} onClick={closeEvent}>취소</button>
+              <button
+                className={`${styles.btnPrimary} ${styles.btnAccent}`}
+                onClick={handleCreateEvent}
+                disabled={!eventPartner.trim()}
+              >
+                생성
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
+      {/* ── Revoke confirm modal ── */}
       {revokeTarget && (
         <ConfirmModal
           title="초대 폐기"
@@ -263,48 +373,93 @@ export default function InviteManagement() {
           onCancel={() => setRevokeTarget(null)}
         />
       )}
+    </div>
+  );
+}
 
-      {eventTarget && (
-        <div className={styles.eventModal} onClick={(e) => { if (e.target === e.currentTarget) { setEventTarget(null); setPartnerName(''); } }}>
-          <div className={styles.eventModalContent}>
-            <div className={styles.eventModalHeader}>
-              <h2 className={styles.eventModalTitle}>
-                <Sparkles size={16} />
-                이벤트 링크 만들기
-              </h2>
-              <button
-                className={styles.eventModalClose}
-                onClick={() => { setEventTarget(null); setPartnerName(''); }}
-                aria-label="닫기"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <p className={styles.eventModalDesc}>
-              협업 업체명을 입력하면 업체명이 포함된 이벤트 페이지 링크가 생성됩니다.
-            </p>
-            <input
-              className={styles.eventModalInput}
-              value={partnerName}
-              onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="협업 업체명 (예: 와인주막차차 여의도)"
-              autoFocus
-            />
-            <div className={styles.eventModalPreviewBox}>
-              <span className={styles.eventModalPreviewLabel}>미리보기</span>
-              <p className={styles.eventModalPreview}>{getEventPreviewUrl()}</p>
-            </div>
-            <div className={styles.eventModalActions}>
-              <button className={styles.eventCloseBtn} onClick={() => { setEventTarget(null); setPartnerName(''); }}>
-                닫기
-              </button>
-              <button className={styles.eventCopyBtn} onClick={handleEventCopy}>
-                <Copy size={14} /> 링크 복사
-              </button>
-            </div>
-          </div>
+// ── InviteCard sub-component ─────────────────────────────────────────────────
+function InviteCard({ invite, copiedId, onCopy, onEventCopy, onRevoke, navigate }) {
+  const { type, partner, displayLabel, status, registeredClients, useCount, createdAt } = invite;
+  const isEvent = type === 'event';
+  const isActive = status === 'active';
+  const isRevoked = status === 'revoked';
+  const n = useCount ?? (registeredClients?.length ?? 0);
+  const clients = registeredClients || [];
+
+  return (
+    <div
+      className={`${styles.card} ${isEvent && isActive ? styles.cardEvent : ''} ${isRevoked ? styles.cardRevoked : ''}`}
+    >
+      {/* Header row: type badge + label + status badge */}
+      <div className={styles.cardHeader}>
+        {isEvent ? (
+          <span className={styles.typeBadgeEvent}>
+            <Sparkles size={9} />
+            이벤트
+          </span>
+        ) : (
+          <span className={styles.typeBadgeGeneral}>일반</span>
+        )}
+        <div className={styles.cardLabel}>{displayLabel || '라벨 없음'}</div>
+        {isRevoked ? (
+          <span className={styles.statusBadgeRevoked}>폐기</span>
+        ) : n > 0 ? (
+          <span className={styles.statusBadgeMint}>가입 {n}</span>
+        ) : (
+          <span className={styles.statusBadgeInk}>대기</span>
+        )}
+      </div>
+
+      {/* Event partner box */}
+      {isEvent && partner && (
+        <div className={styles.partnerBox}>
+          <span className={styles.partnerKey}>파트너</span>
+          <span className={styles.partnerValue}>{partner}</span>
         </div>
       )}
+
+      {/* Registered client chips */}
+      {clients.length > 0 && (
+        <div className={styles.clientChips}>
+          <span className={styles.clientsLabel}>등록:</span>
+          {clients.slice(0, 4).map((c) => (
+            <span
+              key={c.id || c.name}
+              className={styles.clientChip}
+              onClick={() => c.id && navigate(`/dashboard/clients/${c.id}`)}
+              style={c.id ? { cursor: 'pointer' } : {}}
+            >
+              {c.name || c}
+            </span>
+          ))}
+          {clients.length > 4 && (
+            <span className={styles.clientOverflow}>+{clients.length - 4}</span>
+          )}
+        </div>
+      )}
+
+      {/* Action row */}
+      <div className={styles.cardActions}>
+        <button className={styles.btnSoft} onClick={() => onCopy(invite)}>
+          {copiedId === invite.id ? <Check size={12} /> : <Copy size={12} />}
+          {copiedId === invite.id ? '복사됨!' : '복사'}
+        </button>
+        {isEvent && isActive && (
+          <button className={styles.btnGhostSm} onClick={() => onEventCopy(invite)}>
+            미리보기
+          </button>
+        )}
+        {isActive && (
+          <button className={styles.btnGhostSm} onClick={() => onRevoke(invite)}>
+            폐기
+          </button>
+        )}
+        <div style={{ flex: 1 }} />
+        <span className={styles.cardDate}>
+          <Calendar size={10} />
+          {formatDate(createdAt)}
+        </span>
+      </div>
     </div>
   );
 }

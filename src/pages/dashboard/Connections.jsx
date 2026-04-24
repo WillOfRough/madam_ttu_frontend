@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link2, Plus, Copy, Unlink, X, Search, UserPlus, Check, XCircle, Send, Clock, Trash2 } from 'lucide-react';
+import {
+  Link2, Plus, Copy, Unlink, X, Search, UserPlus,
+  Check, XCircle, Clock, ChevronRight, Users,
+} from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useManagerInviteStore from '../../store/managerInviteStore';
@@ -173,34 +176,76 @@ export default function Connections() {
 
   const displayQuota = quota || managerInviteQuota;
 
+  // KPI counts
+  const connectedCount = connections.length;
+  const pendingCount = receivedRequests.length;
+
   return (
     <div className={styles.page}>
+      {/* ── Sticky serif header ── */}
       <div className={styles.header}>
         <h1 className={styles.title}>매니저 네트워크</h1>
         {tab === 'connections' && (
-          <button className={styles.createBtn} onClick={() => setShowInviteForm((v) => !v)}>
-            <Plus size={16} /> 초대 링크
+          <button
+            className={styles.createBtn}
+            onClick={() => setShowInviteForm((v) => !v)}
+          >
+            <Plus size={14} />
+            초대 링크
           </button>
         )}
       </div>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tabBtn} ${tab === 'connections' ? styles.tabActive : ''}`}
-          onClick={() => setTab('connections')}
-        >
-          <Link2 size={16} /> 네트워크 목록
-        </button>
-        <button
-          className={`${styles.tabBtn} ${tab === 'manager-invites' ? styles.tabActive : ''}`}
-          onClick={() => setTab('manager-invites')}
-        >
-          <UserPlus size={16} /> 매니저 초대
-        </button>
+      {/* ── KPI summary cards ── */}
+      <div className={styles.kpiRow}>
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>연결 매니저</div>
+          <div className={styles.kpiValue}>
+            {connectedCount}
+            <span className={styles.kpiUnit}>명</span>
+          </div>
+        </div>
+        <div className={`${styles.kpiCard} ${pendingCount > 0 ? styles.kpiCardAccent : ''}`}>
+          <div className={`${styles.kpiLabel} ${pendingCount > 0 ? styles.kpiLabelAccent : ''}`}>
+            대기 요청
+          </div>
+          <div className={`${styles.kpiValue} ${pendingCount > 0 ? styles.kpiValueAccent : ''}`}>
+            {pendingCount}
+            <span className={pendingCount > 0 ? styles.kpiUnitAccent : styles.kpiUnit}>건</span>
+          </div>
+        </div>
+        <div className={styles.kpiCard}>
+          <div className={styles.kpiLabel}>함께 매칭</div>
+          <div className={styles.kpiValue}>
+            {connections.reduce((s, c) => s + (c.sharedMatchCount ?? 0), 0)}
+            <span className={styles.kpiUnit}>건</span>
+          </div>
+        </div>
       </div>
 
+      {/* ── Pill tabs ── */}
+      <div className={styles.tabRow}>
+        {[
+          { k: 'connections', l: '네트워크 목록', icon: <Link2 size={13} /> },
+          { k: 'manager-invites', l: '매니저 초대', icon: <UserPlus size={13} /> },
+        ].map((t) => (
+          <button
+            key={t.k}
+            className={`${styles.tabBtn} ${tab === t.k ? styles.tabActive : ''}`}
+            onClick={() => setTab(t.k)}
+          >
+            {t.icon}
+            {t.l}
+          </button>
+        ))}
+      </div>
+
+      {/* ════════════════════════════════
+          TAB: 네트워크 목록
+      ════════════════════════════════ */}
       {tab === 'connections' && (
         <>
+          {/* Info banner */}
           {showDesc && (
             <div className={styles.descBox}>
               <div className={styles.descHeader}>
@@ -208,8 +253,9 @@ export default function Connections() {
                 <button
                   className={styles.descClose}
                   onClick={() => { setShowDesc(false); localStorage.setItem('hideConnectionDesc', '1'); }}
+                  aria-label="닫기"
                 >
-                  <X size={14} />
+                  <X size={13} />
                 </button>
               </div>
               <p className={styles.descText}>
@@ -219,6 +265,7 @@ export default function Connections() {
             </div>
           )}
 
+          {/* Invite link creation form */}
           {showInviteForm && (
             <div className={styles.inviteFormBox}>
               <p className={styles.inviteFormTitle}>초대 링크 생성</p>
@@ -241,31 +288,38 @@ export default function Connections() {
             </div>
           )}
 
+          {/* Generated invite URL */}
           {inviteUrl && (
             <div className={styles.inviteBox}>
-              <p className={styles.inviteLabel}>네트워크 초대 링크가 생성되었습니다:</p>
+              <p className={styles.inviteLabel}>네트워크 초대 링크가 생성되었습니다</p>
               <div className={styles.inviteUrlRow}>
                 <input className={styles.inviteInput} value={inviteUrl} readOnly />
                 <button className={styles.copyBtn} onClick={handleCopy}>
-                  <Copy size={14} /> {copied ? '복사됨!' : '복사'}
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  {copied ? '복사됨!' : '복사'}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Search + Request Section */}
+          {/* ── 매니저 검색 섹션 ── */}
+          <div className={styles.sectionTitle}>매니저 검색</div>
           <div className={styles.searchSection}>
-            <h2 className={styles.sectionTitle}>매니저 검색</h2>
             <div className={styles.searchRow}>
               <input
                 className={styles.searchInput}
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="이메일 전체를 입력하세요 (예: name@example.com)"
+                placeholder="name@example.com"
               />
-              <button className={styles.searchBtn} onClick={handleSearch} disabled={searching || !searchEmail.trim()}>
-                <Search size={14} /> {searching ? '검색 중...' : '검색'}
+              <button
+                className={styles.searchBtn}
+                onClick={handleSearch}
+                disabled={searching || !searchEmail.trim()}
+              >
+                <Search size={13} />
+                {searching ? '검색 중...' : '검색'}
               </button>
             </div>
             <p className={styles.searchHint}>정확한 이메일 주소를 입력해야 검색됩니다 (부분 검색 불가)</p>
@@ -297,25 +351,31 @@ export default function Connections() {
                     onClick={handleSendRequest}
                     disabled={sendingRequest}
                   >
-                    <UserPlus size={14} /> {sendingRequest ? '전송 중...' : '네트워크 요청'}
+                    <UserPlus size={13} />
+                    {sendingRequest ? '전송 중...' : '요청'}
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Received Requests */}
+          {/* ── 받은 요청 ── */}
           {receivedRequests.length > 0 && (
             <div className={styles.requestSection}>
-              <h2 className={styles.sectionTitle}>받은 요청</h2>
+              <div className={styles.sectionTitle}>
+                받은 요청
+                <span className={styles.sectionBadge}>{receivedRequests.length}</span>
+              </div>
               <div className={styles.list}>
                 {receivedRequests.map((req) => (
                   <div key={req.id} className={styles.requestCard}>
                     <div className={styles.requestInfo}>
                       <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
-                      <div>
+                      <div className={styles.requestText}>
                         <span className={styles.connName}>{req.managerName}</span>
-                        {req.message && <span className={styles.requestMessage}>{req.message}</span>}
+                        {req.message && (
+                          <span className={styles.requestMessage}>{req.message}</span>
+                        )}
                         <span className={styles.connMeta}>
                           {new Date(req.createdAt).toLocaleDateString('ko-KR')}
                         </span>
@@ -323,10 +383,10 @@ export default function Connections() {
                     </div>
                     <div className={styles.requestActions}>
                       <button className={styles.acceptBtn} onClick={() => handleAccept(req)}>
-                        <Check size={14} /> 수락
+                        <Check size={13} /> 수락
                       </button>
                       <button className={styles.rejectBtn} onClick={() => handleReject(req)}>
-                        <XCircle size={14} /> 거절
+                        <XCircle size={13} /> 거절
                       </button>
                     </div>
                   </div>
@@ -335,10 +395,10 @@ export default function Connections() {
             </div>
           )}
 
-          {/* Sent Requests */}
+          {/* ── 보낸 요청 ── */}
           {sentRequests.length > 0 && (
             <div className={styles.requestSection}>
-              <h2 className={styles.sectionTitle}>보낸 요청</h2>
+              <div className={styles.sectionTitle}>보낸 요청</div>
               <div className={styles.list}>
                 {sentRequests.map((req) => (
                   <div key={req.id} className={styles.sentCard}>
@@ -346,14 +406,20 @@ export default function Connections() {
                       <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
                       <div>
                         <span className={styles.connName}>{req.managerName}</span>
-                        {req.message && <span className={styles.requestMessage}>{req.message}</span>}
+                        {req.message && (
+                          <span className={styles.requestMessage}>{req.message}</span>
+                        )}
                         <span className={styles.connMeta}>
                           {new Date(req.createdAt).toLocaleDateString('ko-KR')}
                         </span>
                       </div>
                     </div>
                     <div className={styles.sentStatus}>
-                      {req.status === 'pending' && <span className={styles.pendingBadge}><Clock size={12} /> 대기 중</span>}
+                      {req.status === 'pending' && (
+                        <span className={styles.pendingBadge}>
+                          <Clock size={11} /> 대기 중
+                        </span>
+                      )}
                       {req.status === 'accepted' && <StatusBadge status="approved" />}
                       {req.status === 'rejected' && <StatusBadge status="rejected" />}
                     </div>
@@ -363,15 +429,27 @@ export default function Connections() {
             </div>
           )}
 
-          {/* Existing Connections */}
+          {/* ── 네트워크 매니저 목록 ── */}
           <div className={styles.connectionSection}>
-            <h2 className={styles.sectionTitle}>네트워크 매니저</h2>
+            <div className={styles.sectionTitleRow}>
+              <div className={styles.sectionTitle} style={{ margin: 0 }}>
+                연결된 매니저
+                {connections.length > 0 && (
+                  <span className={styles.sectionCount}>{connections.length}</span>
+                )}
+              </div>
+            </div>
+
             {isLoading ? (
-              <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
+              <div className={styles.list}>
+                {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
+              </div>
             ) : connections.length === 0 ? (
               <div className={styles.empty}>
-                <Link2 size={40} strokeWidth={1} />
-                <p>네트워크 매니저가 없습니다.</p>
+                <div className={styles.emptyIconWrap}>
+                  <Users size={24} strokeWidth={1.3} />
+                </div>
+                <p className={styles.emptyTitle}>네트워크 매니저가 없습니다</p>
                 <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
               </div>
             ) : (
@@ -389,12 +467,15 @@ export default function Connections() {
                         </span>
                       </div>
                     </div>
-                    <button
-                      className={styles.disconnectBtn}
-                      onClick={() => setDisconnectTarget(conn)}
-                    >
-                      <Unlink size={14} /> 해제
-                    </button>
+                    <div className={styles.cardRight}>
+                      <button
+                        className={styles.disconnectBtn}
+                        onClick={() => setDisconnectTarget(conn)}
+                      >
+                        <Unlink size={13} /> 해제
+                      </button>
+                      <ChevronRight size={14} className={styles.chevron} />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -403,8 +484,12 @@ export default function Connections() {
         </>
       )}
 
+      {/* ════════════════════════════════
+          TAB: 매니저 초대
+      ════════════════════════════════ */}
       {tab === 'manager-invites' && (
         <>
+          {/* Quota bar */}
           {displayQuota && (
             <div className={styles.quotaBox}>
               <div className={styles.quotaInfo}>
@@ -413,7 +498,7 @@ export default function Connections() {
                   {displayQuota.limit === null ? (
                     <>사용 {displayQuota.used}건 (무제한)</>
                   ) : (
-                    <>{displayQuota.used} / {displayQuota.limit}건 사용 (잔여 {displayQuota.remaining}건)</>
+                    <>{displayQuota.used} / {displayQuota.limit}건 사용 · 잔여 {displayQuota.remaining}건</>
                   )}
                 </span>
               </div>
@@ -428,66 +513,70 @@ export default function Connections() {
             </div>
           )}
 
+          {/* Status filter chips */}
           <div className={styles.filterRow}>
-            {['', 'active', 'used', 'expired', 'revoked'].map((s) => (
+            {[
+              { k: '', l: '전체' },
+              { k: 'active', l: '활성' },
+              { k: 'used', l: '사용됨' },
+              { k: 'expired', l: '만료' },
+              { k: 'revoked', l: '폐기' },
+            ].map((s) => (
               <button
-                key={s}
-                className={`${styles.filterBtn} ${statusFilter === s ? styles.filterActive : ''}`}
-                onClick={() => handleStatusFilter(s)}
+                key={s.k}
+                className={`${styles.filterBtn} ${statusFilter === s.k ? styles.filterActive : ''}`}
+                onClick={() => handleStatusFilter(s.k)}
               >
-                {s === '' ? '전체' : s === 'active' ? '활성' : s === 'used' ? '사용됨' : s === 'expired' ? '만료' : '폐기'}
+                {s.l}
               </button>
             ))}
           </div>
 
           {invitesLoading ? (
-            <div className={styles.list}>{[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}</div>
+            <div className={styles.list}>
+              {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
+            </div>
           ) : managerInvites.length === 0 ? (
             <div className={styles.empty}>
-              <UserPlus size={40} strokeWidth={1} />
-              <p>매니저 초대 내역이 없습니다.</p>
+              <div className={styles.emptyIconWrap}>
+                <UserPlus size={24} strokeWidth={1.3} />
+              </div>
+              <p className={styles.emptyTitle}>매니저 초대 내역이 없습니다</p>
             </div>
           ) : (
             <>
               <div className={styles.list}>
                 {managerInvites.map((invite) => (
                   <div key={invite.id} className={styles.card}>
-                    <div className={styles.cardInfo}>
-                      <div className={styles.avatar}>
-                        {invite.usedBy
-                          ? (invite.usedBy.name || '?').charAt(0)
-                          : '?'}
-                      </div>
-                      <div>
-                        <div className={styles.inviteCardHeader}>
-                          <span className={styles.connName}>
-                            {invite.label || '라벨 없음'}
-                          </span>
-                          <StatusBadge status={invite.status} />
-                        </div>
-                        {invite.usedBy && (
-                          <span className={styles.connMeta}>
-                            사용: {invite.usedBy.name} ({invite.usedBy.nickname})
-                          </span>
-                        )}
-                        <span className={styles.connMeta}>
-                          생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
-                          {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
-                          {invite.usedAt && ` · 사용일: ${new Date(invite.usedAt).toLocaleDateString('ko-KR')}`}
+                    <div className={styles.cardInfo} style={{ flex: 1, minWidth: 0, flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                      <div className={styles.inviteCardHeader}>
+                        <span className={styles.connName}>
+                          {invite.label || '라벨 없음'}
                         </span>
+                        <StatusBadge status={invite.status} />
                       </div>
+                      {invite.usedBy && (
+                        <span className={styles.connMeta}>
+                          사용: {invite.usedBy.name} ({invite.usedBy.nickname})
+                        </span>
+                      )}
+                      <span className={styles.connMeta}>
+                        생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
+                        {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
+                        {invite.usedAt && ` · 사용일: ${new Date(invite.usedAt).toLocaleDateString('ko-KR')}`}
+                      </span>
                     </div>
                     {invite.status === 'active' && (
                       <div className={styles.cardActions}>
                         <button className={styles.iconBtn} onClick={() => handleCopyInviteLink(invite)}>
-                          <Copy size={14} />
+                          <Copy size={13} />
                           {copiedInviteId === invite.id ? '복사됨!' : '복사'}
                         </button>
                         <button
                           className={`${styles.iconBtn} ${styles.dangerBtn}`}
                           onClick={() => setRevokeTarget(invite)}
                         >
-                          <Trash2 size={14} /> 폐기
+                          폐기
                         </button>
                       </div>
                     )}
@@ -506,6 +595,7 @@ export default function Connections() {
         </>
       )}
 
+      {/* ── Modals ── */}
       {disconnectTarget && (
         <ConfirmModal
           title="네트워크 해제"

@@ -1,39 +1,54 @@
+/* ExpiredLink — Warm Trust error state */
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
-  background: var(--bg);
+  min-height: 100vh; min-height: 100dvh;
+  background: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 20px 40px;
+  position: relative; overflow: hidden;
+}
+.page::before {
+  content: ''; position: absolute; top: -100px; right: -80px;
+  width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(235,87,87,.14) 0%, rgba(235,87,87,0) 70%);
+  pointer-events: none;
+}
+.page::after {
+  content: ''; position: absolute; bottom: -80px; left: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(242,107,79,.10) 0%, rgba(242,107,79,0) 70%);
+  pointer-events: none;
 }
 
 .container {
-  max-width: 440px;
-  width: 100%;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 56px 36px;
-  box-shadow: var(--shadow-lg);
-  text-align: center;
-  animation: scaleIn var(--duration-slow) var(--ease-out) both;
+  max-width: 440px; width: 100%;
+  background: var(--paper-card); border-radius: 24px;
+  padding: 52px 32px 44px; box-shadow: var(--sh-lg);
+  text-align: center; position: relative; z-index: 1;
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .iconWrap {
+  width: 80px; height: 80px; margin: 0 auto 24px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(235,87,87,.12), rgba(235,87,87,.04));
+  border: 1.5px solid rgba(235,87,87,.2);
+  display: flex; align-items: center; justify-content: center;
   color: var(--danger);
-  margin-bottom: 24px;
 }
 
 .title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--charcoal);
-  letter-spacing: -0.03em;
-  margin-bottom: 16px;
+  font-size: 22px; font-weight: 800;
+  font-family: var(--font-serif);
+  letter-spacing: -0.035em; color: var(--ink-900);
+  margin: 0 0 14px;
 }
 
 .message {
-  font-size: 0.92rem;
-  color: var(--charcoal-light);
-  line-height: 1.75;
+  font-size: 13px; color: var(--ink-500);
+  line-height: 1.7; margin: 0;
 }

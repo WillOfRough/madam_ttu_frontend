@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   User, Phone, Edit3, Save, X,
-  MapPin, Briefcase, GraduationCap, Heart, Camera,
+  MapPin, Briefcase, GraduationCap, Heart, Camera, ShieldCheck,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
@@ -138,7 +138,7 @@ export default function MyProfile() {
     setDeletingPhotoId(null);
   };
 
-  /* ─── phone verified handler (called after OTP success) ─── */
+  /* ─── phone verified handler ─── */
   const handlePhoneVerified = async () => {
     if (!token) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
@@ -221,11 +221,15 @@ export default function MyProfile() {
   if (!profile) {
     return (
       <div className={styles.page}>
+        {/* ambient blobs */}
+        <div className={styles.blobTop} aria-hidden />
+        <div className={styles.blobBottom} aria-hidden />
+
         <div className={styles.verifyWrap}>
-          <div className={styles.brandMark}>
-            <span className={styles.brandDot} />
+          {/* Brand */}
+          <div className={styles.brandRow}>
+            <div className={styles.brandMark} />
             <span className={styles.brandName}>Knots &amp; Links</span>
-            <span className={styles.brandDot} />
           </div>
 
           <div className={styles.verifyCard}>
@@ -253,15 +257,17 @@ export default function MyProfile() {
               )}
 
               {loading && (
-                <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                <div className={styles.loadingRow}>
                   <span className={styles.btnSpinner} />
+                  <span>프로필을 불러오는 중...</span>
                 </div>
               )}
             </div>
 
-            <p className={styles.verifyFootnote}>
+            <div className={styles.verifyFootnote}>
+              <ShieldCheck size={13} />
               개인정보는 안전하게 보호됩니다.
-            </p>
+            </div>
           </div>
         </div>
       </div>
@@ -273,36 +279,49 @@ export default function MyProfile() {
 
   return (
     <div className={styles.page}>
+      {/* ambient blobs */}
+      <div className={styles.blobTop} aria-hidden />
+      <div className={styles.blobBottom} aria-hidden />
+
       <div className={styles.profileWrap}>
 
-        {/* ── top brand bar ── */}
-        <div className={styles.topBrand}>
-          <span className={styles.brandDot} />
+        {/* ── brand bar ── */}
+        <div className={styles.brandRow}>
+          <div className={styles.brandMark} />
           <span className={styles.brandName}>Knots &amp; Links</span>
-          <span className={styles.brandDot} />
         </div>
 
-        {/* ── action buttons ── */}
-        <div className={styles.actionBar}>
-          {!editMode ? (
-            <>
+        {/* ── hero identity strip ── */}
+        <div className={styles.heroStrip}>
+          <div className={styles.heroInfo}>
+            <div className={styles.heroName}>
+              {profile.nickname || profile.name}
+            </div>
+            <div className={styles.heroMeta}>
+              {profile.name}
+              {age ? ` · ${age}세` : ''}
+              {profile.occupation ? ` · ${profile.occupation}` : ''}
+            </div>
+          </div>
+          <div className={styles.heroActions}>
+            {!editMode ? (
               <button className={styles.editBtn} onClick={startEdit}>
-                <Edit3 size={15} />
+                <Edit3 size={14} />
                 프로필 수정
               </button>
-            </>
-          ) : (
-            <>
-              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-                {saving ? <span className={styles.btnSpinnerSm} /> : <Save size={15} />}
-                {saving ? '저장 중...' : '저장'}
-              </button>
-              <button className={styles.cancelBtn} onClick={cancelEdit} disabled={saving}>
-                <X size={15} />
-                취소
-              </button>
-            </>
-          )}
+            ) : (
+              <div className={styles.editActionRow}>
+                <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+                  {saving ? <span className={styles.btnSpinnerSm} /> : <Save size={14} />}
+                  {saving ? '저장 중...' : '저장'}
+                </button>
+                <button className={styles.cancelBtn} onClick={cancelEdit} disabled={saving}>
+                  <X size={14} />
+                  취소
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {editMode && (
@@ -462,6 +481,16 @@ export default function MyProfile() {
 
           </>
         )}
+
+        {/* ── inquiry ghost button ── */}
+        <div className={styles.inquiryBannerWrap}>
+          <div className={styles.inquiryBanner}>
+            <span>수정이 필요한 사항이 있으신가요?</span>
+            <a className={styles.inquiryLink} href={`/inquiry?id=${profile?.id}`}>
+              수정 문의하기
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

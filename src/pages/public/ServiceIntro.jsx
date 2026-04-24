@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Smartphone } from 'lucide-react';
+import { Smartphone, ArrowRight } from 'lucide-react';
 import styles from './ServiceIntro.module.css';
 
 const SECTIONS = [
@@ -148,6 +148,7 @@ export default function ServiceIntro() {
             onClick={() => navigate(`/apply/oath/${token}`)}
           >
             시작하기
+            <ArrowRight size={15} />
           </button>
         </div>
       </div>

@@ -18,7 +18,6 @@ const OATH_ITEMS = [
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
-
 const TIME_SLOTS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
 function generateDateRange() {
@@ -55,9 +54,23 @@ function formatDateISO(date) {
   return `${y}-${m}-${d}`;
 }
 
-function formatTimeDisplay(slot) {
-  const d = new Date(slot.date + 'T00:00:00');
-  return `${d.getMonth() + 1}/${d.getDate()} (${DAY_NAMES[d.getDay()]}) ${slot.startTime.slice(0, 5)}`;
+function PageHeader({ step, total }) {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
+      {step && total && (
+        <span style={{
+          marginLeft: 'auto', fontSize: 10.5, fontWeight: 700,
+          color: 'var(--ink-400)', fontVariantNumeric: 'tabular-nums',
+        }}>
+          {step} / {total}
+        </span>
+      )}
+    </div>
+  );
 }
 
 export default function Proposal() {
@@ -135,8 +148,6 @@ export default function Proposal() {
         .then((res) => {
           setAfterStatus(res.afterStatus);
           setResultAvailable(res.resultAvailable || false);
-          // 백엔드 버그 대응: 한쪽이 rejected하면 양쪽 myAfterResponse를 모두 rejected로 덮어씀
-          // localStorage에 저장된 원래 응답이 있으면 그것을 우선 사용
           const savedResponse = localStorage.getItem(`after_response_${token}`);
           if (savedResponse && res.afterStatus === 'rejected' && res.myAfterResponse === 'rejected') {
             setMyAfterResponse(savedResponse);
@@ -185,16 +196,13 @@ export default function Proposal() {
     setSubmitting(true);
     try {
       await matchService.respondAfter(token, response);
-      // 원래 응답을 localStorage에 보존 (백엔드가 rejected로 덮어쓰는 버그 대응)
       localStorage.setItem(`after_response_${token}`, response);
       setMyAfterResponse(response);
-      // 응답 후 최신 상태를 서버에서 다시 조회
       try {
         const status = await matchService.getAfterStatus(token);
         setAfterStatus(status.afterStatus);
         setResultAvailable(status.resultAvailable || false);
       } catch {
-        // 조회 실패 시 안전한 기본값
         setAfterStatus('pending');
       }
     } catch (err) {
@@ -236,7 +244,6 @@ export default function Proposal() {
   };
 
   // ── Receiver scheduling helpers ──
-
   const toggleDate = useCallback((dateStr) => {
     setSelectedDates((prev) => {
       const next = new Set(prev);
@@ -316,13 +323,13 @@ export default function Proposal() {
   const responded = myResponse !== 'pending';
 
   // ══════════════════════════════════════════
-  // ── Awaiting Payment: 입금 대기 중 ──
+  // ── Awaiting Payment ──
   // ══════════════════════════════════════════
   if (matchStatus === 'awaiting_payment') {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
             <p className={styles.respondedStatus}>
@@ -335,14 +342,13 @@ export default function Proposal() {
   }
 
   // ══════════════════════════════════════════
-  // ── Scheduling: 양쪽 가용시간 등록 ──
+  // ── Scheduling: 일정조율 링크가 아닌 경우 대기 ──
   // ══════════════════════════════════════════
-  // 매니저가 보낸 /available-times 링크로 접근했을 때만 일정조율 UI 표시
   if (matchStatus === 'scheduling' && !isSchedulingRoute) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>매칭이 성사되었습니다!</p>
             <p className={styles.respondedStatus}>
@@ -354,15 +360,17 @@ export default function Proposal() {
     );
   }
 
+  // ══════════════════════════════════════════
+  // ── Scheduling: 가용시간 등록 UI ──
+  // ══════════════════════════════════════════
   if (matchStatus === 'scheduling' && isSchedulingRoute) {
-    // Check if I already submitted (my name appears in availableTimes)
     const alreadySubmitted = timesSubmitted || availableTimes.some((t) => t.clientName === myName);
 
     if (alreadySubmitted) {
       return (
         <div className={styles.page}>
+          <PageHeader />
           <div className={styles.container}>
-            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>가용시간을 전달했습니다</p>
               <p className={styles.respondedStatus}>
@@ -374,37 +382,46 @@ export default function Proposal() {
       );
     }
 
-    // ── Calendar + Time Chip UI ──
     return (
       <div className={styles.page}>
+        <PageHeader step={2} total={3} />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
 
-          {/* Header */}
-          <div className={styles.schedulingHeader}>
-            <div className={styles.schedulingCelebration}>
-              <span className={styles.celebrationDot} />
-              <span className={styles.celebrationDot} />
-              <span className={styles.celebrationDot} />
+          {/* Title block */}
+          <div className={styles.pageTitleBlock}>
+            <div className={`${styles.progressBadge} ${styles.tangerine}`}>
+              <span className={styles.progressBadgeDot} />
+              일정 선택
             </div>
-            <h2 className={styles.schedulingTitle}>매칭이 성사되었습니다!</h2>
-            <p className={styles.schedulingDesc}>
-              {cp?.nickname ? `${cp.nickname}님과 ` : ''}만나기 편한 시간을
-              <br />
-              모두 골라주세요
+            <h1 className={styles.pageTitle}>언제 만나기 좋으세요?</h1>
+            <p className={styles.pageSubtitle}>
+              {cp?.nickname ? `${cp.nickname}님과 ` : ''}만나기 편한 시간을 모두 골라주세요.
             </p>
-            <span className={styles.schedulingBadge}>최대한 많이 선택해 주셔야 만남의 성사율이 높아요</span>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick actions */}
           <div className={styles.quickActions}>
             <button className={styles.quickBtn} onClick={selectWeekends} type="button">
-              주말만 선택
+              주말만
             </button>
             <button className={styles.quickBtn} onClick={selectAllDates} type="button">
               전체 선택
             </button>
+            {totalSlotCount > 0 && (
+              <span style={{
+                marginLeft: 'auto', fontSize: 11, fontWeight: 700,
+                padding: '6px 10px', background: 'var(--mint-100)',
+                borderRadius: 'var(--r-pill)', color: 'var(--mint-600)',
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                {totalSlotCount}개 선택됨
+              </span>
+            )}
           </div>
+
+          <p style={{ fontSize: 11, color: 'var(--ink-400)', marginBottom: 12, lineHeight: 1.5 }}>
+            날짜를 선택 후 아래에서 시간대를 고르세요. 최대한 많이 선택할수록 성사율이 높아요.
+          </p>
 
           {/* Calendar Grid */}
           <div className={styles.calendarCard}>
@@ -416,9 +433,7 @@ export default function Proposal() {
                     styles.calendarDayName,
                     i === 0 ? styles.calendarSunLabel : '',
                     i === 6 ? styles.calendarSatLabel : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                  ].filter(Boolean).join(' ')}
                 >
                   {name}
                 </span>
@@ -440,9 +455,7 @@ export default function Proposal() {
                         isActive ? styles.calendarCellActive : '',
                         di === 0 ? styles.calendarSun : '',
                         di === 6 ? styles.calendarSat : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
+                      ].filter(Boolean).join(' ')}
                       onClick={() => toggleDate(dateStr)}
                     >
                       <span className={styles.calendarDateNum}>{date.getDate()}</span>
@@ -454,7 +467,7 @@ export default function Proposal() {
             ))}
           </div>
 
-          {/* Time Chips for selected dates */}
+          {/* Time chips */}
           {sortedSelectedDates.length > 0 && (
             <div className={styles.chipSection}>
               <p className={styles.chipSectionTitle}>시간대를 선택해주세요</p>
@@ -462,10 +475,7 @@ export default function Proposal() {
                 const date = new Date(dateStr + 'T00:00:00');
                 const slots = dateSlots[dateStr] || new Set();
                 const prevDateStr = idx > 0 ? sortedSelectedDates[idx - 1] : null;
-                const prevHasSlots =
-                  prevDateStr && (dateSlots[prevDateStr]?.size || 0) > 0;
-
-                // 당일이면 현재 시각 +1시간 이후 슬롯만 표시
+                const prevHasSlots = prevDateStr && (dateSlots[prevDateStr]?.size || 0) > 0;
                 const todayStr = formatDateISO(new Date());
                 const isToday = dateStr === todayStr;
                 const availableSlots = isToday
@@ -479,13 +489,9 @@ export default function Proposal() {
                   return (
                     <div key={dateStr} className={styles.chipDateRow}>
                       <div className={styles.chipDateHeader}>
-                        <span className={styles.chipDateLabel}>
-                          {formatDateLabel(date)}
-                        </span>
+                        <span className={styles.chipDateLabel}>{formatDateLabel(date)}</span>
                       </div>
-                      <p className={styles.noSlots}>
-                        선택 가능한 시간이 없습니다
-                      </p>
+                      <p className={styles.noSlots}>선택 가능한 시간이 없습니다</p>
                     </div>
                   );
                 }
@@ -495,9 +501,7 @@ export default function Proposal() {
                 return (
                   <div key={dateStr} className={styles.chipDateRow}>
                     <div className={styles.chipDateHeader}>
-                      <span className={styles.chipDateLabel}>
-                        {formatDateLabel(date)}
-                      </span>
+                      <span className={styles.chipDateLabel}>{formatDateLabel(date)}</span>
                       <div className={styles.chipDateActions}>
                         {prevHasSlots && (
                           <button
@@ -514,9 +518,7 @@ export default function Proposal() {
                           onClick={() =>
                             setDateSlots((prev) => ({
                               ...prev,
-                              [dateStr]: allSelected
-                                ? new Set()
-                                : new Set(availableSlots),
+                              [dateStr]: allSelected ? new Set() : new Set(availableSlots),
                             }))
                           }
                         >
@@ -545,7 +547,23 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* CTA */}
+          {/* Reassurance note */}
+          <div style={{
+            padding: '12px 14px',
+            background: 'var(--paper-warm)',
+            borderRadius: 'var(--r-md)',
+            display: 'flex', gap: 10, alignItems: 'flex-start',
+            marginBottom: 80,
+          }}>
+            <span style={{ color: 'var(--tangerine-600)', fontSize: 13, flexShrink: 0, marginTop: 1 }}>ⓘ</span>
+            <p style={{ fontSize: 11.5, color: 'var(--ink-700)', lineHeight: 1.6 }}>
+              선택하신 시간은 상대방에게 바로 공개되지 않아요.{' '}
+              <strong style={{ color: 'var(--ink-900)' }}>겹치는 시간이 있다면</strong>{' '}
+              매니저가 안전한 장소로 약속을 잡아드려요.
+            </p>
+          </div>
+
+          {/* Sticky CTA */}
           <div className={styles.ctaSection}>
             {totalSlotCount > 0 && (
               <p className={styles.ctaInfo}>
@@ -565,7 +583,7 @@ export default function Proposal() {
                 ? '전송 중...'
                 : totalSlotCount === 0
                   ? '날짜와 시간대를 선택해주세요'
-                  : '이 시간대면 언제든 좋아요'}
+                  : '이 시간대면 언제든 좋아요 →'}
             </button>
           </div>
         </div>
@@ -577,8 +595,8 @@ export default function Proposal() {
   if (matchStatus === 'scheduled') {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>약속이 확정되었습니다!</p>
             <p className={styles.respondedStatus}>
@@ -590,15 +608,18 @@ export default function Proposal() {
     );
   }
 
+  // ══════════════════════════════════════════
   // ── Completed: After Flow ──
+  // ══════════════════════════════════════════
   if (matchStatus === 'completed') {
-    // 피드백 제출 완료 화면 (별도 페이지)
+    // 피드백 제출 완료 화면
     if (afterStatus === 'rejected' && meetingFeedback?.feedbackAt && !editingMeetingFeedback) {
       return (
         <div className={styles.page}>
+          <PageHeader />
           <div className={styles.container} key="feedback-done">
-            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>🌱</div>
               <p className={styles.respondedLabel}>피드백을 남겨주셨습니다</p>
               <p className={styles.respondedStatus}>
                 소중한 의견 감사합니다.
@@ -616,7 +637,7 @@ export default function Proposal() {
       );
     }
 
-    // After profile view
+    // After profile view (성사 후 연락처)
     if (afterProfile) {
       const profileFields = [
         { label: '이름', value: afterProfile.name },
@@ -631,15 +652,22 @@ export default function Proposal() {
 
       return (
         <div className={styles.page}>
+          <PageHeader />
           <div className={styles.container}>
-            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.afterSuccessBanner}>
-              <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
-              <p className={styles.respondedStatus}>상대방의 연락처와 프로필입니다.</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>
+                <span className={styles.celebrationDot} />
+                <span className={styles.celebrationDot} />
+                <span className={styles.celebrationDot} />
+              </div>
+              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-serif)', fontSize: 18 }}>
+                에프터가 성사되었습니다!
+              </p>
+              <p className={styles.respondedStatus} style={{ marginTop: 6 }}>상대방의 연락처와 프로필입니다.</p>
             </div>
 
             {afterProfile.photoUrls?.length > 0 && (
-              <div className={styles.card}>
+              <div className={styles.card} style={{ marginTop: 16 }}>
                 <h3 className={styles.cardTitle}>사진</h3>
                 <div className={styles.photoGallery}>
                   {afterProfile.photoUrls.map((url, idx) => (
@@ -652,9 +680,7 @@ export default function Proposal() {
             )}
 
             <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <Phone size={16} /> 연락처 정보
-              </h3>
+              <h3 className={styles.cardTitle}><Phone size={13} /> 연락처 정보</h3>
               <div className={styles.fields}>
                 <div className={styles.field}>
                   <span className={styles.fieldLabel}>이름</span>
@@ -668,9 +694,7 @@ export default function Proposal() {
             </div>
 
             <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <User size={16} /> 프로필
-              </h3>
+              <h3 className={styles.cardTitle}><User size={13} /> 프로필</h3>
               <div className={styles.fields}>
                 {profileFields.filter((f) => f.label !== '이름' && f.label !== '전화번호').map(({ label, value }) => (
                   <div key={label} className={styles.field}>
@@ -694,8 +718,8 @@ export default function Proposal() {
 
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
 
           {afterError && (
             <div className={styles.respondedBanner}>
@@ -707,6 +731,11 @@ export default function Proposal() {
           {/* 1. 아직 미응답 → 에프터 선택 화면 */}
           {!afterError && myAfterResponse === 'pending' && (
             <div className={styles.afterCard}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 16 }}>
+                <span className={styles.afterWaitingDot} style={{ background: 'var(--tangerine-600)' }} />
+                <span className={styles.afterWaitingDot} style={{ background: 'var(--mint-600)', animationDelay: '.2s' }} />
+                <span className={styles.afterWaitingDot} style={{ background: 'var(--lilac-600)', animationDelay: '.4s' }} />
+              </div>
               <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
               <p className={styles.afterDesc}>
                 상대방을 다시 만나고 싶으시다면 에프터를 신청해주세요.
@@ -714,24 +743,24 @@ export default function Proposal() {
               </p>
               <div className={styles.afterActions}>
                 <button
-                  className={styles.acceptBtn}
-                  onClick={() => handleAfterRespond('accepted')}
-                  disabled={submitting}
-                >
-                  {submitting ? '처리 중...' : '다시 만나고 싶어요!'}
-                </button>
-                <button
                   className={styles.rejectBtn}
                   onClick={() => handleAfterRespond('rejected')}
                   disabled={submitting}
                 >
                   괜찮습니다
                 </button>
+                <button
+                  className={styles.acceptBtn}
+                  onClick={() => handleAfterRespond('accepted')}
+                  disabled={submitting}
+                >
+                  {submitting ? '처리 중...' : '다시 만나고 싶어요!'}
+                </button>
               </div>
             </div>
           )}
 
-          {/* 2. "만나볼래요" 선택 + 결과 아직 없음 → 대기 애니메이션 */}
+          {/* 2. "만나볼래요" + 결과 아직 없음 → 대기 */}
           {!afterError && myAfterResponse === 'accepted' && !resultAvailable && (
             <div className={styles.afterWaitingCard}>
               <div className={styles.afterWaitingIcon}>
@@ -740,16 +769,21 @@ export default function Proposal() {
                 <span className={styles.afterWaitingDot} />
               </div>
               <p className={styles.afterWaitingTitle}>응답이 전달되었습니다</p>
-              <p className={styles.afterWaitingDesc}>아직 상대방의 선택이 완료되지 않았어요.<br />상대방이 응답하면 결과를 확인하실 수 있습니다.</p>
+              <p className={styles.afterWaitingDesc}>
+                아직 상대방의 선택이 완료되지 않았어요.
+                <br />상대방이 응답하면 결과를 확인하실 수 있습니다.
+              </p>
             </div>
           )}
 
-          {/* 3. "만나볼래요" 선택 + 결과 나옴 + 미성사 → 미성사 안내 + 피드백 버튼 */}
+          {/* 3. "만나볼래요" + 결과 나옴 + 미성사 → 미성사 안내 */}
           {!afterError && resultAvailable && afterStatus === 'rejected' && myAfterResponse === 'accepted' && (
             <>
               <div className={styles.respondedBanner}>
                 <p className={styles.respondedLabel}>에프터가 성사되지 않았습니다</p>
-                <p className={styles.respondedStatus}>아쉽지만 상대방이 다른 결정을 내렸어요. 더 좋은 인연이 기다리고 있을 거예요.</p>
+                <p className={styles.respondedStatus}>
+                  아쉽지만 상대방이 다른 결정을 내렸어요. 더 좋은 인연이 기다리고 있을 거예요.
+                </p>
               </div>
               {!showFeedbackForm && !meetingFeedbackLoading && (
                 <button className={styles.feedbackToggleBtn} onClick={() => setShowFeedbackForm(true)}>
@@ -771,10 +805,14 @@ export default function Proposal() {
                     maxLength={1000}
                     disabled={submitting}
                   />
-                  {!submitting && (
-                    <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
-                  )}
+                  {!submitting && <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>}
                   <div className={styles.afterActions}>
+                    <button
+                      className={styles.rejectBtn}
+                      onClick={() => setShowFeedbackForm(false)}
+                    >
+                      닫기
+                    </button>
                     <button
                       className={styles.acceptBtn}
                       onClick={handleMeetingFeedbackSubmit}
@@ -782,21 +820,20 @@ export default function Proposal() {
                     >
                       {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
-                    <button className={styles.rejectBtn} onClick={() => setShowFeedbackForm(false)}>닫기</button>
                   </div>
                 </div>
               )}
             </>
           )}
 
-          {/* 4. "괜찮습니다" 선택 + 상대 미응답 → 피드백 화면 바로 표시 */}
+          {/* 4. "괜찮습니다" + 상대 미응답 → 피드백 화면 */}
           {!afterError && myAfterResponse === 'rejected' && afterStatus === 'pending' && (
             <div className={styles.afterCard}>
               <p className={styles.afterDesc}>
                 인연에도 &lsquo;결&rsquo;이 있다고 합니다.
                 <br />이번 만남은 두 분의 결이 잠시 어긋났을 뿐이에요.
-                <br />
-                <br />괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
+                <br /><br />
+                괜찮으시다면 어떤 부분이 아쉬우셨는지 편하게 들려주세요.
                 <br />다음에는 꼭 맞는 분을 찾아드릴게요.
               </p>
               <textarea
@@ -808,14 +845,13 @@ export default function Proposal() {
                 maxLength={1000}
                 disabled={submitting}
               />
-              {!submitting && (
-                <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
-              )}
+              {!submitting && <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>}
               <div className={styles.afterActions}>
                 <button
                   className={styles.acceptBtn}
                   onClick={handleMeetingFeedbackSubmit}
                   disabled={submitting || !meetingComment}
+                  style={{ width: '100%' }}
                 >
                   {submitting ? '제출 중...' : '피드백 제출'}
                 </button>
@@ -823,12 +859,14 @@ export default function Proposal() {
             </div>
           )}
 
-          {/* 5. 양쪽 완료 → 미성사 (본인 거절) → 완료 배너 + 피드백 펼쳐서 표시 */}
+          {/* 5. 양쪽 완료 → 미성사 (본인 거절) */}
           {!afterError && afterStatus === 'rejected' && myAfterResponse === 'rejected' && (
             <>
               <div className={styles.respondedBanner}>
                 <p className={styles.respondedLabel}>응답이 완료되었습니다</p>
-                <p className={styles.respondedStatus}>소중한 시간 감사합니다. 더 좋은 인연을 찾아드릴게요.</p>
+                <p className={styles.respondedStatus}>
+                  소중한 시간 감사합니다. 더 좋은 인연을 찾아드릴게요.
+                </p>
               </div>
               {!meetingFeedbackLoading && (
                 <div className={styles.afterCard}>
@@ -845,14 +883,13 @@ export default function Proposal() {
                     maxLength={1000}
                     disabled={submitting}
                   />
-                  {!submitting && (
-                    <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>
-                  )}
+                  {!submitting && <p className={styles.feedbackCount}>{meetingComment.length}/1000</p>}
                   <div className={styles.afterActions}>
                     <button
                       className={styles.acceptBtn}
                       onClick={handleMeetingFeedbackSubmit}
                       disabled={submitting || !meetingComment}
+                      style={{ width: '100%' }}
                     >
                       {submitting ? '제출 중...' : '피드백 제출'}
                     </button>
@@ -865,8 +902,17 @@ export default function Proposal() {
           {/* 6. 양쪽 완료 → 성사 */}
           {!afterError && resultAvailable && afterStatus === 'accepted' && (
             <div className={styles.afterSuccessBanner}>
-              <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
-              <p className={styles.respondedStatus}>양쪽 모두 다시 만나고 싶어합니다.</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>
+                <span className={styles.celebrationDot} />
+                <span className={styles.celebrationDot} />
+                <span className={styles.celebrationDot} />
+              </div>
+              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-serif)', fontSize: 18 }}>
+                에프터가 성사되었습니다!
+              </p>
+              <p className={styles.respondedStatus} style={{ marginTop: 6 }}>
+                양쪽 모두 다시 만나고 싶어합니다.
+              </p>
               <button
                 className={styles.afterProfileBtn}
                 onClick={handleViewAfterResult}
@@ -881,7 +927,7 @@ export default function Proposal() {
     );
   }
 
-  // ── Responded banner (shown above profile when already responded) ──
+  // ── Responded banner ──
   let respondedBanner = null;
   if (responded) {
     const label = myResponse === 'accepted' ? '수락 완료' : '응답 완료';
@@ -899,22 +945,23 @@ export default function Proposal() {
     );
   }
 
-  if (!cp)
+  if (!cp) {
     return (
       <div className={styles.errorPage}>
         <p>프로필 정보를 찾을 수 없습니다.</p>
       </div>
     );
+  }
 
   // ── Oath Screen ──
   if (!oathPassed) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.oathCard}>
             <div className={styles.oathIcon}>
-              <Lock size={32} />
+              <Lock size={26} />
             </div>
             <h2 className={styles.oathTitle}>소중한 정보입니다</h2>
             <p className={styles.oathSubtitle}>프로필 열람 전 서약이 필요합니다</p>
@@ -967,34 +1014,43 @@ export default function Proposal() {
 
   return (
     <div className={styles.page}>
+      <PageHeader />
       <div className={styles.container}>
-        <h1 className={styles.logo}>Knots & Links</h1>
-        <p className={styles.subtitle}>당신을 위한 매칭 제안</p>
-        {cp.nickname && (
-          <h2 className={styles.counterpartName}>{cp.nickname}</h2>
-        )}
-        {myName && (
-          <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
-        )}
-        {contextMessage && <p className={styles.scheduleDesc}>{contextMessage}</p>}
+
+        {/* Title block */}
+        <div className={styles.pageTitleBlock}>
+          <div className={`${styles.progressBadge} ${styles.lilac}`}>
+            <span className={styles.progressBadgeDot} />
+            매칭 제안
+          </div>
+          {cp.nickname && (
+            <h1 className={styles.pageTitle}>{cp.nickname}님의 프로필</h1>
+          )}
+          {myName && (
+            <p className={styles.pageSubtitle}>{myName}님, 아래 프로필을 확인해주세요.</p>
+          )}
+          {contextMessage && (
+            <p className={styles.pageSubtitle} style={{ marginTop: 4 }}>{contextMessage}</p>
+          )}
+        </div>
+
         {respondedBanner}
 
+        {/* Photos */}
         {cp.photoUrls?.length > 0 && (
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>사진</h3>
             <div className={styles.photoGallery}>
               {cp.photoUrls.map((url, idx) => (
                 <div key={idx} className={styles.photoThumb}>
-                  <img
-                    src={url}
-                    alt={`사진 ${idx + 1}`}
-                  />
+                  <img src={url} alt={`사진 ${idx + 1}`} />
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* Basic info */}
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>기본 정보</h3>
           <div className={styles.fields}>
@@ -1016,17 +1072,10 @@ export default function Proposal() {
 
         {!responded && (
           <>
-            <div className={styles.cautionNote}>
+            <p className={styles.cautionNote}>
               매칭 후 취소는 상대방에게 큰 상처가 될 수 있습니다. 신중하게 선택해주세요.
-            </div>
+            </p>
             <div className={styles.actions}>
-              <button
-                className={styles.acceptBtn}
-                onClick={() => handleRespond('accepted')}
-                disabled={submitting}
-              >
-                {submitting ? '처리 중...' : '만나볼래요!'}
-              </button>
               <button
                 className={styles.rejectBtn}
                 onClick={() => handleRespond('rejected')}
@@ -1034,15 +1083,19 @@ export default function Proposal() {
               >
                 정중히 거절할게요
               </button>
+              <button
+                className={styles.acceptBtn}
+                onClick={() => handleRespond('accepted')}
+                disabled={submitting}
+              >
+                {submitting ? '처리 중...' : '만나볼래요!'}
+              </button>
             </div>
           </>
         )}
 
         {error && data && (
-          <div
-            className={styles.errorPage}
-            style={{ minHeight: 'auto', padding: '12px 0' }}
-          >
+          <div className={styles.errorPage} style={{ minHeight: 'auto', padding: '12px 0' }}>
             <p>{error}</p>
           </div>
         )}

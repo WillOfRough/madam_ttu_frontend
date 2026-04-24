@@ -1,20 +1,14 @@
-/* ═══════════════════════════════════════════════════════
-   EventIntro — Partner event landing page
-   Aesthetic: Premium navy, coral accent
-   ═══════════════════════════════════════════════════════ */
-
+/* EventIntro — Warm Trust partner event landing */
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-xl) var(--space-lg);
-  background: var(--bg);
+  min-height: 100vh; min-height: 100dvh;
+  background: var(--paper);
+  display: flex; justify-content: center;
+  padding: 0 20px 120px;
 }
 
 .container {
-  max-width: 540px;
-  width: 100%;
+  max-width: 480px; width: 100%;
+  padding-top: 48px;
 }
 
 @keyframes heroIn {
@@ -22,259 +16,122 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Section headers ── */
-.section {
-  margin-bottom: var(--space-xl);
-}
-
-.sectionHeader {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-md);
-  padding-left: 4px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
-}
-
-.sectionHeader.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Standard Cards (서비스) ── */
-.card {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 10px;
-  box-shadow: var(--shadow-card);
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.5s var(--ease-out),
-    transform 0.5s var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.card.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card:last-child {
-  margin-bottom: 0;
-}
-
-.cardEmoji {
-  font-size: 1.5rem;
-  line-height: 1;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-warm);
-  border-radius: var(--radius-md);
-}
-
-.cardBody {
-  flex: 1;
-  min-width: 0;
-}
-
-.cardTitle {
-  font-size: 0.9rem;
-  font-weight: 750;
-  color: var(--charcoal);
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-  line-height: 1.35;
-}
-
-.cardDesc {
-  font-size: 0.81rem;
-  font-weight: 400;
-  color: var(--charcoal-mid);
-  line-height: 1.75;
-  word-break: keep-all;
-}
-
-/* ── Special Banner (Knots & Links 특별 혜택) ── */
+/* ── Special Banner ── */
 .specialBanner {
-  background: var(--navy);
-  border-radius: var(--radius-lg);
-  padding: 28px 24px;
-  margin-bottom: var(--space-xl);
-  box-shadow: var(--shadow-xl);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(160deg, var(--ink-900) 0%, #1a2140 100%);
+  border-radius: 20px; padding: 32px 24px;
+  margin-bottom: 28px; box-shadow: var(--sh-lg);
+  text-align: center; position: relative; overflow: hidden;
 }
 
 .specialBanner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 30% 80%, rgba(255, 126, 103, 0.15) 0%, transparent 65%);
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 80%, rgba(242,107,79,.20) 0%, transparent 65%);
   pointer-events: none;
 }
 
-/* When the banner is at the top, animate in on page load */
-.specialBannerTop {
-  animation: heroIn 0.8s var(--ease-out) both;
-}
+.specialBannerTop { animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 .specialBannerTag {
   display: inline-block;
-  background: var(--coral);
-  color: var(--white);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  margin-bottom: 16px;
+  background: var(--tangerine-600); color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 5px 14px;
+  border-radius: var(--r-pill); margin-bottom: 18px;
 }
 
 .specialBannerTitle {
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.65;
-  margin-bottom: 14px;
-  letter-spacing: -0.01em;
+  font-size: 14px; font-weight: 600;
+  color: rgba(255,255,255,.75); line-height: 1.65;
+  margin-bottom: 14px; letter-spacing: -0.01em;
 }
 
 .specialBannerHighlight {
-  font-size: 1.05rem;
-  font-weight: 500;
-  color: var(--white);
-  line-height: 1.7;
-  margin-bottom: 14px;
+  font-size: 15px; font-weight: 500;
+  color: #fff; line-height: 1.7; margin-bottom: 12px;
   letter-spacing: -0.01em;
 }
 
 .specialBannerHighlight strong {
-  display: inline-block;
-  color: var(--coral-light);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  display: inline-block; color: var(--tangerine-400);
+  font-size: 22px; font-weight: 800;
+  font-family: var(--font-serif); letter-spacing: -0.03em;
 }
 
 .specialBannerDesc {
-  font-size: 0.81rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  line-height: 1.75;
-  letter-spacing: -0.01em;
+  font-size: 12px; color: rgba(255,255,255,.5);
+  line-height: 1.75; letter-spacing: -0.01em;
+}
+
+/* ── Section headers ── */
+.section { margin-bottom: 28px; }
+
+.sectionHeader {
+  font-size: 14px; font-weight: 800; color: var(--ink-700);
+  letter-spacing: -0.02em; margin-bottom: 12px;
+  padding-left: 2px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.sectionHeader.revealed { opacity: 1; transform: translateY(0); }
+
+/* ── Cards ── */
+.card {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--paper-card); border-radius: 16px;
+  border: 1px solid var(--ink-50);
+  padding: 18px; margin-bottom: 10px;
+  box-shadow: var(--sh-sm);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s ease;
+}
+
+.card.revealed { opacity: 1; transform: translateY(0); }
+.card:last-child { margin-bottom: 0; }
+.card:hover { box-shadow: var(--sh-md); }
+
+.cardEmoji {
+  font-size: 20px; flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tangerine-50); border-radius: 12px;
+  border: 1px solid var(--tangerine-100);
+}
+
+.cardBody { flex: 1; min-width: 0; }
+
+.cardTitle {
+  font-size: 13px; font-weight: 800; color: var(--ink-700);
+  letter-spacing: -0.02em; margin-bottom: 5px; line-height: 1.35;
+}
+
+.cardDesc {
+  font-size: 12px; color: var(--ink-500);
+  line-height: 1.7; word-break: keep-all;
 }
 
 /* ── CTA ── */
 .ctaWrap {
-  position: sticky;
-  bottom: 0;
-  padding: 16px 0 20px;
-  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  position: sticky; bottom: 0;
+  padding: 16px 0 calc(20px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--paper) 65%, transparent);
 }
 
 .ctaBtn {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  background: var(--coral);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  box-shadow: 0 4px 16px var(--coral-glow);
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 16px 18px; border-radius: 14px; border: none; cursor: pointer;
+  background: linear-gradient(180deg, var(--tangerine-600) 0%, var(--tangerine-700) 100%);
+  color: #fff; font-size: 15px; font-weight: 800;
+  letter-spacing: -0.01em; font-family: var(--font-sans);
+  box-shadow: 0 10px 24px rgba(242,107,79,.32);
+  transition: all 0.2s;
 }
 
-.ctaBtn:hover {
-  background: var(--coral-light);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px var(--coral-glow);
-}
-
-.ctaBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px var(--coral-glow);
-}
+.ctaBtn:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(242,107,79,.38); }
 
 .footerNote {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--charcoal-pale);
-  line-height: 1.7;
-  text-align: center;
-  padding: 12px 4px 0;
-  word-break: keep-all;
-  letter-spacing: -0.01em;
-}
-
-/* ── Responsive ── */
-@media (max-width: 640px) {
-  .page {
-    padding: var(--space-md) var(--space-sm);
-  }
-
-  .sectionHeader {
-    font-size: 0.93rem;
-  }
-
-  .card {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .cardEmoji {
-    width: 36px;
-    height: 36px;
-    font-size: 1.3rem;
-  }
-
-  .cardTitle {
-    font-size: 0.86rem;
-  }
-
-  .cardDesc {
-    font-size: 0.78rem;
-  }
-
-  .specialBanner {
-    padding: 24px 20px;
-  }
-
-  .specialBannerTitle {
-    font-size: 0.93rem;
-  }
-
-  .specialBannerHighlight {
-    font-size: 0.97rem;
-  }
-
-  .specialBannerHighlight strong {
-    font-size: 1.15rem;
-  }
-
-  .specialBannerDesc {
-    font-size: 0.78rem;
-  }
-
-  .footerNote {
-    font-size: 0.72rem;
-  }
+  font-size: 11px; color: var(--ink-400); line-height: 1.7;
+  text-align: center; padding: 10px 4px 0;
+  word-break: keep-all; letter-spacing: -0.01em;
 }

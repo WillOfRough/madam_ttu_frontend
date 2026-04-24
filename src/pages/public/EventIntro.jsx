@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import styles from './EventIntro.module.css';
 
 const SERVICE_HIGHLIGHTS = [
@@ -106,6 +107,7 @@ export default function EventIntro() {
             onClick={() => navigate(`/apply/oath/${token}`)}
           >
             지금 바로 신청하기
+            <ArrowRight size={15} />
           </button>
           <p className={styles.footerNote}>
             ※ 노쇼 방지를 위해 참가비는 최종 선정 이후에 입금안내드리고

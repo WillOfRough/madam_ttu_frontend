@@ -69,11 +69,11 @@ export default function ProposalProfile() {
 
   if (loading) return <div className={styles.loadingPage}>프로포절을 불러오는 중...</div>;
   if (error && !data) {
-    if (error.includes('만료') || error.includes('취소')) {
+    if (error.includes('만료') || error.includes('취소') || error.includes('종료')) {
       return (
         <div className={styles.page}>
+          <PageHeader />
           <div className={styles.container}>
-            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
               <p className={styles.respondedLabel}>만료된 링크입니다</p>
               <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
@@ -93,8 +93,8 @@ export default function ProposalProfile() {
   if (matchStatus === 'cancelled' || afterFinalized) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>만료된 링크입니다</p>
             <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
@@ -108,8 +108,8 @@ export default function ProposalProfile() {
   if (myResponse === 'rejected') {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>만료된 링크입니다</p>
             <p className={styles.respondedStatus}>이 매칭은 종료되었습니다.</p>
@@ -127,15 +127,15 @@ export default function ProposalProfile() {
     );
   }
 
-  // Oath Screen
+  // ── Oath Screen ──
   if (!oathPassed) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.oathCard}>
             <div className={styles.oathIcon}>
-              <Lock size={32} />
+              <Lock size={26} />
             </div>
             <h2 className={styles.oathTitle}>소중한 정보입니다</h2>
             <p className={styles.oathSubtitle}>프로필 열람 전 서약이 필요합니다</p>
@@ -169,7 +169,7 @@ export default function ProposalProfile() {
     );
   }
 
-  // 응답 배너 (이미 응답한 경우 프로필 위에 표시)
+  // ── 응답 배너 ──
   let respondedBanner = null;
   if (responded) {
     const label = myResponse === 'accepted' ? '수락 완료' : '응답 완료';
@@ -195,7 +195,7 @@ export default function ProposalProfile() {
     );
   }
 
-  // 프로필 필드
+  // ── 프로필 필드 ──
   const fields = [
     { label: '닉네임', value: cp.nickname },
     { label: '나이', value: cp.age ? `${cp.age}세` : null },
@@ -216,18 +216,28 @@ export default function ProposalProfile() {
 
   return (
     <div className={styles.page}>
+      <PageHeader />
       <div className={styles.container}>
-        <h1 className={styles.logo}>Knots & Links</h1>
-        <p className={styles.subtitle}>당신을 위한 매칭 제안</p>
-        {cp.nickname && (
-          <h2 className={styles.counterpartName}>{cp.nickname}</h2>
-        )}
-        {myName && (
-          <p className={styles.greeting}>{myName}님, 아래 프로필을 확인해주세요.</p>
-        )}
-        {contextMessage && <p className={styles.scheduleDesc}>{contextMessage}</p>}
+        {/* Title block */}
+        <div className={styles.pageTitleBlock}>
+          <div className={`${styles.progressBadge} ${styles.lilac}`}>
+            <span className={styles.progressBadgeDot} />
+            매칭 제안
+          </div>
+          {cp.nickname && (
+            <h1 className={styles.pageTitle}>{cp.nickname}님의 프로필</h1>
+          )}
+          {myName && (
+            <p className={styles.pageSubtitle}>{myName}님, 아래 프로필을 확인해주세요.</p>
+          )}
+          {contextMessage && (
+            <p className={styles.pageSubtitle} style={{ marginTop: 4 }}>{contextMessage}</p>
+          )}
+        </div>
+
         {respondedBanner}
 
+        {/* Photos */}
         {cp.photoUrls?.length > 0 && (
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>사진</h3>
@@ -241,6 +251,7 @@ export default function ProposalProfile() {
           </div>
         )}
 
+        {/* Basic info */}
         <div className={styles.card}>
           <h3 className={styles.cardTitle}>기본 정보</h3>
           <div className={styles.fields}>
@@ -253,6 +264,7 @@ export default function ProposalProfile() {
           </div>
         </div>
 
+        {/* Introduction */}
         {cp.introduction && (
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>자기소개</h3>
@@ -260,25 +272,26 @@ export default function ProposalProfile() {
           </div>
         )}
 
+        {/* Action buttons */}
         {!responded && (
           <>
-            <div className={styles.cautionNote}>
+            <p className={styles.cautionNote}>
               매칭 후 취소는 상대방에게 큰 상처가 될 수 있습니다. 신중하게 선택해주세요.
-            </div>
+            </p>
             <div className={styles.actions}>
-              <button
-                className={styles.acceptBtn}
-                onClick={() => setConfirmModal('accept')}
-                disabled={submitting}
-              >
-                {submitting ? '처리 중...' : '만나볼래요!'}
-              </button>
               <button
                 className={styles.rejectBtn}
                 onClick={() => setConfirmModal('reject')}
                 disabled={submitting}
               >
                 정중히 거절할게요
+              </button>
+              <button
+                className={styles.acceptBtn}
+                onClick={() => setConfirmModal('accept')}
+                disabled={submitting}
+              >
+                {submitting ? '처리 중...' : '만나볼래요!'}
               </button>
             </div>
           </>
@@ -309,6 +322,17 @@ export default function ProposalProfile() {
         onConfirm={() => { setConfirmModal(null); handleRespond('rejected'); }}
         onCancel={() => setConfirmModal(null)}
       />
+    </div>
+  );
+}
+
+function PageHeader() {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
     </div>
   );
 }

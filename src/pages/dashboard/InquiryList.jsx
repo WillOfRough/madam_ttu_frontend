@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, ChevronDown, ChevronUp, Send, X, ExternalLink } from 'lucide-react';
+import { MessageSquare, ChevronDown, Send, X, ExternalLink } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
@@ -26,6 +26,22 @@ const STATUS_LABELS = {
   pending: '대기 중',
   answered: '답변 완료',
   closed: '종료',
+};
+
+// SLA left-bar tone per status
+const SLA_BAR = {
+  pending: 'var(--amber-600)',
+  answered: 'var(--mint-600)',
+  closed: 'var(--ink-200)',
+};
+
+// Category badge tone
+const CATEGORY_TONE = {
+  schedule: { bg: 'var(--amber-100)', color: 'var(--amber-600)' },
+  payment: { bg: 'var(--mint-100)', color: 'var(--mint-600)' },
+  matching: { bg: 'var(--tangerine-100)', color: 'var(--tangerine-700)' },
+  profile_edit: { bg: 'var(--lilac-100)', color: 'var(--lilac-600)' },
+  other: { bg: 'var(--ink-50)', color: 'var(--ink-400)' },
 };
 
 function formatDate(iso) {
@@ -129,37 +145,37 @@ export default function InquiryList() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.titleRow}>
-        <h1 className={styles.title}>
-          <MessageSquare size={22} />
-          문의 관리
-        </h1>
+      {/* ── Page header ── */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>문의 관리</h1>
+        <p className={styles.pageSubtitle}>회원이 등록한 문의를 확인하고 답변합니다</p>
       </div>
 
-      {/* ── 필터 ── */}
-      <div className={styles.filters}>
+      {/* ── Status chip filter row ── */}
+      <div className={styles.chipRow}>
+        {STATUS_TABS.map(({ value, label }) => (
+          <button
+            key={value}
+            className={`${styles.chip} ${statusFilter === value ? styles.chipActive : ''}`}
+            onClick={() => setStatusFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
+        {/* category select — kept for function parity */}
         <select
-          className={styles.filterSelect}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          {STATUS_TABS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-        <select
-          className={styles.filterSelect}
+          className={styles.categorySelect}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
-          <option value="">전체 카테고리</option>
-          {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
+          <option value="">전체 유형</option>
+          {Object.entries(CATEGORY_LABELS).map(([val, lbl]) => (
+            <option key={val} value={val}>{lbl}</option>
           ))}
         </select>
       </div>
 
-      {/* ── 목록 ── */}
+      {/* ── List ── */}
       <div className={styles.listWrap}>
         {isLoading ? (
           <div className={styles.skeletonWrap}>
@@ -167,62 +183,94 @@ export default function InquiryList() {
           </div>
         ) : items.length === 0 ? (
           <div className={styles.empty}>
-            <MessageSquare size={32} strokeWidth={1.4} />
+            <MessageSquare size={32} strokeWidth={1.2} />
             <p>등록된 문의가 없습니다.</p>
           </div>
         ) : (
           <div className={styles.list}>
             {items.map((item) => {
               const isOpen = expandedId === item.id;
+              const catTone = CATEGORY_TONE[item.category] || CATEGORY_TONE.other;
+              const slaColor = SLA_BAR[item.status] || 'var(--ink-200)';
+
               return (
-                <div key={item.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
-                  {/* ── 요약 행 ── */}
-                  <button className={styles.cardHeader} onClick={() => handleExpand(item.id)}>
-                    <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
-                      {STATUS_LABELS[item.status] || item.status}
-                    </span>
-                    <span className={`${styles.categoryBadge}`}>
-                      {CATEGORY_LABELS[item.category] || item.category}
-                    </span>
-                    {item.matchId && (
-                      <span className={styles.matchBadge}>매칭</span>
-                    )}
-                    <span className={styles.clientName}>{item.clientName}</span>
-                    <span className={styles.itemTitle}>{item.title}</span>
-                    <span className={styles.itemDate}>{formatDate(item.createdAt)}</span>
-                    {isOpen ? <ChevronUp size={16} className={styles.chevron} /> : <ChevronDown size={16} className={styles.chevron} />}
+                <div
+                  key={item.id}
+                  className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}
+                  style={{ '--sla-color': slaColor }}
+                >
+                  {/* SLA 3px left bar */}
+                  <div className={styles.slaBar} />
+
+                  {/* ── Summary row (accordion trigger) ── */}
+                  <button
+                    className={styles.cardHeader}
+                    onClick={() => handleExpand(item.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className={styles.headerTop}>
+                      {/* category badge */}
+                      <span
+                        className={styles.catBadge}
+                        style={{ background: catTone.bg, color: catTone.color }}
+                      >
+                        {CATEGORY_LABELS[item.category] || item.category}
+                      </span>
+                      {/* status badge */}
+                      <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
+                        {STATUS_LABELS[item.status] || item.status}
+                      </span>
+                      {item.matchId && (
+                        <span className={styles.matchBadge}>매칭</span>
+                      )}
+                      <span className={styles.elapsed}>{formatDate(item.createdAt)}</span>
+                      <ChevronDown
+                        size={15}
+                        className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
+                      />
+                    </div>
+                    <div className={styles.headerBottom}>
+                      <span className={styles.clientName}>{item.clientName}</span>
+                      <span className={styles.itemTitle}>{item.title}</span>
+                    </div>
                   </button>
 
-                  {/* ── 상세 ── */}
+                  {/* ── Expanded body ── */}
                   {isOpen && (
                     <div className={styles.cardBody}>
                       {detailLoading || !detail ? (
-                        <div className={styles.skeletonWrap}><SkeletonLine /><SkeletonLine /></div>
+                        <div className={styles.skeletonInner}>
+                          <SkeletonLine />
+                          <SkeletonLine />
+                        </div>
                       ) : (
                         <>
+                          {/* inquiry content */}
                           <div className={styles.detailSection}>
-                            <p className={styles.detailLabel}>문의 내용</p>
+                            <p className={styles.sectionLabel}>문의 내용</p>
                             <p className={styles.detailContent}>{detail.content}</p>
-                            <p className={styles.detailMeta}>등록일: {formatDate(detail.createdAt)}</p>
+                            <p className={styles.detailMeta}>등록일 {formatDate(detail.createdAt)}</p>
                             {detail.matchId && (
                               <button
                                 className={styles.matchLink}
                                 onClick={() => navigate(`/dashboard/matches/${detail.matchId}`)}
                               >
-                                <ExternalLink size={13} />
+                                <ExternalLink size={12} />
                                 해당 매칭 보기
                               </button>
                             )}
                           </div>
 
+                          {/* existing answer */}
                           {detail.answer && (
                             <div className={styles.answerSection}>
-                              <p className={styles.detailLabel}>답변</p>
+                              <p className={styles.sectionLabel}>답변</p>
                               <p className={styles.detailContent}>{detail.answer}</p>
-                              <p className={styles.detailMeta}>답변일: {formatDate(detail.answeredAt)}</p>
+                              <p className={styles.detailMeta}>답변일 {formatDate(detail.answeredAt)}</p>
                             </div>
                           )}
 
+                          {/* answer form — pending only */}
                           {detail.status === 'pending' && (
                             <div className={styles.answerForm}>
                               <textarea
@@ -238,7 +286,7 @@ export default function InquiryList() {
                                   onClick={handleClose}
                                   disabled={closing}
                                 >
-                                  <X size={14} />
+                                  <X size={13} />
                                   {closing ? '처리 중...' : '문의 종료'}
                                 </button>
                                 <button
@@ -246,13 +294,14 @@ export default function InquiryList() {
                                   onClick={handleAnswer}
                                   disabled={!answerText.trim() || submitting}
                                 >
-                                  <Send size={14} />
+                                  <Send size={13} />
                                   {submitting ? '등록 중...' : '답변 등록'}
                                 </button>
                               </div>
                             </div>
                           )}
 
+                          {/* answered — close only */}
                           {detail.status === 'answered' && (
                             <div className={styles.answerActions}>
                               <button
@@ -260,7 +309,7 @@ export default function InquiryList() {
                                 onClick={handleClose}
                                 disabled={closing}
                               >
-                                <X size={14} />
+                                <X size={13} />
                                 {closing ? '처리 중...' : '문의 종료'}
                               </button>
                             </div>

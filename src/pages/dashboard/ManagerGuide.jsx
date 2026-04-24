@@ -1,110 +1,113 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Copy, Check, Pencil, RotateCcw, Save, X, Lightbulb, FileText, Layout, Users, Heart, Network, Link2, Settings, BookMarked, Search, ChevronDown } from 'lucide-react';
+import {
+  Copy, Check, Pencil, RotateCcw, Save, X,
+  Lightbulb, Search, ChevronDown,
+} from 'lucide-react';
 import styles from './ManagerGuide.module.css';
 
-const TAB_GUIDES = [
+/* ─────────────────────────────────────────────────────────
+   Workflow sections for 가이드 tab
+───────────────────────────────────────────────────────── */
+const GUIDE_SECTIONS = [
   {
-    icon: Layout,
-    title: '대시보드',
-    path: '홈',
-    desc: '로그인 후 가장 먼저 보이는 화면입니다. 승인 대기 중인 회원, 진행 중인 매칭 등 핵심 현황을 한눈에 확인할 수 있습니다.',
+    key: 'create',
+    title: '매칭 생성하기',
+    steps: [
+      {
+        title: '회원 선택',
+        desc: '승인된 회원 중 어울리는 두 사람을 골라 매칭을 생성합니다.',
+        tip: '매칭탭 → "새 매칭" 버튼',
+      },
+      {
+        title: 'A 프로필 확인',
+        desc: 'A 회원에게 프로포절 링크를 전달합니다. A가 상대 프로필을 확인하고 수락해야 다음 단계로 진행됩니다.',
+        tip: '"0고백 1차임" 방지 — A가 먼저 수락해야 B에게 프로필이 전달됩니다.',
+      },
+    ],
   },
   {
-    icon: Users,
-    title: '회원 관리',
-    path: '회원',
-    desc: '초대 링크를 통해 가입한 회원 목록을 관리합니다. 회원 승인/거절, 프로필 확인, 매칭 이력 조회가 가능합니다. 이름·성별·상태 필터로 원하는 회원을 빠르게 찾을 수 있습니다.',
+    key: 'proposal',
+    title: '프로포절 발송',
+    steps: [
+      {
+        title: 'B 프로필 확인',
+        desc: 'A가 수락하면 B 회원에게 프로포절 링크를 전달합니다. B도 수락하면 매칭이 성사됩니다.',
+        tip: '양식 1번 "프로포절 안내"를 활용해 주세요.',
+      },
+      {
+        title: '프로포절 리마인드',
+        desc: '응답이 없을 경우 양식 12번으로 리마인드 문자를 발송합니다.',
+        tip: '양식 13번 "매칭 응답 안내"도 함께 활용하세요.',
+      },
+    ],
   },
   {
-    icon: Heart,
-    title: '매칭',
-    path: '매칭',
-    desc: '매칭을 생성하고 전체 진행 과정을 관리하는 핵심 탭입니다. 프로포절 전달 → 수락 확인 → 입금 → 일정 조율 → 만남 → 에프터까지 모든 단계를 이 탭에서 관리합니다.',
-  },
-  {
-    icon: Network,
-    title: '네트워크',
-    path: '네트워크',
-    desc: '다른 매니저와 연결하여 서로의 회원을 열람하고 크로스 매칭을 할 수 있습니다. 네트워크가 넓을수록 더 좋은 매칭 조합을 만들 수 있습니다.',
-  },
-  {
-    icon: Link2,
-    title: '초대 관리',
-    path: '초대',
-    desc: '회원을 초대하기 위한 링크를 생성하고 관리합니다. 생성된 링크를 카카오톡 등으로 전달하면, 상대방이 링크를 통해 프로필을 등록할 수 있습니다.\n\n' +
-      '💡 이벤트 링크: 각 초대 카드의 "이벤트" 버튼을 누르면 협업 업체명을 입력하여 이벤트 전용 랜딩 페이지 링크를 만들 수 있습니다. 콜라보 이벤트나 홍보에 활용해 보세요.\n\n' +
-      '💡 여러 초대 링크를 만들어 유입 경로별로 라벨을 다르게 붙여보세요. (예: "인스타 광고용", "와인주막차차 이벤트", "지인 소개용") 어디서 회원이 유입되는지 추적할 수 있습니다.',
-  },
-  {
-    icon: Settings,
-    title: '설정',
-    path: '설정',
-    desc: '내 정보(이름, 닉네임, 연락처) 수정과 비밀번호 변경이 가능합니다.',
-  },
-  {
-    icon: BookMarked,
-    title: '가이드',
-    path: '가이드',
-    desc: '지금 보고 계신 이 페이지입니다. 매칭 업무 흐름과 회원에게 보낼 글 양식을 확인하고 복사·수정할 수 있습니다.',
-  },
-];
-
-const WORKFLOW_STEPS = [
-  {
-    title: '매칭 생성',
-    desc: '승인된 회원 중 어울리는 두 사람을 골라 매칭을 생성합니다.',
-    tip: '매칭탭 → "새 매칭" 버튼',
-  },
-  {
-    title: 'A 프로필 확인',
-    desc: 'A 회원에게 프로포절 링크를 전달합니다. A가 상대 프로필을 확인하고 수락해야 다음 단계로 진행됩니다.',
-    tip: '"0고백 1차임" 방지 — A가 먼저 수락해야 B에게 프로필이 전달됩니다.',
-  },
-  {
-    title: 'B 프로필 확인',
-    desc: 'A가 수락하면 B 회원에게 프로포절 링크를 전달합니다. B도 수락하면 매칭이 성사됩니다.',
-    tip: '양식 1번 "프로포절 안내"를 활용해 주세요.',
-  },
-  {
+    key: 'payment',
     title: '입금 확인',
-    desc: '양쪽 수락 후, 양식 3번으로 입금을 안내합니다. 입금이 확인되면 매칭 상세에서 "입금 확인" 버튼을 눌러주세요.',
-    tip: '양식 3번 "만남 성사 안내"에 계좌 정보와 환불 규정이 포함되어 있습니다.',
+    steps: [
+      {
+        title: '입금 안내 발송',
+        desc: '양쪽 수락 후, 양식 3번으로 입금을 안내합니다.',
+        tip: '양식 3번 "만남 성사 안내"에 계좌 정보와 환불 규정이 포함되어 있습니다.',
+      },
+      {
+        title: '입금 확인 처리',
+        desc: '입금이 확인되면 매칭 상세에서 "입금 확인" 버튼을 눌러주세요.',
+      },
+    ],
   },
   {
+    key: 'schedule',
     title: '일정 조율',
-    desc: '양쪽 회원에게 일정조율 링크를 전달합니다. 각 회원이 가능한 시간대를 등록하면 공통 시간이 자동으로 표시됩니다.',
-    tip: '양식 8번 "일정 조율 안내"를 활용해 주세요.',
+    steps: [
+      {
+        title: '일정 조율 링크 전달',
+        desc: '양쪽 회원에게 일정조율 링크를 전달합니다. 각 회원이 가능한 시간대를 등록하면 공통 시간이 자동으로 표시됩니다.',
+        tip: '양식 8번 "일정 조율 안내"를 활용해 주세요.',
+      },
+      {
+        title: '약속 확정',
+        desc: '시간과 장소가 확정되면 각 회원에게 안내합니다.',
+        tip: '양식 4번 "만남 장소 확정"을 활용해 주세요.',
+      },
+    ],
   },
   {
-    title: '매니저 확정',
-    desc: '양쪽 가용시간이 모두 등록되면 공통 시간 중 하나를 선택하고, 거주지·회사 위치를 고려해 만남 장소를 정합니다.',
+    key: 'after',
+    title: '미팅 후 에프터',
+    steps: [
+      {
+        title: '미팅 완료 처리',
+        desc: '만남이 끝나면 "미팅 완료" 버튼을 눌러 완료 처리합니다.',
+        tip: '미팅 시간 전에 완료 버튼을 누르면 경고가 표시됩니다.',
+      },
+      {
+        title: '에프터 링크 전달',
+        desc: '미팅 완료 후 에프터 링크가 생성됩니다. 각 회원에게 전달하여 "다시 만나고 싶은지" 응답을 받습니다.',
+        tip: '양식 5번 "만남 후 애프터 안내"를 활용해 주세요.',
+      },
+      {
+        title: '결과 전달',
+        desc: '양쪽 회원이 에프터 응답을 완료하면 결과 링크가 자동 생성됩니다.',
+        tip: '에프터 현황 아래에 링크가 나타납니다.',
+      },
+    ],
   },
   {
-    title: '약속 확정',
-    desc: '시간과 장소가 확정되면 각 회원에게 안내합니다.',
-    tip: '양식 4번 "만남 장소 확정"을 활용해 주세요.',
-  },
-  {
-    title: '미팅 완료 처리',
-    desc: '만남이 끝나면 "미팅 완료" 버튼을 눌러 완료 처리합니다.',
-    tip: '미팅 시간 전에 완료 버튼을 누르면 경고가 표시됩니다.',
-  },
-  {
-    title: '에프터 링크 전달',
-    desc: '미팅 완료 후 에프터 링크가 생성됩니다. 각 회원에게 전달하여 "다시 만나고 싶은지" 응답을 받습니다.',
-    tip: '양식 5번 "만남 후 애프터 안내"를 활용해 주세요.',
-  },
-  {
-    title: '만남 성사 결과 전달',
-    desc: '양쪽 회원이 에프터 응답을 완료하면 결과 링크가 자동 생성됩니다. 양쪽 OK이면 연락처가 공개되고, 한쪽이라도 거절이면 미성사 안내가 표시됩니다.',
-    tip: '에프터 현황 아래에 링크가 나타납니다.',
-  },
-  {
+    key: 'settlement',
     title: '정산',
-    desc: '매칭 내역은 월 1회 정산됩니다. 문의: 010-5025-5505',
+    steps: [
+      {
+        title: '월 정산',
+        desc: '매칭 내역은 월 1회 정산됩니다. 문의: 010-5025-5505',
+      },
+    ],
   },
 ];
 
+/* ─────────────────────────────────────────────────────────
+   Templates (exported — MatchDetail imports loadTemplates)
+───────────────────────────────────────────────────────── */
 export const DEFAULT_TEMPLATES = {
   proposalIntro: `[Knots & Links]
 새로운 인연의 연결이 도착했습니다.
@@ -341,26 +344,38 @@ Knots & Links와 함께해주셨던 시간에 감사드립니다.
 };
 
 const TEMPLATE_META = [
-  { key: 'proposalIntro', label: '프로포절 안내', badge: '양식 1' },
-  { key: 'promotion', label: '홍보 문구', badge: '양식 2' },
-  { key: 'afterSuccess', label: '만남 성사 안내', badge: '양식 3' },
-  { key: 'meeting', label: '만남 장소 확정', badge: '양식 4' },
-  { key: 'afterComplete', label: '만남 후 애프터 안내', badge: '양식 5' },
-  { key: 'deleteRequest', label: '개인정보 삭제 요청 확인', badge: '양식 6' },
-  { key: 'deleteComplete', label: '개인정보 삭제 완료 안내', badge: '양식 7' },
-  { key: 'schedulingGuide', label: '일정 조율 안내', badge: '양식 8' },
-  { key: 'openChatGuide', label: '오픈카톡 안내', badge: '양식 9' },
-  { key: 'afterResult', label: '애프터 최종 결과 안내(성사)', badge: '양식 10' },
-  { key: 'afterResultRejected', label: '애프터 최종 결과 안내(미성사)', badge: '양식 11' },
-  { key: 'proposalReminder', label: '프로필 확인 리마인드', badge: '양식 12' },
-  { key: 'matchResponseNotice', label: '매칭 응답 안내', badge: '양식 13' },
-  { key: 'paymentReminder', label: '미입금 리마인드', badge: '양식 14' },
-  { key: 'profileEditGuide', label: '프로필 수정 안내', badge: '양식 15' },
-  { key: 'welcomeMessage', label: '가입 축하 안내', badge: '양식 16' },
-  { key: 'refundNotice', label: '환불 안내', badge: '양식 17' },
+  { key: 'proposalIntro',      label: '프로포절 안내',              badge: '01' },
+  { key: 'promotion',          label: '홍보 문구',                   badge: '02' },
+  { key: 'afterSuccess',       label: '만남 성사 안내',              badge: '03' },
+  { key: 'meeting',            label: '만남 장소 확정',              badge: '04' },
+  { key: 'afterComplete',      label: '만남 후 애프터 안내',         badge: '05' },
+  { key: 'deleteRequest',      label: '개인정보 삭제 요청 확인',     badge: '06' },
+  { key: 'deleteComplete',     label: '개인정보 삭제 완료 안내',     badge: '07' },
+  { key: 'schedulingGuide',    label: '일정 조율 안내',              badge: '08' },
+  { key: 'openChatGuide',      label: '오픈카톡 안내',               badge: '09' },
+  { key: 'afterResult',        label: '애프터 최종 결과 안내(성사)', badge: '10' },
+  { key: 'afterResultRejected',label: '애프터 최종 결과 안내(미성사)', badge: '11' },
+  { key: 'proposalReminder',   label: '프로필 확인 리마인드',        badge: '12' },
+  { key: 'matchResponseNotice',label: '매칭 응답 안내',              badge: '13' },
+  { key: 'paymentReminder',    label: '미입금 리마인드',             badge: '14' },
+  { key: 'profileEditGuide',   label: '프로필 수정 안내',            badge: '15' },
+  { key: 'welcomeMessage',     label: '가입 축하 안내',              badge: '16' },
+  { key: 'refundNotice',       label: '환불 안내',                   badge: '17' },
 ];
 
-const LS_KEY = 'knl_manager_templates';
+/* badge → chip tone mapping */
+const BADGE_TONE = {
+  '01': 'lilac', '02': 'lilac',
+  '03': 'tangerine', '04': 'tangerine', '05': 'tangerine',
+  '06': 'ink', '07': 'ink',
+  '08': 'mint', '09': 'mint',
+  '10': 'mint', '11': 'ink',
+  '12': 'lilac', '13': 'lilac',
+  '14': 'tangerine', '15': 'ink',
+  '16': 'tangerine', '17': 'ink',
+};
+
+export const LS_KEY = 'knl_manager_templates';
 const LS_SECTIONS_KEY = 'knl_guide_sections';
 
 export function loadTemplates() {
@@ -378,35 +393,83 @@ function saveTemplates(templates) {
   localStorage.setItem(LS_KEY, JSON.stringify(templates));
 }
 
-function loadSections() {
+function loadOpenSections() {
   try {
     const saved = localStorage.getItem(LS_SECTIONS_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return { tabGuide: true, workflow: true, ...parsed };
-    }
+    if (saved) return JSON.parse(saved);
   } catch { /* ignore */ }
-  return { tabGuide: true, workflow: true };
+  // default: first section open
+  return { create: true };
 }
 
+function saveOpenSections(map) {
+  try { localStorage.setItem(LS_SECTIONS_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Sub-components
+───────────────────────────────────────────────────────── */
+function GuideSectionCard({ section, open, onToggle }) {
+  return (
+    <div className={styles.sectionCard}>
+      <button
+        className={styles.sectionCardHeader}
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span className={styles.sectionCardTitle}>{section.title}</span>
+        <ChevronDown
+          size={16}
+          className={`${styles.sectionChevron} ${open ? '' : styles.sectionChevronCollapsed}`}
+        />
+      </button>
+
+      <div className={`${styles.sectionCardBody} ${open ? '' : styles.sectionCardBodyHidden}`}>
+        <div className={styles.timeline}>
+          {section.steps.map((step, idx) => (
+            <div key={idx} className={styles.timelineItem}>
+              <div className={styles.timelineNum}>{idx + 1}</div>
+              <div className={styles.timelineContent}>
+                <div className={styles.timelineTitle}>{step.title}</div>
+                <p className={styles.timelineDesc}>{step.desc}</p>
+                {step.tip && (
+                  <div className={styles.timelineTip}>
+                    <Lightbulb size={11} className={styles.timelineTipIcon} />
+                    <span>{step.tip}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   Main component
+───────────────────────────────────────────────────────── */
 export default function ManagerGuide() {
   const [templates, setTemplates] = useState(loadTemplates);
-  const [editing, setEditing] = useState(null); // 'promotion' | 'meeting' | 'afterSuccess' | null
+  const [editing, setEditing] = useState(null);
   const [editDraft, setEditDraft] = useState('');
   const [copiedKey, setCopiedKey] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeChip, setActiveChip] = useState('all');
-  const [sections, setSections] = useState(loadSections);
+  const [openSections, setOpenSections] = useState(loadOpenSections);
+
+  // top-level tab: 'guide' | 'templates'
+  const [mainTab, setMainTab] = useState('guide');
 
   const toggleSection = (key) => {
-    setSections((prev) => {
+    setOpenSections((prev) => {
       const next = { ...prev, [key]: !prev[key] };
-      try { localStorage.setItem(LS_SECTIONS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      saveOpenSections(next);
       return next;
     });
   };
 
-  // Clear copied state after 2s
   useEffect(() => {
     if (!copiedKey) return;
     const t = setTimeout(() => setCopiedKey(null), 2000);
@@ -437,124 +500,98 @@ export default function ManagerGuide() {
     const next = { ...templates, [key]: DEFAULT_TEMPLATES[key] };
     setTemplates(next);
     saveTemplates(next);
-    if (editing === key) {
-      setEditDraft(DEFAULT_TEMPLATES[key]);
-    }
+    if (editing === key) setEditDraft(DEFAULT_TEMPLATES[key]);
   };
 
   const handleCopy = async (key) => {
     try {
       await navigator.clipboard.writeText(templates[key]);
       setCopiedKey(key);
-    } catch {
-      // Clipboard API unavailable (non-HTTPS/old browser); silent fail
-    }
+    } catch { /* Clipboard API unavailable */ }
   };
+
+  // ── filtered templates ──
+  const q = searchQuery.trim().toLowerCase();
+  const chipFiltered =
+    activeChip === 'all' ? TEMPLATE_META : TEMPLATE_META.filter((m) => m.key === activeChip);
+  const filteredTemplates = chipFiltered.filter(
+    ({ key, label }) => !q || label.toLowerCase().includes(q) || templates[key].toLowerCase().includes(q)
+  );
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>매니저 가이드</h1>
-
-      {/* ── Tab Guide ── */}
-      <div className={styles.section}>
-        <h2
-          className={`${styles.sectionTitle} ${styles.sectionTitleClickable}`}
-          onClick={() => toggleSection('tabGuide')}
-          aria-expanded={sections.tabGuide}
-        >
-          <span className={`${styles.sectionIcon} ${styles.sectionIconNavy}`}>
-            <Layout size={15} />
-          </span>
-          화면별 안내
-          <ChevronDown
-            size={14}
-            className={`${styles.sectionChevron} ${!sections.tabGuide ? styles.sectionChevronCollapsed : ''}`}
-          />
-        </h2>
-        <div className={`${styles.sectionContent} ${!sections.tabGuide ? styles.sectionContentCollapsed : ''}`}>
-          <div className={styles.tabGuideGrid}>
-            {TAB_GUIDES.map(({ icon: Icon, title, path, desc }) => (
-              <div key={title} className={styles.tabGuideCard}>
-                <div className={styles.tabGuideHeader}>
-                  <Icon size={18} className={styles.tabGuideIcon} />
-                  <span className={styles.tabGuideTitle}>{title}</span>
-                  <span className={styles.tabGuidePath}>{path}</span>
-                </div>
-                <p className={styles.tabGuideDesc}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ── Page header ── */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>가이드</h1>
       </div>
 
-      {/* ── Workflow Steps ── */}
-      <div className={styles.section}>
-        <h2
-          className={`${styles.sectionTitle} ${styles.sectionTitleClickable}`}
-          onClick={() => toggleSection('workflow')}
-          aria-expanded={sections.workflow}
-        >
-          <span className={`${styles.sectionIcon} ${styles.sectionIconNavy}`}>
-            <BookOpen size={15} />
-          </span>
-          매칭 업무 흐름
-          <ChevronDown
-            size={14}
-            className={`${styles.sectionChevron} ${!sections.workflow ? styles.sectionChevronCollapsed : ''}`}
-          />
-        </h2>
-        <div className={`${styles.sectionContent} ${!sections.workflow ? styles.sectionContentCollapsed : ''}`}>
-          <div className={styles.stepsTimeline}>
-            {WORKFLOW_STEPS.map((step, idx) => (
-              <div key={step.title} className={styles.stepItem}>
-                <div className={styles.stepNum}>{idx + 1}</div>
-                <div className={styles.stepContent}>
-                  <div className={styles.stepTitle}>{step.title}</div>
-                  <p className={styles.stepDesc}>{step.desc}</p>
-                  {step.tip && (
-                    <div className={styles.stepTip}>
-                      <Lightbulb size={14} className={styles.stepTipIcon} />
-                      <span>{step.tip}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ── Tab row ── */}
+      <div className={styles.tabRow}>
+        {[
+          { k: 'guide',     l: '가이드' },
+          { k: 'templates', l: '문자 양식' },
+        ].map(({ k, l }) => {
+          const active = mainTab === k;
+          return (
+            <button
+              key={k}
+              className={`${styles.tabBtn} ${active ? styles.tabBtnActive : ''}`}
+              onClick={() => setMainTab(k)}
+            >
+              {l}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Templates ── */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>
-          <span className={`${styles.sectionIcon} ${styles.sectionIconCoral}`}>
-            <FileText size={15} />
-          </span>
-          글 양식
-        </h2>
+      {/* ════════════════════
+          TAB: 가이드
+      ════════════════════ */}
+      {mainTab === 'guide' && (
+        <div className={styles.guidePane}>
+          <p className={styles.guideIntro}>
+            매칭 한 건이 완료되기까지의 단계별 매니저 업무 흐름이에요.
+          </p>
+          {GUIDE_SECTIONS.map((sec) => (
+            <GuideSectionCard
+              key={sec.key}
+              section={sec}
+              open={!!openSections[sec.key]}
+              onToggle={() => toggleSection(sec.key)}
+            />
+          ))}
+        </div>
+      )}
 
-        {/* ── Filter Bar ── */}
-        <div className={styles.templateFilterBar}>
-          <div className={styles.templateSearchWrap}>
-            <Search size={15} className={styles.templateSearchIcon} />
+      {/* ════════════════════
+          TAB: 문자 양식
+      ════════════════════ */}
+      {mainTab === 'templates' && (
+        <div className={styles.templatesPane}>
+
+          {/* ── Search ── */}
+          <div className={styles.searchWrap}>
+            <Search size={14} className={styles.searchIcon} />
             <input
               type="text"
-              className={styles.templateSearchInput}
+              className={styles.searchInput}
               placeholder="양식 이름 또는 내용으로 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
               <button
-                className={styles.templateSearchClear}
+                className={styles.searchClear}
                 onClick={() => setSearchQuery('')}
                 aria-label="검색어 지우기"
               >
-                <X size={13} />
+                <X size={12} />
               </button>
             )}
           </div>
-          <div className={styles.templateChips}>
+
+          {/* ── Filter chips ── */}
+          <div className={styles.chipRow}>
             <button
               className={`${styles.chip} ${activeChip === 'all' ? styles.chipActive : ''}`}
               onClick={() => setActiveChip('all')}
@@ -571,110 +608,96 @@ export default function ManagerGuide() {
               </button>
             ))}
           </div>
-          <div className={styles.templateResultCount}>
-            {(() => {
-              const q = searchQuery.trim().toLowerCase();
-              const chipFiltered = activeChip === 'all' ? TEMPLATE_META : TEMPLATE_META.filter(m => m.key === activeChip);
-              const count = chipFiltered.filter(({ key, label }) =>
-                !q || label.toLowerCase().includes(q) || templates[key].toLowerCase().includes(q)
-              ).length;
-              return q || activeChip !== 'all'
-                ? `검색 결과 ${count}개`
-                : `${TEMPLATE_META.length}개 양식`;
-            })()}
+
+          <div className={styles.resultCount}>
+            {q || activeChip !== 'all'
+              ? `검색 결과 ${filteredTemplates.length}개`
+              : `${TEMPLATE_META.length}개 양식`}
           </div>
-        </div>
 
-        {(() => {
-          const q = searchQuery.trim().toLowerCase();
-          const chipFiltered = activeChip === 'all' ? TEMPLATE_META : TEMPLATE_META.filter(m => m.key === activeChip);
-          const filtered = chipFiltered.filter(({ key, label }) =>
-            !q || label.toLowerCase().includes(q) || templates[key].toLowerCase().includes(q)
-          );
+          {/* ── Template list ── */}
+          {filteredTemplates.length === 0 ? (
+            <div className={styles.emptyState}>
+              <Search size={26} className={styles.emptyIcon} />
+              <p className={styles.emptyText}>검색 결과가 없습니다</p>
+              <p className={styles.emptyHint}>다른 검색어를 입력하거나 필터를 변경해 보세요</p>
+            </div>
+          ) : (
+            filteredTemplates.map(({ key, label, badge }) => {
+              const isEditing = editing === key;
+              const isCopied  = copiedKey === key;
+              const tone      = BADGE_TONE[badge] || 'ink';
 
-          if (filtered.length === 0) {
-            return (
-              <div className={styles.templateEmpty}>
-                <Search size={28} className={styles.templateEmptyIcon} />
-                <p className={styles.templateEmptyText}>검색 결과가 없습니다</p>
-                <p className={styles.templateEmptyHint}>다른 검색어를 입력하거나 필터를 변경해 보세요</p>
-              </div>
-            );
-          }
+              return (
+                <div key={key} className={styles.templateCard}>
+                  {/* header */}
+                  <div className={styles.templateCardHead}>
+                    <span className={`${styles.templateNum} ${styles[`templateNumTone_${tone}`]}`}>
+                      {badge}
+                    </span>
+                    <span className={styles.templateLabel}>{label}</span>
+                    <span className={`${styles.templateStageBadge} ${styles[`stageBadge_${tone}`]}`}>
+                      {tone === 'lilac' ? '제안' : tone === 'tangerine' ? '진행' : tone === 'mint' ? '완료' : '기타'}
+                    </span>
+                  </div>
 
-          return filtered.map(({ key, label, badge }) => {
-            const isEditing = editing === key;
-            const isCopied = copiedKey === key;
+                  {/* body */}
+                  <div className={styles.templateCardBody}>
+                    {isEditing ? (
+                      <textarea
+                        className={styles.templateTextarea}
+                        value={editDraft}
+                        onChange={(e) => setEditDraft(e.target.value)}
+                        autoFocus
+                      />
+                    ) : (
+                      <p className={styles.templatePreview}>
+                        {templates[key].split('\n').slice(0, 3).join('\n')}
+                      </p>
+                    )}
+                  </div>
 
-            return (
-              <div key={key} className={styles.templateCard}>
-                <div className={styles.templateHeader}>
-                  <span className={styles.templateTitle}>
-                    {label}
-                    <span className={styles.templateBadge}>{badge}</span>
-                  </span>
-                  <div className={styles.templateActions}>
+                  {/* footer buttons */}
+                  <div className={styles.templateCardFoot}>
                     {isEditing ? (
                       <>
-                        <button
-                          className={`${styles.templateBtn} ${styles.saveBtn}`}
-                          onClick={handleSave}
-                        >
-                          <Save size={13} />
-                          저장
+                        <button className={`${styles.tplBtn} ${styles.tplBtnSave}`} onClick={handleSave}>
+                          <Save size={12} /> 저장
                         </button>
-                        <button
-                          className={`${styles.templateBtn} ${styles.cancelEditBtn}`}
-                          onClick={handleCancelEdit}
-                        >
-                          <X size={13} />
-                          취소
+                        <button className={`${styles.tplBtn} ${styles.tplBtnCancel}`} onClick={handleCancelEdit}>
+                          <X size={12} /> 취소
                         </button>
                       </>
                     ) : (
                       <>
                         <button
-                          className={`${styles.templateBtn} ${isCopied ? styles.copiedBtn : styles.copyBtn}`}
+                          className={`${styles.tplBtn} ${styles.tplBtnEdit}`}
+                          onClick={() => handleEdit(key)}
+                        >
+                          <Pencil size={12} /> 수정
+                        </button>
+                        <button
+                          className={`${styles.tplBtn} ${isCopied ? styles.tplBtnCopied : styles.tplBtnCopy}`}
                           onClick={() => handleCopy(key)}
                         >
-                          {isCopied ? <Check size={13} /> : <Copy size={13} />}
+                          {isCopied ? <Check size={12} /> : <Copy size={12} />}
                           {isCopied ? '복사됨' : '복사'}
                         </button>
                         <button
-                          className={`${styles.templateBtn} ${styles.editBtn}`}
-                          onClick={() => handleEdit(key)}
-                        >
-                          <Pencil size={13} />
-                          수정
-                        </button>
-                        <button
-                          className={`${styles.templateBtn} ${styles.resetBtn}`}
+                          className={`${styles.tplBtn} ${styles.tplBtnReset}`}
                           onClick={() => handleReset(key)}
                         >
-                          <RotateCcw size={13} />
-                          초기화
+                          <RotateCcw size={12} /> 초기화
                         </button>
                       </>
                     )}
                   </div>
                 </div>
-                <div className={styles.templateBody}>
-                  {isEditing ? (
-                    <textarea
-                      className={styles.templateTextarea}
-                      value={editDraft}
-                      onChange={(e) => setEditDraft(e.target.value)}
-                      autoFocus
-                    />
-                  ) : (
-                    <div className={styles.templatePreview}>{templates[key]}</div>
-                  )}
-                </div>
-              </div>
-            );
-          });
-        })()}
-      </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 }

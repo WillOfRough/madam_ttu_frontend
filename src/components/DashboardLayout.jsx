@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Bell, Settings } from 'lucide-react';
+import { Bell, Heart, Settings } from 'lucide-react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MatchFloatingBar from './MatchFloatingBar';
@@ -11,18 +11,21 @@ function MobileHeader() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   return (
     <header className={styles.mobileHeader}>
-      <span className={styles.mobileHeaderLogo}>Knots &amp; Links</span>
+      <div className={styles.mobileHeaderLogo}>
+        <div className={styles.mobileHeaderLogoMark}>
+          <Heart size={14} strokeWidth={2.2} color="#fff" />
+        </div>
+        <span className={styles.mobileHeaderLogoText}>Knots &amp; Links</span>
+      </div>
       <div className={styles.mobileHeaderActions}>
-        <NavLink to="/dashboard/notifications" className={styles.mobileHeaderIcon}>
-          <Bell size={20} />
+        <NavLink to="/dashboard/notifications" className={styles.mobileHeaderIcon} aria-label="알림">
+          <Bell size={20} strokeWidth={1.8} />
           {unreadCount > 0 && (
-            <span className={styles.mobileHeaderBadge}>
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
+            <span className={styles.mobileHeaderBadge} aria-label={`읽지 않은 알림 ${unreadCount}개`} />
           )}
         </NavLink>
-        <NavLink to="/dashboard/settings" className={styles.mobileHeaderIcon}>
-          <Settings size={20} />
+        <NavLink to="/dashboard/settings" className={styles.mobileHeaderIcon} aria-label="설정">
+          <Settings size={20} strokeWidth={1.8} />
         </NavLink>
       </div>
     </header>
@@ -39,13 +42,15 @@ export default function DashboardLayout() {
   }, [startPolling, stopPolling]);
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.shell}>
       <Sidebar />
-      <MobileHeader />
-      <main className={styles.main}>
-        <Outlet />
-      </main>
-      <MatchFloatingBar />
+      <div className={styles.container}>
+        <MobileHeader />
+        <main className={styles.main}>
+          <Outlet />
+        </main>
+        <MatchFloatingBar />
+      </div>
       <BottomNav />
     </div>
   );

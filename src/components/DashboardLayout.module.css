@@ -1,88 +1,148 @@
-.layout {
+/* ─── App Shell — Mobile-first 480px container ─── */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.shell {
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--paper);
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--paper);
+  position: relative;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .main {
-  margin-left: 260px;
-  min-height: 100vh;
-  padding: 36px 40px 60px;
-  max-width: 1200px;
+  animation: fadeUp 0.28s ease both;
 }
 
-/* ── Mobile Header (알림 벨) ── */
-.mobileHeader {
-  display: none;
+/* ── Legacy desktop sidebar layout (still serves sidebar-nav pages) ── */
+@media (min-width: 769px) {
+  .shell {
+    display: flex;
+  }
+
+  .container {
+    /* On wider viewports the sidebar takes 260px, the content fills the rest
+       but we cap the reading column at 480px for consistency */
+    max-width: 480px;
+  }
 }
 
-@media (max-width: 768px) {
+/* ── Desktop layout: sidebar + wide content grid ── */
+@media (min-width: 1024px) {
+  .shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    max-width: 1440px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: none;
+    padding-bottom: 48px;
+    background: var(--paper);
+  }
+
   .main {
-    margin-left: 0;
-    padding: 20px 16px 88px;
-    padding-top: 72px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 32px;
   }
 
   .mobileHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 52px;
-    padding: 0 16px;
-    background: var(--white);
-    border-bottom: 1px solid var(--border-light);
-    z-index: 99;
-    box-shadow: 0 1px 8px rgba(26, 43, 75, 0.05);
+    display: none;
   }
+}
 
-  .mobileHeaderLogo {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--navy);
-    letter-spacing: -0.02em;
-  }
+/* ── Mobile Header ── */
+.mobileHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  padding: 0 18px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(15, 21, 38, 0.06);
+  z-index: 20;
+}
 
-  .mobileHeaderActions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+.mobileHeaderLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .mobileHeaderIcon {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-full);
-    color: var(--charcoal-mid);
-    transition: all var(--duration-fast) var(--ease-out);
-  }
+.mobileHeaderLogoMark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--ink-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
 
-  .mobileHeaderIcon:hover {
-    background: var(--bg);
-    color: var(--navy);
-  }
+.mobileHeaderLogoText {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+  letter-spacing: -0.02em;
+}
 
-  .mobileHeaderBadge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 3px;
-    border-radius: var(--radius-full);
-    background: var(--coral);
-    color: var(--white);
-    font-size: 0.55rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-  }
+.mobileHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mobileHeaderIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  color: var(--ink-500);
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.mobileHeaderIcon:hover {
+  background: var(--ink-50);
+  color: var(--ink-900);
+}
+
+.mobileHeaderBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tangerine-600);
+  border: 1.5px solid #fff;
 }
