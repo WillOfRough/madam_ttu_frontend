@@ -1527,20 +1527,38 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
-    if (body.email && accounts[body.email]) {
-      if (body.bankName) accounts[body.email].bankName = body.bankName;
-      if (body.bankNumber) accounts[body.email].bankNumber = body.bankNumber;
+    if (body.email && body.password) {
+      accounts[body.email] = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `mgr-${Date.now()}`,
+        email: body.email,
+        password: body.password,
+        name: body.name || '',
+        nickname: body.nickname || '',
+        phone: body.phone || '',
+        role: 'manager',
+        bankName: body.bankName || null,
+        bankNumber: body.bankNumber || null,
+      };
     }
-    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
+    return { success: true, message: '가입이 완료되었습니다.' };
   }
   // POST /api/v1/managers/register
   if (method === 'POST' && pathname === '/api/v1/managers/register') {
     const body = options.body || {};
-    if (currentUser) {
-      if (body.bankName) currentUser.bankName = body.bankName;
-      if (body.bankNumber) currentUser.bankNumber = body.bankNumber;
+    if (body.email && body.password) {
+      accounts[body.email] = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `mgr-${Date.now()}`,
+        email: body.email,
+        password: body.password,
+        name: body.name || '',
+        nickname: body.nickname || '',
+        phone: body.phone || '',
+        role: 'manager',
+        bankName: body.bankName || null,
+        bankNumber: body.bankNumber || null,
+      };
     }
-    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
+    return { success: true, message: '가입이 완료되었습니다.' };
   }
   // GET /api/v1/invites/:id/clients
   if (method === 'GET' && /^\/api\/v1\/invites\/[^/]+\/clients$/.test(pathname)) {
