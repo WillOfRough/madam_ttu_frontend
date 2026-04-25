@@ -1141,3 +1141,12 @@
 }
 
 .rejectBtn:hover { background: var(--rose-600); color: #fff; }
+
+/* ── Desktop (≥1024px) ── */
+@media (min-width: 1024px) {
+  .page {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

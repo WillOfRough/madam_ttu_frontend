@@ -827,6 +827,34 @@
   margin-top: 3px;
 }
 
+/* ── Desktop (≥1024px) ── */
+@media (min-width: 1024px) {
+  .page {
+    max-width: none;
+  }
+
+  .content {
+    gap: 14px;
+  }
+
+  /* Hero + KPI side-by-side: heroCard takes 2fr, nextPayoutCard takes 1fr each */
+  .heroCard {
+    /* heroCard already fills .content width — let it span full on desktop */
+    padding: 22px 26px;
+  }
+
+  .heroAmount {
+    font-size: 44px;
+  }
+
+  /* Chart card: more breathing room */
+  .chartCard {
+    padding: 18px 20px;
+  }
+
+  /* Sheet panel stays 480px — it's a bottom-sheet modal, correct on all sizes */
+}
+
 .sheetSection {
   margin-top: 18px;
 }
