@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   Link2, Plus, Copy, Unlink, X, Search, UserPlus,
-  Check, XCircle, Clock, ChevronRight, Users,
+  Check, XCircle, Clock, ChevronRight, ChevronLeft, Users,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useManagerInviteStore from '../../store/managerInviteStore';
@@ -15,7 +16,37 @@ import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import styles from './Connections.module.css';
 
+/* ── Avatar color hash ── */
+const AVATAR_COLORS = [
+  styles.avatarMint,
+  styles.avatarLilac,
+  styles.avatarTangerine,
+  styles.avatarRose,
+  styles.avatarInk,
+];
+
+function getAvatarClass(name) {
+  if (!name) return styles.avatarInk;
+  const code = name.charCodeAt(0) || 0;
+  return AVATAR_COLORS[code % AVATAR_COLORS.length];
+}
+
+/* ── Relative time ── */
+function relativeTime(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '방금 전';
+  if (mins < 60) return `${mins}분 전`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}시간 전`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}일 전`;
+  return new Date(dateStr).toLocaleDateString('ko-KR');
+}
+
 export default function Connections() {
+  const navigate = useNavigate();
   const managerInviteQuota = useAuthStore((s) => s.managerInviteQuota);
   const {
     connections, receivedRequests, sentRequests, isLoading,
@@ -43,13 +74,19 @@ export default function Connections() {
   const [copiedInviteId, setCopiedInviteId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
 
-  // Search state
+  /* Search state */
   const [searchEmail, setSearchEmail] = useState('');
   const [searchResult, setSearchResult] = useState(null);
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
   const [requestMessage, setRequestMessage] = useState('');
   const [sendingRequest, setSendingRequest] = useState(false);
+
+  /* Network list sort */
+  const [sortKey, setSortKey] = useState('recent');
+
+  /* Name filter for connections tab */
+  const [nameFilter, setNameFilter] = useState('');
 
   useEffect(() => {
     fetchConnections();
@@ -176,68 +213,84 @@ export default function Connections() {
 
   const displayQuota = quota || managerInviteQuota;
 
-  // KPI counts
+  /* KPI counts */
   const connectedCount = connections.length;
   const pendingCount = receivedRequests.length;
+  const sharedMatchTotal = connections.reduce((s, c) => s + (c.sharedMatchCount ?? 0), 0);
+
+  /* Sorted + filtered connections */
+  const sortedConnections = [...connections]
+    .filter((c) => {
+      if (!nameFilter.trim()) return true;
+      const name = (c.name || c.email || '').toLowerCase();
+      return name.includes(nameFilter.trim().toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sortKey === 'sharedMatches') return (b.sharedMatchCount ?? 0) - (a.sharedMatchCount ?? 0);
+      if (sortKey === 'sharedClients') return (b.clientCount ?? 0) - (a.clientCount ?? 0);
+      /* recent: use connectedAt or fall back to id order */
+      const ta = a.connectedAt ? new Date(a.connectedAt).getTime() : 0;
+      const tb = b.connectedAt ? new Date(b.connectedAt).getTime() : 0;
+      return tb - ta;
+    });
 
   return (
     <div className={styles.page}>
-      {/* ── Sticky serif header ── */}
-      <div className={styles.header}>
-        <h1 className={styles.title}>매니저 네트워크</h1>
-        {tab === 'connections' && (
-          <button
-            className={styles.createBtn}
-            onClick={() => setShowInviteForm((v) => !v)}
-          >
-            <Plus size={14} />
-            초대 링크
-          </button>
-        )}
+
+      {/* ── Header ── */}
+      <div className={styles.headerBar}>
+        <button className={styles.backBtn} onClick={() => navigate(-1)} aria-label="뒤로">
+          <ChevronLeft size={20} strokeWidth={2.2} />
+        </button>
+        <span className={styles.titleText}>네트워크</span>
+        <button
+          className={styles.headerCta}
+          onClick={() => { setTab('connections'); setShowInviteForm((v) => !v); }}
+        >
+          <Plus size={13} strokeWidth={2.5} />
+          초대링크
+        </button>
       </div>
 
-      {/* ── KPI summary cards ── */}
+      {/* ── KPI row ── */}
       <div className={styles.kpiRow}>
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>연결 매니저</div>
           <div className={styles.kpiValue}>
-            {connectedCount}
-            <span className={styles.kpiUnit}>명</span>
-          </div>
-        </div>
-        <div className={`${styles.kpiCard} ${pendingCount > 0 ? styles.kpiCardAccent : ''}`}>
-          <div className={`${styles.kpiLabel} ${pendingCount > 0 ? styles.kpiLabelAccent : ''}`}>
-            대기 요청
-          </div>
-          <div className={`${styles.kpiValue} ${pendingCount > 0 ? styles.kpiValueAccent : ''}`}>
-            {pendingCount}
-            <span className={pendingCount > 0 ? styles.kpiUnitAccent : styles.kpiUnit}>건</span>
+            {connectedCount}<span className={styles.kpiUnit}>명</span>
           </div>
         </div>
         <div className={styles.kpiCard}>
           <div className={styles.kpiLabel}>함께 매칭</div>
           <div className={styles.kpiValue}>
-            {connections.reduce((s, c) => s + (c.sharedMatchCount ?? 0), 0)}
-            <span className={styles.kpiUnit}>건</span>
+            {sharedMatchTotal}<span className={styles.kpiUnit}>건</span>
+          </div>
+        </div>
+        <div className={`${styles.kpiCard} ${pendingCount > 0 ? styles.kpiCardWaiting : ''}`}>
+          <div className={`${styles.kpiLabel} ${pendingCount > 0 ? styles.kpiLabelWaiting : ''}`}>대기</div>
+          <div className={`${styles.kpiValue} ${pendingCount > 0 ? styles.kpiValueWaiting : ''}`}>
+            {pendingCount}
+            <span className={pendingCount > 0 ? styles.kpiUnitWaiting : styles.kpiUnit}>건</span>
           </div>
         </div>
       </div>
 
-      {/* ── Pill tabs ── */}
-      <div className={styles.tabRow}>
-        {[
-          { k: 'connections', l: '네트워크 목록', icon: <Link2 size={13} /> },
-          { k: 'manager-invites', l: '매니저 초대', icon: <UserPlus size={13} /> },
-        ].map((t) => (
-          <button
-            key={t.k}
-            className={`${styles.tabBtn} ${tab === t.k ? styles.tabActive : ''}`}
-            onClick={() => setTab(t.k)}
-          >
-            {t.icon}
-            {t.l}
-          </button>
-        ))}
+      {/* ── Segmented tabs ── */}
+      <div className={styles.segmentedTabs}>
+        <button
+          className={`${styles.segmentBtn} ${tab === 'connections' ? styles.segmentActive : ''}`}
+          onClick={() => setTab('connections')}
+        >
+          <Link2 size={12} strokeWidth={2.2} />
+          네트워크 목록
+        </button>
+        <button
+          className={`${styles.segmentBtn} ${tab === 'manager-invites' ? styles.segmentActive : ''}`}
+          onClick={() => setTab('manager-invites')}
+        >
+          <UserPlus size={12} strokeWidth={2.2} />
+          매니저 영입
+        </button>
       </div>
 
       {/* ════════════════════════════════
@@ -245,7 +298,179 @@ export default function Connections() {
       ════════════════════════════════ */}
       {tab === 'connections' && (
         <>
-          {/* Info banner */}
+          {/* Invite form (triggered from header CTA) */}
+          {showInviteForm && (
+            <div className={styles.inviteFormBox}>
+              <p className={styles.inviteFormTitle}>초대 링크 생성</p>
+              <div className={styles.inviteFormRow}>
+                <input
+                  className={styles.inviteFormInput}
+                  value={inviteLabel}
+                  onChange={(e) => setInviteLabel(e.target.value.slice(0, 50))}
+                  placeholder="라벨 (선택, 예: 홍길동 소개용)"
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateInvite()}
+                />
+                <button
+                  className={styles.createBtn}
+                  onClick={handleCreateInvite}
+                  disabled={creatingInvite}
+                >
+                  {creatingInvite ? '생성 중…' : '생성'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Generated invite URL */}
+          {inviteUrl && (
+            <div className={styles.inviteBox}>
+              <p className={styles.inviteBoxLabel}>초대 링크가 생성되었습니다</p>
+              <div className={styles.inviteUrlRow}>
+                <input className={styles.inviteInput} value={inviteUrl} readOnly />
+                <button className={styles.copyBtn} onClick={handleCopy}>
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  {copied ? '복사됨!' : '복사'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Name search */}
+          <div className={styles.nameSearchWrap}>
+            <Search size={14} className={styles.nameSearchIcon} />
+            <input
+              className={styles.nameSearchInput}
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              placeholder="매니저 이름으로 찾기"
+            />
+          </div>
+
+          {/* Sort chips */}
+          <div className={styles.sortChipRow}>
+            {[
+              { k: 'recent', l: '최근 활동순' },
+              { k: 'sharedMatches', l: '함께한 매칭 많은순' },
+              { k: 'sharedClients', l: '회원 많은순' },
+            ].map((s) => (
+              <button
+                key={s.k}
+                className={`${styles.sortChip} ${sortKey === s.k ? styles.sortChipActive : ''}`}
+                onClick={() => setSortKey(s.k)}
+              >
+                {s.l}
+              </button>
+            ))}
+          </div>
+
+          {/* ── 받은 요청 ── */}
+          {receivedRequests.length > 0 && (
+            <div className={styles.requestSection}>
+              <div className={styles.requestSectionHeader}>
+                <span className={styles.requestSectionTitle}>받은 요청</span>
+                <span className={styles.requestSectionSub}>{receivedRequests.length}건이 매니저님을 기다려요</span>
+              </div>
+              {receivedRequests.map((req) => (
+                <div key={req.id} className={styles.requestCardWaiting}>
+                  <div className={styles.requestCardTop}>
+                    <div className={`${styles.avatar} ${getAvatarClass(req.managerName)}`}>
+                      {(req.managerName || '?').charAt(0)}
+                    </div>
+                    <div className={styles.requestCardInfo}>
+                      <span className={styles.connName}>{req.managerName}</span>
+                      <span className={styles.connMeta}>{req.managerEmail || ''}</span>
+                    </div>
+                    <span className={styles.requestTime}>{relativeTime(req.createdAt)}</span>
+                  </div>
+                  {req.message && (
+                    <div className={styles.messageBubble}>
+                      {req.message}
+                    </div>
+                  )}
+                  <div className={styles.requestActions}>
+                    <button className={styles.acceptBtn} onClick={() => handleAccept(req)}>
+                      <Check size={13} /> 수락
+                    </button>
+                    <button className={styles.rejectBtn} onClick={() => handleReject(req)}>
+                      <XCircle size={13} /> 거절
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── 연결된 매니저 ── */}
+          <div className={styles.connectionSection}>
+            <div className={styles.connectionSectionHeader}>
+              <span className={styles.connectionSectionTitle}>
+                연결된 매니저 {connections.length > 0 ? connections.length : ''}
+              </span>
+              {connections.length > 0 && (
+                <span className={styles.connectionSectionHint}>탭해서 상세보기</span>
+              )}
+            </div>
+
+            {isLoading ? (
+              <div className={styles.list}>
+                {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
+              </div>
+            ) : sortedConnections.length === 0 ? (
+              <div className={styles.empty}>
+                <div className={styles.emptyIconWrap}>
+                  <Users size={24} strokeWidth={1.3} />
+                </div>
+                <p className={styles.emptyTitle}>
+                  {nameFilter ? '검색 결과가 없습니다' : '네트워크 매니저가 없습니다'}
+                </p>
+                {!nameFilter && (
+                  <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
+                )}
+              </div>
+            ) : (
+              <div className={styles.list}>
+                {sortedConnections.map((conn) => (
+                  <div key={conn.id || conn.managerId} className={styles.connectionItem}>
+                    <div className={`${styles.avatar} ${getAvatarClass(conn.name || conn.email)}`}>
+                      {(conn.name || conn.email || '?').charAt(0)}
+                    </div>
+                    <div className={styles.connectionItemBody}>
+                      <div className={styles.connectionItemNameRow}>
+                        <span className={styles.connName}>{conn.name || conn.email}</span>
+                        {(conn.sharedMatchCount ?? 0) > 0 && (
+                          <span className={styles.successBadge}>성사 {conn.sharedMatchCount}</span>
+                        )}
+                      </div>
+                      <span className={styles.connMeta}>
+                        공유회원 {conn.clientCount ?? 0}
+                        {(conn.sharedMatchCount ?? 0) > 0 && ` · 함께 매칭 ${conn.sharedMatchCount}`}
+                        {conn.lastActivityAt && ` · 활동 ${relativeTime(conn.lastActivityAt)}`}
+                      </span>
+                    </div>
+                    <div className={styles.connectionItemRight}>
+                      <button
+                        className={styles.disconnectBtn}
+                        onClick={(e) => { e.stopPropagation(); setDisconnectTarget(conn); }}
+                        aria-label="네트워크 해제"
+                      >
+                        <Unlink size={12} />
+                      </button>
+                      <ChevronRight size={14} className={styles.chevron} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ════════════════════════════════
+          TAB: 매니저 영입
+      ════════════════════════════════ */}
+      {tab === 'manager-invites' && (
+        <>
+          {/* Info desc box (preserved) */}
           {showDesc && (
             <div className={styles.descBox}>
               <div className={styles.descHeader}>
@@ -265,7 +490,23 @@ export default function Connections() {
             </div>
           )}
 
-          {/* Invite link creation form */}
+          {/* Dark hero invite card */}
+          <div className={styles.heroInviteCard}>
+            <p className={styles.heroInviteCaption}>INVITE · 링크 한 번이면 충분해요</p>
+            <h2 className={styles.heroInviteTitle}>매니저를 네트워크에<br />초대하기</h2>
+            <p className={styles.heroInviteDesc}>
+              링크를 전달받은 매니저가 수락하면 자동으로 연결됩니다. 라벨로 용도를 구분해보세요.
+            </p>
+            <button
+              className={styles.heroInviteCta}
+              onClick={() => setShowInviteForm((v) => !v)}
+            >
+              <Link2 size={14} strokeWidth={2} />
+              초대링크 생성
+            </button>
+          </div>
+
+          {/* Invite form (within manager-invites tab) */}
           {showInviteForm && (
             <div className={styles.inviteFormBox}>
               <p className={styles.inviteFormTitle}>초대 링크 생성</p>
@@ -282,16 +523,15 @@ export default function Connections() {
                   onClick={handleCreateInvite}
                   disabled={creatingInvite}
                 >
-                  {creatingInvite ? '생성 중...' : '생성'}
+                  {creatingInvite ? '생성 중…' : '생성'}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Generated invite URL */}
           {inviteUrl && (
             <div className={styles.inviteBox}>
-              <p className={styles.inviteLabel}>네트워크 초대 링크가 생성되었습니다</p>
+              <p className={styles.inviteBoxLabel}>초대 링크가 생성되었습니다</p>
               <div className={styles.inviteUrlRow}>
                 <input className={styles.inviteInput} value={inviteUrl} readOnly />
                 <button className={styles.copyBtn} onClick={handleCopy}>
@@ -302,41 +542,44 @@ export default function Connections() {
             </div>
           )}
 
-          {/* ── 매니저 검색 섹션 ── */}
-          <div className={styles.sectionTitle}>매니저 검색</div>
-          <div className={styles.searchSection}>
-            <div className={styles.searchRow}>
+          {/* Email search section */}
+          <div className={styles.emailSearchSection}>
+            <div className={styles.emailSearchHeader}>
+              <span className={styles.emailSearchTitle}>이메일로 매니저 찾기</span>
+              <span className={styles.emailSearchSub}>정확한 이메일 주소로만 검색됩니다</span>
+            </div>
+            <div className={styles.emailSearchRow}>
               <input
-                className={styles.searchInput}
+                className={styles.emailSearchInput}
                 value={searchEmail}
                 onChange={(e) => setSearchEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="name@example.com"
               />
               <button
-                className={styles.searchBtn}
+                className={styles.emailSearchBtn}
                 onClick={handleSearch}
                 disabled={searching || !searchEmail.trim()}
               >
                 <Search size={13} />
-                {searching ? '검색 중...' : '검색'}
+                {searching ? '검색 중…' : '검색'}
               </button>
             </div>
-            <p className={styles.searchHint}>정확한 이메일 주소를 입력해야 검색됩니다 (부분 검색 불가)</p>
+            <p className={styles.emailSearchHint}>개인정보 보호를 위해 부분 검색은 지원하지 않아요.</p>
 
             {searchError && <p className={styles.searchError}>{searchError}</p>}
 
             {searchResult && (
               <div className={styles.searchResultCard}>
                 <div className={styles.searchResultInfo}>
-                  <div className={styles.avatar}>
+                  <div className={`${styles.avatar} ${getAvatarClass(searchResult.name || searchEmail)}`}>
                     {(searchResult.name || searchResult.nickname || searchEmail).charAt(0)}
                   </div>
                   <div className={styles.searchResultText}>
                     <span className={styles.searchResultName}>
                       {searchResult.name || searchResult.nickname || '이름 없음'}
                     </span>
-                    <span className={styles.searchResultEmail}>{searchResult.email || searchEmail}</span>
+                    <span className={styles.connMeta}>{searchResult.email || searchEmail}</span>
                   </div>
                 </div>
                 <div className={styles.requestForm}>
@@ -352,62 +595,28 @@ export default function Connections() {
                     disabled={sendingRequest}
                   >
                     <UserPlus size={13} />
-                    {sendingRequest ? '전송 중...' : '요청'}
+                    {sendingRequest ? '전송 중…' : '요청'}
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── 받은 요청 ── */}
-          {receivedRequests.length > 0 && (
-            <div className={styles.requestSection}>
-              <div className={styles.sectionTitle}>
-                받은 요청
-                <span className={styles.sectionBadge}>{receivedRequests.length}</span>
-              </div>
-              <div className={styles.list}>
-                {receivedRequests.map((req) => (
-                  <div key={req.id} className={styles.requestCard}>
-                    <div className={styles.requestInfo}>
-                      <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
-                      <div className={styles.requestText}>
-                        <span className={styles.connName}>{req.managerName}</span>
-                        {req.message && (
-                          <span className={styles.requestMessage}>{req.message}</span>
-                        )}
-                        <span className={styles.connMeta}>
-                          {new Date(req.createdAt).toLocaleDateString('ko-KR')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.requestActions}>
-                      <button className={styles.acceptBtn} onClick={() => handleAccept(req)}>
-                        <Check size={13} /> 수락
-                      </button>
-                      <button className={styles.rejectBtn} onClick={() => handleReject(req)}>
-                        <XCircle size={13} /> 거절
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* ── 보낸 요청 ── */}
           {sentRequests.length > 0 && (
-            <div className={styles.requestSection}>
-              <div className={styles.sectionTitle}>보낸 요청</div>
+            <div className={styles.sentSection}>
+              <div className={styles.sentSectionHeader}>보낸 요청</div>
               <div className={styles.list}>
                 {sentRequests.map((req) => (
                   <div key={req.id} className={styles.sentCard}>
                     <div className={styles.cardInfo}>
-                      <div className={styles.avatar}>{(req.managerName || '?').charAt(0)}</div>
+                      <div className={`${styles.avatar} ${getAvatarClass(req.managerName)}`}>
+                        {(req.managerName || '?').charAt(0)}
+                      </div>
                       <div>
                         <span className={styles.connName}>{req.managerName}</span>
                         {req.message && (
-                          <span className={styles.requestMessage}>{req.message}</span>
+                          <span className={styles.connMeta}>{req.message}</span>
                         )}
                         <span className={styles.connMeta}>
                           {new Date(req.createdAt).toLocaleDateString('ko-KR')}
@@ -429,67 +638,7 @@ export default function Connections() {
             </div>
           )}
 
-          {/* ── 네트워크 매니저 목록 ── */}
-          <div className={styles.connectionSection}>
-            <div className={styles.sectionTitleRow}>
-              <div className={styles.sectionTitle} style={{ margin: 0 }}>
-                연결된 매니저
-                {connections.length > 0 && (
-                  <span className={styles.sectionCount}>{connections.length}</span>
-                )}
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className={styles.list}>
-                {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
-              </div>
-            ) : connections.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIconWrap}>
-                  <Users size={24} strokeWidth={1.3} />
-                </div>
-                <p className={styles.emptyTitle}>네트워크 매니저가 없습니다</p>
-                <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
-              </div>
-            ) : (
-              <div className={styles.list}>
-                {connections.map((conn) => (
-                  <div key={conn.id || conn.managerId} className={styles.card}>
-                    <div className={styles.cardInfo}>
-                      <div className={styles.avatar}>
-                        {(conn.name || conn.email || '?').charAt(0)}
-                      </div>
-                      <div>
-                        <span className={styles.connName}>{conn.name || conn.email}</span>
-                        <span className={styles.connMeta}>
-                          회원 {conn.clientCount ?? 0}명
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.cardRight}>
-                      <button
-                        className={styles.disconnectBtn}
-                        onClick={() => setDisconnectTarget(conn)}
-                      >
-                        <Unlink size={13} /> 해제
-                      </button>
-                      <ChevronRight size={14} className={styles.chevron} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* ════════════════════════════════
-          TAB: 매니저 초대
-      ════════════════════════════════ */}
-      {tab === 'manager-invites' && (
-        <>
-          {/* Quota bar */}
+          {/* ── 초대권 현황 ── */}
           {displayQuota && (
             <div className={styles.quotaBox}>
               <div className={styles.quotaInfo}>
