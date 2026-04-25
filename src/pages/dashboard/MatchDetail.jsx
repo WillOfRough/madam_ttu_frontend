@@ -848,15 +848,7 @@ export default function MatchDetail() {
             </button>
           )}
 
-          {/* cancel text button */}
-          {!['cancelled', 'completed'].includes(match.status) && (
-            <button
-              className={styles.heroCancelBtn}
-              onClick={() => setShowCancel(true)}
-            >
-              <X size={12} /> 매칭 취소
-            </button>
-          )}
+
         </div>
 
         {/* ── Cancelled Banner ── */}
