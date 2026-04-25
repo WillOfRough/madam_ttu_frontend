@@ -35,7 +35,7 @@
 
 .brand {
   display: block; font-size: 22px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.04em; line-height: 1;
   margin-bottom: 12px;
 }

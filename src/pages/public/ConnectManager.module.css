@@ -38,7 +38,7 @@
   display: flex; align-items: center; justify-content: center; color: var(--tangerine-600);
 }
 .title {
-  font-size: 22px; font-weight: 800; font-family: var(--font-serif);
+  font-size: 22px; font-weight: 800; font-family: var(--font-sans);
   letter-spacing: -0.035em; color: var(--ink-900); margin: 0 0 12px;
 }
 .message { font-size: 13px; color: var(--ink-500); line-height: 1.65; margin: 0 0 28px; }

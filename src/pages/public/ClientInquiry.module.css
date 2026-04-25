@@ -16,7 +16,7 @@
 
 .brandName {
   font-size: 15px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.04em;
 }
 
@@ -62,7 +62,7 @@
 
 .verifyTitle {
   font-size: 22px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.035em; margin-bottom: 8px;
 }
 
@@ -133,7 +133,7 @@
 
 .formTitle {
   font-size: 17px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.03em;
 }
 
@@ -259,7 +259,7 @@
 
 .doneTitle {
   font-size: 22px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.035em; margin-bottom: 10px;
 }
 
@@ -338,7 +338,7 @@
 }
 .brandName {
   font-size: 13px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.025em;
 }
 

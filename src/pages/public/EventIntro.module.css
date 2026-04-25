@@ -55,7 +55,7 @@
 .specialBannerHighlight strong {
   display: inline-block; color: var(--tangerine-400);
   font-size: 22px; font-weight: 800;
-  font-family: var(--font-serif); letter-spacing: -0.03em;
+  font-family: var(--font-sans); letter-spacing: -0.03em;
 }
 
 .specialBannerDesc {

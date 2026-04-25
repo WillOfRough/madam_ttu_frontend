@@ -7,7 +7,7 @@
   min-height: 100vh;
 }
 
-/* ── Sticky serif header ── */
+/* ── Sticky header ── */
 .header {
   position: sticky;
   top: 0;
@@ -25,7 +25,7 @@
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
   margin: 0;
 }
@@ -559,7 +559,7 @@
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
   margin: 0;
 }
@@ -648,7 +648,7 @@
 
 .previewUrl {
   font-size: 10.5px;
-  font-family: ui-monospace, 'Fira Code', monospace;
+  font-family: var(--font-sans);
   color: var(--ink-700);
   word-break: break-all;
   line-height: 1.5;
@@ -728,9 +728,7 @@
    ════════════════════════════════════════════ */
 @media (min-width: 1024px) {
   .page {
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
   }
 
   .sheetPanel {

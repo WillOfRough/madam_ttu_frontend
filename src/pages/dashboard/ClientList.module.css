@@ -46,7 +46,7 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.035em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
   line-height: 1.15;
   margin: 0;
@@ -897,7 +897,7 @@
 }
 
 .sheetTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 800;
   color: var(--ink-900);

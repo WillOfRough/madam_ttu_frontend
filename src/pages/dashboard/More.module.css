@@ -12,7 +12,7 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.035em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
   margin: 0;
 }
@@ -97,7 +97,7 @@
 
 @media (min-width: 1024px) {
   .page {
-    max-width: 720px !important;
+    max-width: none;
     padding: 24px 32px 48px;
   }
 }

@@ -28,9 +28,9 @@
   border-bottom: 1px solid var(--ink-50);
 }
 
-/* Title — serif, matches MatchList/ClientList header style */
+/* Title — matches MatchList/ClientList header style */
 .title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -67,9 +67,9 @@
   margin-top: 14px;
 }
 
-/* Section label — serif kicker style, matches tab section dividers */
+/* Section label — matches tab section dividers */
 .sectionLabel {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -300,10 +300,6 @@
 /* ── Desktop (≥1024px) ── */
 @media (min-width: 1024px) {
   .page {
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 8px;
-    padding-right: 8px;
+    max-width: none;
   }
 }

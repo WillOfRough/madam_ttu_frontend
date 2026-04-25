@@ -660,7 +660,7 @@ export default function Proposal() {
                 <span className={styles.celebrationDot} />
                 <span className={styles.celebrationDot} />
               </div>
-              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-serif)', fontSize: 18 }}>
+              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-sans)', fontSize: 18 }}>
                 에프터가 성사되었습니다!
               </p>
               <p className={styles.respondedStatus} style={{ marginTop: 6 }}>상대방의 연락처와 프로필입니다.</p>
@@ -907,7 +907,7 @@ export default function Proposal() {
                 <span className={styles.celebrationDot} />
                 <span className={styles.celebrationDot} />
               </div>
-              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-serif)', fontSize: 18 }}>
+              <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-sans)', fontSize: 18 }}>
                 에프터가 성사되었습니다!
               </p>
               <p className={styles.respondedStatus} style={{ marginTop: 6 }}>

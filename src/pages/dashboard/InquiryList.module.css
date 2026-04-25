@@ -21,7 +21,7 @@
   font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
 }
 
@@ -395,7 +395,7 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.04em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900);
   line-height: 1.15;
 }
@@ -566,10 +566,6 @@
 /* === Desktop (≥1024px) Renewal === */
 @media (min-width: 1024px) {
   .page {
-    max-width: 720px !important;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 8px;
-    padding-right: 8px;
+    max-width: none;
   }
 }

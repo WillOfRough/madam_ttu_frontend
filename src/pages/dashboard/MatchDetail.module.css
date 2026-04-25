@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    MatchDetail.module.css  —  239 classes, complete rewrite
-   Design system: navy/tangerine, Pretendard + Noto Serif KR
+   Design system: navy/tangerine, Pretendard (--font-sans)
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Page shell ─────────────────────────────────────────────── */
@@ -212,7 +212,7 @@
   font-weight: 700;
   color: var(--ink-400);
   letter-spacing: 0.04em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 .stepperNodes {
@@ -336,7 +336,7 @@
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.03em;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   line-height: 1.35;
   color: var(--ink-900);
   margin-top: 0;
@@ -548,7 +548,7 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
   margin-bottom: 6px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 .cancelledBannerRow {
@@ -770,6 +770,53 @@
   font-weight: 500;
 }
 
+/* ── Proposal response chips (수락/거절) ───────────────────────── */
+.responseAccepted {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--mint-100);
+  color: var(--mint-600);
+}
+
+.responseRejected {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--rose-100);
+  color: var(--rose-600);
+}
+
+/* ── After response chips (만나볼래요/괜찮아요/대기 중) ─────────── */
+.afterResp_accepted {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--mint-100);
+  color: var(--mint-600);
+}
+
+.afterResp_rejected {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--rose-100);
+  color: var(--rose-600);
+}
+
+.afterResp_pending {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--amber-100);
+  color: var(--amber-600);
+}
+
 /* ── Links panel ─────────────────────────────────────────────── */
 .linksPanel {
   display: flex;
@@ -808,7 +855,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: 'SF Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
 }
 
 .linkCopyBtn {
@@ -853,7 +900,7 @@
   color: var(--ink-400);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 .scheduleRows {
@@ -947,7 +994,7 @@
   color: var(--ink-400);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin-bottom: 4px;
 }
 
@@ -1270,7 +1317,7 @@
   color: var(--ink-500);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin-bottom: 10px;
 }
 
@@ -1531,7 +1578,7 @@
   font-size: 13.5px;
   font-weight: 800;
   color: var(--ink-900);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin: 0 0 6px;
 }
 
@@ -1592,7 +1639,7 @@
   font-size: 13.5px;
   font-weight: 800;
   color: var(--ink-900);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin: 0 0 6px;
 }
 
@@ -1640,7 +1687,7 @@
   flex: 1;
   font-size: 11px;
   color: var(--ink-500);
-  font-family: 'SF Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
   background: var(--ink-50);
   padding: 6px 10px;
   border-radius: 8px;
@@ -1731,7 +1778,7 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-900);
-  font-family: 'SF Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
   flex: 1;
 }
 
@@ -1769,7 +1816,7 @@
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink-700);
-  font-family: 'SF Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
 }
 
 .phoneQuickCopyBtn {
@@ -1912,7 +1959,7 @@
   flex: 1;
   font-size: 11px;
   color: var(--ink-500);
-  font-family: 'SF Mono', ui-monospace, monospace;
+  font-family: var(--font-sans);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2060,7 +2107,7 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink-900);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin: 0 0 10px;
 }
 
@@ -2131,7 +2178,7 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink-900);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   margin: 0 0 10px;
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, MoreVertical, Heart, Edit3, Trash2,
+  ChevronLeft, MoreVertical, Heart, Edit3, Trash2, X,
   ShieldCheck, Download, Copy, Link2, ChevronDown, Plus, Shield, Check,
 } from 'lucide-react';
 import * as clientService from '../../api/clientService';
@@ -105,6 +105,7 @@ export default function ClientDetail() {
   const photoInputRef                 = useRef(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
 
   // ── copy timeout ──
   useEffect(() => {
@@ -659,9 +660,8 @@ export default function ClientDetail() {
                   <div
                     key={url}
                     className={styles.photoThumb}
-                    onClick={() => client.isOwner && handlePhotoDelete(url)}
-                    title={client.isOwner ? '클릭하여 삭제' : undefined}
-                    style={{ cursor: client.isOwner ? 'pointer' : 'default' }}
+                    onClick={() => setLightboxUrl(url)}
+                    style={{ cursor: 'pointer' }}
                   >
                     <img
                       src={url}
@@ -878,6 +878,35 @@ export default function ClientDetail() {
                 {deleting ? '처리 중...' : '탈퇴 처리'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Photo Lightbox ── */}
+      {lightboxUrl && (
+        <div
+          className={styles.lightboxOverlay}
+          onClick={() => setLightboxUrl(null)}
+        >
+          <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={styles.lightboxClose}
+              onClick={() => setLightboxUrl(null)}
+              aria-label="닫기"
+            >
+              <X size={20} />
+            </button>
+            <img src={lightboxUrl} alt="사진 미리보기" className={styles.lightboxImg} />
+            {client.isOwner && (
+              <button
+                className={styles.lightboxDeleteBtn}
+                onClick={() => { handlePhotoDelete(lightboxUrl); setLightboxUrl(null); }}
+                disabled={!!deletingPhotoId}
+              >
+                <Trash2 size={14} />
+                {deletingPhotoId ? '삭제 중...' : '이 사진 삭제'}
+              </button>
+            )}
           </div>
         </div>
       )}

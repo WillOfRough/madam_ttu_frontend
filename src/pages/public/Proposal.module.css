@@ -2,7 +2,7 @@
    Proposal — Renewal Design
    Tokens: --ink-*, --paper/paper-warm/paper-card,
            --tangerine-*, --mint/rose/lilac-*,
-           --r-*, --sh-*, --font-sans/serif
+           --r-*, --sh-*, --font-sans
    ════════════════════════════════════════════════════════ */
 
 /* ── Page Shell ── */
@@ -116,7 +116,7 @@
 }
 
 .pageTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 800;
   color: var(--ink-900);
@@ -145,7 +145,7 @@
 }
 
 .counterpartName {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--ink-900);
@@ -181,7 +181,7 @@
 }
 
 .statusBannerTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 18px;
   font-weight: 800;
   color: var(--ink-900);
@@ -206,7 +206,7 @@
 }
 
 .respondedLabel {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 700;
   color: var(--ink-900);
@@ -249,7 +249,7 @@
 }
 
 .oathTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 800;
   color: var(--ink-900);
@@ -567,7 +567,7 @@
 }
 
 .schedulingTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 800;
   color: var(--ink-900);
@@ -901,7 +901,7 @@
 }
 
 .afterTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 800;
   color: var(--ink-900);
@@ -994,7 +994,7 @@
 }
 
 .afterWaitingTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 700;
   color: var(--ink-900);
@@ -1187,7 +1187,7 @@
 }
 
 .confirmTitle {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 17px;
   font-weight: 700;
   color: var(--ink-900);

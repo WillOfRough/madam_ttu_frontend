@@ -103,7 +103,7 @@
 .heroTitle {
   font-size: 32px;
   font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   letter-spacing: -0.04em;
   line-height: 1.15;
   color: var(--ink-900);

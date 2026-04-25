@@ -42,7 +42,7 @@
 
 .brandName {
   font-size: 13px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.025em;
 }
 
@@ -70,7 +70,7 @@
 
 .verifyTitle {
   font-size: 22px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.035em; margin-bottom: 8px;
 }
 
@@ -122,7 +122,7 @@
 .heroInfo { flex: 1; min-width: 0; }
 .heroName {
   font-size: 24px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-900); letter-spacing: -0.035em;
   line-height: 1.2; margin-bottom: 5px;
 }

@@ -32,7 +32,7 @@
 
 .code {
   font-size: 96px; font-weight: 800;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   color: var(--ink-100); letter-spacing: -0.06em;
   line-height: 1; margin-bottom: 16px;
   text-shadow: 0 4px 16px rgba(15,21,38,.06);
