@@ -617,7 +617,15 @@ function TxRow({ s, onClick }) {
   const badgeBg = roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
   const badgeColor = roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
 
-  const matchLabel = s.matchId ? `매칭 #${String(s.matchId).slice(-6)}` : '매칭';
+  const recipientName = s.managerName || '담당 매니저';
+  const reasonLabel = roleIsMatch
+    ? '매칭 성사 보상'
+    : roleIsClient
+      ? '회원 매물 보상'
+      : s.role === 'both'
+        ? '매물 + 매칭 보상'
+        : '정산';
+  const matchCode = s.matchId ? `#${String(s.matchId).slice(-6)}` : '';
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
   return (
@@ -662,8 +670,11 @@ function TxRow({ s, onClick }) {
             </>
           )}
         </div>
-        <div className={styles.txRowMatch}>{matchLabel}</div>
+        <div className={styles.txRowMatch}>
+          {recipientName} <span style={{ color: 'var(--ink-400)', fontWeight: 500 }}>· {reasonLabel}</span>
+        </div>
         <div className={styles.txRowPayout}>
+          {matchCode && <span style={{ color: 'var(--ink-400)' }}>{matchCode} · </span>}
           {excluded
             ? `정산 제외 · ${EXCLUSION_REASON_LABEL[s.exclusionReason] || s.exclusionReason || '사유 없음'}`
             : paid ? `${payoutDate} 입금` : `${payoutDate} 입금 예정`}
@@ -817,9 +828,19 @@ function ReceiptSheet({ s, onClose }) {
   const paid = isPaid(s.status);
   const excluded = s.excluded === true;
   const matchLabel = s.matchId ? `매칭 #${String(s.matchId).slice(-6)}` : '매칭';
+  const recipientName = s.managerName || '담당 매니저';
+  const reasonLabel = s.role === 'matchmaker'
+    ? '매칭 성사 보상'
+    : s.role === 'client_owner'
+      ? '회원 매물 보상'
+      : s.role === 'both'
+        ? '매물 + 매칭 보상'
+        : '정산';
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
   const rows = [
+    ['수령 매니저', recipientName],
+    ['정산 사유', reasonLabel],
     ['역할', ROLE_LABEL[s.role] || s.role],
     ['매칭', matchLabel],
     ['종료일', formatDateFull(s.matchEndedAt) || formatDateFull(s.createdAt)],
