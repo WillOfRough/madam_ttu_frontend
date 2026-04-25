@@ -2,7 +2,6 @@
 
 /* ── Page shell ── */
 .page {
-  max-width: 480px;
   background: var(--paper);
   min-height: 100vh;
 }
@@ -724,11 +723,42 @@
 }
 
 /* ════════════════════════════════════════════
-   Desktop ≥1024px
+   Desktop ≥769px
    ════════════════════════════════════════════ */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+  }
+
+  .header {
+    position: static;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    padding: 0 0 8px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .body {
+    padding: 12px 0 48px;
+  }
+
+  .kpiRow {
+    gap: 12px;
+  }
+
+  .kpiCard {
+    padding: 16px 14px;
+  }
+
+  /* 2-column card grid */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 10px;
   }
 
   .sheetPanel {
@@ -741,12 +771,5 @@
   .sheetOverlay {
     align-items: center;
     justify-content: center;
-  }
-}
-
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
   }
 }

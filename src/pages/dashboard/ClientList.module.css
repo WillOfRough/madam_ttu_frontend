@@ -26,7 +26,6 @@
 }
 
 .page {
-  max-width: 480px;
   padding: 16px 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -672,11 +671,29 @@
     margin-bottom: 12px;
   }
 
-  .listWrap { margin: 0 0 20px; }
+  /* listWrap → grid of rows on desktop */
+  .listWrap {
+    margin: 0 0 20px;
+    border-radius: var(--r-md);
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 10px;
+  }
 
   .row {
     padding: 14px 16px;
     align-items: center;
+    border-radius: var(--r-md);
+    background: var(--paper-card);
+    box-shadow: var(--sh-sm);
+    border-bottom: none !important;
+  }
+
+  .rowLast {
+    border-bottom: none;
   }
 
   .rowName { font-size: 15px; }
@@ -685,6 +702,10 @@
   .rowLine3 {
     display: flex;
     flex-wrap: nowrap;
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 }
 

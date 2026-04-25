@@ -2,7 +2,6 @@
 
 /* ─── Page shell ─── */
 .page {
-  max-width: 480px;
   padding: 0 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -551,16 +550,44 @@
   color: var(--ink-600, var(--ink-500));
 }
 
-/* ── Desktop (≥1024px) ── */
+/* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+    padding-bottom: 48px;
   }
-}
 
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
+  .pageHeader {
+    padding: 0 0 4px;
+  }
+
+  .pageTitle {
+    font-size: 26px;
+  }
+
+  .tabRow {
+    padding: 14px 0 0;
+  }
+
+  .guidePane {
+    padding: 14px 0 0;
+    /* 2-column section cards */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 10px;
+    align-items: start;
+  }
+
+  .guideIntro {
+    grid-column: 1 / -1;
+  }
+
+  .templatesPane {
+    padding: 14px 0 0;
+  }
+
+  /* 2-column template cards */
+  .templateCard {
+    break-inside: avoid;
   }
 }

@@ -2,7 +2,6 @@
 
 /* ── Shell ── */
 .page {
-  max-width: 480px;
   padding: 0 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -1159,16 +1158,63 @@
   text-align: center;
 }
 
-/* ── Responsive ── */
+/* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+    padding-bottom: 48px;
   }
-}
 
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
+  .headerBar {
+    position: static;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    padding: 0 0 16px;
+  }
+
+  .titleText {
+    font-size: 26px;
+  }
+
+  /* KPI row: stretch to full width */
+  .kpiRow {
+    padding: 0;
+    gap: 12px;
+  }
+
+  .kpiCard {
+    padding: 16px 14px;
+  }
+
+  /* Two-column layout: main content + right form panel */
+  .segmentedTabs {
+    margin: 16px 0 0;
+  }
+
+  .descBox,
+  .inviteFormBox,
+  .inviteBox,
+  .nameSearchWrap,
+  .sortChipRow,
+  .requestSection,
+  .connectionSection,
+  .heroInviteCard,
+  .emailSearchSection,
+  .sentSection,
+  .quotaBox,
+  .filterRow {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .list {
+    gap: 10px;
+  }
+
+  .connectionItem {
+    padding: 14px 16px;
   }
 }

@@ -2,7 +2,6 @@
 /* Tabs completely removed. Single scroll, sequential sections. */
 
 .page {
-  max-width: 480px;
   padding: 0 0 120px;
   background: var(--paper);
   min-height: 100vh;

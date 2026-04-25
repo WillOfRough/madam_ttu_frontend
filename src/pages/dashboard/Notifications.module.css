@@ -1,7 +1,6 @@
 /* ── Notifications — Knots & Links Warm Trust renewal ── */
 
 .page {
-  max-width: 480px;
   padding: 0 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -297,10 +296,36 @@
   100% { opacity: 1; }
 }
 
-/* ── Desktop (≥1024px) ── */
+/* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+    padding-bottom: 48px;
+  }
+
+  .header {
+    position: static;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    padding: 0 0 8px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .sectionGroup {
+    padding: 0;
+  }
+
+  /* Constrain notification list width for readability */
+  .list {
+    max-width: 720px;
+  }
+
+  .loadingList {
+    padding: 14px 0;
   }
 }
 

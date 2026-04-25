@@ -1,7 +1,6 @@
 /* ── InquiryList — Handoff Renewal ── */
 
 .page {
-  max-width: 480px;
   padding: 0 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -563,16 +562,45 @@
 
 
 
-/* === Desktop (≥1024px) Renewal === */
+/* === Desktop (≥769px) === */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+    padding-bottom: 48px;
   }
-}
 
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
+  .pageHeader {
+    padding: 0 0 4px;
+  }
+
+  .pageTitle {
+    font-size: 26px;
+  }
+
+  .chipRow {
+    padding: 14px 0 0;
+  }
+
+  .listWrap {
+    padding: 12px 0 0;
+  }
+
+  /* 2-column accordion grid */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 10px;
+  }
+
+  .titleRow {
+    padding: 14px 0 0;
+  }
+
+  .filters {
+    padding: 12px 0 0;
+  }
+
+  .skeletonWrap {
+    padding: 12px 0 0;
   }
 }

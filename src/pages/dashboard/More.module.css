@@ -1,7 +1,5 @@
 .page {
   padding: 16px 18px 100px;
-  max-width: 480px;
-  margin: 0 auto;
   background: var(--paper);
   min-height: 100vh;
   font-family: var(--font-sans);
@@ -98,13 +96,18 @@
 @media (min-width: 769px) {
   .page {
     max-width: none;
-    padding: 24px 32px 48px;
+    margin: 0;
+    padding: 0 0 48px;
   }
-}
 
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
+  .title {
+    font-size: 26px;
+  }
+
+  /* 2-column grid for menu items */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
   }
 }

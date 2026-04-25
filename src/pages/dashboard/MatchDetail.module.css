@@ -5,8 +5,6 @@
 
 /* ── Page shell ─────────────────────────────────────────────── */
 .page {
-  max-width: 480px;
-  margin: 0 auto;
   padding: 12px 0 calc(100px + env(safe-area-inset-bottom));
   background: var(--paper);
   min-height: 100vh;

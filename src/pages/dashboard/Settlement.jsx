@@ -498,7 +498,7 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, c
             매칭 매니저
           </div>
           <div className={styles.heroRoleAmount}>{won(matchmakerSum)}<span className={styles.heroRoleUnit}>원</span></div>
-          <div className={styles.heroRoleCount}>건당 10,000원</div>
+          <div className={styles.heroRoleCount}>결제액의 40%</div>
         </div>
         <div className={styles.heroRolePanel}>
           <div className={styles.heroRoleLabel}>
@@ -506,7 +506,7 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, c
             회원 매니저
           </div>
           <div className={styles.heroRoleAmount}>{won(clientOwnerSum)}<span className={styles.heroRoleUnit}>원</span></div>
-          <div className={styles.heroRoleCount}>건당 5,000원</div>
+          <div className={styles.heroRoleCount}>결제액의 30%</div>
         </div>
       </div>
 
@@ -744,10 +744,10 @@ function PolicySheet({ onClose }) {
       <div className={styles.sheetSubtitle}>매칭 종료 후 자동 정산</div>
 
       <div className={styles.sheetSection}>
-        <div className={styles.sheetSectionLabel}>매칭 1건당 수익 분배</div>
+        <div className={styles.sheetSectionLabel}>결제액 기준 비율 분배</div>
         <div className={styles.policyBox}>
-          <div className={styles.policyTotalCaption}>총 매칭 수입</div>
-          <div className={styles.policyTotalAmount}>39,800<span className={styles.policyTotalUnit}>원</span></div>
+          <div className={styles.policyTotalCaption}>매칭 결제 금액 기준</div>
+          <div className={styles.policyTotalAmount}>100<span className={styles.policyTotalUnit}>%</span></div>
           <div className={styles.policyRuleList}>
             <div className={styles.policyRuleRow}>
               <div className={styles.policyRuleLeft}>
@@ -755,7 +755,7 @@ function PolicySheet({ onClose }) {
                 <span className={styles.policyRuleName}>매칭 매니저</span>
                 <span className={styles.policyRoleDesc}>매칭 만든 사람</span>
               </div>
-              <div className={styles.policyRuleValue}>10,000원</div>
+              <div className={styles.policyRuleValue}>40%</div>
             </div>
             <div className={styles.policyRuleRow}>
               <div className={styles.policyRuleLeft}>
@@ -763,8 +763,11 @@ function PolicySheet({ onClose }) {
                 <span className={styles.policyRuleName}>회원 매니저</span>
                 <span className={styles.policyRoleDesc}>각 회원 등록자</span>
               </div>
-              <div className={styles.policyRuleValue}>5,000원 × 2</div>
+              <div className={styles.policyRuleValue}>30% × 2</div>
             </div>
+          </div>
+          <div className={styles.policyHint}>
+            결제 금액에 따라 정산액이 달라집니다. (환불 발생 시 비율대로 차감)
           </div>
         </div>
       </div>

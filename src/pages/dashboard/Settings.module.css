@@ -1,7 +1,6 @@
 /* ── Settings — Handoff Renewal ── */
 
 .page {
-  max-width: 480px;
   padding: 0 0 100px;
   background: var(--paper);
   min-height: 100vh;
@@ -625,16 +624,59 @@
 
 
 
-/* === Desktop (≥1024px) Renewal === */
+/* === Desktop (≥769px) === */
 @media (min-width: 769px) {
   .page {
     max-width: none;
+    padding-bottom: 48px;
   }
-}
 
-/* ── Desktop (≥1024px) ── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
+  .pageHeader {
+    padding: 0 0 4px;
+  }
+
+  .pageTitle {
+    font-size: 26px;
+  }
+
+  .title {
+    font-size: 26px;
+    padding: 0 0 4px;
+  }
+
+  .tabWrap,
+  .settingsTabWrap {
+    margin: 12px 0 0;
+  }
+
+  /* Profile card full-width */
+  .profileCard {
+    margin: 16px 0 0;
+  }
+
+  /* Section groups: 2-column grid */
+  .sectionGroup {
+    margin: 20px 0 0;
+  }
+
+  .card {
+    margin: 12px 0 0;
+  }
+
+  /* Two-column layout for settings sections */
+  .settingsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .logoutBtn {
+    width: 100%;
+    margin: 0;
+  }
+
+  .logoutWrap {
+    padding: 20px 0 0;
   }
 }
