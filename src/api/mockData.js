@@ -1167,6 +1167,52 @@ const matches = [
     createdByManagerId: 'mgr001',
     createdByManagerName: '김성중',
   },
+  // 14) awaiting_payment — 양쪽 수락 완료, 양쪽 입금 대기 중
+  {
+    matchId: 'match-pay01',
+    type: '1:1 소개팅',
+    status: 'awaiting_payment',
+    note: '양쪽 수락 완료 — 입금 확인 대기 중',
+    clientA: {
+      clientId: 's007', clientName: '윤예은', clientNickname: '크로스핏 예은', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-04-20T10:00:00Z',
+      proposalToken: 'PrTkPay01A',
+    },
+    clientB: {
+      clientId: 's008', clientName: '강도윤', clientNickname: null, clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-04-20T15:00:00Z',
+      proposalToken: 'PrTkPay01B',
+    },
+    payments: { A: 'pending', B: 'pending' },
+    createdAt: '2026-04-19T10:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
+  // 15) awaiting_payment — A 입금 완료, B 입금 대기 (부분 결제 상태)
+  {
+    matchId: 'match-pay02',
+    type: '1:1 소개팅',
+    status: 'awaiting_payment',
+    note: 'A 입금 완료, B 입금 대기 — 부분 결제 테스트',
+    clientA: {
+      clientId: 's009', clientName: '임수아', clientNickname: '베이킹 수아', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-04-21T11:00:00Z',
+      proposalToken: 'PrTkPay02A',
+    },
+    clientB: {
+      clientId: 's010', clientName: '오태양', clientNickname: 'AI 태양', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-04-21T16:00:00Z',
+      proposalToken: 'PrTkPay02B',
+    },
+    payments: { A: 'confirmed', B: 'pending' },
+    createdAt: '2026-04-20T09:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
 ];
 
 // match003: 양쪽 가용시간 등록 완료 (arranging 상태)

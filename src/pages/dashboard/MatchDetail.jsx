@@ -1246,7 +1246,7 @@ export default function MatchDetail() {
         )}
 
         {/* ── Remind Card ── */}
-        {match.status !== 'cancelled' && (
+        {match.status !== 'cancelled' && match.afterStatus !== 'accepted' && match.afterStatus !== 'rejected' && (
           <div className={styles.remindCard}>
             <div className={styles.remindCardHeader}>
               <div className={styles.remindCardIcon}><Bell size={14} /></div>
