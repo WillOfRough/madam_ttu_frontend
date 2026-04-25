@@ -85,6 +85,13 @@ const STATUS_LABEL = {
   refunded: '환불 차감',
 };
 
+// 정산제외 사유 한글 매핑
+const EXCLUSION_REASON_LABEL = {
+  manual_confirm: '수동 결제 확인',
+  zero_amount: '0원 결제',
+  coupon: '쿠폰 결제',
+};
+
 // 기간 필터: 날짜 경계 계산
 function getPeriodRange(period) {
   const now = new Date();
@@ -222,12 +229,12 @@ export default function Settlement() {
     return item || { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
   }, [monthly, month]);
 
-  // 이번달 역할별 계산 (settlements 목록에서)
+  // 이번달 역할별 계산 (settlements 목록에서) — 정산제외 건은 합계에서 제외
   const matchmakerSum = useMemo(() =>
-    settlements.filter(s => s.role === 'matchmaker' && isPending(s.status)).reduce((a, s) => a + (s.amount || 0), 0),
+    settlements.filter(s => s.role === 'matchmaker' && isPending(s.status) && !s.excluded).reduce((a, s) => a + (s.amount || 0), 0),
     [settlements]);
   const clientOwnerSum = useMemo(() =>
-    settlements.filter(s => s.role === 'client_owner' && isPending(s.status)).reduce((a, s) => a + (s.amount || 0), 0),
+    settlements.filter(s => s.role === 'client_owner' && isPending(s.status) && !s.excluded).reduce((a, s) => a + (s.amount || 0), 0),
     [settlements]);
 
   // 역할 필터 적용
@@ -599,13 +606,14 @@ function TxRow({ s, onClick }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
   const pending = isPending(s.status);
+  const excluded = s.excluded === true;
 
   const roleLabel = ROLE_LABEL[s.role] || s.role;
   const roleIsMatch = s.role === 'matchmaker';
   const roleIsClient = s.role === 'client_owner';
 
-  const roleBg = refund ? 'var(--rose-100)' : roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
-  const roleColor = refund ? 'var(--rose-600)' : roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
+  const roleBg = excluded ? 'var(--ink-100)' : refund ? 'var(--rose-100)' : roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
+  const roleColor = excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
   const badgeBg = roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
   const badgeColor = roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
 
@@ -613,7 +621,11 @@ function TxRow({ s, onClick }) {
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
   return (
-    <button className={styles.txRow} onClick={onClick}>
+    <button
+      className={styles.txRow}
+      onClick={onClick}
+      style={excluded ? { opacity: 0.55 } : undefined}
+    >
       <div className={styles.txRowIcon} style={{ background: roleBg, color: roleColor }}>
         {refund ? <X size={15} /> : <Heart size={15} />}
       </div>
@@ -623,29 +635,48 @@ function TxRow({ s, onClick }) {
           <span className={styles.txRoleBadge} style={{ background: badgeBg, color: badgeColor }}>
             {roleLabel}
           </span>
-          {pending && !refund && (
-            <span className={styles.txStatusBadge} style={{ background: 'var(--amber-100)', color: 'var(--amber-600)' }}>
-              대기
+          {excluded ? (
+            <span
+              className={styles.txStatusBadge}
+              style={{ background: 'var(--ink-100)', color: 'var(--ink-500)' }}
+            >
+              정산제외
             </span>
-          )}
-          {paid && (
-            <span className={styles.txStatusBadge} style={{ background: 'var(--mint-100)', color: 'var(--mint-600)' }}>
-              지급완료
-            </span>
-          )}
-          {refund && (
-            <span className={styles.txStatusBadge} style={{ background: 'var(--rose-100)', color: 'var(--rose-600)' }}>
-              환불 차감
-            </span>
+          ) : (
+            <>
+              {pending && !refund && (
+                <span className={styles.txStatusBadge} style={{ background: 'var(--amber-100)', color: 'var(--amber-600)' }}>
+                  대기
+                </span>
+              )}
+              {paid && (
+                <span className={styles.txStatusBadge} style={{ background: 'var(--mint-100)', color: 'var(--mint-600)' }}>
+                  지급완료
+                </span>
+              )}
+              {refund && (
+                <span className={styles.txStatusBadge} style={{ background: 'var(--rose-100)', color: 'var(--rose-600)' }}>
+                  환불 차감
+                </span>
+              )}
+            </>
           )}
         </div>
         <div className={styles.txRowMatch}>{matchLabel}</div>
         <div className={styles.txRowPayout}>
-          {paid ? `${payoutDate} 입금` : `${payoutDate} 입금 예정`}
+          {excluded
+            ? `정산 제외 · ${EXCLUSION_REASON_LABEL[s.exclusionReason] || s.exclusionReason || '사유 없음'}`
+            : paid ? `${payoutDate} 입금` : `${payoutDate} 입금 예정`}
         </div>
       </div>
 
-      <div className={styles.txRowAmount} style={{ color: refund ? 'var(--rose-600)' : 'var(--ink-900)' }}>
+      <div
+        className={styles.txRowAmount}
+        style={{
+          color: excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : 'var(--ink-900)',
+          textDecoration: excluded ? 'line-through' : 'none',
+        }}
+      >
         {(s.amount || 0) > 0 ? '+' : ''}{won(s.amount)}
         <span className={styles.txRowAmountUnit}>원</span>
       </div>
@@ -784,6 +815,7 @@ function RefundSheet({ onClose }) {
 function ReceiptSheet({ s, onClose }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
+  const excluded = s.excluded === true;
   const matchLabel = s.matchId ? `매칭 #${String(s.matchId).slice(-6)}` : '매칭';
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
@@ -791,18 +823,27 @@ function ReceiptSheet({ s, onClose }) {
     ['역할', ROLE_LABEL[s.role] || s.role],
     ['매칭', matchLabel],
     ['종료일', formatDateFull(s.matchEndedAt) || formatDateFull(s.createdAt)],
-    ['입금일', paid ? payoutDate : `${payoutDate} (예정)`],
-    ['상태', STATUS_LABEL[s.status] || s.status],
+    ['입금일', excluded ? '정산 제외' : paid ? payoutDate : `${payoutDate} (예정)`],
+    ['상태', excluded ? '정산제외' : (STATUS_LABEL[s.status] || s.status)],
   ];
+  if (excluded) {
+    rows.push(['제외 사유', EXCLUSION_REASON_LABEL[s.exclusionReason] || s.exclusionReason || '-']);
+  }
+
+  const statusLabel = excluded ? '정산 제외' : paid ? '지급 완료' : '지급 대기';
+  const statusColor = excluded ? 'var(--ink-500)' : paid ? 'var(--mint-600)' : 'var(--amber-600)';
 
   return (
     <SheetWrap onClose={onClose}>
-      <div className={styles.receiptStatusLabel} style={{ color: paid ? 'var(--mint-600)' : 'var(--amber-600)' }}>
-        {paid ? '지급 완료' : '지급 대기'}
+      <div className={styles.receiptStatusLabel} style={{ color: statusColor }}>
+        {statusLabel}
       </div>
       <div
         className={styles.receiptAmount}
-        style={{ color: refund ? 'var(--rose-600)' : 'var(--ink-900)' }}
+        style={{
+          color: excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : 'var(--ink-900)',
+          textDecoration: excluded ? 'line-through' : 'none',
+        }}
       >
         {(s.amount || 0) > 0 ? '+' : ''}{won(s.amount)}
         <span className={styles.receiptAmountUnit}>원</span>
@@ -819,6 +860,22 @@ function ReceiptSheet({ s, onClose }) {
           </div>
         ))}
       </div>
+
+      {excluded && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: '10px 12px',
+            borderRadius: 10,
+            background: 'var(--ink-50)',
+            color: 'var(--ink-600)',
+            fontSize: 12,
+            lineHeight: 1.5,
+          }}
+        >
+          이 결제는 정산 대상에서 제외되어 매니저 정산 금액에 포함되지 않습니다.
+        </div>
+      )}
 
       <button className={styles.sheetCancelBtn} onClick={onClose}>닫기</button>
     </SheetWrap>

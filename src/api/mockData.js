@@ -1457,6 +1457,15 @@ function computeSettlementsForMatch(m) {
   const createdAt = m.completedAt || m.meetingDate || m.createdAt;
   const rows = [];
   let idx = 0;
+  // 샘플 다양성: matchId 끝자리로 정산제외 케이스 생성
+  // - 끝자리 '3' → manual_confirm (수동 결제 확인 → 매칭 전체가 excluded)
+  // - 끝자리 '5' → zero_amount (0원 결제 → 매칭 전체가 excluded)
+  const lastChar = String(m.matchId).slice(-1);
+  let excluded = false;
+  let exclusionReason = null;
+  if (lastChar === '3') { excluded = true; exclusionReason = 'manual_confirm'; }
+  else if (lastChar === '5') { excluded = true; exclusionReason = 'zero_amount'; }
+
   for (const [managerId, share] of shares) {
     const mgr = managerMap[managerId] || { id: managerId, name: '알 수 없음' };
     const isOwner = managerId === ownerAId || managerId === ownerBId;
@@ -1466,6 +1475,10 @@ function computeSettlementsForMatch(m) {
     else if (isOwner) role = 'client_owner';
     else role = 'matchmaker';
     const { status: stlStatus, matchEndedAt, settledAt } = deriveSettlementStatus(m);
+    // excluded는 ready_to_settle / settled 로 전이 안 됨 — confirmed에서 멈춤
+    const finalStatus = excluded && (stlStatus === 'ready_to_settle' || stlStatus === 'settled')
+      ? 'confirmed'
+      : stlStatus;
     rows.push({
       id: `stl-${m.matchId}-${idx++}`,
       matchId: m.matchId,
@@ -1475,8 +1488,10 @@ function computeSettlementsForMatch(m) {
       share,
       baseAmount,
       amount: Math.floor((baseAmount * share) / 10),
-      status: stlStatus,
-      settledAt,
+      status: finalStatus,
+      excluded,
+      exclusionReason,
+      settledAt: excluded ? null : settledAt,
       settledById: null,
       memo: null,
       createdAt,
@@ -2783,7 +2798,7 @@ export async function mockFetch(path, options = {}) {
       byDate[date].count += 1;
       byDate[date].totalAmount += s.amount;
       if (s.status === 'settled' || s.status === 'paid') byDate[date].paidAmount += s.amount;
-      else if (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle') byDate[date].pendingAmount += s.amount;
+      else if (!s.excluded && (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle')) byDate[date].pendingAmount += s.amount;
     }
     return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
   }
@@ -2802,7 +2817,7 @@ export async function mockFetch(path, options = {}) {
       byMonth[month].count += 1;
       byMonth[month].totalAmount += s.amount;
       if (s.status === 'settled' || s.status === 'paid') byMonth[month].paidAmount += s.amount;
-      else if (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle') byMonth[month].pendingAmount += s.amount;
+      else if (!s.excluded && (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle')) byMonth[month].pendingAmount += s.amount;
     }
     return { year, items: Object.values(byMonth).sort((a, b) => a.month - b.month) };
   }
@@ -2823,6 +2838,9 @@ export async function mockFetch(path, options = {}) {
     const all = buildAllSettlements();
     const target = all.find((s) => s.id === id);
     if (!target) throw Object.assign(new Error('정산 내역을 찾을 수 없습니다.'), { status: 404, body: { error: 'SETTLEMENT_NOT_FOUND' } });
+    if (target.excluded) {
+      throw Object.assign(new Error('정산제외 건은 지급 처리할 수 없습니다.'), { status: 400, body: { errorCode: '11.003', error: 'SETTLEMENT_EXCLUDED' } });
+    }
     if (target.status === 'settled' || target.status === 'paid') {
       throw Object.assign(new Error('이미 정산 완료된 건입니다.'), { status: 409, body: { error: 'SETTLEMENT_INVALID_STATUS' } });
     }
