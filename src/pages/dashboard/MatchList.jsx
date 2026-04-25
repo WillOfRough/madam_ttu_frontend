@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Heart, Plus, Search, X, ChevronDown, ChevronUp,
   AlertTriangle, UserRound, Info, ArrowRight, ChevronRight,
+  Sparkles, SlidersHorizontal, ArrowUpRight, ChevronLeft,
 } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import useAuthStore from '../../store/authStore';
+import useClientListStore from '../../store/clientListStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
+import { scorePair, topPairs, topChips } from './matchScore';
 import styles from './MatchList.module.css';
 
 /* ─── Stage config ─── */
@@ -52,6 +56,27 @@ const STATUS_STEP_LABELS = {
   completed: '미팅 완료',
   cancelled: '매칭 종료',
 };
+
+/* ─── Filter chips config ─── */
+const STATUS_CHIPS = [
+  { value: 'todo',              label: '매니저 할일' },
+  { value: 'active',            label: '진행중 전체' },
+  { value: 'draft',             label: '대기중' },
+  { value: 'proposal_sent',     label: '제안발송' },
+  { value: 'proposal_accepted', label: '상대수락' },
+  { value: 'awaiting_payment',  label: '입금대기' },
+  { value: 'scheduling',        label: '일정조율' },
+  { value: 'arranging',         label: '조율확정' },
+  { value: 'scheduled',         label: '약속확정' },
+  { value: 'completed',         label: '완료' },
+  { value: 'cancelled',         label: '취소' },
+];
+
+const AFTER_CHIPS = [
+  { value: 'pending',  label: '응답 대기' },
+  { value: 'accepted', label: '성사' },
+  { value: 'rejected', label: '미성사' },
+];
 
 function formatDate(iso) {
   if (!iso) return '-';
@@ -162,6 +187,190 @@ function MatchCard({ match, onClick }) {
   );
 }
 
+/* ─── RecommendedPairsCompact ─── */
+function SignalBar({ score, max }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const color = pct >= 70 ? 'var(--mint-600)' : pct >= 40 ? 'var(--tangerine-600)' : 'var(--ink-200)';
+  return (
+    <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'var(--ink-100)', overflow: 'hidden' }}>
+      <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2, transition: 'width 0.4s ease' }} />
+    </div>
+  );
+}
+
+function PairCard({ pair, onCreateMatch }) {
+  const [expanded, setExpanded] = useState(false);
+  const { a, b, total, signals } = pair;
+  const chips = topChips(signals, 3);
+  const nameA = a.name || a.nickname || '?';
+  const nameB = b.name || b.nickname || '?';
+  const genderA = (a.gender || 'male').toLowerCase();
+  const genderB = (b.gender || 'female').toLowerCase();
+
+  return (
+    <div className={styles.pairCard}>
+      <div className={styles.pairCardRow} onClick={() => setExpanded((v) => !v)}>
+        {/* Avatars */}
+        <div style={{ display: 'flex', flexShrink: 0 }}>
+          <MiniAvatar name={nameA} gender={genderA} size={30} />
+          <div style={{ marginLeft: -8, borderRadius: '50%', border: '1.5px solid var(--paper-card)' }}>
+            <MiniAvatar name={nameB} gender={genderB} size={30} />
+          </div>
+        </div>
+        {/* Names + chips */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className={styles.pairNames}>
+            {nameA}
+            <span className={styles.pairArrow}>↔</span>
+            {nameB}
+          </div>
+          {chips.length > 0 && (
+            <div className={styles.pairChips}>
+              {chips.map((c, i) => (
+                <span key={i} className={styles.pairChip}>{c}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* Score */}
+        <div className={styles.pairScore}>
+          <span className={styles.pairScoreNum}>{total}</span>
+          <span className={styles.pairScoreMax}>/100</span>
+        </div>
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
+          color="var(--ink-300)"
+          style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
+        />
+      </div>
+
+      {/* Expanded signals */}
+      {expanded && (
+        <div className={styles.pairSignals}>
+          {signals.filter((s) => s.max > 0).map((s) => (
+            <div key={s.key} className={styles.pairSignalRow}>
+              <span className={styles.pairSignalLabel}>{s.label}</span>
+              <SignalBar score={s.score} max={s.max} />
+              <span className={styles.pairSignalScore}>{s.score}<span style={{ color: 'var(--ink-300)' }}>/{s.max}</span></span>
+              {s.detail && <span className={styles.pairSignalDetail}>{s.detail}</span>}
+            </div>
+          ))}
+          <button
+            className={styles.pairMatchBtn}
+            onClick={(e) => { e.stopPropagation(); onCreateMatch(a.id, b.id); }}
+            type="button"
+          >
+            <Heart size={12} strokeWidth={2} />
+            이 두 분 매칭하기
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecommendedPairsCompact({ clients, onCreateMatch }) {
+  const [open, setOpen] = useState(false);
+  const pairs = useMemo(() => topPairs(clients, 3), [clients]);
+
+  if (pairs.length === 0) return null;
+
+  return (
+    <div className={styles.recSection}>
+      <button
+        className={styles.recToggle}
+        onClick={() => setOpen((v) => !v)}
+        type="button"
+        aria-expanded={open}
+      >
+        <Sparkles size={13} strokeWidth={2} color="var(--tangerine-600)" />
+        <span className={styles.recToggleLabel}>오늘의 추천 매칭</span>
+        <span className={styles.recCount}>{pairs.length}쌍</span>
+        <div style={{ flex: 1 }} />
+        {open
+          ? <ChevronUp size={14} strokeWidth={2} color="var(--ink-400)" />
+          : <ChevronDown size={14} strokeWidth={2} color="var(--ink-400)" />}
+      </button>
+      {open && (
+        <div className={styles.recContent}>
+          {pairs.map((pair, i) => (
+            <PairCard key={i} pair={pair} onCreateMatch={onCreateMatch} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── TodoGroups ─── */
+const TODO_GROUPS = [
+  {
+    key: 'now',
+    label: '🔥 지금 바로',
+    tone: 'rose',
+    fg: '#B13149',
+    bg: 'var(--rose-100)',
+    filter: (m) => m.status === 'awaiting_payment' || m.status === 'draft',
+  },
+  {
+    key: 'today',
+    label: '오늘 중',
+    tone: 'amber',
+    fg: '#9A5E0E',
+    bg: 'var(--amber-100)',
+    filter: (m) =>
+      m.status === 'arranging' ||
+      (m.status === 'completed' && (!m.afterStatus || m.afterStatus === 'pending')),
+  },
+  {
+    key: 'soon',
+    label: '곧',
+    tone: 'tangerine',
+    fg: 'var(--tangerine-700)',
+    bg: 'var(--tangerine-100)',
+    filter: (m) =>
+      m.status === 'scheduling' || m.status === 'scheduled' || m.status === 'proposal_sent',
+  },
+];
+
+function TodoGroups({ matches, onMatch }) {
+  return (
+    <div className={styles.todoGroups}>
+      {TODO_GROUPS.map((group) => {
+        const items = matches.filter(group.filter);
+        if (items.length === 0) return null;
+        return (
+          <div key={group.key} className={styles.todoGroup}>
+            <div className={styles.todoGroupHeader}>
+              <span className={styles.todoGroupLabel} style={{ color: group.fg }}>{group.label}</span>
+              <div className={styles.todoGroupDivider} />
+              <span className={styles.todoGroupCount} style={{ background: group.bg, color: group.fg }}>
+                {items.length}건
+              </span>
+            </div>
+            <div className={styles.cardList}>
+              {items.map((m) => (
+                <MatchCard
+                  key={m.matchId}
+                  match={m}
+                  onClick={() => {
+                    if (m.accessible === false) {
+                      toast.info('연결된 매니저의 매칭입니다. 열람 권한이 없습니다.');
+                      return;
+                    }
+                    onMatch(m.matchId);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ─── Tab bar ─── */
 const TABS = [
   { k: 'todo',     label: '할 일' },
@@ -178,6 +387,171 @@ const TAB_STATUS_MAP = {
   all:      null,
 };
 
+/* ─── iOS Toggle ─── */
+function IOSToggle({ checked, onChange }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`${styles.iosToggle} ${checked ? styles.iosToggleOn : ''}`}
+    >
+      <span className={styles.iosThumb} />
+    </button>
+  );
+}
+
+/* ─── Filter Bottom Sheet ─── */
+function FilterSheet({ open, onClose, filters, setFilter, myManagerId, onlyMine, setOnlyMine, totalCount }) {
+  // Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+
+  // Prevent body scroll while open (preserve original value)
+  useEffect(() => {
+    if (!open) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [open]);
+
+  if (!open) return null;
+
+  const currentStatus = filters.status || null;
+
+  const handleStatusChip = (value) => {
+    setFilter('status', currentStatus === value ? null : value);
+  };
+
+  const handleAfterChip = (value) => {
+    setFilter('status', currentStatus === value ? null : value);
+  };
+
+  const handleOnlyMineToggle = (checked) => {
+    setOnlyMine(checked);
+    setFilter('managerId', checked && myManagerId ? myManagerId : '');
+  };
+
+  const handleReset = () => {
+    setFilter('status', null);
+    setFilter('managerId', '');
+    setOnlyMine(false);
+  };
+
+  const afterChipValues = AFTER_CHIPS.map((c) => c.value);
+  const isAfterStatus = afterChipValues.includes(currentStatus);
+
+  return createPortal(
+    <div
+      className={styles.sheetOverlay}
+      onClick={onClose}
+    >
+      <div
+        className={styles.sheet}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="filter-sheet-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div className={styles.sheetHandle} />
+
+        {/* Title */}
+        <h2 id="filter-sheet-title" className={styles.sheetTitle}>필터</h2>
+
+        {/* Section 1: 상태 */}
+        <div className={styles.sheetSection}>
+          <span className={styles.sheetKicker}>매칭 상태</span>
+          <div className={styles.chipGrid}>
+            {STATUS_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                aria-pressed={currentStatus === chip.value}
+                className={`${styles.filterChip} ${currentStatus === chip.value && !isAfterStatus ? styles.filterChipActive : ''}`}
+                onClick={() => handleStatusChip(chip.value)}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 2: 에프터 */}
+        <div className={styles.sheetSection}>
+          <span className={styles.sheetKicker}>에프터</span>
+          <div className={styles.chipRow}>
+            {AFTER_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                type="button"
+                aria-pressed={currentStatus === chip.value}
+                className={`${styles.filterChip} ${currentStatus === chip.value ? styles.filterChipActive : ''}`}
+                onClick={() => handleAfterChip(chip.value)}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 3: 특수 필터 */}
+        <div className={styles.sheetSection}>
+          <span className={styles.sheetKicker}>특수 필터</span>
+          <div className={styles.chipRow}>
+            <button
+              type="button"
+              aria-pressed={currentStatus === 'has_deleted_member'}
+              className={`${styles.filterChip} ${currentStatus === 'has_deleted_member' ? styles.filterChipActive : ''}`}
+              onClick={() => handleStatusChip('has_deleted_member')}
+            >
+              삭제 회원 포함
+            </button>
+          </div>
+        </div>
+
+        {/* Section 4: 담당자 */}
+        {myManagerId && (
+          <div className={styles.sheetSection}>
+            <span className={styles.sheetKicker}>담당자</span>
+            <div className={styles.toggleRow}>
+              <div className={styles.toggleRowText}>
+                <span className={styles.toggleLabel}>내 매칭만 보기</span>
+                <span className={styles.toggleDesc}>내가 담당한 매칭만 표시돼요</span>
+              </div>
+              <IOSToggle checked={onlyMine} onChange={handleOnlyMineToggle} />
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className={styles.sheetFooter}>
+          <button
+            type="button"
+            className={styles.sheetResetBtn}
+            onClick={handleReset}
+          >
+            초기화
+          </button>
+          <button
+            type="button"
+            className={styles.sheetApplyBtn}
+            onClick={onClose}
+          >
+            적용 ({totalCount})
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 /* ═══════════════════════════════════════════════
    MatchList
 ═══════════════════════════════════════════════ */
@@ -186,12 +560,16 @@ export default function MatchList() {
           setFilter, setFilters, setPage, fetchMatches } = useMatchStore();
   const navigate      = useNavigate();
   const myManagerId   = useAuthStore((s) => s.managerId);
+  const { clients: storeClients } = useClientListStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate,   setShowCreate]   = useState(false);
   const [searchInput,  setSearchInput]  = useState(filters.clientName || '');
   const [onlyMine,     setOnlyMine]     = useState(Boolean(myManagerId));
-  const [showGuide,    setShowGuide]    = useState(false);
   const [activeTab,    setActiveTab]    = useState('all');
+  const [allClients,   setAllClients]   = useState([]);
+  const [searchOpen,   setSearchOpen]   = useState(false);
+  const [filterOpen,   setFilterOpen]   = useState(false);
+  const searchInputRef = useRef(null);
 
   /* URL param + manager default */
   useEffect(() => {
@@ -206,6 +584,21 @@ export default function MatchList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* Load clients for recommended-pairs scoring */
+  useEffect(() => {
+    if (storeClients.length > 0) {
+      setAllClients(storeClients);
+    } else {
+      clientService.listClients({ limit: 200, approval: 'approved', status: 'active' })
+        .then((res) => {
+          const list = res.data || res.clients || res;
+          if (Array.isArray(list)) setAllClients(list);
+        })
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeClients.length]);
+
   /* Debounce search → clientName filter */
   useEffect(() => {
     const h = setTimeout(() => {
@@ -218,16 +611,42 @@ export default function MatchList() {
     fetchMatches();
   }, [page, filters, fetchMatches]);
 
-  const handleOnlyMineToggle = (e) => {
-    const checked = e.target.checked;
-    setOnlyMine(checked);
-    setFilter('managerId', checked && myManagerId ? myManagerId : '');
-  };
+  /* Auto-focus search input when panel opens */
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setFilter('status', TAB_STATUS_MAP[tab]);
   };
+
+  /* Toggle search panel — close filter if open */
+  const toggleSearch = () => {
+    setFilterOpen(false);
+    setSearchOpen((v) => {
+      if (v) {
+        // closing — clear input
+        setSearchInput('');
+        setFilter('clientName', '');
+      }
+      return !v;
+    });
+  };
+
+  /* Toggle filter sheet — close search if open */
+  const toggleFilter = () => {
+    setSearchOpen(false);
+    setFilterOpen((v) => !v);
+  };
+
+  /* Stable close handler for FilterSheet — prevents effect re-registration on every render */
+  const handleFilterSheetClose = useCallback(() => setFilterOpen(false), []);
+
+  /* Is any filter non-default? */
+  const hasActiveFilter = Boolean(filters.status) || Boolean(filters.managerId);
 
   const totalPages = Math.ceil(totalCount / size);
 
@@ -237,134 +656,115 @@ export default function MatchList() {
       {/* ── Title row ── */}
       <div className={styles.titleRow}>
         <h1 className={styles.title}>매칭</h1>
-        <button
-          className={styles.createBtn}
-          onClick={() => setShowCreate(true)}
-          type="button"
-          aria-label="새 매칭 생성"
-        >
-          <Plus size={15} strokeWidth={2.5} />
-          새 매칭
-        </button>
+
+        <div className={styles.titleActions}>
+          {/* Guide link */}
+          <button
+            type="button"
+            className={styles.guideLink}
+            onClick={() => navigate('/dashboard/guide')}
+            aria-label="매칭 프로세스 가이드"
+          >
+            가이드 보기
+            <ArrowUpRight size={12} strokeWidth={2.5} />
+          </button>
+
+          {/* Search icon button */}
+          <button
+            type="button"
+            className={`${styles.iconBtn} ${searchOpen ? styles.iconBtnActive : ''}`}
+            onClick={toggleSearch}
+            aria-label="회원 이름 검색"
+            aria-pressed={searchOpen}
+          >
+            <Search size={16} strokeWidth={2} />
+          </button>
+
+          {/* Filter icon button */}
+          <div className={styles.iconBtnWrap}>
+            <button
+              type="button"
+              className={`${styles.iconBtn} ${filterOpen ? styles.iconBtnActive : ''}`}
+              onClick={toggleFilter}
+              aria-label="필터"
+              aria-pressed={filterOpen}
+            >
+              <SlidersHorizontal size={16} strokeWidth={2} />
+            </button>
+            {hasActiveFilter && <span className={styles.filterDot} aria-hidden="true" />}
+          </div>
+
+          {/* New match CTA */}
+          <button
+            className={styles.createBtn}
+            onClick={() => setShowCreate(true)}
+            type="button"
+            aria-label="새 매칭 생성"
+          >
+            <Plus size={15} strokeWidth={2.5} />
+            새 매칭
+          </button>
+        </div>
       </div>
+
+      {/* ── Inline search panel ── */}
+      {searchOpen && (
+        <div className={styles.searchPanel}>
+          <div className={styles.searchPillBox}>
+            <Search size={14} className={styles.searchPillIcon} strokeWidth={2} />
+            <input
+              ref={searchInputRef}
+              className={styles.searchPillInput}
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="회원 이름 검색…"
+              aria-label="회원 이름으로 검색"
+            />
+            {searchInput && (
+              <button
+                className={styles.searchPillClear}
+                onClick={() => setSearchInput('')}
+                type="button"
+                aria-label="검색어 지우기"
+              >
+                <X size={13} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Tabs ── */}
       <div className={styles.tabs} role="tablist" aria-label="매칭 필터 탭">
-        {TABS.map((tab) => (
-          <button
-            key={tab.k}
-            role="tab"
-            aria-selected={activeTab === tab.k}
-            className={`${styles.tab}${activeTab === tab.k ? ` ${styles.tabActive}` : ''}`}
-            onClick={() => handleTabChange(tab.k)}
-            type="button"
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Search + filters ── */}
-      <div className={styles.filters}>
-        <div className={styles.searchBox}>
-          <Search size={14} className={styles.searchIcon} strokeWidth={2} />
-          <input
-            className={styles.searchInput}
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="회원 이름 검색…"
-            aria-label="회원 이름으로 검색"
-          />
-          {searchInput && (
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.k;
+          return (
             <button
-              className={styles.searchClear}
-              onClick={() => setSearchInput('')}
+              key={tab.k}
+              role="tab"
+              aria-selected={isActive}
+              className={`${styles.tab}${isActive ? ` ${styles.tabActive}` : ''}`}
+              onClick={() => handleTabChange(tab.k)}
               type="button"
-              aria-label="검색어 지우기"
             >
-              <X size={13} strokeWidth={2} />
+              {tab.label}
+              {isActive && totalCount > 0 && (
+                <span className={styles.tabBadge}>{totalCount}</span>
+              )}
             </button>
-          )}
-        </div>
-
-        <select
-          className={styles.filterSelect}
-          value={filters.status || ''}
-          onChange={(e) => setFilter('status', e.target.value || null)}
-          aria-label="상태 필터"
-        >
-          <option value="">상태 전체</option>
-          <option value="todo">매니저 할일</option>
-          <option value="active">진행중 전체</option>
-          <option value="draft">대기중</option>
-          <option value="proposal_sent">제안발송</option>
-          <option value="proposal_accepted">상대수락</option>
-          <option value="awaiting_payment">입금대기</option>
-          <option value="scheduling">일정조율</option>
-          <option value="arranging">조율확정</option>
-          <option value="scheduled">약속확정</option>
-          <option value="completed">완료</option>
-          <option value="cancelled">취소</option>
-          <option value="has_deleted_member">삭제 회원 포함</option>
-          <optgroup label="에프터">
-            <option value="pending">에프터 응답 대기</option>
-            <option value="accepted">에프터 성사</option>
-            <option value="rejected">에프터 미성사</option>
-          </optgroup>
-        </select>
-
-        {myManagerId && (
-          <label className={styles.myMatchCheckbox}>
-            <input
-              type="checkbox"
-              checked={onlyMine}
-              onChange={handleOnlyMineToggle}
-              aria-label="내 매칭만 보기"
-            />
-            내 매칭만
-          </label>
-        )}
+          );
+        })}
       </div>
 
-      {/* ── Process guide (collapsible) ── */}
-      <div className={styles.guideSection}>
-        <button
-          className={styles.guideToggle}
-          onClick={() => setShowGuide((v) => !v)}
-          type="button"
-          aria-expanded={showGuide}
-        >
-          <span>매칭 프로세스 안내</span>
-          {showGuide ? <ChevronUp size={14} strokeWidth={2} /> : <ChevronDown size={14} strokeWidth={2} />}
-        </button>
-        {showGuide && (
-          <div className={styles.guideContent}>
-            <div className={styles.guideSteps}>
-              {[
-                { title: '매칭 생성',   desc: '회원 A, B를 선택하여 매칭을 만듭니다.' },
-                { title: 'A 프로필 확인', desc: 'A에게 프로포절 링크를 전달합니다. A가 수락해야 B에게 전달됩니다.' },
-                { title: 'B 프로필 확인', desc: 'A 수락 후 B에게 프로포절 링크를 전달합니다. B도 수락하면 매칭 성사.' },
-                { title: '입금 확인',   desc: '양쪽 수락 후 입금을 안내하고, 확인되면 입금 확인 버튼을 눌러주세요.' },
-                { title: '일정 조율',   desc: '양쪽에 가용시간 등록 링크를 전달합니다.' },
-                { title: '매니저 확정', desc: '양쪽 가용시간 등록 완료 후 공통 시간을 선택합니다.' },
-                { title: '약속 확정',   desc: '장소를 입력하면 약속이 확정됩니다. 양측에 안내합니다.' },
-                { title: '미팅 완료',   desc: '만남 후 매니저가 완료 처리합니다.' },
-                { title: '에프터',      desc: '에프터 링크를 전달하여 "다시 만나고 싶은지" 응답을 받습니다.' },
-                { title: '성사 결과',   desc: '양쪽 OK이면 연락처 공개, 한쪽 거절이면 미성사 안내.' },
-              ].map((step, idx) => (
-                <div key={step.title} className={styles.guideStep}>
-                  <span className={styles.guideNum}>{idx + 1}</span>
-                  <div>
-                    <strong>{step.title}</strong>
-                    <p>{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      {/* ── Recommended pairs (below tab strip, always visible) ── */}
+      <RecommendedPairsCompact
+        clients={allClients}
+        onCreateMatch={(aId, bId) => {
+          setSearchParams({ create: '1', clientA: aId, clientB: bId });
+          setShowCreate(true);
+        }}
+      />
 
       {/* ── Error ── */}
       {error && (
@@ -385,6 +785,14 @@ export default function MatchList() {
               : '매칭 내역이 없습니다.'}
           </p>
         </div>
+      ) : activeTab === 'todo' ? (
+        <>
+          <TodoGroups
+            matches={matches}
+            onMatch={(matchId) => navigate(`/dashboard/matches/${matchId}`)}
+          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       ) : (
         <>
           <div className={styles.cardList}>
@@ -409,11 +817,25 @@ export default function MatchList() {
         </>
       )}
 
+      {/* ── Filter Bottom Sheet ── */}
+      <FilterSheet
+        open={filterOpen}
+        onClose={handleFilterSheetClose}
+        filters={filters}
+        setFilter={setFilter}
+        myManagerId={myManagerId}
+        onlyMine={onlyMine}
+        setOnlyMine={setOnlyMine}
+        totalCount={totalCount}
+      />
+
       {/* ── Create Modal ── */}
       {showCreate && (
         <CreateMatchModal
           onClose={() => setShowCreate(false)}
           onCreated={() => { setShowCreate(false); fetchMatches(); }}
+          initialClientAId={searchParams.get('clientA')}
+          initialClientBId={searchParams.get('clientB')}
         />
       )}
     </div>
@@ -421,107 +843,207 @@ export default function MatchList() {
 }
 
 /* ═══════════════════════════════════════════════
-   ClientSlot — search + selected state
+   CreateMatchModal — 3-step wizard
 ═══════════════════════════════════════════════ */
-function ClientSlot({ client, side, onRemove, searchQuery, onSearchChange, onFocus, searchResults, onSelect, excludeId }) {
-  const sideLabel = side === 'A' ? 'A' : 'B';
+
+/* Gender chip */
+function GenderChip({ gender }) {
+  const isMale = gender === 'male';
   return (
-    <div className={`${styles.clientSlot} ${client ? styles.clientSlotFilled : ''}`}>
-      <div className={styles.slotHeader}>
-        <span className={styles.slotBadge}>{sideLabel}</span>
-        {client && (
-          <button className={styles.slotRemove} onClick={onRemove} type="button" aria-label="제거">
-            <X size={14} strokeWidth={2} />
-          </button>
-        )}
-      </div>
-      {client ? (
-        <div className={styles.slotBody}>
-          <span className={styles.slotName}>
-            {client.name || client.nickname}
-            {client.nickname && client.name && (
-              <span className={styles.slotNickname}>{client.nickname}</span>
-            )}
-          </span>
-          <div className={styles.slotMeta}>
-            <span className={client.gender === 'female' ? styles.slotGenderFemale : styles.slotGenderMale}>
-              {client.gender === 'female' ? '여' : '남'}
-            </span>
-            {client.occupation && <span className={styles.slotOccupation}>{client.occupation}</span>}
-          </div>
-        </div>
-      ) : (
-        <div className={styles.slotBody}>
-          <div className={styles.slotSearchWrap}>
-            {!searchQuery && (
-              <Search className={styles.slotSearchIcon} size={15} strokeWidth={1.8} />
-            )}
-            <input
-              className={styles.slotSearchInput}
-              value={searchQuery}
-              onChange={onSearchChange}
-              onFocus={onFocus}
-              placeholder=""
-              aria-label={`${sideLabel} 회원 검색`}
-            />
-            {searchResults.length > 0 && (
-              <div className={styles.slotDropdown}>
-                {searchResults.filter((c) => c.id !== excludeId).map((c) => (
-                  <div key={c.id} className={styles.slotDropdownItem} onClick={() => onSelect(c)}>
-                    <div className={styles.dropdownInfo}>
-                      <span className={styles.dropdownName}>
-                        {c.name || c.nickname}
-                        {c.nickname && c.name && (
-                          <span className={styles.dropdownNickname}>{c.nickname}</span>
-                        )}
-                      </span>
-                      <span className={styles.dropdownMeta}>
-                        {c.gender === 'female' ? '여' : '남'} · {c.occupation || '-'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+    <span
+      className={styles.wizGenderChip}
+      style={{
+        background: isMale ? 'var(--male-100)' : 'var(--female-100)',
+        color: isMale ? 'var(--male)' : 'var(--female)',
+      }}
+    >
+      {isMale ? '남' : '여'}
+    </span>
+  );
+}
+
+/* Step dots indicator */
+function StepIndicator({ step }) {
+  return (
+    <div className={styles.wizStepDots} aria-hidden="true">
+      {[1, 2, 3].map((s) => (
+        <div
+          key={s}
+          className={`${styles.wizStepDot} ${s <= step ? styles.wizStepDotFilled : ''}`}
+        />
+      ))}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   CreateMatchModal — all existing logic preserved
-═══════════════════════════════════════════════ */
-function CreateMatchModal({ onClose, onCreated }) {
+/* Client result row used in both Step 1 and Step 2 */
+function ClientResultRow({ client, score, chips, onClick }) {
+  const name = client.name || client.nickname || '?';
+  const nick = client.nickname && client.name ? client.nickname : null;
+  return (
+    <button
+      type="button"
+      className={styles.wizResultRow}
+      onClick={onClick}
+    >
+      <MiniAvatar name={name} gender={client.gender} size={36} />
+      <div className={styles.wizResultInfo}>
+        <div className={styles.wizResultNameRow}>
+          <span className={styles.wizResultName}>{name}</span>
+          {nick && <span className={styles.wizResultNick}>{nick}</span>}
+          <GenderChip gender={client.gender} />
+        </div>
+        <div className={styles.wizResultMeta}>
+          {client.age && <span>{client.age}세</span>}
+          {client.age && client.occupation && <span className={styles.wizMetaDot}>·</span>}
+          {client.occupation && <span>{client.occupation}</span>}
+        </div>
+        {chips && chips.length > 0 && (
+          <div className={styles.wizResultChips}>
+            {chips.map((c, i) => (
+              <span key={i} className={styles.wizResultChip}>{c}</span>
+            ))}
+          </div>
+        )}
+      </div>
+      {score != null && (
+        <div className={styles.wizScoreBadge}>
+          <span className={styles.wizScoreNum}>{score}</span>
+        </div>
+      )}
+      <ChevronRight size={14} strokeWidth={2} color="var(--ink-300)" />
+    </button>
+  );
+}
+
+/* Selected client card (shown at top of step when already chosen) */
+function SelectedClientCard({ client, label, onClear }) {
+  const name = client.name || client.nickname || '?';
+  const nick = client.nickname && client.name ? client.nickname : null;
+  return (
+    <div className={styles.wizSelectedCard}>
+      <div className={styles.wizSelectedBadge}>{label}</div>
+      <MiniAvatar name={name} gender={client.gender} size={40} />
+      <div className={styles.wizSelectedInfo}>
+        <div className={styles.wizSelectedNameRow}>
+          <span className={styles.wizSelectedName}>{name}</span>
+          {nick && <span className={styles.wizSelectedNick}>{nick}</span>}
+          <GenderChip gender={client.gender} />
+        </div>
+        <div className={styles.wizSelectedMeta}>
+          {client.age && <span>{client.age}세</span>}
+          {client.age && client.occupation && <span className={styles.wizMetaDot}>·</span>}
+          {client.occupation && <span>{client.occupation}</span>}
+        </div>
+      </div>
+      <button
+        type="button"
+        className={styles.wizSelectedChange}
+        onClick={onClear}
+        aria-label="변경"
+      >
+        변경
+      </button>
+    </div>
+  );
+}
+
+/* Comparison table row */
+function CompareRow({ label, valA, valB }) {
+  if (!valA && !valB) return null;
+  return (
+    <div className={styles.compareRow}>
+      <span className={styles.compareLabel}>{label}</span>
+      <span className={styles.compareValA}>{valA || '-'}</span>
+      <span className={styles.compareValB}>{valB || '-'}</span>
+    </div>
+  );
+}
+
+function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientBId }) {
+  const [step,           setStep]           = useState(1);
   const [clientA,        setClientA]        = useState(null);
   const [clientB,        setClientB]        = useState(null);
   const [note,           setNote]           = useState('');
   const [searchQuery,    setSearchQuery]    = useState('');
   const [searchResults,  setSearchResults]  = useState([]);
-  const [selectingFor,   setSelectingFor]   = useState('A');
   const [submitting,     setSubmitting]     = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
   const [activeMatches,  setActiveMatches]  = useState({ A: [], B: [], deletedA: [], deletedB: [] });
   const [pairHistory,    setPairHistory]    = useState([]);
+  /* prefill resolution tracking (internal only) */
+  const prefillResolvedRef = useRef(false);
   const navigate = useNavigate();
+  const searchInputRef = useRef(null);
 
+  /* ── Prefill from URL params ── */
+  useEffect(() => {
+    const resolveIds = async () => {
+      if (!initialClientAId && !initialClientBId) {
+        prefillResolvedRef.current = true;
+        return;
+      }
+      try {
+        const [resA, resB] = await Promise.all([
+          initialClientAId ? clientService.getClientDetail(initialClientAId).catch(() => null) : Promise.resolve(null),
+          initialClientBId ? clientService.getClientDetail(initialClientBId).catch(() => null) : Promise.resolve(null),
+        ]);
+        const normalise = (res) => {
+          if (!res) return null;
+          const c = res.data || res;
+          if (!c || !c.id) return null;
+          return {
+            id: c.id || c.clientId,
+            name: c.name || c.clientName,
+            nickname: c.nickname || c.clientNickname,
+            gender: c.gender || c.clientGender,
+            age: c.age || c.clientAge,
+            occupation: c.occupation,
+            status: c.status || 'active',
+          };
+        };
+        const cA = normalise(resA);
+        const cB = normalise(resB);
+        if (cA) { setClientA(cA); }
+        if (cB) { setClientB(cB); }
+        // Decide starting step
+        if (cA && cB) { setStep(3); }
+        else if (cA)  { setStep(2); }
+        else          { setStep(1); }
+      } catch {
+        // ignore
+      }
+      prefillResolvedRef.current = true;
+    };
+    resolveIds();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── Search ── */
   useEffect(() => {
     if (searchQuery.length >= 1) {
       const params = { name: searchQuery, limit: 10, approval: 'approved', status: 'active' };
-      const selectedClient = selectingFor === 'B' ? clientA : clientB;
-      if (selectedClient?.gender) {
-        params.gender = selectedClient.gender === 'female' ? 'male' : 'female';
+      if (step === 2 && clientA?.gender) {
+        params.gender = clientA.gender === 'female' ? 'male' : 'female';
       }
       clientService.listClients(params).then((res) => {
         const list = res.data || res.clients || res;
-        setSearchResults(list);
-      });
+        setSearchResults(Array.isArray(list) ? list : []);
+      }).catch(() => setSearchResults([]));
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery, selectingFor, clientA, clientB]);
+  }, [searchQuery, step, clientA]);
 
+  /* Auto-focus search on step mount */
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchInputRef.current) searchInputRef.current.focus();
+    }, 80);
+    return () => clearTimeout(t);
+  }, [step]);
+
+  /* ── Duplicate / history / active-match checks ── */
   useEffect(() => {
     if (!clientA && !clientB) {
       setDuplicateMatch(null);
@@ -594,17 +1116,22 @@ function CreateMatchModal({ onClose, onCreated }) {
     return () => { cancelled = true; };
   }, [clientA, clientB]);
 
-  const handleSelect = (client) => {
-    if (selectingFor === 'A') {
-      setClientA(client);
-      setSelectingFor('B');
-    } else {
-      setClientB(client);
-    }
+  /* ── Select handlers ── */
+  const selectA = (client) => {
+    setClientA(client);
     setSearchQuery('');
     setSearchResults([]);
+    setStep(2);
   };
 
+  const selectB = (client) => {
+    setClientB(client);
+    setSearchQuery('');
+    setSearchResults([]);
+    setStep(3);
+  };
+
+  /* ── Submit ── */
   const handleSubmit = async () => {
     if (!clientA || !clientB || duplicateMatch) return;
     if ((clientA.status || 'active') !== 'active' || (clientB.status || 'active') !== 'active') {
@@ -622,171 +1149,372 @@ function CreateMatchModal({ onClose, onCreated }) {
     setSubmitting(false);
   };
 
-  const bothSelected = clientA && clientB;
+  /* ── Score B-side results ── */
+  const scoredResults = useMemo(() => {
+    if (step !== 2 || !clientA) return searchResults.map((c) => ({ client: c, score: null, chips: [] }));
+    return searchResults.map((c) => {
+      try {
+        const { total, signals } = scorePair(clientA, c);
+        return { client: c, score: total, chips: topChips(signals, 1) };
+      } catch {
+        return { client: c, score: null, chips: [] };
+      }
+    }).sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  }, [searchResults, step, clientA]);
 
-  return (
+  /* ── Step titles ── */
+  const STEP_TITLES = ['A 회원 선택', 'B 회원 선택', '매칭 확인'];
+  const stepTitle = STEP_TITLES[step - 1];
+
+  /* ── Escape key ── */
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  /* ── Body scroll lock (preserve original value) ── */
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  const nameA = clientA ? (clientA.name || clientA.nickname || '?') : null;
+  const nameB = clientB ? (clientB.name || clientB.nickname || '?') : null;
+
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.modalHeader}>
-          <div className={styles.modalHeaderIcon}>
-            <Heart size={18} strokeWidth={2} />
-          </div>
-          <div>
-            <h3 className={styles.modalTitle}>새 매칭 생성</h3>
-            <p className={styles.modalSubtitle}>두 회원을 선택하여 매칭을 만들어보세요</p>
-          </div>
-          <button className={styles.modalClose} onClick={onClose} type="button" aria-label="닫기">
-            <X size={18} strokeWidth={2} />
-          </button>
-        </div>
-
-        {/* Pairing Area */}
-        <div className={styles.pairingArea}>
-          <ClientSlot
-            client={clientA}
-            side="A"
-            onRemove={() => setClientA(null)}
-            searchQuery={selectingFor === 'A' ? searchQuery : ''}
-            onSearchChange={(e) => { setSelectingFor('A'); setSearchQuery(e.target.value); }}
-            onFocus={() => setSelectingFor('A')}
-            searchResults={selectingFor === 'A' ? searchResults : []}
-            onSelect={handleSelect}
-            excludeId={clientB?.id}
-          />
-          <div className={styles.pairingConnector}>
-            <div className={`${styles.connectorLine} ${bothSelected ? styles.connectorLineActive : ''}`} />
-            <div className={`${styles.connectorHeart} ${bothSelected ? styles.connectorHeartActive : ''}`}>
-              <Heart size={14} strokeWidth={2} />
-            </div>
-            <div className={`${styles.connectorLine} ${bothSelected ? styles.connectorLineActive : ''}`} />
-          </div>
-          <ClientSlot
-            client={clientB}
-            side="B"
-            onRemove={() => setClientB(null)}
-            searchQuery={selectingFor === 'B' ? searchQuery : ''}
-            onSearchChange={(e) => { setSelectingFor('B'); setSearchQuery(e.target.value); }}
-            onFocus={() => setSelectingFor('B')}
-            searchResults={selectingFor === 'B' ? searchResults : []}
-            onSelect={handleSelect}
-            excludeId={clientA?.id}
-          />
-        </div>
-
-        {/* Duplicate Warning */}
-        {duplicateMatch && (
-          <div className={styles.duplicateWarn}>
-            <AlertTriangle size={15} strokeWidth={2} />
-            <span>
-              이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
-            </span>
-          </div>
-        )}
-
-        {/* Pair History Warning */}
-        {pairHistory.length > 0 && !duplicateMatch && (
-          <div className={styles.historyWarn}>
-            <div className={styles.historyWarnHeader}>
-              <AlertTriangle size={15} strokeWidth={2} />
-              <strong>과거 매칭 이력 주의</strong>
-            </div>
-            <ul className={styles.historyWarnList}>
-              {pairHistory.map((w, i) => (
-                <li key={i}>{w.message}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Active Match Warning */}
-        {(activeMatches.A.length > 0 || activeMatches.B.length > 0) && !duplicateMatch && (
-          <div className={styles.activeMatchWarn}>
-            <div className={styles.activeMatchHeader}>
-              <Info size={15} strokeWidth={2} />
-              <strong>진행 중인 매칭이 있는 회원입니다</strong>
-            </div>
-            <p className={styles.activeMatchDesc}>
-              동시에 여러 매칭을 진행하면 회원이 부담을 느껴 이탈할 수 있습니다. 한 분의 인연에 집중할 수 있도록, 기존 매칭 현황을 먼저 확인해 주세요.
-            </p>
-            {activeMatches.A.length > 0 && clientA && (
-              <div className={styles.activeMatchClient}>
-                <span className={styles.activeMatchLabel}>{clientA.name || clientA.nickname}</span>
-                <span className={styles.activeMatchCount}>진행 중 {activeMatches.A.length}건</span>
-                {activeMatches.A.map((m) => (
-                  <button
-                    key={m.matchId}
-                    className={styles.activeMatchLink}
-                    onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
-                    type="button"
-                  >
-                    {m.clientA.clientName} ↔ {m.clientB.clientName}
-                    <StatusBadge status={m.status} />
-                  </button>
-                ))}
-              </div>
-            )}
-            {activeMatches.B.length > 0 && clientB && (
-              <div className={styles.activeMatchClient}>
-                <span className={styles.activeMatchLabel}>{clientB.name || clientB.nickname}</span>
-                <span className={styles.activeMatchCount}>진행 중 {activeMatches.B.length}건</span>
-                {activeMatches.B.map((m) => (
-                  <button
-                    key={m.matchId}
-                    className={styles.activeMatchLink}
-                    onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
-                    type="button"
-                  >
-                    {m.clientA.clientName} ↔ {m.clientB.clientName}
-                    <StatusBadge status={m.status} />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Deleted Member Warning */}
-        {(activeMatches.deletedA.length > 0 || activeMatches.deletedB.length > 0) && !duplicateMatch && (
-          <div className={styles.duplicateWarn}>
-            <AlertTriangle size={15} strokeWidth={2} />
-            <span>
-              삭제된 회원과의 진행 중 매칭 {activeMatches.deletedA.length + activeMatches.deletedB.length}건이 있습니다 (매칭 상세에서 취소 가능)
-            </span>
-          </div>
-        )}
-
-        {/* Note */}
-        <div className={styles.noteSection}>
-          <label className={styles.noteLabel} htmlFor="matchNote">메모 (선택)</label>
-          <textarea
-            id="matchNote"
-            className={styles.noteInput}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="이 매칭에 대한 메모를 남겨보세요…"
-            rows={3}
-          />
-        </div>
-
-        {/* Actions */}
-        <div className={styles.modalActions}>
-          <button className={styles.cancelBtn} onClick={onClose} type="button">취소</button>
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="새 매칭 생성"
+      >
+        {/* ── Modal chrome: header ── */}
+        <div className={styles.wizHeader}>
           <button
-            className={styles.submitBtn}
-            onClick={handleSubmit}
-            disabled={!clientA || !clientB || submitting || !!duplicateMatch}
             type="button"
+            className={styles.wizNavBtn}
+            onClick={step > 1 ? () => { setStep((s) => s - 1); setSearchQuery(''); setSearchResults([]); } : onClose}
+            aria-label={step > 1 ? '이전 단계' : '닫기'}
           >
-            {submitting ? (
-              <span className={styles.submitSpinner} />
-            ) : (
-              <Heart size={15} strokeWidth={2} />
-            )}
-            {submitting ? '생성 중…' : '매칭 생성'}
+            {step > 1 ? <ChevronLeft size={18} strokeWidth={2} /> : <X size={18} strokeWidth={2} />}
           </button>
+          <div className={styles.wizHeaderCenter}>
+            <span className={styles.wizHeaderTitle}>새 매칭 · {step}/3</span>
+            <span className={styles.wizHeaderSub}>{stepTitle}</span>
+          </div>
+          <StepIndicator step={step} />
+        </div>
+
+        {/* ── Step content ── */}
+        <div className={styles.wizBody} key={step}>
+
+          {/* ════ STEP 1: A 회원 선택 ════ */}
+          {step === 1 && (
+            <div className={styles.wizStep}>
+              <div className={styles.wizKickerGroup}>
+                <h3 className={styles.wizKicker}>A 회원을 골라 주세요</h3>
+                <p className={styles.wizSub}>매칭을 시작할 첫 회원이에요</p>
+              </div>
+
+              {/* If A already selected, show card */}
+              {clientA && (
+                <SelectedClientCard
+                  client={clientA}
+                  label="A"
+                  onClear={() => { setClientA(null); }}
+                />
+              )}
+
+              {/* Search */}
+              <div className={styles.wizSearchWrap}>
+                <Search size={14} className={styles.wizSearchIcon} strokeWidth={2} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  className={styles.wizSearchInput}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="이름으로 검색…"
+                  aria-label="A 회원 검색"
+                />
+                {searchQuery && (
+                  <button type="button" className={styles.wizSearchClear} onClick={() => { setSearchQuery(''); setSearchResults([]); }} aria-label="검색어 지우기">
+                    <X size={12} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+
+              {/* Results */}
+              {searchResults.length > 0 && (
+                <div className={styles.wizResultList}>
+                  {searchResults
+                    .filter((c) => c.id !== clientB?.id)
+                    .map((c) => (
+                      <ClientResultRow
+                        key={c.id}
+                        client={c}
+                        score={null}
+                        chips={[]}
+                        onClick={() => selectA(c)}
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════ STEP 2: B 회원 선택 ════ */}
+          {step === 2 && (
+            <div className={styles.wizStep}>
+              <div className={styles.wizKickerGroup}>
+                <h3 className={styles.wizKicker}>B 회원을 골라 주세요</h3>
+                <p className={styles.wizSub}>
+                  A 회원은 <strong>{nameA}</strong>님이에요. 반대 성별로 자동 필터링돼요.
+                </p>
+              </div>
+
+              {/* If B already selected, show card */}
+              {clientB && (
+                <SelectedClientCard
+                  client={clientB}
+                  label="B"
+                  onClear={() => { setClientB(null); }}
+                />
+              )}
+
+              {/* Search */}
+              <div className={styles.wizSearchWrap}>
+                <Search size={14} className={styles.wizSearchIcon} strokeWidth={2} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  className={styles.wizSearchInput}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="이름으로 검색…"
+                  aria-label="B 회원 검색"
+                />
+                {searchQuery && (
+                  <button type="button" className={styles.wizSearchClear} onClick={() => { setSearchQuery(''); setSearchResults([]); }} aria-label="검색어 지우기">
+                    <X size={12} strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+
+              {/* Scored results */}
+              {scoredResults.length > 0 && (
+                <div className={styles.wizResultList}>
+                  {scoredResults
+                    .filter((r) => r.client.id !== clientA?.id)
+                    .map((r) => (
+                      <ClientResultRow
+                        key={r.client.id}
+                        client={r.client}
+                        score={r.score}
+                        chips={r.chips}
+                        onClick={() => selectB(r.client)}
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ════ STEP 3: 확인 ════ */}
+          {step === 3 && clientA && clientB && (
+            <div className={styles.wizStep}>
+              <div className={styles.wizKickerGroup}>
+                <h3 className={styles.wizKicker}>이 두 분으로 진행할까요?</h3>
+              </div>
+
+              {/* Pair avatars */}
+              <div className={styles.wizPairRow}>
+                <div className={styles.wizPairPerson}>
+                  <MiniAvatar name={nameA} gender={clientA.gender} size={48} />
+                  <span className={styles.wizPairName}>{nameA}</span>
+                  {clientA.age && <span className={styles.wizPairAge}>{clientA.age}세</span>}
+                </div>
+                <span className={styles.wizPairHeart}>
+                  <Heart size={18} strokeWidth={2} color="var(--tangerine-600)" />
+                </span>
+                <div className={styles.wizPairPerson}>
+                  <MiniAvatar name={nameB} gender={clientB.gender} size={48} />
+                  <span className={styles.wizPairName}>{nameB}</span>
+                  {clientB.age && <span className={styles.wizPairAge}>{clientB.age}세</span>}
+                </div>
+              </div>
+
+              {/* ── Warnings ── */}
+              {duplicateMatch && (
+                <div className={styles.duplicateWarn}>
+                  <AlertTriangle size={14} strokeWidth={2} />
+                  <span>
+                    이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
+                  </span>
+                </div>
+              )}
+
+              {pairHistory.length > 0 && !duplicateMatch && (
+                <div className={styles.historyWarn}>
+                  <div className={styles.historyWarnHeader}>
+                    <AlertTriangle size={14} strokeWidth={2} />
+                    <strong>과거 매칭 이력 주의</strong>
+                  </div>
+                  <div className={styles.historyWarnList}>
+                    {pairHistory.map((w, i) => (
+                      <span key={i}>• {w.message}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(activeMatches.A.length > 0 || activeMatches.B.length > 0) && !duplicateMatch && (
+                <div className={styles.activeMatchWarn}>
+                  <div className={styles.activeMatchHeader}>
+                    <Info size={14} strokeWidth={2} />
+                    <strong>진행 중인 매칭이 있는 회원입니다</strong>
+                  </div>
+                  <p className={styles.activeMatchDesc}>
+                    동시에 여러 매칭을 진행하면 회원이 부담을 느껴 이탈할 수 있습니다.
+                  </p>
+                  {activeMatches.A.length > 0 && (
+                    <div className={styles.activeMatchClient}>
+                      <span className={styles.activeMatchLabel}>{nameA}</span>
+                      <span className={styles.activeMatchCount}>진행 중 {activeMatches.A.length}건</span>
+                      {activeMatches.A.map((m) => (
+                        <button
+                          key={m.matchId}
+                          className={styles.activeMatchLink}
+                          onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                          type="button"
+                        >
+                          {m.clientA.clientName} ↔ {m.clientB.clientName}
+                          <StatusBadge status={m.status} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {activeMatches.B.length > 0 && (
+                    <div className={styles.activeMatchClient}>
+                      <span className={styles.activeMatchLabel}>{nameB}</span>
+                      <span className={styles.activeMatchCount}>진행 중 {activeMatches.B.length}건</span>
+                      {activeMatches.B.map((m) => (
+                        <button
+                          key={m.matchId}
+                          className={styles.activeMatchLink}
+                          onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                          type="button"
+                        >
+                          {m.clientA.clientName} ↔ {m.clientB.clientName}
+                          <StatusBadge status={m.status} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(activeMatches.deletedA.length > 0 || activeMatches.deletedB.length > 0) && !duplicateMatch && (
+                <div className={styles.duplicateWarn}>
+                  <AlertTriangle size={14} strokeWidth={2} />
+                  <span>
+                    삭제된 회원과의 진행 중 매칭 {activeMatches.deletedA.length + activeMatches.deletedB.length}건이 있습니다
+                  </span>
+                </div>
+              )}
+
+              {/* ── Comparison table ── */}
+              <div className={styles.compareTable}>
+                <div className={styles.compareTableHead}>
+                  <span className={styles.compareHeadLabel} />
+                  <span className={styles.compareHeadA}>A · {nameA}</span>
+                  <span className={styles.compareHeadB}>B · {nameB}</span>
+                </div>
+                <CompareRow
+                  label="나이"
+                  valA={clientA.age ? `${clientA.age}세` : null}
+                  valB={clientB.age ? `${clientB.age}세` : null}
+                />
+                <CompareRow
+                  label="성별"
+                  valA={clientA.gender === 'female' ? '여성' : clientA.gender === 'male' ? '남성' : null}
+                  valB={clientB.gender === 'female' ? '여성' : clientB.gender === 'male' ? '남성' : null}
+                />
+                <CompareRow label="직업" valA={clientA.occupation} valB={clientB.occupation} />
+                <CompareRow label="회사" valA={clientA.company} valB={clientB.company} />
+                <CompareRow
+                  label="지역"
+                  valA={clientA.location || clientA.region}
+                  valB={clientB.location || clientB.region}
+                />
+                <CompareRow label="MBTI" valA={clientA.mbti} valB={clientB.mbti} />
+                <CompareRow label="종교" valA={clientA.religion} valB={clientB.religion} />
+              </div>
+
+              {/* ── Auto-send info card ── */}
+              <div className={styles.wizInfoCard}>
+                <Info size={13} strokeWidth={2} color="var(--lilac-600)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>
+                  매칭 생성 후 &lsquo;매칭 시작&rsquo; 버튼을 누르면 {nameA}님께 프로포절 링크가 자동 발송돼요.
+                </span>
+              </div>
+
+              {/* ── Note ── */}
+              <div className={styles.wizNoteWrap}>
+                <textarea
+                  className={styles.wizNoteInput}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="이 매칭에 대한 메모를 남겨보세요"
+                  aria-label="매칭 메모"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer CTA ── */}
+        <div className={styles.wizFooter}>
+          {step > 1 && (
+            <button
+              type="button"
+              className={styles.wizPrevBtn}
+              onClick={() => { setStep((s) => s - 1); setSearchQuery(''); setSearchResults([]); }}
+            >
+              이전
+            </button>
+          )}
+          {step < 3 ? (
+            <button
+              type="button"
+              className={styles.wizNextBtn}
+              onClick={() => setStep((s) => s + 1)}
+              disabled={step === 1 ? !clientA : step === 2 ? !clientB : false}
+            >
+              다음
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.wizSubmitBtn}
+              onClick={handleSubmit}
+              disabled={!clientA || !clientB || submitting || !!duplicateMatch}
+            >
+              {submitting ? (
+                <span className={styles.submitSpinner} />
+              ) : (
+                <Heart size={14} strokeWidth={2} />
+              )}
+              {submitting ? '생성 중…' : '매칭 생성'}
+            </button>
+          )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

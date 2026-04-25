@@ -664,7 +664,11 @@ export default function MatchDetail() {
 
       {/* ── Sticky Top Nav ── */}
       <div className={styles.topNav}>
-        <button className={styles.backBtn} onClick={() => navigate('/dashboard/matches')}>
+        <button
+          className={styles.backBtn}
+          onClick={() => navigate('/dashboard/matches')}
+          aria-label="뒤로 가기"
+        >
           <ChevronLeft size={22} />
         </button>
         <div className={styles.topNavMeta}>
@@ -673,7 +677,7 @@ export default function MatchDetail() {
             {match.clientA.clientName} ↔ {match.clientB.clientName}
           </div>
         </div>
-        <button className={styles.moreBtn}>
+        <button className={styles.moreBtn} aria-label="더보기">
           <MoreVertical size={20} />
         </button>
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, ChevronRight,
+  ChevronRight,
   Heart, Calendar, User, Link2, MessageSquare, Check, Bell,
 } from 'lucide-react';
 import useNotificationStore from '../../store/notificationStore';
@@ -168,18 +168,9 @@ export default function Notifications() {
 
   return (
     <div className={styles.page}>
-      {/* Sticky header */}
+      {/* Sticky header — title only, no back button */}
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <button
-            className={styles.backBtn}
-            onClick={() => navigate(-1)}
-            aria-label="뒤로가기"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <h1 className={styles.title}>알림</h1>
-        </div>
+        <h1 className={styles.title}>알림</h1>
         {hasUnread && (
           <button className={styles.readAllBtn} onClick={handleMarkAllAsRead}>
             모두 읽음

@@ -1,4 +1,4 @@
-/* ── Notifications — Screenshot Pixel-match Rewrite ── */
+/* ── Notifications — Knots & Links Warm Trust renewal ── */
 
 .page {
   max-width: 480px;
@@ -28,37 +28,15 @@
   border-bottom: 1px solid var(--ink-50);
 }
 
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.backBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--ink-700);
-  padding: 2px;
-  margin-right: 2px;
-  border-radius: 8px;
-  transition: background 0.12s;
-}
-
-.backBtn:hover {
-  background: var(--ink-50);
-}
-
+/* Title — serif, matches MatchList/ClientList header style */
 .title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
   color: var(--ink-900);
   margin: 0;
-  font-family: var(--font-sans);
+  line-height: 1.15;
 }
 
 .readAllBtn {
@@ -75,7 +53,6 @@
   transition: color 0.12s;
   white-space: nowrap;
 }
-
 .readAllBtn:hover {
   color: var(--tangerine-600);
 }
@@ -90,13 +67,13 @@
   margin-top: 14px;
 }
 
-/* Section label: 13 600 ink-400, no uppercase */
+/* Section label — serif kicker style, matches tab section dividers */
 .sectionLabel {
-  font-size: 13px;
-  color: var(--ink-400);
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
   padding-left: 4px;
   margin: 12px 0 10px;
 }
@@ -105,7 +82,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -115,11 +92,11 @@
 .item {
   position: relative;
   background: var(--paper-card);
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 10px 12px;
   box-shadow: var(--sh-sm);
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -140,18 +117,18 @@
 .itemUnread {
   background: linear-gradient(135deg, var(--tangerine-50), var(--paper-card));
   border: 1.5px solid var(--tangerine-100);
-  box-shadow: 0 0 0 4px rgba(242, 107, 79, 0.06), var(--sh-sm);
+  box-shadow: 0 0 0 2px rgba(242, 107, 79, 0.05), var(--sh-sm);
 }
 
 .itemUnread:hover {
   background: var(--tangerine-50);
 }
 
-/* ── Icon tile: 44×44, radius 12 ── */
+/* ── Icon tile: 36×36, radius 10 ── */
 .iconTile {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,15 +139,16 @@
 .iconTileMint      { background: var(--mint-100);      color: var(--mint-600); }
 .iconTileTangerine { background: var(--tangerine-100); color: var(--tangerine-600); }
 .iconTileLilac     { background: var(--lilac-100);     color: var(--lilac-600); }
-.iconTileInk       { background: var(--ink-50);        color: var(--ink-700); }
+/* Tangerine tint — warm trust empty state */
+.iconTileInk       { background: var(--tangerine-50);  color: var(--tangerine-600); }
 
 /* Unread red dot: top-right corner of icon tile */
 .unreadDot {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
+  top: -1px;
+  right: -1px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #EF4444;
   border: 2px solid #fff;
@@ -183,37 +161,37 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-/* Title: 15 700 ink-900 */
+/* Title: 14 700 ink-900 */
 .itemTitle {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--ink-900);
-  line-height: 1.3;
+  line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Message: 13 500 ink-500, 2-line ellipsis */
+/* Message: 12.5 500 ink-500, 1-line ellipsis */
 .itemMessage {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--ink-500);
   line-height: 1.5;
 }
 
-/* Time: 12 500 ink-400 */
+/* Time: 11 500 ink-400 */
 .itemTime {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--ink-400);
 }
@@ -234,25 +212,25 @@
 .loadingList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px 16px;
+  gap: 6px;
+  padding: 14px 16px;
 }
 
 .skeletonItem {
   background: var(--paper-card);
-  border-radius: 16px;
-  padding: 16px 18px;
+  border-radius: 12px;
+  padding: 10px 12px;
   box-shadow: var(--sh-sm);
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .skeletonIconTile {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: var(--ink-50);
   flex-shrink: 0;
   animation: shimmer 1.4s infinite;
@@ -262,7 +240,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .skeletonTitle,
@@ -273,11 +251,11 @@
   animation: shimmer 1.4s infinite;
 }
 
-.skeletonTitle   { height: 16px; width: 60%; }
-.skeletonMessage { height: 13px; width: 82%; animation-delay: 0.15s; }
-.skeletonTime    { height: 11px; width: 28%; animation-delay: 0.3s; }
+.skeletonTitle   { height: 14px; width: 60%; }
+.skeletonMessage { height: 12px; width: 82%; animation-delay: 0.15s; }
+.skeletonTime    { height: 10px; width: 28%; animation-delay: 0.3s; }
 
-/* ── Empty state ── */
+/* ── Empty state — tangerine tint for warmth ── */
 .empty {
   padding: 80px 24px;
   text-align: center;
@@ -291,8 +269,8 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: var(--ink-50);
-  color: var(--ink-300);
+  background: var(--tangerine-50);
+  color: var(--tangerine-600);
   display: flex;
   align-items: center;
   justify-content: center;

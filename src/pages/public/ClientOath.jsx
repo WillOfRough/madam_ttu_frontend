@@ -83,7 +83,7 @@ function ConsentSection({ section, checked, onToggle, expanded, onExpand }) {
       )}
 
       {!section.infoOnly && (
-        <label className={styles.sectionAgree} onClick={() => onToggle(!checked)}>
+        <label className={styles.sectionAgree}>
           <input
             type="checkbox"
             checked={checked}
@@ -177,7 +177,7 @@ export default function ClientOath() {
               </div>
             ))}
           </div>
-          <label className={styles.sectionAgree} onClick={() => setOathAgreed(!oathAgreed)}>
+          <label className={styles.sectionAgree}>
             <input
               type="checkbox"
               checked={oathAgreed}
@@ -192,7 +192,7 @@ export default function ClientOath() {
         </div>
 
         {/* All agree */}
-        <label className={`${styles.agreeAllLabel} ${allRequired ? styles.allOn : ''}`} onClick={handleAgreeAll}>
+        <label className={`${styles.agreeAllLabel} ${allRequired ? styles.allOn : ''}`}>
           <input
             type="checkbox"
             checked={allRequired}
