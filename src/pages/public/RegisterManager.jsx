@@ -104,9 +104,13 @@ export default function RegisterManager() {
     }
     if (password !== confirmPw) { setError('비밀번호가 일치하지 않습니다.'); return; }
     if (!verificationId) { setError('휴대폰 인증을 완료해주세요.'); return; }
+    if (!bankName) { setError('정산 계좌의 은행을 선택해주세요.'); return; }
+    const trimmedBankNumber = bankNumber.trim();
+    if (!trimmedBankNumber) { setError('정산 계좌번호를 입력해주세요.'); return; }
+    if (!/^\d{8,16}$/.test(trimmedBankNumber)) { setError('계좌번호는 숫자 8~16자리로 입력해주세요.'); return; }
     const finalNickname = nickname.trim() || suggestedNickname;
     try {
-      await register({ token, email, password, name: name.trim(), nickname: finalNickname, phone, verificationId, bankName: bankName || undefined, bankNumber: bankNumber.trim() || undefined });
+      await register({ token, email, password, name: name.trim(), nickname: finalNickname, phone, verificationId, bankName, bankNumber: trimmedBankNumber });
       navigate('/dashboard/guide');
     } catch (err) {
       setError(err.message || '가입에 실패했습니다.');
@@ -318,29 +322,30 @@ export default function RegisterManager() {
           {/* 02 정산 계좌 */}
           <div className={styles.sectionHead}>
             <span className={styles.sectionNum}>02</span>
-            <span className={styles.sectionLabel}>정산 계좌 <span style={{ fontSize: 11, color: 'var(--ink-400)', fontWeight: 600 }}>(선택)</span></span>
+            <span className={styles.sectionLabel}>정산 계좌</span>
           </div>
           <div className={styles.fieldCard}>
             <div className={styles.field}>
-              <div className={styles.fieldLabel}>은행명</div>
+              <div className={styles.fieldLabel}>은행명 <span className={styles.required}>*</span></div>
               <select
                 className={styles.select}
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
               >
-                <option value="" className={styles.selectPlaceholder}>은행 선택 (선택)</option>
+                <option value="" className={styles.selectPlaceholder}>은행 선택</option>
                 {BANK_OPTIONS.map((bank) => (
                   <option key={bank.value} value={bank.value}>{bank.label}</option>
                 ))}
               </select>
             </div>
             <div className={styles.field}>
-              <div className={styles.fieldLabel}>계좌번호</div>
+              <div className={styles.fieldLabel}>계좌번호 <span className={styles.required}>*</span></div>
               <input
                 className={styles.input}
+                inputMode="numeric"
                 value={bankNumber}
-                onChange={(e) => setBankNumber(e.target.value)}
-                placeholder="계좌번호 입력 (선택)"
+                onChange={(e) => setBankNumber(e.target.value.replace(/\D/g, ''))}
+                placeholder="계좌번호 입력 (숫자만, '-' 제외)"
               />
             </div>
           </div>
