@@ -11,12 +11,12 @@ function MobileHeader() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   return (
     <header className={styles.mobileHeader}>
-      <div className={styles.mobileHeaderLogo}>
+      <NavLink to="/dashboard" className={styles.mobileHeaderLogo} aria-label="홈으로">
         <div className={styles.mobileHeaderLogoMark}>
           <Heart size={14} strokeWidth={2.2} color="#fff" />
         </div>
         <span className={styles.mobileHeaderLogoText}>Knots &amp; Links</span>
-      </div>
+      </NavLink>
       <div className={styles.mobileHeaderActions}>
         <NavLink to="/dashboard/notifications" className={styles.mobileHeaderIcon} aria-label="알림">
           <Bell size={20} strokeWidth={1.8} />
