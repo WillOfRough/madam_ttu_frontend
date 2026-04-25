@@ -2,8 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Plus, ChevronRight, Users, List, Grid2X2,
-  X, Heart, AlertTriangle, SlidersHorizontal,
+  Search, ChevronRight, Users, List, Grid2X2,
+  X, Heart, AlertTriangle, SlidersHorizontal, Sparkles,
 } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
@@ -630,15 +630,16 @@ export default function ClientList() {
             {hasActiveFilter && <span className={styles.filterDot} aria-hidden="true" />}
           </div>
 
-          {/* 회원 등록 — ink-900 */}
+          {/* 초대 링크 — ink-900 */}
           <button
             className={styles.addBtn}
-            aria-label="회원 등록"
-            title="회원 등록"
+            aria-label="초대 링크"
+            title="초대 링크"
             type="button"
+            onClick={() => navigate('/dashboard/invites')}
           >
-            <Plus size={18} />
-            <span>회원 등록</span>
+            <Sparkles size={18} />
+            <span>초대 링크</span>
           </button>
         </div>
       </div>
@@ -760,7 +761,7 @@ export default function ClientList() {
           <p className={styles.emptyDesc}>
             {filters.name || filters.gender || filters.status || filters.approval
               ? '검색 조건을 바꿔 다시 시도해보세요.'
-              : '회원 등록 버튼을 눌러 첫 번째 회원을 추가하세요.'}
+              : '초대 링크를 발송해 회원을 추가하세요.'}
           </p>
         </div>
       ) : (
