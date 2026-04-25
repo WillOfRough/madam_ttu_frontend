@@ -626,7 +626,14 @@
 
 
 /* === Desktop (≥1024px) Renewal === */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
+  .page {
+    max-width: none;
+  }
+}
+
+/* ── Desktop (≥1024px) ── */
+@media (min-width: 769px) {
   .page {
     max-width: none;
   }

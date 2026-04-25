@@ -2,11 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Link2, AlertTriangle, Wallet, Calendar, ArrowRight,
-  CheckCircle, ChevronRight,
+  CheckCircle, ChevronRight, Bell, Heart, Send, Sparkles, User as UserIcon,
 } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
+import useNotificationStore from '../../store/notificationStore';
 import * as matchService from '../../api/matchService';
 import * as settlementService from '../../api/settlementService';
 import { SkeletonCard } from '../../components/Skeleton';
@@ -207,6 +208,87 @@ function TodayCard({ match }) {
 /* ══════════════════════════════════════
    DashboardHome
 ══════════════════════════════════════ */
+/* ── Notification icon mapping ── */
+function NotifIcon({ type }) {
+  if (!type) return <Bell size={14} />;
+  if (type.includes('match')) return <Heart size={14} />;
+  if (type.includes('proposal')) return <Send size={14} />;
+  if (type.includes('after')) return <Sparkles size={14} />;
+  if (type.includes('client')) return <UserIcon size={14} />;
+  return <Link2 size={14} />;
+}
+
+/* ── Right rail: notifications + activity ── */
+function HomeRail() {
+  const notifications = useNotificationStore((s) => s.notifications);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
+  const markAllRead = useNotificationStore((s) => s.markAllAsRead);
+  const navigate = useNavigate();
+  const [tab, setTab] = useState('noti');
+
+  useEffect(() => {
+    if (notifications.length === 0) fetchNotifications();
+  }, []);
+
+  const recent = useMemo(() => (notifications || []).slice(0, 8), [notifications]);
+
+  return (
+    <aside className={styles.homeRail}>
+      <div className={styles.railHeader}>
+        <div className={styles.railTabs}>
+          <button
+            className={`${styles.railTab} ${tab === 'noti' ? styles.railTabActive : ''}`}
+            onClick={() => setTab('noti')}
+            type="button"
+          >
+            알림
+            {unreadCount > 0 && <span className={styles.railTabBadge}>{unreadCount}</span>}
+          </button>
+          <button
+            className={`${styles.railTab} ${tab === 'all' ? styles.railTabActive : ''}`}
+            onClick={() => navigate('/dashboard/notifications')}
+            type="button"
+          >
+            전체
+          </button>
+        </div>
+        {unreadCount > 0 && (
+          <button className={styles.railReadAll} onClick={markAllRead} type="button">
+            모두 읽음
+          </button>
+        )}
+      </div>
+
+      <div className={styles.railList}>
+        {recent.length === 0 ? (
+          <div className={styles.railEmpty}>새 알림이 없어요</div>
+        ) : (
+          recent.map((n) => (
+            <button
+              key={n.id || n.notificationId}
+              className={`${styles.railItem} ${!n.read ? styles.railItemUnread : ''}`}
+              onClick={() => navigate('/dashboard/notifications')}
+              type="button"
+            >
+              <div className={styles.railItemIcon}>
+                <NotifIcon type={n.type} />
+              </div>
+              <div className={styles.railItemContent}>
+                <div className={styles.railItemTitleRow}>
+                  <span className={styles.railItemTitle}>{n.title}</span>
+                  {!n.read && <span className={styles.railItemDot} />}
+                </div>
+                {n.message && <div className={styles.railItemMsg}>{n.message}</div>}
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </aside>
+  );
+}
+
 export default function DashboardHome() {
   const summary      = useManagerStore((s) => s.summary);
   const isLoading    = useManagerStore((s) => s.isLoading);
@@ -288,6 +370,7 @@ export default function DashboardHome() {
     : `대기 ${settlementPending}건`;
 
   return (
+    <div className={styles.pageGrid}>
     <div className={styles.page}>
 
       {/* ── Greeting ── */}
@@ -297,6 +380,10 @@ export default function DashboardHome() {
           {firstName} 매니저님,<br />
           오늘도 새로운 인연을 이어주세요.
         </h1>
+        <p className={styles.greetingStats}>
+          오늘 처리할 일이 <b style={{ color: 'var(--rose-600)' }}>{todoCount}건</b>,
+          이번 주 일정이 <b style={{ color: 'var(--ink-900)' }}>{scheduledMatches?.length || 0}건</b> 예정되어 있어요.
+        </p>
       </section>
 
       {/* ── Hero TODO card ── */}
@@ -364,6 +451,7 @@ export default function DashboardHome() {
         />
       </div>
 
+      <div className={styles.desktopMain}>
       {/* ── 지금 해야 할 일 ── */}
       <div>
         <SectionHeader
@@ -411,7 +499,10 @@ export default function DashboardHome() {
           )}
         </div>
       </div>
+      </div>
 
+    </div>
+    <HomeRail />
     </div>
   );
 }

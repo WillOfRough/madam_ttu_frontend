@@ -15,7 +15,7 @@
 }
 
 /* ── Desktop: full-width 2-column layout ── */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .page {
     max-width: none;
     margin: 0;
@@ -2412,3 +2412,4 @@
     opacity: 1;
   }
 }
+

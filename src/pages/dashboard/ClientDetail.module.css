@@ -1209,7 +1209,7 @@
 .lightboxDeleteBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Desktop (≥1024px) ── */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .page {
     max-width: 720px;
     margin-left: auto;

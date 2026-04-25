@@ -29,39 +29,28 @@
   animation: fadeUp 0.28s ease both;
 }
 
-/* ── Legacy desktop sidebar layout (still serves sidebar-nav pages) ── */
+/* ── Desktop layout: full-width admin dashboard (≥769px) ── */
 @media (min-width: 769px) {
-  .shell {
-    display: flex;
-  }
-
-  .container {
-    /* On wider viewports the sidebar takes 260px, the content fills the rest
-       but we cap the reading column at 480px for consistency */
-    max-width: 480px;
-  }
-}
-
-/* ── Desktop layout: sidebar + wide content grid ── */
-@media (min-width: 1024px) {
   .shell {
     display: grid;
     grid-template-columns: 240px 1fr;
-    max-width: 1440px;
-    margin: 0 auto;
     min-height: 100vh;
+    max-width: none;
+    margin: 0;
   }
 
   .container {
     max-width: none;
     padding-bottom: 48px;
     background: var(--paper);
+    min-width: 0;
   }
 
   .main {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 24px 32px;
+    max-width: none;
+    margin: 0;
+    padding: 24px 28px;
+    min-width: 0;
   }
 
   .mobileHeader {
@@ -90,7 +79,7 @@
 .mobileHeaderLogo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
@@ -101,22 +90,42 @@
 }
 
 .mobileHeaderLogoMark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--ink-900);
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--tangerine-600);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(242, 107, 79, 0.25);
 }
 
 .mobileHeaderLogoText {
-  font-size: 14px;
-  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.mobileHeaderLogoTitle {
+  font-size: 13.5px;
+  font-weight: 800;
   color: var(--ink-900);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.mobileHeaderLogoSub {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .mobileHeaderActions {

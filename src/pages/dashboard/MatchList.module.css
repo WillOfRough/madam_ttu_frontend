@@ -1534,7 +1534,7 @@
 /* ────────────────────────────────────────
    Desktop layout
 ──────────────────────────────────────── */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .page {
     max-width: none;
     padding-left: 0;
@@ -1593,5 +1593,12 @@
   .modal {
     border-radius: 20px 20px 0 0;
     max-height: 92dvh;
+  }
+}
+
+/* ── Desktop (≥1024px) ── */
+@media (min-width: 769px) {
+  .page {
+    max-width: none;
   }
 }

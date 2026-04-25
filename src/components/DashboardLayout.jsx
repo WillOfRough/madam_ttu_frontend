@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Bell, Heart, Settings } from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MatchFloatingBar from './MatchFloatingBar';
@@ -12,10 +12,11 @@ function MobileHeader() {
   return (
     <header className={styles.mobileHeader}>
       <NavLink to="/dashboard" className={styles.mobileHeaderLogo} aria-label="홈으로">
-        <div className={styles.mobileHeaderLogoMark}>
-          <Heart size={14} strokeWidth={2.2} color="#fff" />
+        <div className={styles.mobileHeaderLogoMark}>K</div>
+        <div className={styles.mobileHeaderLogoText}>
+          <span className={styles.mobileHeaderLogoTitle}>Knots &amp; Links</span>
+          <span className={styles.mobileHeaderLogoSub}>매니저 콘솔</span>
         </div>
-        <span className={styles.mobileHeaderLogoText}>Knots &amp; Links</span>
       </NavLink>
       <div className={styles.mobileHeaderActions}>
         <NavLink to="/dashboard/notifications" className={styles.mobileHeaderIcon} aria-label="알림">

@@ -726,7 +726,7 @@
 /* ════════════════════════════════════════════
    Desktop ≥1024px
    ════════════════════════════════════════════ */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .page {
     max-width: none;
   }
@@ -741,5 +741,12 @@
   .sheetOverlay {
     align-items: center;
     justify-content: center;
+  }
+}
+
+/* ── Desktop (≥1024px) ── */
+@media (min-width: 769px) {
+  .page {
+    max-width: none;
   }
 }

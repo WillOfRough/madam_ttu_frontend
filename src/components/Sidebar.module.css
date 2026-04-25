@@ -1,162 +1,21 @@
+/* ── Mobile: hide sidebar (BottomNav handles nav) ── */
 .sidebar {
-  width: 260px;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: var(--white);
-  border-right: 1px solid var(--border-light);
-  display: flex;
-  flex-direction: column;
-  padding: 28px 0;
-  z-index: 100;
+  display: none;
 }
 
-.logo {
-  padding: 0 24px;
-  margin-bottom: 32px;
-}
-
-.logoText {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.04em;
-}
-
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  margin: 0 12px 20px;
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  background: var(--navy);
-  color: var(--white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.name {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--charcoal);
-  letter-spacing: -0.01em;
-}
-
-.nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 12px;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  border-radius: var(--radius-sm);
-  color: var(--charcoal-light);
-  font-size: 0.88rem;
-  font-weight: 500;
-  transition: all var(--duration-fast) var(--ease-out);
-  text-decoration: none;
-  letter-spacing: -0.01em;
-}
-
-.navItem:hover {
-  background: var(--bg);
-  color: var(--navy);
-}
-
-.active {
-  background: var(--navy-glow);
-  color: var(--navy);
-  font-weight: 600;
-}
-
-.logoutBtn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 16px;
-  margin: 0 12px;
-  border-radius: var(--radius-sm);
-  color: var(--charcoal-pale);
-  font-size: 0.88rem;
-  font-weight: 500;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.logoutBtn:hover {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.navIconWrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.badge {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: var(--radius-full);
-  background: var(--coral);
-  color: var(--white);
-  font-size: 0.6rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-/* Hidden on mobile — BottomNav handles navigation */
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-}
-
-/* On wider screens sidebar sits fixed-left; content aligns after it */
+/* ── Desktop sidebar (≥769px) — Image 7 spec ── */
 @media (min-width: 769px) {
-  .sidebar {
-    display: flex;
-  }
-}
-
-/* ── Desktop sidebar: full redesign with brand tokens ── */
-@media (min-width: 1024px) {
   .sidebar {
     width: 240px;
     height: 100vh;
     position: sticky;
     top: 0;
-    left: auto;
+    left: 0;
     background: var(--paper-card);
     border-right: 1px solid var(--ink-100);
     display: flex;
     flex-direction: column;
-    padding: 0 0 16px;
+    padding: 20px 14px 14px;
     z-index: 100;
     overflow-y: auto;
     scrollbar-width: none;
@@ -166,84 +25,78 @@
     display: none;
   }
 
-  .logo {
-    padding: 24px 20px 20px;
-    margin-bottom: 0;
-    border-bottom: 1px solid var(--ink-50);
-  }
-
-  .logoText {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--ink-900);
-    letter-spacing: -0.035em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .logoText::before {
-    content: '';
-    display: inline-block;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: var(--tangerine-600);
-    flex-shrink: 0;
-  }
-
-  .profile {
+  /* ── Brand block: K mark + title + subtitle ── */
+  .brand {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 14px 16px;
-    margin: 8px 10px 4px;
-    background: var(--ink-50);
-    border-radius: 10px;
+    padding: 4px 6px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--ink-50);
+    margin-bottom: 12px;
   }
 
-  .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--tangerine-100, #FFE8E0);
-    color: var(--tangerine-700, #C84B27);
+  .brandMark {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: var(--tangerine-600);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 800;
-    flex-shrink: 0;
-  }
-
-  .name {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ink-900);
     letter-spacing: -0.02em;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(242, 107, 79, 0.25);
   }
 
+  .brandText {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .brandTitle {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--ink-900);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  .brandSub {
+    font-size: 11px;
+    color: var(--ink-400);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  /* ── Nav items ── */
   .nav {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1px;
-    padding: 8px 10px;
+    padding: 0;
   }
 
   .navItem {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-radius: 10px;
-    color: var(--ink-500);
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 120ms ease, color 120ms ease;
+    color: var(--ink-700);
+    font-size: 13.5px;
+    font-weight: 600;
     text-decoration: none;
-    letter-spacing: -0.01em;
-    position: relative;
+    letter-spacing: -0.015em;
+    transition: background 120ms ease, color 120ms ease;
   }
 
   .navItem:hover {
@@ -251,9 +104,10 @@
     color: var(--ink-900);
   }
 
+  /* Active item: light tangerine bg + tangerine left bar + tangerine icon (Image 7) */
   .active {
-    background: var(--ink-900);
-    color: #fff;
+    background: var(--tangerine-50);
+    color: var(--ink-900);
     font-weight: 700;
   }
 
@@ -261,16 +115,20 @@
     content: '';
     position: absolute;
     left: 0;
-    top: 6px;
-    bottom: 6px;
+    top: 8px;
+    bottom: 8px;
     width: 3px;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 3px 3px 0;
     background: var(--tangerine-600);
   }
 
+  .active .navIconWrap {
+    color: var(--tangerine-600);
+  }
+
   .active:hover {
-    background: var(--ink-900);
-    color: #fff;
+    background: var(--tangerine-50);
+    color: var(--ink-900);
   }
 
   .navIconWrap {
@@ -278,17 +136,27 @@
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
+    color: var(--ink-500);
+  }
+
+  .navItem:hover .navIconWrap {
+    color: var(--ink-900);
+  }
+
+  .navLabel {
+    flex: 1;
+    min-width: 0;
   }
 
   .badge {
     position: absolute;
     top: -5px;
     right: -8px;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 3px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
     border-radius: 999px;
-    background: var(--tangerine-600);
+    background: var(--rose-600);
     color: #fff;
     font-size: 10px;
     font-weight: 800;
@@ -298,25 +166,77 @@
     line-height: 1;
   }
 
-  .logoutBtn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    margin: 0 10px;
-    border-radius: 10px;
-    color: var(--rose-600);
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 120ms ease;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    text-align: left;
-    width: calc(100% - 20px);
+  /* ── Divider before footer items (e.g. 설정) ── */
+  .navDivider {
+    height: 1px;
+    background: var(--ink-100);
+    margin: 10px 8px;
   }
 
-  .logoutBtn:hover {
+  /* ── Profile footer ── */
+  .profileFooter {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--ink-50);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profileAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--tangerine-100);
+    color: var(--tangerine-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .profileMeta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .profileName {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-900);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .profileSub {
+    font-size: 10.5px;
+    color: var(--ink-400);
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  .profileLogout {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: var(--ink-400);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .profileLogout:hover {
     background: var(--rose-100);
     color: var(--rose-600);
   }
