@@ -1351,8 +1351,16 @@ function derivePaymentStatus(m, side) {
 
 function buildPaymentResponse(m, side) {
   const client = side === 'A' ? m.clientA : m.clientB;
-  const status = derivePaymentStatus(m, side);
+  let status = derivePaymentStatus(m, side);
   const paidAt = status === 'paid' ? (m.paidAts?.[side] || m.createdAt) : null;
+  let refundAmount = null;
+  let refundedAt = null;
+  const refund = m.refunds?.[side];
+  if (refund) {
+    status = refund.amount < 19900 ? 'partial_refunded' : 'refunded';
+    refundAmount = refund.amount;
+    refundedAt = refund.refundedAt || null;
+  }
   return {
     id: `pay-${m.matchId}-${side}`,
     matchId: m.matchId,
@@ -1366,9 +1374,9 @@ function buildPaymentResponse(m, side) {
     status,
     attemptNo: 1,
     paidAt,
-    confirmedByManagerId: status === 'paid' ? MANAGER_ID : null,
-    refundedAt: null,
-    refundAmount: null,
+    confirmedByManagerId: (status === 'paid' || status === 'partial_refunded' || status === 'refunded') ? MANAGER_ID : null,
+    refundedAt,
+    refundAmount,
     cancelledAt: status === 'cancelled' ? (m.cancelledAt || null) : null,
     createdAt: m.createdAt,
   };

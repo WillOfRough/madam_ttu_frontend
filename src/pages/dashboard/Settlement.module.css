@@ -488,6 +488,7 @@
 .status_settled         { background: #e6f4ea; color: #1e7a3a; }
 .status_paid            { background: #e6f4ea; color: #1e7a3a; }
 .status_cancelled       { background: #f3f4f6; color: #6b7280; }
+.status_partial_refunded { background: #fff1e0; color: #c2410c; font-weight: 700; }
 .status_refunded        { background: #f5f5f5; color: #9ca3af; font-style: italic; }
 
 .endedAtCol {

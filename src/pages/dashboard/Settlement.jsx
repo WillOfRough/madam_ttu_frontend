@@ -7,6 +7,7 @@ import styles from './Settlement.module.css';
 const STATUS_LABELS = {
   pending: '입금대기',
   confirmed: '입금완료',
+  partial_refunded: '부분환불',
   ready_to_settle: '정산대상',
   settled: '정산완료',
   paid: '정산완료',
@@ -14,7 +15,7 @@ const STATUS_LABELS = {
   refunded: '환불',
 };
 
-const FILTER_OPTIONS = ['', 'ready_to_settle', 'settled', 'confirmed', 'pending', 'cancelled'];
+const FILTER_OPTIONS = ['', 'ready_to_settle', 'settled', 'confirmed', 'partial_refunded', 'pending', 'cancelled'];
 const ROLE_LABELS = { client_owner: '매물', matchmaker: '매칭', both: '매물+매칭' };
 const DAY_HEADERS = ['일', '월', '화', '수', '목', '금', '토'];
 

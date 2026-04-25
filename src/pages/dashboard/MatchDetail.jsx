@@ -750,9 +750,19 @@ export default function MatchDetail() {
                   const paymentSummary = match.paymentSummary?.[`client${side}`];
                   const status = paymentDetail?.status || paymentSummary?.status || 'pending';
                   const isPaid = status === 'paid';
+                  const isPartialRefunded = status === 'partial_refunded';
+                  const isRefunded = status === 'refunded';
                   const hasParticipantId = Boolean(paymentDetail?.matchParticipantId);
+                  const refundAmount = paymentDetail?.refundAmount ?? paymentSummary?.refundAmount ?? 0;
+                  const slotClass = isPartialRefunded
+                    ? styles.paymentSlotPartialRefunded
+                    : isRefunded
+                    ? styles.paymentSlotRefunded
+                    : isPaid
+                    ? styles.paymentSlotPaid
+                    : styles.paymentSlotPending;
                   return (
-                    <div key={side} className={`${styles.paymentSlot} ${isPaid ? styles.paymentSlotPaid : styles.paymentSlotPending}`}>
+                    <div key={side} className={`${styles.paymentSlot} ${slotClass}`}>
                       <div className={styles.paymentSlotHeader}>
                         <span className={styles.paymentSlotAvatar} style={{
                           background: client.clientGender === 'female' ? 'var(--female-100)' : 'var(--male-100)',
@@ -762,11 +772,30 @@ export default function MatchDetail() {
                         </span>
                         <span className={styles.paymentSlotName}>{client.clientNickname || client.clientName}</span>
                       </div>
-                      <div className={styles.paymentSlotAmount}>19,900원</div>
-                      <div className={`${styles.paymentSlotStatus} ${isPaid ? styles.paymentSlotStatusPaid : styles.paymentSlotStatusPending}`}>
-                        {isPaid ? <><Check size={12} strokeWidth={2.5} /> 입금 완료</> : <>● 입금 대기</>}
+                      {isRefunded ? (
+                        <div className={`${styles.paymentSlotAmount} ${styles.paymentSlotAmountStruck}`}>19,900원</div>
+                      ) : isPartialRefunded ? (
+                        <>
+                          <div className={styles.paymentSlotAmount}>
+                            19,900원
+                            <span className={styles.paymentSlotAmountRemaining}> → 남은 {(19900 - refundAmount).toLocaleString('ko-KR')}원</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className={styles.paymentSlotAmount}>19,900원</div>
+                      )}
+                      <div className={`${styles.paymentSlotStatus} ${
+                        isPartialRefunded ? styles.paymentSlotStatusPartialRefunded
+                        : isRefunded ? styles.paymentSlotStatusRefunded
+                        : isPaid ? styles.paymentSlotStatusPaid
+                        : styles.paymentSlotStatusPending
+                      }`}>
+                        {isPaid && <><Check size={12} strokeWidth={2.5} /> 입금 완료</>}
+                        {isPartialRefunded && <>● 부분환불 ({refundAmount.toLocaleString('ko-KR')}원)</>}
+                        {isRefunded && <>● 환불완료</>}
+                        {!isPaid && !isPartialRefunded && !isRefunded && <>● 입금 대기</>}
                       </div>
-                      {!isPaid && (
+                      {!isPaid && !isPartialRefunded && !isRefunded && (
                         <button
                           className={styles.paymentSlotBtn}
                           onClick={() => handleParticipantPaymentConfirm(side)}
