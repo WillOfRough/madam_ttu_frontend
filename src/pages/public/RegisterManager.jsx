@@ -1,16 +1,55 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { RefreshCw, ShieldCheck, Smartphone, ArrowRight } from 'lucide-react';
+import { RefreshCw, ShieldCheck, Smartphone, ArrowRight, UserCheck, Lock, Scale } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { generateNickname, BANK_OPTIONS } from '../../data/constants';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
 import styles from './RegisterManager.module.css';
 
-const OATH_ITEMS = [
-  '매칭 과정에서 취득한 회원의 개인정보(이름, 연락처, 사진 등)를 제3자에게 무단으로 제공하거나 유출하지 않겠습니다.',
-  '수집된 개인정보는 매칭 목적 이외의 용도로 사용하지 않겠습니다.',
-  '회원이 탈퇴를 요청한 경우, 관련 정보를 지체 없이 삭제하겠습니다.',
-  '위 사항을 위반할 경우 서비스 이용 제한 및 민·형사상 법적 책임을 질 수 있음을 이해합니다.',
+const OATH_GROUPS = [
+  {
+    id: 'privacy',
+    icon: ShieldCheck,
+    label: 'A. 개인정보 보호',
+    color: 'tangerine',
+    items: [
+      '매칭 과정에서 취득한 회원의 이름·연락처·사진·프로필 정보를 제3자에게 무단으로 제공하거나 유출하지 않겠습니다.',
+      '수집된 개인정보는 매칭 목적 이외의 용도로 절대 사용하지 않겠습니다.',
+      '대화 내용·사진·프로필 등의 캡처·녹음·기록물을 외부에 유출하지 않겠습니다.',
+      '회원이 탈퇴를 요청한 경우, 보유한 관련 정보를 지체 없이 폐기하겠습니다.',
+    ],
+  },
+  {
+    id: 'ethics',
+    icon: UserCheck,
+    label: 'B. 직업 윤리',
+    color: 'mint',
+    items: [
+      '회원에게 사적 호감 표현·개인 연락 등 직무 범위를 벗어난 접근을 하지 않겠습니다.',
+      '외모·학력·직업·소득 등을 기준으로 회원을 차별하거나 부당하게 평가하지 않겠습니다.',
+      '회원 정보를 활용하여 본인 또는 타인의 영리 활동에 이용하지 않겠습니다.',
+    ],
+  },
+  {
+    id: 'security',
+    icon: Lock,
+    label: 'C. 보안 관리',
+    color: 'lilac',
+    items: [
+      '계정 비밀번호를 안전하게 관리하며, 공용 기기에서의 로그인을 삼가겠습니다.',
+      '개인정보 유출 의심 정황을 발견한 경우, 운영팀에 즉시 신고하겠습니다.',
+    ],
+  },
+  {
+    id: 'legal',
+    icon: Scale,
+    label: 'D. 책임 및 법적 근거',
+    color: 'rose',
+    items: [
+      '위 사항을 위반할 경우 서비스 이용 제한 및 민·형사상 법적 책임을 질 수 있음을 이해합니다.',
+      '개인정보보호법·정보통신망법 등 관련 법령을 준수하며 서비스를 이용하겠습니다.',
+    ],
+  },
 ];
 
 function getStrengthLevel(pw) {
@@ -103,12 +142,25 @@ export default function RegisterManager() {
 
             {/* Rules */}
             <div className={styles.oathRules}>
-              {OATH_ITEMS.map((text, i) => (
-                <div key={i} className={styles.oathRule}>
-                  <div className={styles.oathRuleNum}>{i + 1}</div>
-                  <span className={styles.oathRuleText}>{text}</span>
-                </div>
-              ))}
+              {OATH_GROUPS.map((group) => {
+                const Icon = group.icon;
+                return (
+                  <div key={group.id} className={`${styles.oathGroup} ${styles[`oathGroup_${group.color}`]}`}>
+                    <div className={styles.oathGroupHeader}>
+                      <div className={`${styles.oathGroupIcon} ${styles[`oathGroupIcon_${group.color}`]}`}>
+                        <Icon size={13} />
+                      </div>
+                      <span className={`${styles.oathGroupLabel} ${styles[`oathGroupLabel_${group.color}`]}`}>{group.label}</span>
+                    </div>
+                    {group.items.map((text, i) => (
+                      <div key={i} className={styles.oathRule}>
+                        <div className={`${styles.oathRuleNum} ${styles[`oathRuleNum_${group.color}`]}`}>{i + 1}</div>
+                        <span className={styles.oathRuleText}>{text}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Agreement */}
