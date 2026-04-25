@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import ConfirmModal from '../../components/ConfirmModal';
 import styles from './Login.module.css';
+
+const SUPPORT_EMAIL = 'admin@knotsandlinks.com';
 
 const REMEMBER_KEY = 'knl_remember_email';
 
@@ -43,6 +46,8 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [focusField, setFocusField] = useState(null);
   const [error, setError] = useState(null);
+  const [pwResetOpen, setPwResetOpen] = useState(false);
+  const [inviteRequestOpen, setInviteRequestOpen] = useState(false);
 
   const canSubmit = email.includes('@') && password.length >= 4;
 
@@ -149,10 +154,7 @@ export default function Login() {
 
           {/* Remember + forgot */}
           <div className={styles.metaRow}>
-            <label
-              className={styles.rememberLabel}
-              onClick={() => setRememberEmail(!rememberEmail)}
-            >
+            <label className={styles.rememberLabel}>
               <input
                 type="checkbox"
                 className={styles.rememberInput}
@@ -164,7 +166,11 @@ export default function Login() {
               </div>
               <span className={styles.rememberText}>이메일 기억하기</span>
             </label>
-            <button type="button" className={styles.forgotBtn}>
+            <button
+              type="button"
+              className={styles.forgotBtn}
+              onClick={() => setPwResetOpen(true)}
+            >
               비밀번호 재설정
             </button>
           </div>
@@ -200,11 +206,42 @@ export default function Login() {
         {/* Footer */}
         <p className={styles.footer}>
           아직 매니저가 아니세요?{' '}
-          <button type="button" className={styles.footerLink}>
+          <button
+            type="button"
+            className={styles.footerLink}
+            onClick={() => setInviteRequestOpen(true)}
+          >
             기존 매니저에게 초대 요청하기
           </button>
         </p>
       </div>
+
+      {pwResetOpen && (
+        <ConfirmModal
+          title="비밀번호 재설정"
+          message={`비밀번호 재설정은 관리자에게 문의해주세요. ${SUPPORT_EMAIL}으로 메일을 보내드릴까요?`}
+          confirmLabel="메일 보내기"
+          cancelLabel="닫기"
+          onConfirm={() => {
+            const subject = encodeURIComponent('[Knots & Links] 비밀번호 재설정 요청');
+            const body = encodeURIComponent(`매니저 계정: ${email || '(이메일을 입력해주세요)'}\n\n비밀번호 재설정을 요청합니다.`);
+            window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+            setPwResetOpen(false);
+          }}
+          onCancel={() => setPwResetOpen(false)}
+        />
+      )}
+
+      {inviteRequestOpen && (
+        <ConfirmModal
+          title="기존 매니저에게 초대 요청"
+          message="현재 활동 중인 매니저에게 직접 연락하여 초대 링크를 요청해주세요. 매니저는 [대시보드 > 매니저 연결] 메뉴에서 초대 링크를 생성할 수 있습니다."
+          confirmLabel="확인"
+          cancelLabel="닫기"
+          onConfirm={() => setInviteRequestOpen(false)}
+          onCancel={() => setInviteRequestOpen(false)}
+        />
+      )}
     </div>
   );
 }
