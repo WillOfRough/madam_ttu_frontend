@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff, DollarSign, ChevronRight } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
@@ -18,10 +18,13 @@ export default function Settings() {
   const fetchInfo = useManagerStore((s) => s.fetchInfo);
   const updateInfo = useManagerStore((s) => s.updateInfo);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // dev 환경에서는 모든 매니저가 정산 탭을 볼 수 있도록 개방
   const canSeeSettlement = true;
-  const [settingsTab, setSettingsTab] = useState('settings');
+  const [settingsTab, setSettingsTab] = useState(
+    location.state?.tab === 'settlement' ? 'settlement' : 'settings'
+  );
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', phone: '', bankName: '', bankNumber: '' });

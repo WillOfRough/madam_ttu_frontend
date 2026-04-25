@@ -360,7 +360,7 @@ export default function DashboardHome() {
           sub={settlementSub}
           icon={Wallet}
           tone="tangerine"
-          onClick={() => navigate('/dashboard/settlements')}
+          onClick={() => navigate('/dashboard/settings', { state: { tab: 'settlement' } })}
         />
       </div>
 
