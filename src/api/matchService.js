@@ -1,9 +1,12 @@
 import { apiFetch } from './config';
 
-export async function createMatch({ clientAId, clientBId, type, note }) {
+export async function createMatch({ clientAId, clientBId, type, note, paymentAmountA, paymentAmountB }) {
+  const body = { clientAId, clientBId, type, note };
+  if (paymentAmountA !== undefined && paymentAmountA !== null) body.paymentAmountA = paymentAmountA;
+  if (paymentAmountB !== undefined && paymentAmountB !== null) body.paymentAmountB = paymentAmountB;
   return apiFetch('/api/v1/matches', {
     method: 'POST',
-    body: { clientAId, clientBId, type, note },
+    body,
   });
 }
 

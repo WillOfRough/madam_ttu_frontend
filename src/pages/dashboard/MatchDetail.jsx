@@ -99,12 +99,19 @@ function getStepIndex(status) {
 }
 
 /* hero card stage config */
-function getStageHero(status) {
+function getStageHero(match) {
+  const status = match?.status;
+  const A = match?.clientA || {};
+  const B = match?.clientB || {};
+  const proposer = A.role === 'proposer' ? A : B.role === 'proposer' ? B : null;
+  const receiver = A.role === 'receiver' ? A : B.role === 'receiver' ? B : null;
+  const proposerName = proposer?.clientName || 'A';
+  const receiverName = receiver?.clientName || 'B';
   const map = {
-    draft:            { color: 'lilac',     icon: 'send',     title: '매칭을 시작할 준비가 되었어요', sub: '시작하면 A님께 프로필 링크 문자가 자동 발송돼요.' },
-    proposal_sent:    { color: 'lilac',     icon: 'clock',    title: 'A님의 응답을 기다리고 있어요',  sub: '프로필 링크 전달 후 응답 대기 중입니다.' },
-    proposal_accepted:{ color: 'lilac',     icon: 'check',    title: 'B님의 응답을 기다리고 있어요',  sub: 'A님이 수락했습니다.' },
-    awaiting_payment: { color: 'amber',     icon: 'money',    title: '두 분 모두 입금을 확인해 주세요', sub: 'A · B 모두 입금이 완료되면 처리 버튼을 눌러주세요.' },
+    draft:            { color: 'lilac',     icon: 'send',     title: '매칭을 시작할 준비가 되었어요', sub: `시작하면 ${proposerName}님께 프로필 링크 문자가 자동 발송돼요.` },
+    proposal_sent:    { color: 'lilac',     icon: 'clock',    title: `${proposerName}님의 응답을 기다리고 있어요`,  sub: '프로필 링크 전달 후 응답 대기 중입니다.' },
+    proposal_accepted:{ color: 'lilac',     icon: 'check',    title: `${receiverName}님의 응답을 기다리고 있어요`,  sub: `${proposerName}님이 수락했습니다.` },
+    awaiting_payment: { color: 'amber',     icon: 'money',    title: '두 분 모두 입금을 확인해 주세요', sub: `${proposerName} · ${receiverName} 모두 입금이 완료되면 처리 버튼을 눌러주세요.` },
     scheduling:       { color: 'tangerine', icon: 'calendar', title: '양쪽 가용시간을 기다리고 있어요', sub: '둘 다 제출하면 공통 시간으로 자동 확정돼요.' },
     arranging:        { color: 'tangerine', icon: 'calendar', title: '공통 시간이 확정되었어요',        sub: '아래에서 약속 일시를 확인하고 확정하세요.' },
     scheduled:        { color: 'mint',      icon: 'mapPin',   title: '약속이 확정되었어요',             sub: '미팅 당일 두 분이 잘 만날 수 있도록 챙겨주세요.' },
@@ -295,6 +302,7 @@ export default function MatchDetail() {
   const [showRescheduleLinks, setShowRescheduleLinks] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   const [showCompleteWarning, setShowCompleteWarning] = useState(false);
+  const [paymentConfirmTarget, setPaymentConfirmTarget] = useState(null); // null | 'all' | 'A' | 'B'
   const [cancelReason, setCancelReason] = useState('');
   const [payments, setPayments] = useState(null);
   const [showEditSchedule, setShowEditSchedule] = useState(false);
@@ -370,7 +378,7 @@ export default function MatchDetail() {
   const stepIndex = getStepIndex(match.status);
   const isCancelled = match.status === 'cancelled';
   const refundStatus = getRefundStatus(match.meetingDate);
-  const heroConfig = getStageHero(match.status);
+  const heroConfig = getStageHero(match);
 
   /* ── handlers ── */
   const handlePaymentConfirm = async () => {
@@ -749,12 +757,17 @@ export default function MatchDetail() {
                   const paymentDetail = (payments || []).find((p) => p.clientId === client.clientId);
                   const paymentSummary = match.paymentSummary?.[`client${side}`];
                   const status = paymentDetail?.status || paymentSummary?.status || 'pending';
+                  const amount = paymentDetail?.amount ?? paymentSummary?.amount ?? 19900;
+                  const amountLabel = `${(amount || 0).toLocaleString('ko-KR')}원`;
+                  const isFree = amount === 0;
                   const isPaid = status === 'paid';
                   const isPartialRefunded = status === 'partial_refunded';
                   const isRefunded = status === 'refunded';
                   const hasParticipantId = Boolean(paymentDetail?.matchParticipantId);
                   const refundAmount = paymentDetail?.refundAmount ?? paymentSummary?.refundAmount ?? 0;
-                  const slotClass = isPartialRefunded
+                  const slotClass = isFree
+                    ? styles.paymentSlotPaid
+                    : isPartialRefunded
                     ? styles.paymentSlotPartialRefunded
                     : isRefunded
                     ? styles.paymentSlotRefunded
@@ -771,34 +784,37 @@ export default function MatchDetail() {
                           {client.clientName?.slice(1) || side}
                         </span>
                         <span className={styles.paymentSlotName}>{client.clientNickname || client.clientName}</span>
+                        {isFree && <span className={styles.paymentSlotFreeBadge}>무료 매칭</span>}
                       </div>
-                      {isRefunded ? (
-                        <div className={`${styles.paymentSlotAmount} ${styles.paymentSlotAmountStruck}`}>19,900원</div>
+                      {isFree ? (
+                        <div className={styles.paymentSlotAmount}>0원</div>
+                      ) : isRefunded ? (
+                        <div className={`${styles.paymentSlotAmount} ${styles.paymentSlotAmountStruck}`}>{amountLabel}</div>
                       ) : isPartialRefunded ? (
-                        <>
-                          <div className={styles.paymentSlotAmount}>
-                            19,900원
-                            <span className={styles.paymentSlotAmountRemaining}> → 남은 {(19900 - refundAmount).toLocaleString('ko-KR')}원</span>
-                          </div>
-                        </>
+                        <div className={styles.paymentSlotAmount}>
+                          {amountLabel}
+                          <span className={styles.paymentSlotAmountRemaining}> → 남은 {(amount - refundAmount).toLocaleString('ko-KR')}원</span>
+                        </div>
                       ) : (
-                        <div className={styles.paymentSlotAmount}>19,900원</div>
+                        <div className={styles.paymentSlotAmount}>{amountLabel}</div>
                       )}
                       <div className={`${styles.paymentSlotStatus} ${
-                        isPartialRefunded ? styles.paymentSlotStatusPartialRefunded
+                        isFree ? styles.paymentSlotStatusPaid
+                        : isPartialRefunded ? styles.paymentSlotStatusPartialRefunded
                         : isRefunded ? styles.paymentSlotStatusRefunded
                         : isPaid ? styles.paymentSlotStatusPaid
                         : styles.paymentSlotStatusPending
                       }`}>
-                        {isPaid && <><Check size={12} strokeWidth={2.5} /> 입금 완료</>}
-                        {isPartialRefunded && <>● 부분환불 ({refundAmount.toLocaleString('ko-KR')}원)</>}
-                        {isRefunded && <>● 환불완료</>}
-                        {!isPaid && !isPartialRefunded && !isRefunded && <>● 입금 대기</>}
+                        {isFree && <><Check size={12} strokeWidth={2.5} /> 입금 불필요</>}
+                        {!isFree && isPaid && <><Check size={12} strokeWidth={2.5} /> 입금 완료</>}
+                        {!isFree && isPartialRefunded && <>● 부분환불 ({refundAmount.toLocaleString('ko-KR')}원)</>}
+                        {!isFree && isRefunded && <>● 환불완료</>}
+                        {!isFree && !isPaid && !isPartialRefunded && !isRefunded && <>● 입금 대기</>}
                       </div>
-                      {!isPaid && !isPartialRefunded && !isRefunded && (
+                      {!isFree && !isPaid && !isPartialRefunded && !isRefunded && (
                         <button
                           className={styles.paymentSlotBtn}
-                          onClick={() => handleParticipantPaymentConfirm(side)}
+                          onClick={() => setPaymentConfirmTarget(side)}
                           disabled={actionLoading || !hasParticipantId}
                           title={!hasParticipantId ? '결제 정보 로딩 중...' : ''}
                         >
@@ -811,11 +827,23 @@ export default function MatchDetail() {
               </div>
               <div className={styles.paymentNote}>
                 <Info size={11} style={{ color: 'var(--amber-600)', flexShrink: 0 }} />
-                계좌 내역에서 두 분 입금을 직접 확인해주세요 · 19,900원 × 2
+                {(() => {
+                  const amtA = (payments || []).find((p) => p.clientId === match.clientA?.clientId)?.amount
+                    ?? match.paymentSummary?.clientA?.amount
+                    ?? 19900;
+                  const amtB = (payments || []).find((p) => p.clientId === match.clientB?.clientId)?.amount
+                    ?? match.paymentSummary?.clientB?.amount
+                    ?? 19900;
+                  if (amtA === 0 && amtB === 0) return '양쪽 모두 무료 매칭이에요. 입금 확인 없이 바로 진행됩니다.';
+                  if (amtA === amtB) {
+                    return `계좌 내역에서 두 분 입금을 직접 확인해주세요 · ${amtA.toLocaleString('ko-KR')}원 × 2`;
+                  }
+                  return `계좌 내역에서 두 분 입금을 직접 확인해주세요 · A ${amtA.toLocaleString('ko-KR')}원 / B ${amtB.toLocaleString('ko-KR')}원`;
+                })()}
               </div>
               <button
                 className={styles.heroCtaBtn}
-                onClick={handlePaymentConfirm}
+                onClick={() => setPaymentConfirmTarget('all')}
                 disabled={actionLoading}
               >
                 두 분 모두 입금 확인 완료
@@ -1390,6 +1418,32 @@ export default function MatchDetail() {
           cancelLabel="돌아가기"
           onConfirm={() => { setShowReschedule(false); handleReschedule(); }}
           onCancel={() => setShowReschedule(false)}
+        />
+      )}
+
+      {/* Payment Confirm Warning Modal */}
+      {paymentConfirmTarget && (
+        <ConfirmModal
+          title={paymentConfirmTarget === 'all' ? '두 분 입금 확인 처리' : `${paymentConfirmTarget} 입금 확인 처리`}
+          message={(
+            <>
+              계좌에 실제로 입금된 것을 반드시 먼저 확인해 주세요.
+              <br /><br />
+              ⚠️ 입금 확인 처리하면 해당 건은 <b>정산 집계에 포함되지 않습니다.</b> 처리는 되돌릴 수 없어요.
+              <br /><br />
+              그래도 입금 처리하시겠습니까?
+            </>
+          )}
+          confirmLabel="입금 처리"
+          cancelLabel="돌아가기"
+          danger
+          onConfirm={() => {
+            const target = paymentConfirmTarget;
+            setPaymentConfirmTarget(null);
+            if (target === 'all') handlePaymentConfirm();
+            else handleParticipantPaymentConfirm(target);
+          }}
+          onCancel={() => setPaymentConfirmTarget(null)}
         />
       )}
 

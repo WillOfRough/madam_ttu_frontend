@@ -1500,15 +1500,19 @@ function derivePaymentStatus(m, side) {
   return 'pending';
 }
 
+const DEFAULT_PAYMENT_AMOUNT = 19900;
+
 function buildPaymentResponse(m, side) {
   const client = side === 'A' ? m.clientA : m.clientB;
   let status = derivePaymentStatus(m, side);
   const paidAt = status === 'paid' ? (m.paidAts?.[side] || m.createdAt) : null;
+  const overrideAmount = m.paymentAmounts?.[side];
+  const amount = (overrideAmount === null || overrideAmount === undefined) ? DEFAULT_PAYMENT_AMOUNT : overrideAmount;
   let refundAmount = null;
   let refundedAt = null;
   const refund = m.refunds?.[side];
   if (refund) {
-    status = refund.amount < 19900 ? 'partial_refunded' : 'refunded';
+    status = refund.amount < amount ? 'partial_refunded' : 'refunded';
     refundAmount = refund.amount;
     refundedAt = refund.refundedAt || null;
   }
@@ -1519,7 +1523,7 @@ function buildPaymentResponse(m, side) {
     clientId: client.clientId,
     clientName: client.deleted ? '삭제한 회원' : (client.clientName || null),
     orderId: `ORD-${m.matchId.slice(-6)}-${side}`,
-    amount: 19900,
+    amount,
     currency: 'KRW',
     paymentMethod: 'manual',
     status,
@@ -2136,12 +2140,22 @@ export async function mockFetch(path, options = {}) {
     const foundA = clients.find((c) => c.id === body.clientAId);
     const foundB = clients.find((c) => c.id === body.clientBId);
     if (!foundA || !foundB) throw Object.assign(new Error('회원을 찾을 수 없습니다.'), { status: 404 });
+    const validateAmount = (v, name) => {
+      if (v === undefined || v === null) return null;
+      if (!Number.isInteger(v) || v < 0) {
+        throw Object.assign(new Error(`${name}은(는) 0 이상의 정수여야 합니다.`), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+      }
+      return v;
+    };
+    const paymentAmountA = validateAmount(body.paymentAmountA, 'paymentAmountA');
+    const paymentAmountB = validateAmount(body.paymentAmountB, 'paymentAmountB');
     const tokenA = randomToken();
     const tokenB = randomToken();
     const newMatch = {
       matchId: `match${Date.now()}`, type: body.type || null, status: 'draft', note: body.note || '',
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
+      paymentAmounts: { A: paymentAmountA, B: paymentAmountB },
       createdAt: new Date().toISOString(),
       createdByManagerId: currentUser.id,
       createdByManagerName: currentUser.name,

@@ -1185,6 +1185,132 @@
   line-height: 1.55;
 }
 
+/* ── Payment amount section ── */
+.wizPaymentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--paper-card);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--r-md);
+}
+
+.wizPaymentHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wizPaymentTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.wizPaymentSub {
+  font-size: 11px;
+  color: var(--ink-500);
+  font-weight: 500;
+}
+
+.wizPaymentRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ink-100);
+}
+.wizPaymentRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.wizPaymentRowLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+.wizPaymentChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wizPaymentChip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--ink-100);
+  color: var(--ink-700);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+.wizPaymentChip:hover {
+  background: var(--ink-50);
+}
+.wizPaymentChipActive {
+  background: var(--ink-900);
+  border-color: var(--ink-900);
+  color: #fff;
+}
+.wizPaymentChipActive:hover {
+  background: var(--ink-700);
+}
+
+.wizPaymentInputWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--paper);
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.wizPaymentInputWrap:focus-within {
+  border-color: var(--ink-500);
+  box-shadow: 0 0 0 3px rgba(15, 21, 38, 0.06);
+}
+
+.wizPaymentInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--ink-900);
+  -moz-appearance: textfield;
+}
+.wizPaymentInput::-webkit-outer-spin-button,
+.wizPaymentInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wizPaymentInputInvalid + .wizPaymentInputUnit,
+.wizPaymentInputInvalid {
+  color: var(--rose-600);
+}
+
+.wizPaymentInputUnit {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-500);
+  flex-shrink: 0;
+}
+
+.wizPaymentError {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rose-600);
+}
+
 /* ── Note textarea ── */
 .wizNoteWrap {
   padding-bottom: 4px;

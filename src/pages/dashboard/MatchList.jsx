@@ -960,6 +960,71 @@ function CompareRow({ label, valA, valB }) {
   );
 }
 
+const DEFAULT_PAYMENT_AMOUNT = 19900;
+
+function PaymentAmountField({ label, mode, setMode, custom, setCustom }) {
+  const trimmed = (custom || '').trim();
+  const parsedNum = trimmed === '' ? null : Number(trimmed);
+  const customInvalid = mode === 'custom' && (
+    trimmed === '' ||
+    !Number.isFinite(parsedNum) ||
+    !Number.isInteger(parsedNum) ||
+    parsedNum < 0
+  );
+
+  return (
+    <div className={styles.wizPaymentRow}>
+      <span className={styles.wizPaymentRowLabel}>{label}</span>
+      <div className={styles.wizPaymentChips}>
+        <button
+          type="button"
+          aria-pressed={mode === 'default'}
+          className={`${styles.wizPaymentChip} ${mode === 'default' ? styles.wizPaymentChipActive : ''}`}
+          onClick={() => setMode('default')}
+        >
+          기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원
+        </button>
+        <button
+          type="button"
+          aria-pressed={mode === 'free'}
+          className={`${styles.wizPaymentChip} ${mode === 'free' ? styles.wizPaymentChipActive : ''}`}
+          onClick={() => setMode('free')}
+        >
+          무료
+        </button>
+        <button
+          type="button"
+          aria-pressed={mode === 'custom'}
+          className={`${styles.wizPaymentChip} ${mode === 'custom' ? styles.wizPaymentChipActive : ''}`}
+          onClick={() => setMode('custom')}
+        >
+          직접 입력
+        </button>
+      </div>
+      {mode === 'custom' && (
+        <div className={styles.wizPaymentInputWrap}>
+          <input
+            type="number"
+            inputMode="numeric"
+            min="0"
+            step="1"
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            placeholder="예: 30000"
+            className={`${styles.wizPaymentInput} ${customInvalid ? styles.wizPaymentInputInvalid : ''}`}
+            aria-label={`${label} 결제 금액`}
+            aria-invalid={customInvalid || undefined}
+          />
+          <span className={styles.wizPaymentInputUnit}>원</span>
+        </div>
+      )}
+      {customInvalid && (
+        <span className={styles.wizPaymentError}>0 이상의 정수만 입력할 수 있어요.</span>
+      )}
+    </div>
+  );
+}
+
 function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientBId }) {
   const [step,           setStep]           = useState(1);
   const [clientA,        setClientA]        = useState(null);
@@ -971,6 +1036,11 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
   const [duplicateMatch, setDuplicateMatch] = useState(null);
   const [activeMatches,  setActiveMatches]  = useState({ A: [], B: [], deletedA: [], deletedB: [] });
   const [pairHistory,    setPairHistory]    = useState([]);
+  /* 결제 금액: 'default' | 'free' | 'custom' */
+  const [paymentModeA,   setPaymentModeA]   = useState('default');
+  const [paymentModeB,   setPaymentModeB]   = useState('default');
+  const [customAmountA,  setCustomAmountA]  = useState('');
+  const [customAmountB,  setCustomAmountB]  = useState('');
   /* prefill resolution tracking (internal only) */
   const prefillResolvedRef = useRef(false);
   const navigate = useNavigate();
@@ -1131,6 +1201,21 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
     setStep(3);
   };
 
+  /* ── Resolve per-side payment amount based on mode ── */
+  const resolvePaymentAmount = (mode, customStr) => {
+    if (mode === 'default') return null;          // null → 환경변수 fallback
+    if (mode === 'free') return 0;
+    const trimmed = (customStr || '').trim();
+    if (trimmed === '') return null;              // 빈값이면 default 처리
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) return NaN; // invalid
+    return n;
+  };
+
+  const paymentAmountA = resolvePaymentAmount(paymentModeA, customAmountA);
+  const paymentAmountB = resolvePaymentAmount(paymentModeB, customAmountB);
+  const paymentInvalid = Number.isNaN(paymentAmountA) || Number.isNaN(paymentAmountB);
+
   /* ── Submit ── */
   const handleSubmit = async () => {
     if (!clientA || !clientB || duplicateMatch) return;
@@ -1138,9 +1223,19 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
       toast.error('비활성/휴면 상태 회원은 매칭할 수 없습니다.');
       return;
     }
+    if (paymentInvalid) {
+      toast.error('결제 금액은 0 이상의 정수여야 합니다.');
+      return;
+    }
     setSubmitting(true);
     try {
-      await matchService.createMatch({ clientAId: clientA.id, clientBId: clientB.id, note });
+      await matchService.createMatch({
+        clientAId: clientA.id,
+        clientBId: clientB.id,
+        note,
+        paymentAmountA,
+        paymentAmountB,
+      });
       toast.success('매칭이 생성되었습니다.');
       onCreated();
     } catch (err) {
@@ -1463,6 +1558,30 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 </span>
               </div>
 
+              {/* ── Payment amount (per-side) ── */}
+              <div className={styles.wizPaymentSection}>
+                <div className={styles.wizPaymentHeader}>
+                  <span className={styles.wizPaymentTitle}>결제 금액</span>
+                  <span className={styles.wizPaymentSub}>
+                    기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 · A/B 각각 지정 가능
+                  </span>
+                </div>
+                <PaymentAmountField
+                  label={`A · ${nameA}`}
+                  mode={paymentModeA}
+                  setMode={setPaymentModeA}
+                  custom={customAmountA}
+                  setCustom={setCustomAmountA}
+                />
+                <PaymentAmountField
+                  label={`B · ${nameB}`}
+                  mode={paymentModeB}
+                  setMode={setPaymentModeB}
+                  custom={customAmountB}
+                  setCustom={setCustomAmountB}
+                />
+              </div>
+
               {/* ── Note ── */}
               <div className={styles.wizNoteWrap}>
                 <textarea
@@ -1502,7 +1621,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
               type="button"
               className={styles.wizSubmitBtn}
               onClick={handleSubmit}
-              disabled={!clientA || !clientB || submitting || !!duplicateMatch}
+              disabled={!clientA || !clientB || submitting || !!duplicateMatch || paymentInvalid}
             >
               {submitting ? (
                 <span className={styles.submitSpinner} />
