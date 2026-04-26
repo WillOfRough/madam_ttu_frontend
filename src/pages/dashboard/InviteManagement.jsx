@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
@@ -272,7 +273,7 @@ export default function InviteManagement() {
       </div>
 
       {/* ── 일반 링크 생성 시트 ── */}
-      {showGeneral && (
+      {showGeneral && createPortal(
         <div className={styles.sheetOverlay} onClick={closeGeneral}>
           <div className={styles.sheetPanel} onClick={(e) => e.stopPropagation()}>
             <div className={styles.sheetHandle} />
@@ -298,11 +299,12 @@ export default function InviteManagement() {
               <button className={styles.btnPrimary} onClick={handleCreateGeneral}>생성</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── 이벤트 링크 생성 시트 ── */}
-      {showEvent && (
+      {showEvent && createPortal(
         <div className={styles.sheetOverlay} onClick={closeEvent}>
           <div className={`${styles.sheetPanel} ${styles.sheetPanelEvent}`} onClick={(e) => e.stopPropagation()}>
             <div className={styles.sheetHandle} />
@@ -359,7 +361,8 @@ export default function InviteManagement() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Revoke confirm modal ── */}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -1355,7 +1356,7 @@ export default function MatchDetail() {
       )}
 
       {/* Cancel Modal */}
-      {showCancel && (
+      {showCancel && createPortal(
         <div className={styles.overlay} onClick={() => { setShowCancel(false); setCancelReason(''); }}>
           <div className={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.sheetHandle} />
@@ -1400,7 +1401,8 @@ export default function MatchDetail() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Complete Match Warning Modal */}
@@ -1455,7 +1457,7 @@ export default function MatchDetail() {
       )}
 
       {/* Confirm Schedule Modal */}
-      {showConfirm && (
+      {showConfirm && createPortal(
         <div className={styles.overlay} onClick={() => setShowConfirm(false)}>
           <div className={styles.centeredModal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>약속 확정</h3>
@@ -1504,11 +1506,12 @@ export default function MatchDetail() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Schedule Modal */}
-      {showEditSchedule && (
+      {showEditSchedule && createPortal(
         <div className={styles.overlay} onClick={closeEditScheduleModal}>
           <div
             className={`${styles.sheetModal} ${styles.editScheduleModal}`}
@@ -1585,7 +1588,8 @@ export default function MatchDetail() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit Schedule Confirm */}
@@ -1605,7 +1609,7 @@ export default function MatchDetail() {
       {showRemindConfirm && (() => {
         const preview = getRemindPreview(match, payments);
         const empty = preview.recipients.length === 0;
-        return (
+        return createPortal(
           <div className={styles.overlay} onClick={() => setShowRemindConfirm(false)}>
             <div className={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.sheetHandle} />
@@ -1645,7 +1649,8 @@ export default function MatchDetail() {
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
 

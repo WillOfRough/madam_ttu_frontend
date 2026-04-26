@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, HelpCircle, Calendar, Inbox,
@@ -733,13 +734,20 @@ function RefundPolicyCard({ onClick }) {
 
 /* === 시트 래퍼 === */
 function SheetWrap({ onClose, children }) {
-  return (
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  return createPortal(
     <div className={styles.sheetOverlay} onClick={onClose} role="dialog" aria-modal="true">
       <div className={styles.sheetPanel} onClick={(e) => e.stopPropagation()}>
         <div className={styles.sheetHandle} />
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

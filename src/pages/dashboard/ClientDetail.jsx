@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Edit3, Trash2, X,
@@ -824,7 +825,7 @@ export default function ClientDetail() {
       </div>
 
       {/* ══ 12. Withdraw Bottom Sheet ══ */}
-      {sheetOpen && (
+      {sheetOpen && createPortal(
         <div className={styles.sheetOverlay} onClick={() => !deleting && setSheetOpen(false)}>
           <div className={styles.sheet} onClick={(e) => e.stopPropagation()}>
             <div className={styles.sheetTitle}>{client.name}님을 탈퇴 처리할까요?</div>
@@ -848,7 +849,8 @@ export default function ClientDetail() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Photo Lightbox ── */}
