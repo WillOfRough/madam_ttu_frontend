@@ -278,8 +278,8 @@
   flex-shrink: 0;
 }
 
-/* === 차트 카드 === */
-.chartCard {
+/* === 매칭 종료 달력 카드 === */
+.calendarCard {
   padding: 14px 16px;
   border-radius: 14px;
   background: #fff;
@@ -287,123 +287,223 @@
   border: 1px solid rgba(15, 21, 38, 0.04);
 }
 
-.chartHeader {
+.calendarHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.chartTitle {
+.calendarTitle {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink-900);
 }
 
-.chartSubtitle {
+.calendarSubtitle {
   font-size: 10.5px;
   color: var(--ink-400);
   margin-top: 2px;
 }
 
-.chartBars {
-  display: flex;
-  align-items: flex-end;
+.calendarWeekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 2px;
-  height: 94px;
-  position: relative;
-  padding-bottom: 14px;
+  margin-bottom: 4px;
 }
 
-.chartBarCol {
-  flex: 1;
+.calendarWeekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-500);
+  padding: 4px 0;
+  letter-spacing: 0.02em;
+}
+
+.calendarWeekdaySun {
+  color: var(--rose-600);
+}
+
+.calendarWeekdaySat {
+  color: #3B7EE0;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendarCellEmpty {
+  aspect-ratio: 1 / 1;
+}
+
+.calendarCell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  background: var(--ink-50);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-  position: relative;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  cursor: default;
 }
 
-.chartBarColFuture {
-  opacity: 0.3;
+.calendarCell:disabled {
+  cursor: default;
 }
 
-.chartBarStack {
-  width: 78%;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 1px;
-  justify-content: flex-end;
+.calendarCellHasMatch {
+  background: var(--tangerine-50);
+  cursor: pointer;
 }
 
-.chartBarPaid {
-  width: 100%;
-  background: var(--tangerine-500);
-  border-radius: 2px 2px 0 0;
-  min-height: 2px;
+.calendarCellHasMatch:hover {
+  background: var(--tangerine-100);
 }
 
-.chartBarPaidToday {
+.calendarCellHasMatch:active {
+  transform: scale(0.97);
+}
+
+.calendarCellFuture {
+  opacity: 0.45;
+}
+
+.calendarCellToday {
+  border-color: var(--tangerine-500);
+}
+
+.calendarCellSelected {
   background: var(--tangerine-600);
+  border-color: var(--tangerine-700);
 }
 
-.chartBarRefund {
-  width: 100%;
-  background: var(--rose-600);
-  border-radius: 2px 2px 0 0;
-  min-height: 2px;
+.calendarCellSelected:hover {
+  background: var(--tangerine-700);
 }
 
-.chartBarTodayDot {
-  position: absolute;
-  top: 0;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--tangerine-600);
-}
-
-.chartBarLabel {
-  position: absolute;
-  bottom: 0;
-  font-size: 8.5px;
-  font-weight: 500;
-  color: var(--ink-400);
+.calendarCellDay {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-700);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
-.chartBarLabelToday {
+.calendarCellDaySun {
+  color: var(--rose-600);
+}
+
+.calendarCellDaySat {
+  color: #3B7EE0;
+}
+
+.calendarCellHasMatch .calendarCellDay {
+  color: var(--ink-900);
+}
+
+.calendarCellSelected .calendarCellDay,
+.calendarCellSelected .calendarCellDaySun,
+.calendarCellSelected .calendarCellDaySat {
+  color: #fff;
+}
+
+.calendarCellBadge {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--tangerine-600);
+  color: #fff;
+  font-size: 9.5px;
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.calendarCellSelected .calendarCellBadge {
+  background: #fff;
   color: var(--tangerine-700);
 }
 
-.chartLegend {
+.calendarCellRefundDot {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rose-500);
+}
+
+.calendarLegend {
   display: flex;
   gap: 14px;
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 10px;
   color: var(--ink-500);
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.chartLegendItem {
+.calendarLegendItem {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
-.chartLegendDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
+.calendarLegendBadge {
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--tangerine-600);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendarLegendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.chartLegendUnit {
-  margin-left: auto;
-  color: var(--ink-400);
+/* === 선택 일자 칩 === */
+.selectedDayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 999px;
+  background: var(--tangerine-100);
+  color: var(--tangerine-700);
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.selectedDayChip:hover {
+  background: var(--tangerine-200);
 }
 
 /* === 정산 내역 섹션 === */
@@ -869,8 +969,8 @@
     align-items: start;
   }
 
-  /* Chart card: more breathing room */
-  .chartCard {
+  /* Calendar card: more breathing room */
+  .calendarCard {
     padding: 18px 20px;
   }
 

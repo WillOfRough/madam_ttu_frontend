@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  HelpCircle, Calendar, Inbox,
+  HelpCircle, Inbox,
   AlertCircle, ArrowRight, Heart, X, Check,
   TrendingUp, Clock,
 } from 'lucide-react';
@@ -136,18 +136,6 @@ function getCurrentMonthLabel() {
   return `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
 }
 
-function getNextNextPayoutLabel() {
-  const now = new Date();
-  const m = ((now.getMonth() + 2) % 12) + 1;
-  return `${m}월 10일`;
-}
-
-function getNextPayoutLabel() {
-  const now = new Date();
-  const m = ((now.getMonth() + 1) % 12) + 1;
-  return `${m}월 10일`;
-}
-
 /* === 메인 컴포넌트 === */
 export default function Settlement() {
   const now = new Date();
@@ -157,6 +145,7 @@ export default function Settlement() {
   // 기간·필터 상태
   const [period, setPeriod] = useState('this');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [selectedDay, setSelectedDay] = useState(null); // 달력에서 선택한 일자 (1~말일)
   const [showSheet, setShowSheet] = useState(null); // null | 'policy' | 'refund' | settlement-object
 
   // 데이터 상태
@@ -246,12 +235,20 @@ export default function Settlement() {
     settlements.filter(s => s.role === 'client_owner' && isPending(s.status) && !s.excluded).reduce((a, s) => a + (s.amount || 0), 0),
     [settlements]);
 
-  // 역할 필터 적용
+  // 역할 + 선택 일자 필터 적용
   const filteredSettlements = useMemo(() => {
-    if (roleFilter === 'match') return settlements.filter(s => s.role === 'matchmaker');
-    if (roleFilter === 'member') return settlements.filter(s => s.role === 'client_owner');
-    return settlements;
-  }, [settlements, roleFilter]);
+    let list = settlements;
+    if (roleFilter === 'match') list = list.filter(s => s.role === 'matchmaker');
+    else if (roleFilter === 'member') list = list.filter(s => s.role === 'client_owner');
+    if (selectedDay != null) {
+      const dayKey = `${year}-${String(month).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+      list = list.filter((s) => {
+        const k = getEndDateKey(s.matchEndedAt) || getEndDateKey(s.createdAt);
+        return k === dayKey;
+      });
+    }
+    return list;
+  }, [settlements, roleFilter, selectedDay, year, month]);
 
   // 일자별 그룹
   const grouped = useMemo(() => {
@@ -265,13 +262,16 @@ export default function Settlement() {
     return Object.entries(g).sort((a, b) => b[0].localeCompare(a[0]));
   }, [filteredSettlements]);
 
-  // 차트용 일별 데이터 (1~말일 빈 날짜 채우기)
+  // 달력용 일별 데이터 (1~말일 빈 날짜 채우기)
   const dailyChartData = useMemo(() => {
     const daysInMonth = new Date(year, month, 0).getDate();
     const today = now.getDate();
     const map = {};
     dailySeries.forEach((d) => {
-      const day = d.day || d.d;
+      let day = d.day || d.d;
+      if (!day && typeof d.date === 'string' && d.date.includes('-')) {
+        day = parseInt(d.date.split('-')[2], 10);
+      }
       if (day) map[day] = d;
     });
     return Array.from({ length: daysInMonth }, (_, i) => {
@@ -279,8 +279,9 @@ export default function Settlement() {
       const item = map[d] || {};
       return {
         d,
-        paid: item.settledAmount || item.paid || 0,
+        paid: item.paidAmount || item.settledAmount || item.paid || 0,
         refund: item.refundAmount || item.refund || 0,
+        count: item.count || 0,
         isFuture: d > today,
         isToday: d === today,
       };
@@ -290,6 +291,7 @@ export default function Settlement() {
   const handlePeriodChange = useCallback((p) => {
     setPeriod(p);
     setRoleFilter('all');
+    setSelectedDay(null);
   }, []);
 
   return (
@@ -319,18 +321,17 @@ export default function Settlement() {
           onPolicy={() => setShowSheet('policy')}
         />
 
-        {/* === 다음 정산 안내 === */}
-        <NextPayoutCard
-          nextPayoutDate={getNextPayoutLabel()}
-          thisMonthPayoutDate={getNextNextPayoutLabel()}
-          pendingCount={thisMonthSummary.count || 0}
-          pendingAmount={thisMonthSummary.pendingAmount || thisMonthSummary.totalAmount || 0}
-        />
-
-        {/* === 차트 카드 === */}
-        <ChartCard
+        {/* === 매칭 종료 달력 === */}
+        <CalendarCard
           data={dailyChartData}
           monthLabel={`${month}월`}
+          year={year}
+          month={month}
+          selectedDay={period === 'this' ? selectedDay : null}
+          onSelectDay={(d) => {
+            if (period !== 'this') setPeriod('this');
+            setSelectedDay(d);
+          }}
         />
 
         {/* === 정산 내역 === */}
@@ -342,6 +343,15 @@ export default function Settlement() {
                 {filteredSettlements.length}건 · {won(filteredSettlements.reduce((a, s) => a + (s.amount || 0), 0))}원
               </div>
             </div>
+            {selectedDay != null && (
+              <button
+                className={styles.selectedDayChip}
+                onClick={() => setSelectedDay(null)}
+              >
+                {month}월 {selectedDay}일
+                <X size={12} />
+              </button>
+            )}
           </div>
 
           {/* 기간 세그먼트 */}
@@ -489,7 +499,7 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, c
           <span className={styles.heroAmountUnit}>원</span>
         </div>
         <div className={styles.heroAmountMeta}>
-          <span>{count}건 · {getNextNextPayoutLabel()} 입금 예정</span>
+          <span>{count}건</span>
         </div>
       </div>
 
@@ -522,82 +532,84 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, c
   );
 }
 
-/* === 다음 정산 안내 카드 === */
-function NextPayoutCard({ nextPayoutDate, thisMonthPayoutDate, pendingCount, pendingAmount }) {
-  return (
-    <div className={styles.nextPayoutCard}>
-      <div className={styles.nextPayoutIconWrap}>
-        <Calendar size={15} color="var(--tangerine-700)" />
-      </div>
-      <div className={styles.nextPayoutInfo}>
-        <div className={styles.nextPayoutCaption}>다음 정산 예정</div>
-        <div className={styles.nextPayoutMain}>
-          <span className={styles.nextPayoutDate}>{nextPayoutDate}</span>
-          <span className={styles.nextPayoutAmount}>{won(pendingAmount)}원</span>
-          <span className={styles.nextPayoutCount}>· {pendingCount}건</span>
-        </div>
-      </div>
-      <div className={styles.nextPayoutThisMonth}>이번달 입금 {thisMonthPayoutDate}</div>
-    </div>
-  );
-}
+/* === 매칭 종료 달력 카드 === */
+function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay }) {
+  const firstDow = new Date(year, month - 1, 1).getDay(); // 0=일
+  const totalDays = data.length;
+  const totalCells = Math.ceil((firstDow + totalDays) / 7) * 7;
+  const totalCount = data.reduce((a, d) => a + (d.count || 0), 0);
 
-/* === 차트 카드 === */
-function ChartCard({ data, monthLabel }) {
-  const max = Math.max(...data.map((d) => Math.max(Math.abs(d.paid), Math.abs(d.refund))), 10000);
+  const cells = Array.from({ length: totalCells }, (_, i) => {
+    const idx = i - firstDow;
+    return idx >= 0 && idx < totalDays ? data[idx] : null;
+  });
 
   return (
-    <div className={styles.chartCard}>
-      <div className={styles.chartHeader}>
+    <div className={styles.calendarCard}>
+      <div className={styles.calendarHeader}>
         <div>
-          <div className={styles.chartTitle}>{monthLabel} 일별 적립</div>
-          <div className={styles.chartSubtitle}>매칭 종료일 기준</div>
+          <div className={styles.calendarTitle}>{monthLabel} 매칭 달력</div>
+          <div className={styles.calendarSubtitle}>
+            {totalCount > 0 ? `종료 ${totalCount}건 · 날짜 탭하면 그날 내역만 보기` : '매칭 종료일이 표시돼요'}
+          </div>
         </div>
       </div>
 
-      <div className={styles.chartBars}>
-        {data.map((d) => {
-          const paidH = (Math.abs(d.paid) / max) * 64;
-          const refundH = (Math.abs(d.refund) / max) * 64;
-          const labelDay = (d.d === 1 || d.d === 10 || d.d === 20 || d.d === 30 || d.isToday) ? d.d : null;
+      <div className={styles.calendarWeekRow}>
+        {['일', '월', '화', '수', '목', '금', '토'].map((d, i) => (
+          <div
+            key={d}
+            className={`${styles.calendarWeekday} ${i === 0 ? styles.calendarWeekdaySun : ''} ${i === 6 ? styles.calendarWeekdaySat : ''}`}
+          >
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.calendarGrid}>
+        {cells.map((cell, i) => {
+          if (!cell) return <div key={`e${i}`} className={styles.calendarCellEmpty} />;
+          const dow = i % 7;
+          const hasMatch = (cell.count || 0) > 0;
+          const isSelected = selectedDay === cell.d;
+          const dayClass = `${styles.calendarCellDay} ${dow === 0 ? styles.calendarCellDaySun : ''} ${dow === 6 ? styles.calendarCellDaySat : ''}`;
+          const cellClass = [
+            styles.calendarCell,
+            cell.isFuture ? styles.calendarCellFuture : '',
+            cell.isToday ? styles.calendarCellToday : '',
+            hasMatch ? styles.calendarCellHasMatch : '',
+            isSelected ? styles.calendarCellSelected : '',
+          ].filter(Boolean).join(' ');
           return (
-            <div
-              key={d.d}
-              className={`${styles.chartBarCol} ${d.isFuture ? styles.chartBarColFuture : ''}`}
+            <button
+              key={cell.d}
+              className={cellClass}
+              onClick={() => hasMatch && onSelectDay(isSelected ? null : cell.d)}
+              disabled={!hasMatch}
+              aria-pressed={isSelected}
+              aria-label={`${cell.d}일${hasMatch ? ` 매칭 ${cell.count}건` : ''}`}
             >
-              <div className={styles.chartBarStack}>
-                {d.refund < 0 && (
-                  <div
-                    className={styles.chartBarRefund}
-                    style={{ height: Math.max(2, refundH) }}
-                  />
-                )}
-                {d.paid > 0 && (
-                  <div
-                    className={`${styles.chartBarPaid} ${d.isToday ? styles.chartBarPaidToday : ''}`}
-                    style={{ height: Math.max(2, paidH) }}
-                  />
-                )}
-              </div>
-              {d.isToday && <div className={styles.chartBarTodayDot} />}
-              <div className={`${styles.chartBarLabel} ${d.isToday ? styles.chartBarLabelToday : ''}`}>
-                {labelDay}
-              </div>
-            </div>
+              <span className={dayClass}>{cell.d}</span>
+              {hasMatch && (
+                <span className={styles.calendarCellBadge}>{cell.count}</span>
+              )}
+              {hasMatch && cell.refund < 0 && (
+                <span className={styles.calendarCellRefundDot} aria-hidden="true" />
+              )}
+            </button>
           );
         })}
       </div>
 
-      <div className={styles.chartLegend}>
-        <span className={styles.chartLegendItem}>
-          <span className={styles.chartLegendDot} style={{ background: 'var(--tangerine-600)' }} />
-          적립
+      <div className={styles.calendarLegend}>
+        <span className={styles.calendarLegendItem}>
+          <span className={styles.calendarLegendBadge}>1</span>
+          매칭 종료 건수
         </span>
-        <span className={styles.chartLegendItem}>
-          <span className={styles.chartLegendDot} style={{ background: 'var(--rose-600)' }} />
-          환불 차감
+        <span className={styles.calendarLegendItem}>
+          <span className={styles.calendarLegendDot} style={{ background: 'var(--rose-500)' }} />
+          환불 차감 있음
         </span>
-        <span className={styles.chartLegendUnit}>단위: 원</span>
       </div>
     </div>
   );
@@ -747,7 +759,7 @@ function PolicySheet({ onClose }) {
   return (
     <SheetWrap onClose={onClose}>
       <div className={styles.sheetTitle}>정산 정책</div>
-      <div className={styles.sheetSubtitle}>매칭 종료 후 자동 정산</div>
+      <div className={styles.sheetSubtitle}>매칭 종료 후 정산</div>
 
       <div className={styles.sheetSection}>
         <div className={styles.sheetSectionLabel}>결제액 기준 비율 분배</div>
@@ -782,8 +794,8 @@ function PolicySheet({ onClose }) {
       <div className={styles.sheetSection}>
         <div className={styles.sheetSectionLabel}>정산 일정</div>
         <div className={styles.policyScheduleBox}>
-          <b style={{ color: 'var(--ink-900)' }}>매칭 종료일 기준</b> 다음다음 달 10일에 자동 입금됩니다.<br />
-          <span style={{ color: 'var(--ink-500)' }}>예) 4월 종료 매칭 → 6월 10일 입금</span>
+          <b style={{ color: 'var(--ink-900)' }}>매칭 종료일 기준</b> 다음 달 첫째 주에 입금됩니다.<br />
+          <span style={{ color: 'var(--ink-500)' }}>예) 4월 종료 매칭 → 5월 첫째 주 입금</span>
         </div>
       </div>
 
