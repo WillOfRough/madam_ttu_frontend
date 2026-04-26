@@ -403,115 +403,99 @@ export default function ClientDetail() {
         <span className={styles.topNavTitle}>회원 상세</span>
       </div>
 
-      {/* ══ 2. Compact Hero ══ */}
+      {/* ══ 2. Hero Card ══ */}
       <div className={styles.hero}>
-        <div className={styles.heroRow}>
-          {/* Avatar */}
-          <div className={`${styles.avatar} ${isMale ? styles.avatarMale : styles.avatarFemale}`}>
-            {client.name ? client.name.slice(1) : '?'}
-          </div>
+        <div className={styles.heroCard}>
+          <div className={styles.heroLayout}>
+            {/* Left: Identity */}
+            <div className={styles.heroIdentity}>
+              <div className={`${styles.avatar} ${isMale ? styles.avatarMale : styles.avatarFemale}`}>
+                {client.name ? client.name.slice(1) : '?'}
+              </div>
 
-          {/* Info */}
-          <div className={styles.heroInfo}>
-            <div className={styles.heroNameRow}>
-              <span className={styles.heroName}>{client.name}</span>
-              <span className={`${styles.genderBadge} ${isMale ? styles.genderBadgeMale : styles.genderBadgeFemale}`}>
-                {isMale ? '남' : '여'}
-              </span>
-              {age && (
-                <span className={styles.heroAge}>{age}</span>
-              )}
-              {age && client.height && <span className={styles.heroDot}>·</span>}
-              {client.height && (
-                <span className={styles.heroHeight}>{client.height}cm</span>
-              )}
-            </div>
-
-            {client.nickname && (
-              <div className={styles.heroNickname}>"{client.nickname}"</div>
-            )}
-
-            <div className={styles.heroBadges}>
-              {/* Active badge */}
-              <span className={styles.badgeMint}>
-                <span className={styles.badgeMintDot} />
-                활성
-              </span>
-              {/* Owner badge */}
-              {client.isOwner && (
-                <span className={styles.badgeInk}>내 회원</span>
-              )}
-              {!client.isOwner && client.ownerManager && (
-                <span className={styles.badgeInk}>{client.ownerManager.name}의 회원</span>
-              )}
-              {/* Match count */}
-              <span className={styles.badgeOutline}>매칭 {matchCount}건</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── 3. Action Bar ── */}
-        <div className={styles.actionBar}>
-          {/* Approval buttons for pending clients */}
-          {client.isOwner && client.approvalStatus === 'pending' && (
-            <>
-              <button className={styles.approveBtn} onClick={() => handleApproval('approved')}>
-                <Check size={11} /> 승인
-              </button>
-              <button className={styles.rejectBtn} onClick={() => handleApproval('rejected')}>
-                승인 거절
-              </button>
-            </>
-          )}
-          {/* Edit */}
-          {client.isOwner && (
-            <button className={styles.editBtn} onClick={startEditing}>
-              <Edit3 size={11} /> 편집
-            </button>
-          )}
-        </div>
-
-        {/* ── 4. Utility Row ── */}
-        {client.isOwner && (
-          <div className={styles.utilRow}>
-            {/* Invite source chip */}
-            <div className={styles.inviteChip}>
-              <Link2 size={12} color="var(--lilac-600)" style={{ flexShrink: 0 }} />
-              <span className={styles.inviteChipText}>
-                {inviteManagerName
-                  ? <><span className={styles.inviteChipManager}>{inviteManagerName}</span><span className={styles.inviteDot}>·</span>{inviteLabel}</>
-                  : <span style={{ color: 'var(--ink-400)' }}>가입 경로 없음</span>
-                }
-              </span>
-            </div>
-
-            {/* Status dropdown */}
-            <div className={styles.statusWrap} ref={statusWrapRef}>
-              <button className={styles.statusBtn} onClick={() => setStatusOpen((o) => !o)}>
-                {currentStatusLabel}
-                <ChevronDown size={12} color="var(--ink-400)" />
-              </button>
-              {statusOpen && (
-                <div className={styles.statusDropdown}>
-                  {STATUS_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      className={`${styles.statusOption} ${currentStatus === opt.value ? styles.statusOptionActive : ''}`}
-                      onClick={() => handleStatusChange(opt.value)}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+              <div className={styles.heroInfo}>
+                <div className={styles.heroNameRow}>
+                  <span className={styles.heroName}>{client.name}</span>
+                  <span className={`${styles.genderBadge} ${isMale ? styles.genderBadgeMale : styles.genderBadgeFemale}`}>
+                    {isMale ? '남' : '여'}
+                  </span>
+                  {age && (
+                    <span className={styles.heroAge}>{age}</span>
+                  )}
+                  {age && client.height && <span className={styles.heroDot}>·</span>}
+                  {client.height && (
+                    <span className={styles.heroHeight}>{client.height}cm</span>
+                  )}
                 </div>
-              )}
+
+                {client.nickname && (
+                  <div className={styles.heroNickname}>"{client.nickname}"</div>
+                )}
+
+                <div className={styles.heroBadges}>
+                  <span className={styles.badgeMint}>
+                    <span className={styles.badgeMintDot} />
+                    활성
+                  </span>
+                  {client.isOwner && (
+                    <span className={styles.badgeInk}>내 회원</span>
+                  )}
+                  {!client.isOwner && client.ownerManager && (
+                    <span className={styles.badgeInk}>{client.ownerManager.name}의 회원</span>
+                  )}
+                  <span className={styles.badgeOutline}>매칭 {matchCount}건</span>
+                </div>
+              </div>
             </div>
 
-            {/* Withdraw / delete */}
-            <button className={styles.withdrawBtn} onClick={() => setSheetOpen(true)}>
-              <Trash2 size={12} /> 탈퇴
-            </button>
+            {/* Right: Approval cluster (only when pending) */}
+            {client.isOwner && client.approvalStatus === 'pending' && (
+              <div className={styles.actionCluster}>
+                <button className={styles.approveBtn} onClick={() => handleApproval('approved')}>
+                  <Check size={13} /> 승인
+                </button>
+                <button className={styles.rejectBtn} onClick={() => handleApproval('rejected')}>
+                  거절
+                </button>
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Footer: invite info (left) + status dropdown (right) */}
+          {client.isOwner && (
+            <div className={styles.heroFooter}>
+              <div className={styles.inviteChip}>
+                <Link2 size={11} color="var(--ink-400)" style={{ flexShrink: 0 }} />
+                <span className={styles.inviteChipText}>
+                  {inviteManagerName
+                    ? <><span className={styles.inviteChipManager}>{inviteManagerName}</span><span className={styles.inviteDot}>·</span>{inviteLabel}</>
+                    : <span style={{ color: 'var(--ink-400)' }}>가입 경로 없음</span>
+                  }
+                </span>
+              </div>
+
+              <div className={styles.statusWrap} ref={statusWrapRef}>
+                <button className={styles.statusBtn} onClick={() => setStatusOpen((o) => !o)}>
+                  {currentStatusLabel}
+                  <ChevronDown size={13} color="var(--ink-400)" />
+                </button>
+                {statusOpen && (
+                  <div className={styles.statusDropdown}>
+                    {STATUS_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        className={`${styles.statusOption} ${currentStatus === opt.value ? styles.statusOptionActive : ''}`}
+                        onClick={() => handleStatusChange(opt.value)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Read-only notice */}
         {!client.isOwner && (
@@ -593,7 +577,7 @@ export default function ClientDetail() {
               right={
                 client.isOwner && (
                   <button className={styles.sectionEditBtn} onClick={startEditing}>
-                    <Edit3 size={11} /> 수정
+                    <Edit3 size={13} /> 편집
                   </button>
                 )
               }
@@ -824,13 +808,22 @@ export default function ClientDetail() {
         )}
       </div>
 
-      {/* ══ 12. Withdraw Bottom Sheet ══ */}
+      {/* ══ Danger Zone — 회원 삭제 (bottom-right corner) ══ */}
+      {client.isOwner && !editing && (
+        <div className={styles.dangerZone}>
+          <button className={styles.deleteMemberBtn} onClick={() => setSheetOpen(true)}>
+            <Trash2 size={13} /> 회원 삭제
+          </button>
+        </div>
+      )}
+
+      {/* ══ 12. Delete Bottom Sheet ══ */}
       {sheetOpen && createPortal(
         <div className={styles.sheetOverlay} onClick={() => !deleting && setSheetOpen(false)}>
           <div className={styles.sheet} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.sheetTitle}>{client.name}님을 탈퇴 처리할까요?</div>
+            <div className={styles.sheetTitle}>{client.name}님을 삭제할까요?</div>
             <p className={styles.sheetDesc}>
-              개인정보는 즉시 파기되며, 탈퇴 후 회원 삭제 확인서가 발급돼요. 이 동작은 되돌릴 수 없어요.
+              개인정보는 즉시 파기되며, 삭제 후 회원 삭제 확인서가 발급돼요. 이 동작은 되돌릴 수 없어요.
             </p>
             <div className={styles.sheetBtns}>
               <button
@@ -845,7 +838,7 @@ export default function ClientDetail() {
                 onClick={handleDeleteClient}
                 disabled={deleting}
               >
-                {deleting ? '처리 중...' : '탈퇴 처리'}
+                {deleting ? '처리 중...' : '회원 삭제'}
               </button>
             </div>
           </div>
@@ -883,7 +876,7 @@ export default function ClientDetail() {
       )}
 
       {/* ── Deletion Certificate Overlay ── */}
-      {deletionCert && (
+      {deletionCert && createPortal(
         <div className={styles.certOverlay}>
           <div className={styles.certModal} ref={certRef}>
             <div className={styles.certAccentBar} />
@@ -950,7 +943,8 @@ export default function ClientDetail() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
