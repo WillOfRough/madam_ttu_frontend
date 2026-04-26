@@ -90,6 +90,7 @@ export default function MyProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [verifiedId, setVerifiedId] = useState('');
 
   /* ── edit state ── */
   const [editMode, setEditMode] = useState(false);
@@ -102,7 +103,7 @@ export default function MyProfile() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
 
-  /* ─── photo handlers (no /me refresh — verificationId is single-use) ─── */
+  /* ─── photo handlers ─── */
   const handlePhotoAdd = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !profile?.id) return;
@@ -150,6 +151,7 @@ export default function MyProfile() {
       const data = await getMyProfile({ id: clientId, verificationId });
       setProfile(data);
       setVerifiedPhone(phone);
+      setVerifiedId(verificationId);
     } catch (err) {
       const msg = err.message || '';
       const code = err.body?.error;
@@ -187,9 +189,9 @@ export default function MyProfile() {
       idealType: profile.idealType || '',
     });
     setEditPhone(verifiedPhone);
-    setEditVerificationId('');
+    setEditVerificationId(verifiedId);
     setEditMode(true);
-  }, [profile, verifiedPhone]);
+  }, [profile, verifiedPhone, verifiedId]);
 
   const cancelEdit = useCallback(() => {
     setEditMode(false);
