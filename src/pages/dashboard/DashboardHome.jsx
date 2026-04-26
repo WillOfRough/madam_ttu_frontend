@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, Link2, AlertTriangle, Wallet, Calendar, ArrowRight,
+  Users, Link2, AlertTriangle, Wallet, Calendar,
   CheckCircle, ChevronRight, Bell, Heart, Send, Sparkles, User as UserIcon,
 } from 'lucide-react';
 import useManagerStore from '../../store/managerStore';
@@ -386,39 +386,12 @@ export default function DashboardHome() {
         </p>
       </section>
 
-      {/* ── Hero TODO card ── */}
-      <button
-        className={styles.heroTodoCard}
-        onClick={() => navigate('/dashboard/matches')}
-        type="button"
-        aria-label={`처리 대기 매칭 ${todoCount}건`}
-      >
-        <div className={styles.heroOrb} />
-        <div className={styles.heroKicker}>
-          <span className={styles.heroPulseDot} />
-          TODAY
-        </div>
-        <div className={styles.heroBody}>
-          <div>
-            <div className={styles.heroCount}>
-              {todoCount}
-              <span className={styles.heroUnit}>건</span>
-            </div>
-            <div className={styles.heroDesc}>지금 움직여야 할 매칭</div>
-          </div>
-          <div className={styles.heroCta}>
-            바로 처리
-            <ArrowRight size={14} strokeWidth={2.5} />
-          </div>
-        </div>
-      </button>
-
       {/* ── KPI 2×2 ── */}
       <div className={styles.kpiGrid}>
         <KpiCard
           label="내 회원"
           value={clientCount}
-          sub="+1 이번주"
+          sub="이번주 +1"
           icon={Users}
           tone="ink"
           onClick={() => navigate('/dashboard/clients')}

@@ -543,108 +543,6 @@
   margin: 0;
 }
 
-/* ── Hero TODO card ── */
-.heroTodoCard {
-  width: 100%;
-  padding: 20px 20px 18px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #0F1526 0%, #1F2B48 100%);
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(15, 21, 38, 0.2);
-  border: none;
-  text-align: left;
-  transition: transform 160ms ease, box-shadow 160ms ease;
-}
-
-.heroTodoCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px rgba(15, 21, 38, 0.28);
-}
-
-.heroOrb {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(242, 107, 79, 0.25) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.heroKicker {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--tangerine-400, #FF9A7A);
-  letter-spacing: 0.04em;
-}
-
-.heroPulseDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--tangerine-600);
-  animation: softPulse 2s ease-in-out infinite;
-  display: inline-block;
-}
-
-.heroBody {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-top: 12px;
-}
-
-.heroCount {
-  font-size: 48px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  font-variant-numeric: tabular-nums;
-  color: #fff;
-}
-
-.heroUnit {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--ink-300, #8A94AD);
-  margin-left: 4px;
-}
-
-.heroDesc {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 6px;
-  font-weight: 500;
-}
-
-.heroCta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  backdrop-filter: blur(8px);
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  flex-shrink: 0;
-  align-self: flex-end;
-  transition: background 150ms ease;
-}
-
-.heroTodoCard:hover .heroCta {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 /* ── KPI grid (standalone cards) ── */
 .kpiGrid {
   display: grid;
@@ -958,11 +856,6 @@
     color: var(--ink-500);
     margin: 4px 0 0;
     font-weight: 500;
-  }
-
-  /* Hide redundant hero TODO card on desktop (greetingStats covers the same) */
-  .heroTodoCard {
-    display: none;
   }
 
   /* KPI strip 4-column */
