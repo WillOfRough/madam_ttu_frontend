@@ -243,12 +243,19 @@ function getRemindPreview(match, payments) {
     const r = A.role === 'receiver' ? A : B.role === 'receiver' ? B : null;
     if (r?.clientName) recipients.push({ name: r.clientName, reason: '프로필 제안 응답 전' });
   } else if (st === 'awaiting_payment') {
-    const pA = (payments || []).find((p) => p.clientId === A.clientId);
-    const pB = (payments || []).find((p) => p.clientId === B.clientId);
-    const unpaidA = pA ? pA.status !== 'confirmed' : true;
-    const unpaidB = pB ? pB.status !== 'confirmed' : true;
-    if (unpaidA && A.clientName) recipients.push({ name: A.clientName, reason: '입금 미확인' });
-    if (unpaidB && B.clientName) recipients.push({ name: B.clientName, reason: '입금 미확인' });
+    const pA = (payments || []).find((p) => p.clientId === A.clientId)
+      || match.paymentSummary?.clientA;
+    const pB = (payments || []).find((p) => p.clientId === B.clientId)
+      || match.paymentSummary?.clientB;
+    const isUnpaid = (p) => {
+      if (!p) return true;
+      // 입금 완료(paid) 또는 환불/부분환불은 "재안내 대상 아님"
+      return p.status !== 'paid'
+        && p.status !== 'partial_refunded'
+        && p.status !== 'refunded';
+    };
+    if (isUnpaid(pA) && A.clientName) recipients.push({ name: A.clientName, reason: '입금 미확인' });
+    if (isUnpaid(pB) && B.clientName) recipients.push({ name: B.clientName, reason: '입금 미확인' });
   } else if (st === 'scheduling') {
     const pendingA = A.clientName && !A.availableTimesSubmitted;
     const pendingB = B.clientName && !B.availableTimesSubmitted;
