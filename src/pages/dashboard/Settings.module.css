@@ -633,11 +633,16 @@
   }
 
   .pageHeader {
-    padding: 0 0 4px;
+    padding: 24px 0 8px;
   }
 
   .pageTitle {
     font-size: 26px;
+  }
+
+  .pageSubtitle {
+    font-size: 13px;
+    margin-top: 6px;
   }
 
   .title {
