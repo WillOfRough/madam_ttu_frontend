@@ -311,7 +311,7 @@ export default function ClientForm() {
                   매칭 상대에게 처음 보여지는 이름이에요. 마음에 드실 때까지 바꿔보세요.
                 </p>
                 <input
-                  className={styles.nicknameInput}
+                  className={`${styles.nicknameInput} ${getError('nickname') ? styles.nicknameInputError : ''}`}
                   value={form.nickname}
                   onChange={(e) => setField('nickname', e.target.value)}
                   onBlur={() => markTouched('nickname')}
@@ -354,7 +354,7 @@ export default function ClientForm() {
                     onVerified={setVerificationId}
                   />
                   {getError('phone') && (
-                    <p className={styles.verifyHint}><span>{getError('phone')}</span></p>
+                    <span className={styles.fieldError}>{getError('phone')}</span>
                   )}
                   {!getError('phone') && !verificationId && form.phone && PHONE_REGEX.test(form.phone) && (
                     <p className={styles.verifyHint}><span>휴대폰 인증을 완료해야 다음 단계로 넘어갈 수 있어요.</span></p>
@@ -535,7 +535,7 @@ export default function ClientForm() {
                 <TextField
                   label="휴일에는 주로 뭘 하시나요?"
                   value={form.introQ1}
-                  onChange={(v) => { setField('introQ1', v); markTouched('introQ1'); }}
+                  onChange={(v) => { setField('introQ1', v); markTouched('introQ1'); markTouched('introLength'); }}
                   placeholder="카페에서 책 읽거나 넷플릭스 봐요"
                   required
                   error={getError('introQ1')}
@@ -544,11 +544,11 @@ export default function ClientForm() {
                 <TextField
                   label="나만의 매력이나 자신 있는 점은?"
                   value={form.introQ2}
-                  onChange={(v) => { setField('introQ2', v); }}
+                  onChange={(v) => { setField('introQ2', v); markTouched('introLength'); }}
                   placeholder="요리를 잘해서 친구들이 집에 자주 놀러 와요"
                   required={false}
+                  error={!getError('introQ1') ? getError('introLength') : undefined}
                 />
-                {getError('introLength') && <p className={styles.fieldError}>{getError('introLength')}</p>}
               </FieldCard>
 
               <SectionLabel n="03" required>이상형</SectionLabel>

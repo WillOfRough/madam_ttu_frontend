@@ -132,6 +132,10 @@
   outline: none; border-color: var(--tangerine-600);
   box-shadow: 0 0 0 3px rgba(242,107,79,.12);
 }
+.nicknameInputError, .nicknameInputError:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(235,87,87,.12);
+}
 
 /* ── Ideal Type Section ── */
 .idealSection { display: flex; flex-direction: column; gap: 20px; }
@@ -540,6 +544,11 @@
 .nicknameInput:focus {
   outline: none; border-color: var(--tangerine-600);
   box-shadow: 0 0 0 3px rgba(242,107,79,.12);
+}
+.nicknameInput.nicknameInputError,
+.nicknameInput.nicknameInputError:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(235,87,87,.12);
 }
 
 /* field wrap (phone) */

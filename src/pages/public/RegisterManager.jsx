@@ -74,12 +74,15 @@ export default function RegisterManager() {
   const [nickname, setNickname] = useState('');
   const [suggestedNickname, setSuggestedNickname] = useState(initialNickname);
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [phone, setPhone] = useState('');
   const [verificationId, setVerificationId] = useState(null);
   const [bankName, setBankName] = useState('');
+  const [bankNameError, setBankNameError] = useState('');
   const [bankNumber, setBankNumber] = useState('');
+  const [bankNumberError, setBankNumberError] = useState('');
   const [error, setError] = useState(null);
 
   if (isLoggedIn) return <Navigate to="/dashboard" replace />;
@@ -95,19 +98,44 @@ export default function RegisterManager() {
     }
   };
 
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setEmailError('');
+    setBankNameError('');
+    setBankNumberError('');
+
+    let hasFieldError = false;
     if (!NAME_REGEX.test(name.trim())) {
       setNameError('한글 또는 영문만 입력 가능하며, 2~20자여야 합니다.');
-      return;
+      hasFieldError = true;
     }
+    if (!email.trim()) {
+      setEmailError('이메일을 입력해주세요.');
+      hasFieldError = true;
+    } else if (!EMAIL_REGEX.test(email.trim())) {
+      setEmailError('올바른 이메일 형식으로 입력해주세요.');
+      hasFieldError = true;
+    }
+    if (!bankName) {
+      setBankNameError('은행을 선택해주세요.');
+      hasFieldError = true;
+    }
+    const trimmedBankNumber = bankNumber.trim();
+    if (!trimmedBankNumber) {
+      setBankNumberError('계좌번호를 입력해주세요.');
+      hasFieldError = true;
+    } else if (!/^\d{8,16}$/.test(trimmedBankNumber)) {
+      setBankNumberError('계좌번호는 숫자 8~16자리로 입력해주세요.');
+      hasFieldError = true;
+    }
+    if (hasFieldError) return;
+
     if (password !== confirmPw) { setError('비밀번호가 일치하지 않습니다.'); return; }
     if (!verificationId) { setError('휴대폰 인증을 완료해주세요.'); return; }
-    if (!bankName) { setError('정산 계좌의 은행을 선택해주세요.'); return; }
-    const trimmedBankNumber = bankNumber.trim();
-    if (!trimmedBankNumber) { setError('정산 계좌번호를 입력해주세요.'); return; }
-    if (!/^\d{8,16}$/.test(trimmedBankNumber)) { setError('계좌번호는 숫자 8~16자리로 입력해주세요.'); return; }
+
     const finalNickname = nickname.trim() || suggestedNickname;
     try {
       await register({ token, email, password, name: name.trim(), nickname: finalNickname, phone, verificationId, bankName, bankNumber: trimmedBankNumber });
@@ -258,12 +286,13 @@ export default function RegisterManager() {
             <div className={styles.field}>
               <div className={styles.fieldLabel}>이메일 <span className={styles.required}>*</span></div>
               <input
-                className={styles.input}
+                className={`${styles.input}${emailError ? ` ${styles.inputError}` : ''}`}
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
                 placeholder="email@example.com"
               />
+              {emailError && <p className={styles.fieldError}>{emailError}</p>}
             </div>
 
             <div className={styles.field}>
@@ -328,25 +357,27 @@ export default function RegisterManager() {
             <div className={styles.field}>
               <div className={styles.fieldLabel}>은행명 <span className={styles.required}>*</span></div>
               <select
-                className={styles.select}
+                className={`${styles.select}${bankNameError ? ` ${styles.inputError}` : ''}`}
                 value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
+                onChange={(e) => { setBankName(e.target.value); if (bankNameError) setBankNameError(''); }}
               >
                 <option value="" className={styles.selectPlaceholder}>은행 선택</option>
                 {BANK_OPTIONS.map((bank) => (
                   <option key={bank.value} value={bank.value}>{bank.label}</option>
                 ))}
               </select>
+              {bankNameError && <p className={styles.fieldError}>{bankNameError}</p>}
             </div>
             <div className={styles.field}>
               <div className={styles.fieldLabel}>계좌번호 <span className={styles.required}>*</span></div>
               <input
-                className={styles.input}
+                className={`${styles.input}${bankNumberError ? ` ${styles.inputError}` : ''}`}
                 inputMode="numeric"
                 value={bankNumber}
-                onChange={(e) => setBankNumber(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => { setBankNumber(e.target.value.replace(/\D/g, '')); if (bankNumberError) setBankNumberError(''); }}
                 placeholder="계좌번호 입력 (숫자만, '-' 제외)"
               />
+              {bankNumberError && <p className={styles.fieldError}>{bankNumberError}</p>}
             </div>
           </div>
 
