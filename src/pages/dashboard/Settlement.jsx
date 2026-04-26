@@ -631,8 +631,8 @@ function TxRow({ s, onClick }) {
     ? `${s.clientAName} ↔ ${s.clientBName}`
     : (s.clientAName || s.clientBName || null);
   const memberLabel = roleIsClient
-    ? (s.ownedClientName || pairLabel)
-    : (pairLabel || s.ownedClientName);
+    ? (s.ownedClientName || pairLabel || s.clientName)
+    : (pairLabel || s.ownedClientName || s.clientName);
   const recipientName = memberLabel || '회원';
   const reasonLabel = roleIsMatch
     ? '매칭 성사 보상'
@@ -844,8 +844,8 @@ function ReceiptSheet({ s, onClose }) {
     ? `${s.clientAName} ↔ ${s.clientBName}`
     : (s.clientAName || s.clientBName || null);
   const memberLabel = s.role === 'client_owner'
-    ? (s.ownedClientName || pairLabel)
-    : (pairLabel || s.ownedClientName);
+    ? (s.ownedClientName || pairLabel || s.clientName)
+    : (pairLabel || s.ownedClientName || s.clientName);
   const reasonLabel = s.role === 'matchmaker'
     ? '매칭 성사 보상'
     : s.role === 'client_owner'
