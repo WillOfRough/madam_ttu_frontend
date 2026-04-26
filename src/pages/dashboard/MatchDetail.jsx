@@ -778,7 +778,7 @@ export default function MatchDetail() {
                           background: client.clientGender === 'female' ? 'var(--female-100)' : 'var(--male-100)',
                           color: client.clientGender === 'female' ? 'var(--female)' : 'var(--male)',
                         }}>
-                          {client.clientName?.slice(1) || side}
+                          {client.clientName?.slice(1, 3) || side}
                         </span>
                         <span className={styles.paymentSlotName}>{client.clientNickname || client.clientName}</span>
                         {isFree && <span className={styles.paymentSlotFreeBadge}>무료 매칭</span>}
