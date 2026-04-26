@@ -1091,6 +1091,11 @@
   color: #fff;
 }
 
+/* ── Invite list section (manager-invites tab) ── */
+.inviteListSection {
+  padding: 12px 16px 0;
+}
+
 /* ── Invite card (invite list) ── */
 .card {
   display: flex;
@@ -1297,7 +1302,8 @@
 
   .requestSection,
   .connectionSection,
-  .sentSection {
+  .sentSection,
+  .inviteListSection {
     padding: 20px 0 0;
   }
 

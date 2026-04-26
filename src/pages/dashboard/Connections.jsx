@@ -681,66 +681,68 @@ export default function Connections() {
             ))}
           </div>
 
-          {invitesLoading ? (
-            <div className={styles.list}>
-              {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
-            </div>
-          ) : managerInvites.length === 0 ? (
-            <div className={styles.empty}>
-              <div className={styles.emptyIconWrap}>
-                <UserPlus size={24} strokeWidth={1.3} />
-              </div>
-              <p className={styles.emptyTitle}>매니저 초대 내역이 없습니다</p>
-            </div>
-          ) : (
-            <>
+          <div className={styles.inviteListSection}>
+            {invitesLoading ? (
               <div className={styles.list}>
-                {managerInvites.map((invite) => (
-                  <div key={invite.id} className={styles.card}>
-                    <div className={`${styles.cardInfo} ${styles.cardInfoColumn}`}>
-                      <div className={styles.inviteCardHeader}>
-                        <span className={styles.connName}>
-                          {invite.label || '라벨 없음'}
-                        </span>
-                        <StatusBadge status={invite.status} />
-                      </div>
-                      {invite.usedBy && (
-                        <span className={styles.connMeta}>
-                          사용: {invite.usedBy.name} ({invite.usedBy.nickname})
-                        </span>
-                      )}
-                      <span className={styles.connMeta}>
-                        생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
-                        {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
-                        {invite.usedAt && ` · 사용일: ${new Date(invite.usedAt).toLocaleDateString('ko-KR')}`}
-                      </span>
-                    </div>
-                    {invite.status === 'active' && (
-                      <div className={styles.cardActions}>
-                        <button className={styles.iconBtn} onClick={() => handleCopyInviteLink(invite)}>
-                          <Copy size={13} />
-                          {copiedInviteId === invite.id ? '복사됨!' : '복사'}
-                        </button>
-                        <button
-                          className={`${styles.iconBtn} ${styles.dangerBtn}`}
-                          onClick={() => setRevokeTarget(invite)}
-                        >
-                          폐기
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
               </div>
-              {pagination && (
-                <Pagination
-                  page={pagination.page}
-                  totalPages={pagination.totalPages}
-                  onPageChange={handlePageChange}
-                />
-              )}
-            </>
-          )}
+            ) : managerInvites.length === 0 ? (
+              <div className={styles.empty}>
+                <div className={styles.emptyIconWrap}>
+                  <UserPlus size={24} strokeWidth={1.3} />
+                </div>
+                <p className={styles.emptyTitle}>매니저 초대 내역이 없습니다</p>
+              </div>
+            ) : (
+              <>
+                <div className={styles.list}>
+                  {managerInvites.map((invite) => (
+                    <div key={invite.id} className={styles.card}>
+                      <div className={`${styles.cardInfo} ${styles.cardInfoColumn}`}>
+                        <div className={styles.inviteCardHeader}>
+                          <span className={styles.connName}>
+                            {invite.label || '라벨 없음'}
+                          </span>
+                          <StatusBadge status={invite.status} />
+                        </div>
+                        {invite.usedBy && (
+                          <span className={styles.connMeta}>
+                            사용: {invite.usedBy.name} ({invite.usedBy.nickname})
+                          </span>
+                        )}
+                        <span className={styles.connMeta}>
+                          생성: {new Date(invite.createdAt).toLocaleDateString('ko-KR')}
+                          {invite.expiresAt && ` · 만료: ${new Date(invite.expiresAt).toLocaleDateString('ko-KR')}`}
+                          {invite.usedAt && ` · 사용일: ${new Date(invite.usedAt).toLocaleDateString('ko-KR')}`}
+                        </span>
+                      </div>
+                      {invite.status === 'active' && (
+                        <div className={styles.cardActions}>
+                          <button className={styles.iconBtn} onClick={() => handleCopyInviteLink(invite)}>
+                            <Copy size={13} />
+                            {copiedInviteId === invite.id ? '복사됨!' : '복사'}
+                          </button>
+                          <button
+                            className={`${styles.iconBtn} ${styles.dangerBtn}`}
+                            onClick={() => setRevokeTarget(invite)}
+                          >
+                            폐기
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {pagination && (
+                  <Pagination
+                    page={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </>
       )}
 
