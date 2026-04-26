@@ -1922,6 +1922,7 @@ export async function mockFetch(path, options = {}) {
         clientName: client?.nickname || client?.name || '알 수 없음',
         matchId: inq.matchId || null,
         category: inq.category, title: inq.title,
+        content: inq.content,
         status: inq.status, createdAt: inq.createdAt, answeredAt: inq.answeredAt || null,
       };
     });
