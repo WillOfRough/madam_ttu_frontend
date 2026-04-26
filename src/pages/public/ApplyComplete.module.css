@@ -148,3 +148,19 @@
 .actions button:active {
   transform: translateY(1px);
 }
+
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page::before {
+    top: -140px; right: -110px;
+    width: 380px; height: 380px;
+  }
+  .page::after {
+    bottom: -110px; left: -90px;
+    width: 320px; height: 320px;
+  }
+  .container {
+    max-width: 520px;
+    padding: 60px 40px 52px;
+  }
+}

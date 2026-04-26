@@ -1532,23 +1532,6 @@
 }
 
 /* ────────────────────────────────────────
-   Desktop layout
-──────────────────────────────────────── */
-@media (min-width: 769px) {
-  .page {
-    max-width: none;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .cardList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-  }
-}
-
-/* ────────────────────────────────────────
    Responsive — small mobile
 ──────────────────────────────────────── */
 @media (max-width: 480px) {
@@ -1596,9 +1579,26 @@
   }
 }
 
-/* ── Desktop (≥1024px) ── */
+/* ────────────────────────────────────────
+   Desktop layout (≥769px)
+──────────────────────────────────────── */
 @media (min-width: 769px) {
   .page {
-    max-width: none;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .cardList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cardList {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   }
 }

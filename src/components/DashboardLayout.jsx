@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Bell, Settings } from 'lucide-react';
 import Sidebar from './Sidebar';
@@ -6,6 +6,30 @@ import BottomNav from './BottomNav';
 import MatchFloatingBar from './MatchFloatingBar';
 import useNotificationStore from '../store/notificationStore';
 import styles from './DashboardLayout.module.css';
+
+const DESKTOP_QUERY = '(min-width: 769px)';
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia(DESKTOP_QUERY).matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const handler = (e) => setIsDesktop(e.matches);
+    setIsDesktop(mq.matches);
+    if (mq.addEventListener) {
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+    mq.addListener(handler);
+    return () => mq.removeListener(handler);
+  }, []);
+
+  return isDesktop;
+}
 
 function MobileHeader() {
   const unreadCount = useNotificationStore((s) => s.unreadCount);
@@ -36,6 +60,7 @@ function MobileHeader() {
 export default function DashboardLayout() {
   const startPolling = useNotificationStore((s) => s.startPolling);
   const stopPolling = useNotificationStore((s) => s.stopPolling);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     startPolling(30000);
@@ -46,13 +71,13 @@ export default function DashboardLayout() {
     <div className={styles.shell}>
       <Sidebar />
       <div className={styles.container}>
-        <MobileHeader />
+        {!isDesktop && <MobileHeader />}
         <main className={styles.main}>
           <Outlet />
         </main>
         <MatchFloatingBar />
       </div>
-      <BottomNav />
+      {!isDesktop && <BottomNav />}
     </div>
   );
 }

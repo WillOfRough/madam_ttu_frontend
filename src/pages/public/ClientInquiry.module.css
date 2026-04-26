@@ -304,6 +304,28 @@
   .chip { padding: 6px 12px; font-size: 12px; }
 }
 
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page {
+    padding: 0 40px 80px;
+  }
+  .verifyWrap {
+    max-width: 520px;
+  }
+  .formWrap {
+    max-width: 680px;
+  }
+  .doneWrap {
+    max-width: 520px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .formWrap {
+    max-width: 720px;
+  }
+}
+
 /* === Renewal additions === */
 
 /* ambient blobs */

@@ -114,7 +114,7 @@ export default function Settings() {
   // ── Settlement tab view ──
   if (canSeeSettlement && settingsTab === 'settlement') {
     return (
-      <div className={styles.page} style={{ maxWidth: 720 }}>
+      <div className={styles.page}>
         <div className={styles.tabWrap}>
           <button
             className={`${styles.tabBtn} ${styles.tabBtnInactive}`}

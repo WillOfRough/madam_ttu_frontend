@@ -727,7 +727,8 @@
    ════════════════════════════════════════════ */
 @media (min-width: 769px) {
   .page {
-    max-width: none;
+    max-width: 1160px;
+    margin: 0 auto;
   }
 
   .header {

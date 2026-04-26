@@ -44,6 +44,24 @@
   z-index: 1;
 }
 
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page::before {
+    top: -160px; right: -120px;
+    width: 400px; height: 400px;
+  }
+  .page::after {
+    bottom: -100px; left: -120px;
+    width: 340px; height: 340px;
+  }
+  .container {
+    max-width: 520px;
+  }
+  .heroTitle {
+    font-size: 36px;
+  }
+}
+
 /* ── Brand row ── */
 .brandRow {
   display: flex;

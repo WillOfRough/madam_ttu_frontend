@@ -299,7 +299,8 @@
 /* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
-    max-width: none;
+    max-width: 1160px;
+    margin: 0 auto;
     padding-bottom: 48px;
   }
 
@@ -319,9 +320,13 @@
     padding: 0;
   }
 
-  /* Constrain notification list width for readability */
+  /* Two-column notification list on wide desktop */
   .list {
-    max-width: 720px;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 6px;
+    align-items: start;
   }
 
   .loadingList {

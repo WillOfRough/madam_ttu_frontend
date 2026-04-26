@@ -1207,11 +1207,24 @@
 .lightboxDeleteBtn:hover:not(:disabled) { background: #b91c1c; }
 .lightboxDeleteBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ── Desktop (≥1024px) ── */
+/* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 0 64px;
   }
+
+  /* Content blocks: full width of the constrained page */
+  .topNav,
+  .hero,
+  .utilRow,
+  .readonlyNotice,
+  .sections,
+  .errorMsg {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
 }

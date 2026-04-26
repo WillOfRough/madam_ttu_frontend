@@ -51,3 +51,18 @@
   font-family: var(--font-sans); transition: all 0.2s;
 }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(15,21,38,.32); }
+
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page::before {
+    top: -160px; right: -120px;
+    width: 400px; height: 400px;
+  }
+  .page::after {
+    bottom: -100px; left: -120px;
+    width: 340px; height: 340px;
+  }
+  .container {
+    max-width: 520px;
+  }
+}

@@ -29,6 +29,41 @@
   max-width: 480px; width: 100%; margin: 0 auto;
   padding: 24px 20px 120px; position: relative; z-index: 1;
 }
+
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .oathPage::before {
+    top: -180px; right: -120px;
+    width: 420px; height: 420px;
+  }
+  .oathPage::after {
+    bottom: -100px; left: -120px;
+    width: 340px; height: 340px;
+  }
+  .oathInner {
+    max-width: 680px;
+    padding: 32px 40px 140px;
+  }
+  .oathCta {
+    max-width: 680px;
+    padding: 24px 40px 32px;
+  }
+  .page::before {
+    top: -180px; right: -120px;
+    width: 420px; height: 420px;
+  }
+  .page::after {
+    bottom: -100px; left: -120px;
+    width: 340px; height: 340px;
+  }
+  .inner {
+    max-width: 680px;
+    padding: 36px 40px 140px;
+  }
+  .stickyInner {
+    max-width: 680px;
+  }
+}
 .oathBrandRow { display: flex; align-items: center; gap: 9px; }
 .oathBrandIcon {
   width: 26px; height: 26px; border-radius: 8px;

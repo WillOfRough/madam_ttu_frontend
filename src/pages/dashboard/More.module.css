@@ -95,8 +95,8 @@
 
 @media (min-width: 769px) {
   .page {
-    max-width: none;
-    margin: 0;
+    max-width: 1160px;
+    margin: 0 auto;
     padding: 0 0 48px;
   }
 

@@ -1161,7 +1161,8 @@
 /* ── Desktop (≥769px) ── */
 @media (min-width: 769px) {
   .page {
-    max-width: none;
+    max-width: 1160px;
+    margin: 0 auto;
     padding-bottom: 48px;
   }
 
@@ -1211,10 +1212,21 @@
   }
 
   .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 10px;
   }
 
   .connectionItem {
     padding: 14px 16px;
+  }
+
+  /* 받은 요청/보낸 초대도 2-col grid */
+  .requestSection .list,
+  .connectionSection .list,
+  .sentSection .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 10px;
   }
 }

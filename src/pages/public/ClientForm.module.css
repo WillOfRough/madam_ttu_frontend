@@ -11,6 +11,23 @@
   padding-top: 40px;
 }
 
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page {
+    padding: 0 40px 120px;
+  }
+  .container {
+    max-width: 680px;
+    padding-top: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 720px;
+  }
+}
+
 /* ── Header ── */
 .header { margin-bottom: 28px; }
 

@@ -11,6 +11,29 @@
   padding-top: 48px;
 }
 
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page {
+    padding: 0 40px 120px;
+  }
+  .container {
+    max-width: 760px;
+    padding-top: 56px;
+  }
+  .hero {
+    padding: 44px 32px 40px;
+  }
+  .brand {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 900px;
+  }
+}
+
 /* ── Hero ── */
 .hero {
   text-align: center;

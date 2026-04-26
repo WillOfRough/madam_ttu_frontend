@@ -1318,3 +1318,52 @@
     padding: 14px 10px;
   }
 }
+
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page {
+    padding: 0 0 80px;
+  }
+  .container {
+    max-width: 760px;
+    padding: 0 28px;
+  }
+  .brandHeader {
+    max-width: 760px;
+  }
+  .pageTitle {
+    font-size: 26px;
+  }
+  .schedulingTitle {
+    font-size: 26px;
+  }
+  .calendarCard {
+    padding: 20px 16px;
+  }
+  .oathCard,
+  .afterCard,
+  .afterWaitingCard,
+  .afterSuccessBanner {
+    padding: 40px 36px 36px;
+  }
+  .statusBanner,
+  .respondedBanner {
+    padding: 28px 32px 24px;
+  }
+  .card {
+    padding: 24px 24px 20px;
+  }
+  .fields {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 18px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 900px;
+  }
+  .brandHeader {
+    max-width: 900px;
+  }
+}
