@@ -1,4 +1,4 @@
-import { CheckCircle, User, MessageCircle } from 'lucide-react';
+import { CheckCircle, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import styles from './ApplyComplete.module.css';
 
@@ -40,9 +40,6 @@ export default function ApplyComplete() {
         <div className={styles.actions}>
           <button onClick={() => navigate('/my-profile')}>
             <User size={16} /> 프로필 다시 확인하기
-          </button>
-          <button onClick={() => navigate('/inquiry')}>
-            <MessageCircle size={16} /> 문의하기
           </button>
         </div>
       </div>
