@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, Heart, Edit3, Trash2, X,
+  ChevronLeft, Edit3, Trash2, X,
   ShieldCheck, Download, Copy, Link2, ChevronDown, Plus, Shield, Check,
 } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
-import useClientListStore from '../../store/clientListStore';
 import { toast } from '../../store/toastStore';
 import { SkeletonLine } from '../../components/Skeleton';
 import html2pdf from 'html2pdf.js';
@@ -340,22 +339,6 @@ export default function ClientDetail() {
     }
   };
 
-  // ── match select ──
-  const { selectedForMatch, toggleSelectForMatch } = useClientListStore();
-  const isMatchSelected = selectedForMatch.some(
-    (c) => c.id === (client?.clientId || client?.id)
-  );
-  const handleMatchSelect = () => {
-    if (!client) return;
-    toggleSelectForMatch({
-      id: client.clientId || client.id,
-      name: client.name,
-      nickname: client.nickname,
-      gender: client.gender,
-      status: client.status || 'active',
-    });
-  };
-
   // ── invite info ──
   const inviteManagerName = client?.inviteToken?.managerName
     || client?.createdBy?.name
@@ -479,16 +462,6 @@ export default function ClientDetail() {
                 승인 거절
               </button>
             </>
-          )}
-          {/* Match select */}
-          {(client.approvalStatus === 'approved' || !client.approvalStatus) && (
-            <button
-              className={isMatchSelected ? styles.matchBtnSelected : styles.matchBtn}
-              onClick={handleMatchSelect}
-            >
-              <Heart size={11} />
-              {isMatchSelected ? '매칭 선택됨' : '매칭 선택'}
-            </button>
           )}
           {/* Edit */}
           {client.isOwner && (
