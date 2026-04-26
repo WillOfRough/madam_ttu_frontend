@@ -39,7 +39,7 @@ function MobileHeader() {
         <div className={styles.mobileHeaderLogoMark}>K</div>
         <div className={styles.mobileHeaderLogoText}>
           <span className={styles.mobileHeaderLogoTitle}>Knots &amp; Links</span>
-          <span className={styles.mobileHeaderLogoSub}>매니저 콘솔</span>
+          <span className={styles.mobileHeaderLogoSub}>매니저 워크스페이스</span>
         </div>
       </NavLink>
       <div className={styles.mobileHeaderActions}>

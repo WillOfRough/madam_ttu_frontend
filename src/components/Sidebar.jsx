@@ -56,7 +56,7 @@ export default function Sidebar() {
         <div className={styles.brandMark}>K</div>
         <div className={styles.brandText}>
           <div className={styles.brandTitle}>Knots & Links</div>
-          <div className={styles.brandSub}>매니저 콘솔</div>
+          <div className={styles.brandSub}>매니저 워크스페이스</div>
         </div>
       </div>
 
