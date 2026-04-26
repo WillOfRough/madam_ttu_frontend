@@ -613,7 +613,7 @@ export default function Connections() {
                       <div className={`${styles.avatar} ${getAvatarClass(req.managerName)}`}>
                         {(req.managerName || '?').charAt(0)}
                       </div>
-                      <div>
+                      <div className={styles.cardInfoText}>
                         <span className={styles.connName}>{req.managerName}</span>
                         {req.message && (
                           <span className={styles.connMeta}>{req.message}</span>
@@ -697,7 +697,7 @@ export default function Connections() {
               <div className={styles.list}>
                 {managerInvites.map((invite) => (
                   <div key={invite.id} className={styles.card}>
-                    <div className={styles.cardInfo} style={{ flex: 1, minWidth: 0, flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+                    <div className={`${styles.cardInfo} ${styles.cardInfoColumn}`}>
                       <div className={styles.inviteCardHeader}>
                         <span className={styles.connName}>
                           {invite.label || '라벨 없음'}
