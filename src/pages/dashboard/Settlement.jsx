@@ -76,13 +76,23 @@ const ROLE_LABEL = {
 };
 
 const STATUS_LABEL = {
-  pending: '대기',
-  confirmed: '확인됨',
+  pending: '입금대기',
+  confirmed: '입금완료',
   partial_refunded: '부분환불',
   ready_to_settle: '정산대상',
-  settled: '지급완료',
+  settled: '정산완료',
   cancelled: '취소',
-  refunded: '환불 차감',
+  refunded: '환불완료',
+};
+
+const STATUS_BADGE_TONE = {
+  pending:          { bg: 'var(--amber-100)',     color: 'var(--amber-600)' },
+  confirmed:        { bg: 'var(--lilac-100)',     color: '#4F3DA0' },
+  ready_to_settle:  { bg: 'var(--tangerine-100)', color: 'var(--tangerine-700)' },
+  partial_refunded: { bg: 'var(--rose-100)',      color: 'var(--rose-600)' },
+  refunded:         { bg: 'var(--rose-100)',      color: 'var(--rose-600)' },
+  settled:          { bg: 'var(--mint-100)',      color: 'var(--mint-600)' },
+  cancelled:        { bg: 'var(--ink-100)',       color: 'var(--ink-500)' },
 };
 
 // 정산제외 사유 한글 매핑
@@ -605,7 +615,6 @@ function ChartCard({ data, monthLabel }) {
 function TxRow({ s, onClick }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
-  const pending = isPending(s.status);
   const excluded = s.excluded === true;
 
   const roleLabel = ROLE_LABEL[s.role] || s.role;
@@ -656,25 +665,16 @@ function TxRow({ s, onClick }) {
             >
               정산제외
             </span>
-          ) : (
-            <>
-              {pending && !refund && (
-                <span className={styles.txStatusBadge} style={{ background: 'var(--amber-100)', color: 'var(--amber-600)' }}>
-                  대기
-                </span>
-              )}
-              {paid && (
-                <span className={styles.txStatusBadge} style={{ background: 'var(--mint-100)', color: 'var(--mint-600)' }}>
-                  지급완료
-                </span>
-              )}
-              {refund && (
-                <span className={styles.txStatusBadge} style={{ background: 'var(--rose-100)', color: 'var(--rose-600)' }}>
-                  환불 차감
-                </span>
-              )}
-            </>
-          )}
+          ) : (() => {
+            const label = STATUS_LABEL[s.status];
+            const tone = STATUS_BADGE_TONE[s.status];
+            if (!label || !tone) return null;
+            return (
+              <span className={styles.txStatusBadge} style={{ background: tone.bg, color: tone.color }}>
+                {label}
+              </span>
+            );
+          })()}
         </div>
         <div className={styles.txRowMatch}>
           {recipientName} <span style={{ color: 'var(--ink-400)', fontWeight: 500 }}>· {reasonLabel}</span>
@@ -868,8 +868,12 @@ function ReceiptSheet({ s, onClose }) {
     rows.push(['제외 사유', EXCLUSION_REASON_LABEL[s.exclusionReason] || s.exclusionReason || '-']);
   }
 
-  const statusLabel = excluded ? '정산 제외' : paid ? '지급 완료' : '지급 대기';
-  const statusColor = excluded ? 'var(--ink-500)' : paid ? 'var(--mint-600)' : 'var(--amber-600)';
+  const statusLabel = excluded
+    ? '정산 제외'
+    : (STATUS_LABEL[s.status] || (paid ? '지급 완료' : '지급 대기'));
+  const statusColor = excluded
+    ? 'var(--ink-500)'
+    : (STATUS_BADGE_TONE[s.status]?.color || (paid ? 'var(--mint-600)' : 'var(--amber-600)'));
 
   return (
     <SheetWrap onClose={onClose}>
