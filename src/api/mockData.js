@@ -1575,14 +1575,23 @@ function computeSettlementsForMatch(m) {
   if (lastChar === '3') { excluded = true; exclusionReason = 'manual_confirm'; }
   else if (lastChar === '5') { excluded = true; exclusionReason = 'zero_amount'; }
 
+  const clientAName = m.clientA?.clientName || null;
+  const clientBName = m.clientB?.clientName || null;
   for (const [managerId, share] of shares) {
     const mgr = managerMap[managerId] || { id: managerId, name: '알 수 없음' };
-    const isOwner = managerId === ownerAId || managerId === ownerBId;
+    const isOwnerA = managerId === ownerAId;
+    const isOwnerB = managerId === ownerBId;
+    const isOwner = isOwnerA || isOwnerB;
     const isCreator = managerId === creatorId;
     let role;
     if (isOwner && isCreator) role = 'both';
     else if (isOwner) role = 'client_owner';
     else role = 'matchmaker';
+    // ownedClientName: client_owner / both 일 때 매니저가 소유한 회원 이름
+    let ownedClientName = null;
+    if (isOwnerA && isOwnerB) ownedClientName = clientAName && clientBName ? `${clientAName} · ${clientBName}` : (clientAName || clientBName);
+    else if (isOwnerA) ownedClientName = clientAName;
+    else if (isOwnerB) ownedClientName = clientBName;
     const { status: stlStatus, matchEndedAt, settledAt } = deriveSettlementStatus(m);
     // excluded는 ready_to_settle / settled 로 전이 안 됨 — confirmed에서 멈춤
     const finalStatus = excluded && (stlStatus === 'ready_to_settle' || stlStatus === 'settled')
@@ -1605,6 +1614,9 @@ function computeSettlementsForMatch(m) {
       memo: null,
       createdAt,
       matchEndedAt,
+      clientAName,
+      clientBName,
+      ownedClientName,
     });
   }
   return rows;

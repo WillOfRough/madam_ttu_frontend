@@ -617,7 +617,13 @@ function TxRow({ s, onClick }) {
   const badgeBg = roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
   const badgeColor = roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
 
-  const recipientName = s.managerName || '담당 매니저';
+  const pairLabel = (s.clientAName && s.clientBName)
+    ? `${s.clientAName} ↔ ${s.clientBName}`
+    : (s.clientAName || s.clientBName || null);
+  const memberLabel = roleIsClient
+    ? (s.ownedClientName || pairLabel)
+    : (pairLabel || s.ownedClientName);
+  const recipientName = memberLabel || '회원';
   const reasonLabel = roleIsMatch
     ? '매칭 성사 보상'
     : roleIsClient
@@ -833,6 +839,12 @@ function ReceiptSheet({ s, onClose }) {
   const excluded = s.excluded === true;
   const matchLabel = s.matchId ? `매칭 #${String(s.matchId).slice(-6)}` : '매칭';
   const recipientName = s.managerName || '담당 매니저';
+  const pairLabel = (s.clientAName && s.clientBName)
+    ? `${s.clientAName} ↔ ${s.clientBName}`
+    : (s.clientAName || s.clientBName || null);
+  const memberLabel = s.role === 'client_owner'
+    ? (s.ownedClientName || pairLabel)
+    : (pairLabel || s.ownedClientName);
   const reasonLabel = s.role === 'matchmaker'
     ? '매칭 성사 보상'
     : s.role === 'client_owner'
@@ -843,6 +855,7 @@ function ReceiptSheet({ s, onClose }) {
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
   const rows = [
+    ['회원', memberLabel || '-'],
     ['수령 매니저', recipientName],
     ['정산 사유', reasonLabel],
     ['역할', ROLE_LABEL[s.role] || s.role],
