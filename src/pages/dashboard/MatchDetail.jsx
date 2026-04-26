@@ -1287,7 +1287,7 @@ export default function MatchDetail() {
             <div className={styles.remindCardHeader}>
               <div className={styles.remindCardIcon}><Bell size={14} /></div>
               <div className={styles.remindCardMeta}>
-                <div className={styles.remindCardKicker}>진행 안내 재발송</div>
+                <div className={styles.remindCardKicker}>리마인드 문자 재발송</div>
                 <div className={styles.remindCardTitle}>{REMIND_ACTION_LABEL[match.status] || '진행 안내'}</div>
               </div>
             </div>
@@ -1295,6 +1295,9 @@ export default function MatchDetail() {
               <div className={styles.remindStatusLine}>
                 현재 단계: <strong>{REMIND_STATUS_LABEL[match.status] || '-'}</strong>
               </div>
+              <p className={styles.remindHelpText}>
+                회원이 응답하지 않을 때, 현재 단계에 맞는 안내 문자를 다시 보내드려요.
+              </p>
             </div>
             <div className={styles.remindCardFoot}>
               <button
@@ -1302,7 +1305,7 @@ export default function MatchDetail() {
                 onClick={handleRemindClick}
                 disabled={actionLoading || match.status === 'draft' || match.status === 'arranging'}
               >
-                <Send size={14} /> 진행 안내 재발송
+                <Send size={14} /> 리마인드 문자 재발송
               </button>
             </div>
           </div>
@@ -1614,9 +1617,12 @@ export default function MatchDetail() {
             <div className={styles.sheetModal} onClick={(e) => e.stopPropagation()}>
               <div className={styles.sheetHandle} />
               <div className={styles.sheetContent}>
-                <h3 className={styles.sheetTitle}>진행 안내 재발송</h3>
+                <h3 className={styles.sheetTitle}>리마인드 문자 재발송</h3>
                 <p className={styles.remindStatusLine}>
                   현재 단계: <strong>{preview.statusLabel}</strong>
+                </p>
+                <p className={styles.remindHelpText}>
+                  회원이 응답하지 않을 때, 현재 단계에 맞는 안내 문자를 다시 보내드려요.
                 </p>
                 {empty ? (
                   <p className={styles.remindEmptyMsg}>
