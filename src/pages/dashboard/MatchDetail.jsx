@@ -4,7 +4,7 @@ import {
   ChevronLeft,
   Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
   Link2, ChevronDown, ChevronUp, User, RefreshCw, Trash2,
-  Heart, MessageSquare, FileText, Phone, Send, MoreVertical,
+  Heart, MessageSquare, FileText, Phone, Send,
   ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2,
 } from 'lucide-react';
 import * as matchService from '../../api/matchService';
@@ -685,9 +685,6 @@ export default function MatchDetail() {
             {match.clientA.clientName} ↔ {match.clientB.clientName}
           </div>
         </div>
-        <button className={styles.moreBtn} aria-label="더보기">
-          <MoreVertical size={20} />
-        </button>
       </div>
 
       <div className={styles.content}>

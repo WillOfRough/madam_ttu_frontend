@@ -881,20 +881,6 @@ function GenderChip({ gender }) {
   );
 }
 
-/* Step dots indicator */
-function StepIndicator({ step }) {
-  return (
-    <div className={styles.wizStepDots} aria-hidden="true">
-      {[1, 2, 3].map((s) => (
-        <div
-          key={s}
-          className={`${styles.wizStepDot} ${s <= step ? styles.wizStepDotFilled : ''}`}
-        />
-      ))}
-    </div>
-  );
-}
-
 /* Client result row used in both Step 1 and Step 2 */
 function ClientResultRow({ client, score, chips, onClick }) {
   const name = client.name || client.nickname || '?';
@@ -1320,7 +1306,6 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
             <span className={styles.wizHeaderTitle}>새 매칭 · {step}/3</span>
             <span className={styles.wizHeaderSub}>{stepTitle}</span>
           </div>
-          <StepIndicator step={step} />
         </div>
 
         {/* ── Step content ── */}

@@ -651,28 +651,6 @@
   color: var(--ink-400);
 }
 
-/* Step dots in header (3 dots) */
-.wizStepDots {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.wizStepDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 1.5px solid var(--ink-200);
-  background: transparent;
-  transition: background 200ms ease, border-color 200ms ease;
-}
-
-.wizStepDotFilled {
-  background: var(--ink-900);
-  border-color: var(--ink-900);
-}
-
 /* ── Wizard scrollable body ── */
 .wizBody {
   flex: 1;

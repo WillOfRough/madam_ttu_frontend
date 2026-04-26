@@ -160,24 +160,6 @@
   text-overflow: ellipsis;
 }
 
-.moreBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin: -8px -8px -8px 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--ink-500);
-  border-radius: var(--r-sm);
-  transition: background 120ms ease;
-}
-.moreBtn:hover {
-  background: var(--ink-50);
-}
-
 /* ── Content wrapper ─────────────────────────────────────────── */
 .content {
   padding: 4px 18px;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, MoreVertical, Heart, Edit3, Trash2, X,
+  ChevronLeft, Heart, Edit3, Trash2, X,
   ShieldCheck, Download, Copy, Link2, ChevronDown, Plus, Shield, Check,
 } from 'lucide-react';
 import * as clientService from '../../api/clientService';
@@ -418,9 +418,6 @@ export default function ClientDetail() {
           <ChevronLeft size={22} />
         </button>
         <span className={styles.topNavTitle}>회원 상세</span>
-        <button className={styles.moreBtn} aria-label="더보기">
-          <MoreVertical size={20} />
-        </button>
       </div>
 
       {/* ══ 2. Compact Hero ══ */}
