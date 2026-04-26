@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
 import {
-  ChevronLeft, HelpCircle, Calendar, Inbox,
+  HelpCircle, Calendar, Inbox,
   AlertCircle, ArrowRight, Heart, X, Check,
   TrendingUp, Clock,
 } from 'lucide-react';
@@ -151,7 +150,6 @@ function getNextPayoutLabel() {
 
 /* === 메인 컴포넌트 === */
 export default function Settlement() {
-  const navigate = useNavigate();
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -298,13 +296,6 @@ export default function Settlement() {
     <div className={styles.page}>
       {/* === 상단 헤더 === */}
       <div className={styles.topBar}>
-        <button
-          className={styles.backBtn}
-          onClick={() => navigate(-1)}
-          aria-label="뒤로 가기"
-        >
-          <ChevronLeft size={20} />
-        </button>
         <span className={styles.topBarTitle}>정산</span>
         <button
           className={styles.helpBtn}
