@@ -574,15 +574,34 @@ export default function MatchList() {
   /* URL param + manager default */
   useEffect(() => {
     const statusParam = searchParams.get('status');
+    const createParam = searchParams.get('create');
     const patch = {};
     if (statusParam) patch.status = statusParam;
     if (myManagerId) patch.managerId = myManagerId;
     if (Object.keys(patch).length > 0) {
       setFilters(patch);
-      if (statusParam) setSearchParams({}, { replace: true });
+      if (statusParam) {
+        const next = new URLSearchParams(searchParams);
+        next.delete('status');
+        setSearchParams(next, { replace: true });
+      }
+    }
+    if (createParam === '1') {
+      setShowCreate(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const closeCreateModal = () => {
+    setShowCreate(false);
+    if (searchParams.get('create') || searchParams.get('clientA') || searchParams.get('clientB')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('create');
+      next.delete('clientA');
+      next.delete('clientB');
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   /* Load clients for recommended-pairs scoring */
   useEffect(() => {
@@ -832,8 +851,8 @@ export default function MatchList() {
       {/* ── Create Modal ── */}
       {showCreate && (
         <CreateMatchModal
-          onClose={() => setShowCreate(false)}
-          onCreated={() => { setShowCreate(false); fetchMatches(); }}
+          onClose={closeCreateModal}
+          onCreated={() => { closeCreateModal(); fetchMatches(); }}
           initialClientAId={searchParams.get('clientA')}
           initialClientBId={searchParams.get('clientB')}
         />
