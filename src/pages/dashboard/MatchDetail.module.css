@@ -12,139 +12,43 @@
   letter-spacing: -0.015em;
 }
 
-/* ── Desktop: full-width 2-column layout ── */
+/* ── Desktop (≥769px) — single-column vertical stack, centered, 800px max ── */
 @media (min-width: 769px) {
   .page {
-    max-width: 1160px;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 0 0 48px;
+    padding: 0 24px 64px;
   }
 
-  /* Top nav stays full-width but constrained */
   .topNav {
     position: static;
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    padding: 0 0 16px 0;
+    padding: 16px 0;
     border-bottom: none;
   }
 
-  /* Content: 2-column grid */
   .content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     padding: 0;
   }
 
-  /* Left column: stepper, hero, participants */
-  .stepperCard {
-    grid-column: 1;
-    margin-top: 0;
-  }
-
-  .heroCard {
-    grid-column: 1;
-    margin-top: 0;
-  }
-
-  .participantsCard {
-    grid-column: 1;
-    margin-top: 0;
-  }
-
-  .cancelledBanner {
-    grid-column: 1;
-    margin-top: 0;
-  }
-
-  /* Right column: schedule, arranging, remind, guide message, scheduling link */
-  .scheduleCard {
-    grid-column: 2;
-    grid-row: 1;
-    margin-top: 0;
-  }
-
-  .arrangingSection {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  .remindCard {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  .guideMessageCard {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  .schedulingLinkCard {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  .afterCard {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
-  .infoCard {
-    grid-column: 2;
-    margin-top: 0;
-  }
-
+  .stepperCard,
+  .heroCard,
+  .participantsCard,
+  .cancelledBanner,
+  .scheduleCard,
+  .arrangingSection,
+  .remindCard,
+  .guideMessageCard,
+  .schedulingLinkCard,
+  .afterCard,
+  .infoCard,
   .refundCard {
-    grid-column: 2;
     margin-top: 0;
-  }
-
-  /* Participants: lay clientA / clientB side-by-side to balance column heights */
-  .participantsList {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 24px;
-  }
-
-  .participantsList .participantCard {
-    padding: 12px 0;
-    border-bottom: none;
-  }
-
-  .participantsList .participantCard:first-child {
-    border-right: 1px solid var(--ink-50);
-    padding-right: 24px;
-  }
-
-  .participantsList .participantCard:last-child {
-    padding-bottom: 12px;
-  }
-
-  /* Footer-ish blocks span both columns so they don't drift into right-column gaps */
-  .matchMeta {
-    grid-column: 1 / -1;
-    margin-top: 16px;
-    padding: 0;
-  }
-
-  .destructiveSection {
-    grid-column: 1 / -1;
-    margin-top: 12px;
-    padding: 14px 20px;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .destructiveSection .destructiveBtn {
-    width: auto;
-    min-width: 140px;
-    padding: 10px 20px;
-    font-size: 12.5px;
   }
 }
 
