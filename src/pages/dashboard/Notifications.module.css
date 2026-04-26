@@ -296,12 +296,12 @@
   100% { opacity: 1; }
 }
 
-/* ── Desktop (≥769px) ── */
+/* ── Desktop (≥769px) — single-column vertical list, centered, 800px max ── */
 @media (min-width: 769px) {
   .page {
-    max-width: 1160px;
+    max-width: 800px;
     margin: 0 auto;
-    padding-bottom: 48px;
+    padding: 0 24px 64px;
   }
 
   .header {
@@ -309,28 +309,94 @@
     background: transparent;
     backdrop-filter: none;
     border-bottom: none;
-    padding: 0 0 8px;
+    padding: 28px 0 18px;
   }
 
   .title {
     font-size: 26px;
   }
 
-  .sectionGroup {
-    padding: 0;
+  .readAllBtn {
+    font-size: 14px;
   }
 
-  /* Two-column notification list on wide desktop */
+  .sectionGroup {
+    padding: 0;
+    margin-top: 24px;
+  }
+
+  .sectionGroup + .sectionGroup {
+    margin-top: 28px;
+  }
+
+  .sectionLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-500);
+    letter-spacing: -0.01em;
+    padding-left: 2px;
+    margin: 0 0 10px;
+  }
+
+  /* Vertical list — single column, generous gap */
   .list {
-    max-width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 6px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Roomier cards on desktop */
+  .item {
+    padding: 16px 20px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .iconTile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .itemContent {
+    gap: 4px;
+  }
+
+  .itemTitle {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .itemMessage {
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .itemTime {
+    font-size: 12px;
+    color: var(--ink-400);
+    margin-top: 2px;
+  }
+
+  .itemChevron {
+    color: var(--ink-300);
   }
 
   .loadingList {
     padding: 14px 0;
+    gap: 10px;
+  }
+
+  .skeletonItem {
+    padding: 16px 20px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .skeletonIconTile {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
 }
 

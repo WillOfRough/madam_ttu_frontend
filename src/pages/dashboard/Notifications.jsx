@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
   Heart, Calendar, User, Link2, MessageSquare, Check, Bell,
 } from 'lucide-react';
 import useNotificationStore from '../../store/notificationStore';
-import Pagination from '../../components/Pagination';
 import styles from './Notifications.module.css';
 
 function formatRelativeTime(dateStr) {
@@ -94,19 +93,14 @@ function groupNotifications(notifications) {
 export default function Notifications() {
   const navigate = useNavigate();
   const notifications = useNotificationStore((s) => s.notifications);
-  const pagination = useNotificationStore((s) => s.pagination);
   const isLoading = useNotificationStore((s) => s.isLoading);
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
   const markAsRead = useNotificationStore((s) => s.markAsRead);
   const markAllAsRead = useNotificationStore((s) => s.markAllAsRead);
 
-  const [page, setPage] = useState(1);
-
   useEffect(() => {
-    fetchNotifications({ page: page - 1, size: 20 });
-  }, [page, fetchNotifications]);
-
-  const totalPages = pagination ? Math.ceil(pagination.totalCount / 20) : 1;
+    fetchNotifications({ page: 0, size: 100 });
+  }, [fetchNotifications]);
 
   const handleItemClick = async (notification) => {
     if (!notification.read) {
@@ -212,12 +206,6 @@ export default function Notifications() {
               </ul>
             </div>
           )}
-
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
         </>
       )}
     </div>
