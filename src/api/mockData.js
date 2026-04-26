@@ -1789,37 +1789,15 @@ export async function mockFetch(path, options = {}) {
     return { content: filtered.slice(start, start + size), pagination: { page, size, totalElements: filtered.length, totalPages: Math.ceil(filtered.length / size) } };
   }
 
-  // GET /api/v1/clients/me (본인 프로필 조회)
-  if (method === 'GET' && pathname === '/api/v1/clients/me') {
-    const id = params.get('id');
-    const token = params.get('token');
-    const phone = params.get('phone');
-    if ((!id && !token) || !phone) throw Object.assign(new Error('id(또는 token)와 phone은 필수입니다.'), { status: 400 });
-    const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    let found = null;
-    // id로 직접 조회 (문의하기 링크)
-    if (id) {
-      found = clients.find((c) => c.id === id && normalizePhone(c.phone) === normalizePhone(phone));
-    }
-    // token으로 조회 (프로필 페이지)
-    if (!found && token) {
-      const invite = invites.find((inv) => inv.token === token);
-      if (invite) {
-        found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
-      }
-      if (!found) {
-        for (const match of matches) {
-          const side = match.clientA?.proposalToken === token ? match.clientA
-                     : match.clientB?.proposalToken === token ? match.clientB
-                     : null;
-          if (side) {
-            found = clients.find((c) => c.id === side.clientId && normalizePhone(c.phone) === normalizePhone(phone));
-            break;
-          }
-        }
-      }
-    }
-    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+  // POST /api/v1/clients/me (본인 프로필 조회)
+  if (method === 'POST' && pathname === '/api/v1/clients/me') {
+    const body = options.body || {};
+    const id = body.id;
+    const verificationId = body.verificationId;
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
     const birthYear = found.birthDate ? new Date(found.birthDate).getFullYear() : null;
     const age = birthYear ? new Date().getFullYear() - birthYear : null;
     return {
@@ -1836,14 +1814,12 @@ export async function mockFetch(path, options = {}) {
 
   // PUT /api/v1/clients/me (본인 프로필 수정)
   if (method === 'PUT' && pathname === '/api/v1/clients/me') {
-    const token = params.get('token');
-    const phone = params.get('phone');
-    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
-    const invite = invites.find((inv) => inv.token === token);
-    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
-    const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
-    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
     const body = options.body || {};
     const editable = ['name','nickname','birthDate','phone','height','occupation','company','workLocation','education','location','religion','mbti','hobbies','introduction','idealType'];
     for (const key of editable) {
@@ -1852,6 +1828,22 @@ export async function mockFetch(path, options = {}) {
       }
     }
     return { success: true, message: '프로필이 수정되었습니다.' };
+  }
+
+  // DELETE /api/v1/clients/me (본인 탈퇴)
+  if (method === 'DELETE' && pathname === '/api/v1/clients/me') {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const idx = clients.findIndex((c) => c.id === id);
+    if (idx === -1) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    for (const m of matches) {
+      if (m.clientA?.clientId === id) { m.clientA.deleted = true; m.clientA.clientName = '삭제된 회원'; m.clientA.clientGender = null; }
+      if (m.clientB?.clientId === id) { m.clientB.deleted = true; m.clientB.clientName = '삭제된 회원'; m.clientB.clientGender = null; }
+    }
+    clients.splice(idx, 1);
+    return { success: true, message: '탈퇴가 완료되었습니다.' };
   }
 
   // POST /api/v1/inquiries/:id/answer (답변 등록)

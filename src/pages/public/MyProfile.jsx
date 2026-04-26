@@ -80,7 +80,7 @@ function SectionCard({ icon: Icon, title, children }) {
 /* ══════════════════════════════════════════════ */
 export default function MyProfile() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const clientId = searchParams.get('id');
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
@@ -95,26 +95,22 @@ export default function MyProfile() {
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
+  const [editVerificationId, setEditVerificationId] = useState('');
+  const [editPhone, setEditPhone] = useState('');
 
   /* ── photo state ── */
   const [photoUploading, setPhotoUploading] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
 
-  /* ─── photo handlers ─── */
-  const refreshProfile = async () => {
-    try {
-      const data = await getMyProfile({ token, phone: verifiedPhone });
-      setProfile(data);
-    } catch { /* silent */ }
-  };
-
+  /* ─── photo handlers (no /me refresh — verificationId is single-use) ─── */
   const handlePhotoAdd = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !profile?.id) return;
     setPhotoUploading(true);
     try {
       await addClientPhotos(profile.id, files);
-      await refreshProfile();
+      const newUrls = files.map((f) => URL.createObjectURL(f));
+      setProfile((p) => ({ ...p, photoUrls: [...(p?.photoUrls || []), ...newUrls] }));
       toast.success('사진이 추가되었습니다.');
     } catch (err) {
       toast.error(err.message || '사진 추가에 실패했습니다.');
@@ -130,7 +126,10 @@ export default function MyProfile() {
     setDeletingPhotoId(photoId);
     try {
       await deleteClientPhoto(profile.id, photoId);
-      await refreshProfile();
+      setProfile((p) => ({
+        ...p,
+        photoUrls: (p?.photoUrls || []).filter((u) => u !== photoUrl),
+      }));
       toast.success('사진이 삭제되었습니다.');
     } catch (err) {
       toast.error(err.message || '사진 삭제에 실패했습니다.');
@@ -138,24 +137,28 @@ export default function MyProfile() {
     setDeletingPhotoId(null);
   };
 
-  /* ─── phone verified handler ─── */
-  const handlePhoneVerified = async () => {
-    if (!token) {
+  /* ─── phone verified handler (initial profile load) ─── */
+  const handlePhoneVerified = async (verificationId) => {
+    if (!clientId) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
+    if (!verificationId) return;
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile({ token, phone });
+      const data = await getMyProfile({ id: clientId, verificationId });
       setProfile(data);
       setVerifiedPhone(phone);
     } catch (err) {
       const msg = err.message || '';
-      if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
-        setVerifyError('전화번호가 일치하지 않습니다. 다시 확인해주세요.');
-      } else if (msg.includes('토큰') || msg.includes('초대')) {
-        setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
+      const code = err.body?.error;
+      if (code === '4.002' || msg.includes('전화번호') || err.status === 404) {
+        setVerifyError('회원 정보를 찾을 수 없습니다. 매니저에게 문의해주세요.');
+      } else if (code === '7.002' || msg.includes('만료')) {
+        setVerifyError('인증이 만료되었습니다. 다시 인증해주세요.');
+      } else if (code === '7.004' || msg.includes('verificationId')) {
+        setVerifyError('인증이 필요합니다. 다시 인증해주세요.');
       } else {
         setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -183,12 +186,16 @@ export default function MyProfile() {
       introduction: profile.introduction || '',
       idealType: profile.idealType || '',
     });
+    setEditPhone(verifiedPhone);
+    setEditVerificationId('');
     setEditMode(true);
-  }, [profile]);
+  }, [profile, verifiedPhone]);
 
   const cancelEdit = useCallback(() => {
     setEditMode(false);
     setEditForm({});
+    setEditVerificationId('');
+    setEditPhone('');
   }, []);
 
   const field = (key) => ({
@@ -197,6 +204,10 @@ export default function MyProfile() {
   });
 
   const handleSave = async () => {
+    if (!editVerificationId) {
+      toast.error('수정을 위해 본인 인증이 필요합니다.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {};
@@ -205,13 +216,22 @@ export default function MyProfile() {
           payload[key] = key === 'height' ? Number(val) : val;
         }
       }
-      await updateMyProfile(token, verifiedPhone, payload);
-      const updated = await getMyProfile({ token, phone: verifiedPhone });
-      setProfile(updated);
+      await updateMyProfile(profile.id, editVerificationId, payload);
+      setProfile((p) => ({ ...p, ...payload }));
       setEditMode(false);
+      setEditVerificationId('');
+      setEditPhone('');
       toast.success('프로필이 저장되었습니다.');
     } catch (err) {
-      toast.error(err.message || '저장에 실패했습니다.');
+      const code = err.body?.error;
+      if (code === '7.002') {
+        toast.error('인증이 만료되었습니다. 다시 인증해주세요.');
+      } else if (code === '7.004') {
+        toast.error('인증이 필요합니다. 다시 인증해주세요.');
+        setEditVerificationId('');
+      } else {
+        toast.error(err.message || '저장에 실패했습니다.');
+      }
     } finally {
       setSaving(false);
     }
@@ -311,7 +331,11 @@ export default function MyProfile() {
               </button>
             ) : (
               <div className={styles.editActionRow}>
-                <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+                <button
+                  className={styles.saveBtn}
+                  onClick={handleSave}
+                  disabled={saving || !editVerificationId}
+                >
                   {saving ? <span className={styles.btnSpinnerSm} /> : <Save size={14} />}
                   {saving ? '저장 중...' : '저장'}
                 </button>
@@ -328,6 +352,25 @@ export default function MyProfile() {
           <div className={styles.editModeBanner}>
             <Edit3 size={13} />
             수정 모드 — 변경 후 저장 버튼을 눌러주세요
+          </div>
+        )}
+
+        {editMode && !editVerificationId && (
+          <div className={styles.card} style={{ padding: 16 }}>
+            <div className={styles.cardHeader} style={{ marginBottom: 8 }}>
+              <div className={styles.cardIconWrap}>
+                <ShieldCheck size={15} />
+              </div>
+              <h3 className={styles.cardTitle}>본인 인증</h3>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--ink-700, #4a5568)', margin: '4px 0 12px' }}>
+              프로필 수정을 위해 전화번호 재인증이 필요합니다.
+            </p>
+            <PhoneVerifyField
+              value={editPhone}
+              onChange={setEditPhone}
+              onVerified={(verId) => verId && setEditVerificationId(verId)}
+            />
           </div>
         )}
 

@@ -130,17 +130,24 @@ export async function deleteClient(clientId) {
   });
 }
 
-export async function getMyProfile(params) {
-  const query = new URLSearchParams(params);
-  return apiFetch(`/api/v1/clients/me?${query}`, { method: 'GET' });
+export async function getMyProfile({ id, verificationId }) {
+  return apiFetch('/api/v1/clients/me', {
+    method: 'POST',
+    body: { id, verificationId },
+  });
 }
 
-export async function updateMyProfile(token, phone, data) {
-  const query = new URLSearchParams({ token, phone });
+export async function updateMyProfile(id, verificationId, data) {
+  const query = new URLSearchParams({ id, verificationId });
   return apiFetch(`/api/v1/clients/me?${query}`, {
     method: 'PUT',
     body: data,
   });
+}
+
+export async function deleteMyProfile(id, verificationId) {
+  const query = new URLSearchParams({ id, verificationId });
+  return apiFetch(`/api/v1/clients/me?${query}`, { method: 'DELETE' });
 }
 
 export async function updateClientStatus(clientId, status) {

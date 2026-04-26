@@ -175,9 +175,8 @@ export default function ClientDetail() {
 
   // ── profile link ──
   const getProfileEditUrl = () => {
-    const token = client?.inviteToken?.token || client?.inviteToken?.id;
-    if (!token) return null;
-    return `${window.location.origin}/my-profile?token=${token}`;
+    if (!client?.id) return null;
+    return `${window.location.origin}/my-profile?id=${client.id}`;
   };
 
   const handleCopyRaw = async () => {

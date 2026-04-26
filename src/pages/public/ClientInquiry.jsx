@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MessageCircle, Check, Send, AlertCircle, X, ShieldCheck,
          RefreshCw, Layers, Calendar, CreditCard, HelpCircle } from 'lucide-react';
-import { getMyProfile, submitInquiry } from '../../api/clientService';
+import { submitInquiry } from '../../api/clientService';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
 import { toast } from '../../store/toastStore';
 import styles from './ClientInquiry.module.css';
@@ -27,7 +27,6 @@ export default function ClientInquiry() {
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyError, setVerifyError] = useState('');
   const [verifiedPhone, setVerifiedPhone] = useState('');
   const [verificationId, setVerificationId] = useState('');
@@ -41,30 +40,16 @@ export default function ClientInquiry() {
   /* ── step: 'verify' | 'form' | 'done' ── */
   const [step, setStep] = useState('verify');
 
-  /* ─── OTP 인증 완료 후 프로필 조회 ─── */
-  const handlePhoneVerified = async (verId) => {
+  /* ─── OTP 인증 완료 (전화번호↔회원 검증은 submit 시 서버에서 수행) ─── */
+  const handlePhoneVerified = (verId) => {
     if (!clientId) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
     if (!verId) return;
-    setVerifyLoading(true);
-    setVerifyError('');
-    try {
-      await getMyProfile({ id: clientId, phone });
-      setVerifiedPhone(phone);
-      setVerificationId(verId);
-      setStep('form');
-    } catch (err) {
-      const msg = err.message || '';
-      if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
-        setVerifyError('전화번호가 일치하지 않습니다. 다시 확인해주세요.');
-      } else {
-        setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      }
-    } finally {
-      setVerifyLoading(false);
-    }
+    setVerifiedPhone(phone);
+    setVerificationId(verId);
+    setStep('form');
   };
 
   /* ─── submit handler ─── */
@@ -122,15 +107,7 @@ export default function ClientInquiry() {
                 value={phone}
                 onChange={(v) => { setPhone(v); setVerifyError(''); }}
                 onVerified={handlePhoneVerified}
-                disabled={verifyLoading}
               />
-
-              {verifyLoading && (
-                <div className={styles.loadingRow}>
-                  <span className={styles.btnSpinner} />
-                  <span>프로필을 확인하는 중입니다...</span>
-                </div>
-              )}
 
               {verifyError && (
                 <div className={styles.verifyError}>
