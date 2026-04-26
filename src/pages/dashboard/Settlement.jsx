@@ -621,8 +621,9 @@ function TxRow({ s, onClick }) {
   const roleIsMatch = s.role === 'matchmaker';
   const roleIsClient = s.role === 'client_owner';
 
-  const roleBg = excluded ? 'var(--ink-100)' : refund ? 'var(--rose-100)' : roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
-  const roleColor = excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
+  const muted = excluded || refund;
+  const roleBg = muted ? 'var(--ink-100)' : roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
+  const roleColor = muted ? 'var(--ink-400)' : roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
   const badgeBg = roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
   const badgeColor = roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
 
@@ -647,7 +648,7 @@ function TxRow({ s, onClick }) {
     <button
       className={styles.txRow}
       onClick={onClick}
-      style={excluded ? { opacity: 0.55 } : undefined}
+      style={muted ? { opacity: 0.55 } : undefined}
     >
       <div className={styles.txRowIcon} style={{ background: roleBg, color: roleColor }}>
         {refund ? <X size={15} /> : <Heart size={15} />}
@@ -690,8 +691,8 @@ function TxRow({ s, onClick }) {
       <div
         className={styles.txRowAmount}
         style={{
-          color: excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : 'var(--ink-900)',
-          textDecoration: excluded ? 'line-through' : 'none',
+          color: muted ? 'var(--ink-400)' : 'var(--ink-900)',
+          textDecoration: muted ? 'line-through' : 'none',
         }}
       >
         {(s.amount || 0) > 0 ? '+' : ''}{won(s.amount)}
