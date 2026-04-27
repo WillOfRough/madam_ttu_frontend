@@ -1050,10 +1050,22 @@
 
 .activeMatchClient {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.activeMatchClientHead {
+  display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
+}
+
+.activeMatchLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 2px;
 }
 
 .activeMatchLabel {

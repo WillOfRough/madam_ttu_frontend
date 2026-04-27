@@ -1487,36 +1487,44 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                   </p>
                   {activeMatches.A.length > 0 && (
                     <div className={styles.activeMatchClient}>
-                      <span className={styles.activeMatchLabel}>{nameA}</span>
-                      <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.A.length}건</span>
-                      {activeMatches.A.map((m) => (
-                        <button
-                          key={m.matchId}
-                          className={styles.activeMatchLink}
-                          onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
-                          type="button"
-                        >
-                          {m.clientA.clientName} ↔ {m.clientB.clientName}
-                          <StatusBadge status={m.status} />
-                        </button>
-                      ))}
+                      <div className={styles.activeMatchClientHead}>
+                        <span className={styles.activeMatchLabel}>{nameA}</span>
+                        <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.A.length}건</span>
+                      </div>
+                      <div className={styles.activeMatchLinks}>
+                        {activeMatches.A.map((m) => (
+                          <button
+                            key={m.matchId}
+                            className={styles.activeMatchLink}
+                            onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                            type="button"
+                          >
+                            {m.clientA.clientName} ↔ {m.clientB.clientName}
+                            <StatusBadge status={m.status} />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {activeMatches.B.length > 0 && (
                     <div className={styles.activeMatchClient}>
-                      <span className={styles.activeMatchLabel}>{nameB}</span>
-                      <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.B.length}건</span>
-                      {activeMatches.B.map((m) => (
-                        <button
-                          key={m.matchId}
-                          className={styles.activeMatchLink}
-                          onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
-                          type="button"
-                        >
-                          {m.clientA.clientName} ↔ {m.clientB.clientName}
-                          <StatusBadge status={m.status} />
-                        </button>
-                      ))}
+                      <div className={styles.activeMatchClientHead}>
+                        <span className={styles.activeMatchLabel}>{nameB}</span>
+                        <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.B.length}건</span>
+                      </div>
+                      <div className={styles.activeMatchLinks}>
+                        {activeMatches.B.map((m) => (
+                          <button
+                            key={m.matchId}
+                            className={styles.activeMatchLink}
+                            onClick={() => { onClose(); navigate(`/dashboard/matches/${m.matchId}`); }}
+                            type="button"
+                          >
+                            {m.clientA.clientName} ↔ {m.clientB.clientName}
+                            <StatusBadge status={m.status} />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
