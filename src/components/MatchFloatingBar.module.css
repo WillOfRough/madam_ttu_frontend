@@ -180,3 +180,22 @@
     padding: 10px 12px;
   }
 }
+
+@keyframes slideUpDesktop {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 769px) {
+  .bar {
+    bottom: 24px;
+    left: 240px;
+    right: 24px;
+    width: auto;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    transform: none;
+    animation-name: slideUpDesktop;
+  }
+}
