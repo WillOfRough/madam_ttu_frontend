@@ -784,18 +784,32 @@ export default function ClientDetail() {
                   <div className={styles.timelineTrack} />
                   {matchHistory.map((m) => {
                     const { title, sub } = timelineLabel(m);
+                    const accessible = m.accessible !== false;
+                    const handleOpen = () => {
+                      if (!accessible) {
+                        toast.info('연결된 매니저의 매칭입니다. 열람 권한이 없습니다.');
+                        return;
+                      }
+                      navigate(`/dashboard/matches/${m.matchId}`);
+                    };
                     return (
                       <div
                         key={m.matchId}
-                        className={styles.timelineItem}
-                        onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
+                        className={`${styles.timelineItem} ${accessible ? '' : styles.timelineItemDisabled}`}
+                        onClick={handleOpen}
                         role="button"
                         tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && navigate(`/dashboard/matches/${m.matchId}`)}
+                        aria-disabled={!accessible}
+                        onKeyDown={(e) => e.key === 'Enter' && handleOpen()}
                       >
                         <div className={`${styles.timelineDot} ${timelineDotClass(m.status)}`} />
                         <div className={styles.timelineContent}>
-                          <div className={styles.timelineTitle}>{title}</div>
+                          <div className={styles.timelineTitleRow}>
+                            <div className={styles.timelineTitle}>{title}</div>
+                            {!accessible && (
+                              <span className={styles.timelineReadOnlyBadge}>열람 불가</span>
+                            )}
+                          </div>
                           <div className={styles.timelineSub}>{sub}</div>
                         </div>
                       </div>
