@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import BrandLogo from '../../components/BrandLogo';
 import styles from './ClientOath.module.css';
 
 const CONSENT_SECTIONS = [
@@ -129,12 +130,7 @@ export default function ClientOath() {
     <div className={styles.page}>
       <div className={styles.container}>
         {/* Brand */}
-        <div className={styles.brandRow}>
-          <div className={styles.brandIcon}>
-            <div className={styles.brandIconDot} />
-          </div>
-          <span className={styles.brandName}>Knots &amp; Links</span>
-        </div>
+        <BrandLogo className={styles.brandRow} />
 
         {/* Hero */}
         <div className={styles.hero}>

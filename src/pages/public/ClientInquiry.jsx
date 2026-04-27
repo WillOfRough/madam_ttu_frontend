@@ -4,6 +4,7 @@ import { MessageCircle, Check, Send, AlertCircle, X, ShieldCheck,
          RefreshCw, Layers, Calendar, CreditCard, HelpCircle } from 'lucide-react';
 import { submitInquiry } from '../../api/clientService';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
+import BrandLogo from '../../components/BrandLogo';
 import { toast } from '../../store/toastStore';
 import styles from './ClientInquiry.module.css';
 
@@ -88,10 +89,7 @@ export default function ClientInquiry() {
         <div className={styles.blobBottom} aria-hidden />
 
         <div className={styles.verifyWrap}>
-          <div className={styles.brandRow}>
-            <div className={styles.brandMark} />
-            <span className={styles.brandName}>Knots &amp; Links</span>
-          </div>
+          <BrandLogo className={styles.brandRow} />
 
           <div className={styles.verifyCard}>
             <div className={styles.verifyIconRing}>
@@ -135,10 +133,7 @@ export default function ClientInquiry() {
         <div className={styles.blobBottom} aria-hidden />
 
         <div className={styles.doneWrap}>
-          <div className={styles.brandRow}>
-            <div className={styles.brandMark} />
-            <span className={styles.brandName}>Knots &amp; Links</span>
-          </div>
+          <BrandLogo className={styles.brandRow} />
 
           <div className={styles.doneCard}>
             <div className={styles.doneIconRing}>

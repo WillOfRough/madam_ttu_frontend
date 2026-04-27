@@ -1,0 +1,28 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.icon {
+  background: var(--tangerine-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(242, 107, 79, 0.35);
+  flex-shrink: 0;
+}
+
+.iconDot {
+  border: 2px solid #fff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.name {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+  white-space: nowrap;
+  font-family: var(--font-sans);
+}

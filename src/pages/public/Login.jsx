@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import ConfirmModal from '../../components/ConfirmModal';
+import BrandLogo from '../../components/BrandLogo';
 import styles from './Login.module.css';
 
 const SUPPORT_EMAIL = 'admin@knotsandlinks.com';
@@ -79,10 +80,7 @@ export default function Login() {
       <div className={styles.container}>
         {/* Brand row */}
         <div className={styles.brandRow}>
-          <div className={styles.brandIcon}>
-            <div className={styles.brandIconDot} />
-          </div>
-          <span className={styles.brandName}>Knots &amp; Links</span>
+          <BrandLogo size={30} />
           <span className={styles.brandBadge}>MANAGER</span>
         </div>
 
