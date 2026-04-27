@@ -1262,9 +1262,6 @@ export default function MatchDetail() {
                         <div className={styles.feedbackItemHeader}>
                           <span className={styles.responseSideBadge}>{side}</span>
                           <span className={styles.feedbackItemName}>{participant.clientName}</span>
-                          {participant.feedbackRating != null && (
-                            <span className={styles.feedbackRatingBadge}>{participant.feedbackRating}/10</span>
-                          )}
                         </div>
                         {participant.feedbackComment && (
                           <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
