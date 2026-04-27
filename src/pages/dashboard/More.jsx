@@ -8,7 +8,7 @@ const ROWS = [
   { key: 'invites',     to: '/dashboard/invites',     icon: Sparkles,    label: '초대 링크',  sub: '회원 모집 · 이벤트' },
   { key: 'inquiries',   to: '/dashboard/inquiries',   icon: Inbox,       label: '문의',       sub: '회원 질문 수신함',   badgeKey: 'pendingInquiries' },
   { key: 'guide',       to: '/dashboard/guide',       icon: BookOpen,    label: '가이드',     sub: '문자 양식 · 업무 흐름' },
-  { key: 'settlement',  to: '/dashboard/settings',    icon: Wallet,      label: '정산',       sub: '이번달 정산 · 매칭별 내역', state: { tab: 'settlement' } },
+  { key: 'settlement',  to: '/dashboard/settlement',  icon: Wallet,      label: '정산',       sub: '이번달 정산 · 매칭별 내역' },
   { key: 'settings',    to: '/dashboard/settings',    icon: Settings,    label: '설정',       sub: '내 정보 · 보안' },
 ];
 

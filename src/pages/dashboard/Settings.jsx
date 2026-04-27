@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff, DollarSign, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
 import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
 import { BANK_OPTIONS } from '../../data/constants';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
-import Settlement from './Settlement';
 import styles from './Settings.module.css';
 
 export default function Settings() {
@@ -18,13 +17,6 @@ export default function Settings() {
   const fetchInfo = useManagerStore((s) => s.fetchInfo);
   const updateInfo = useManagerStore((s) => s.updateInfo);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // dev 환경에서는 모든 매니저가 정산 탭을 볼 수 있도록 개방
-  const canSeeSettlement = true;
-  const [settingsTab, setSettingsTab] = useState(
-    location.state?.tab === 'settlement' ? 'settlement' : 'settings'
-  );
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', phone: '', bankName: '', bankNumber: '' });
@@ -111,47 +103,12 @@ export default function Settings() {
     navigate('/login');
   };
 
-  // ── Settlement tab view ──
-  if (canSeeSettlement && settingsTab === 'settlement') {
-    return (
-      <div className={styles.page}>
-        <div className={styles.tabWrap}>
-          <button
-            className={`${styles.tabBtn} ${styles.tabBtnInactive}`}
-            onClick={() => setSettingsTab('settings')}
-          >
-            <User size={14} /> 설정
-          </button>
-          <button className={`${styles.tabBtn} ${styles.tabBtnActive}`}>
-            <DollarSign size={14} /> 정산
-          </button>
-        </div>
-        <Settlement />
-      </div>
-    );
-  }
-
   // ── Display name for avatar initial ──
   const displayName = info?.name || name || '';
   const initial = displayName ? displayName[0] : '?';
 
   return (
     <div className={styles.page}>
-      {/* ── Tab row ── */}
-      {canSeeSettlement && (
-        <div className={styles.tabWrap}>
-          <button className={`${styles.tabBtn} ${styles.tabBtnActive}`}>
-            <User size={14} /> 설정
-          </button>
-          <button
-            className={`${styles.tabBtn} ${styles.tabBtnInactive}`}
-            onClick={() => setSettingsTab('settlement')}
-          >
-            <DollarSign size={14} /> 정산
-          </button>
-        </div>
-      )}
-
       {/* ── Page title ── */}
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>설정</h1>
