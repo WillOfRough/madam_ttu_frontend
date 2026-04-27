@@ -1252,6 +1252,111 @@
 .wizPaymentChipActive:hover {
   background: var(--ink-700);
 }
+.wizPaymentChipStatic {
+  cursor: default;
+}
+.wizPaymentChipStatic:hover {
+  background: var(--ink-900);
+}
+
+.wizPaymentCollapsed {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wizPaymentMoreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px 6px 14px;
+  background: transparent;
+  border: 1px dashed var(--ink-200);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-500);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+.wizPaymentMoreLink:hover {
+  background: var(--ink-50);
+  border-color: var(--ink-300);
+  color: var(--ink-700);
+}
+.wizPaymentMoreLink:focus-visible {
+  outline: none;
+  border-color: var(--ink-500);
+  box-shadow: 0 0 0 3px rgba(15, 21, 38, 0.06);
+}
+
+.wizPaymentResetLink {
+  align-self: flex-start;
+  padding: 2px 0;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-500);
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: color 120ms ease;
+}
+.wizPaymentResetLink:hover {
+  color: var(--ink-800);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wizPaymentConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--amber-50, rgba(255, 196, 87, 0.12));
+  border: 1px solid var(--amber-200, rgba(255, 178, 64, 0.4));
+  border-radius: var(--r-sm);
+}
+
+.wizPaymentConfirmText {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-800, var(--ink-700));
+}
+
+.wizPaymentConfirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.wizPaymentConfirmCancel,
+.wizPaymentConfirmOk {
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.wizPaymentConfirmCancel {
+  background: var(--paper);
+  border: 1px solid var(--ink-200);
+  color: var(--ink-700);
+}
+.wizPaymentConfirmCancel:hover {
+  background: var(--ink-50);
+}
+.wizPaymentConfirmOk {
+  background: var(--ink-900);
+  border: 1px solid var(--ink-900);
+  color: #fff;
+}
+.wizPaymentConfirmOk:hover {
+  background: var(--ink-700);
+}
 
 .wizPaymentInputWrap {
   display: flex;
@@ -1284,11 +1389,6 @@
   margin: 0;
 }
 
-.wizPaymentInputInvalid + .wizPaymentInputUnit,
-.wizPaymentInputInvalid {
-  color: var(--rose-600);
-}
-
 .wizPaymentInputUnit {
   font-size: 12px;
   font-weight: 600;
@@ -1296,10 +1396,24 @@
   flex-shrink: 0;
 }
 
-.wizPaymentError {
+.wizPaymentInputInvalid {
+  border-color: var(--rose-400, #f87171);
+  background: var(--rose-50, rgba(255, 235, 235, 0.6));
+}
+.wizPaymentInputInvalid:focus-within {
+  border-color: var(--rose-500, #ef4444);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+.wizPaymentHint {
   font-size: 11px;
   font-weight: 500;
+  color: var(--ink-500);
+  letter-spacing: -0.01em;
+}
+.wizPaymentHintError {
   color: var(--rose-600);
+  font-weight: 600;
 }
 
 /* ── Note textarea ── */

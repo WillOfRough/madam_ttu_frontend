@@ -981,62 +981,142 @@ const normalizeAmountInput = (raw) => {
 };
 
 function PaymentAmountField({ label, mode, setMode, custom, setCustom }) {
-  const trimmed = (custom || '').trim();
-  const parsedNum = trimmed === '' ? null : Number(trimmed);
-  const customInvalid = mode === 'custom' && (
-    trimmed === '' ||
-    !Number.isFinite(parsedNum) ||
-    !Number.isInteger(parsedNum) ||
-    parsedNum < 0
-  );
+  const [expanded, setExpanded] = useState(mode !== 'default');
+  const [pendingFree, setPendingFree] = useState(false);
+
+  const isCollapsed = !expanded && mode === 'default';
+  const effectiveMode = pendingFree ? 'free' : mode;
+  const customDisplay = custom === '' ? '' : Number(custom).toLocaleString('ko-KR');
+  const customNum = custom === '' ? null : Number(custom);
+  const customExceedsCap = customNum !== null && customNum >= DEFAULT_PAYMENT_AMOUNT;
+
+  const handleSelectFree = () => {
+    if (mode === 'free') return;
+    setPendingFree(true);
+  };
+
+  const confirmFree = () => {
+    setMode('free');
+    setPendingFree(false);
+  };
+
+  const resetToDefault = () => {
+    setMode('default');
+    setCustom('');
+    setPendingFree(false);
+    setExpanded(false);
+  };
 
   return (
     <div className={styles.wizPaymentRow}>
       <span className={styles.wizPaymentRowLabel}>{label}</span>
-      <div className={styles.wizPaymentChips}>
-        <button
-          type="button"
-          aria-pressed={mode === 'default'}
-          className={`${styles.wizPaymentChip} ${mode === 'default' ? styles.wizPaymentChipActive : ''}`}
-          onClick={() => setMode('default')}
-        >
-          기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'free'}
-          className={`${styles.wizPaymentChip} ${mode === 'free' ? styles.wizPaymentChipActive : ''}`}
-          onClick={() => setMode('free')}
-        >
-          무료
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'custom'}
-          className={`${styles.wizPaymentChip} ${mode === 'custom' ? styles.wizPaymentChipActive : ''}`}
-          onClick={() => setMode('custom')}
-        >
-          직접 입력
-        </button>
-      </div>
-      {mode === 'custom' && (
-        <div className={styles.wizPaymentInputWrap}>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={custom}
-            onChange={(e) => setCustom(normalizeAmountInput(e.target.value))}
-            placeholder="예: 30000"
-            className={`${styles.wizPaymentInput} ${customInvalid ? styles.wizPaymentInputInvalid : ''}`}
-            aria-label={`${label} 결제 금액`}
-            aria-invalid={customInvalid || undefined}
-          />
-          <span className={styles.wizPaymentInputUnit}>원</span>
+
+      {isCollapsed ? (
+        <div className={styles.wizPaymentCollapsed}>
+          <span
+            className={`${styles.wizPaymentChip} ${styles.wizPaymentChipActive} ${styles.wizPaymentChipStatic}`}
+            aria-label={`${label} 기본 ${DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 적용 중`}
+          >
+            기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원
+          </span>
+          <button
+            type="button"
+            className={styles.wizPaymentMoreLink}
+            onClick={() => setExpanded(true)}
+          >
+            다른 금액
+            <ChevronDown size={13} strokeWidth={2.2} />
+          </button>
         </div>
+      ) : (
+        <>
+          <div className={styles.wizPaymentChips}>
+            <button
+              type="button"
+              aria-pressed={effectiveMode === 'default'}
+              className={`${styles.wizPaymentChip} ${effectiveMode === 'default' ? styles.wizPaymentChipActive : ''}`}
+              onClick={() => { setMode('default'); setPendingFree(false); }}
+            >
+              기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원
+            </button>
+            <button
+              type="button"
+              aria-pressed={effectiveMode === 'free'}
+              className={`${styles.wizPaymentChip} ${effectiveMode === 'free' ? styles.wizPaymentChipActive : ''}`}
+              onClick={handleSelectFree}
+            >
+              무료
+            </button>
+            <button
+              type="button"
+              aria-pressed={effectiveMode === 'custom'}
+              className={`${styles.wizPaymentChip} ${effectiveMode === 'custom' ? styles.wizPaymentChipActive : ''}`}
+              onClick={() => { setMode('custom'); setPendingFree(false); }}
+            >
+              직접 입력
+            </button>
+          </div>
+          {pendingFree && (
+            <div className={styles.wizPaymentConfirm} role="alertdialog" aria-label="무료 진행 확인">
+              <span className={styles.wizPaymentConfirmText}>
+                지인 등 특별한 사유가 있는 경우에만 무료로 진행해주세요.
+              </span>
+              <div className={styles.wizPaymentConfirmActions}>
+                <button
+                  type="button"
+                  className={styles.wizPaymentConfirmCancel}
+                  onClick={() => setPendingFree(false)}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className={styles.wizPaymentConfirmOk}
+                  onClick={confirmFree}
+                >
+                  무료로 진행
+                </button>
+              </div>
+            </div>
+          )}
+          {mode !== 'default' && !pendingFree && (
+            <button
+              type="button"
+              className={styles.wizPaymentResetLink}
+              onClick={resetToDefault}
+            >
+              기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원으로 되돌리기
+            </button>
+          )}
+        </>
       )}
-      {customInvalid && (
-        <span className={styles.wizPaymentError}>0 이상의 정수만 입력할 수 있어요.</span>
+
+      {effectiveMode === 'custom' && (
+        <>
+          <div
+            className={`${styles.wizPaymentInputWrap} ${customExceedsCap ? styles.wizPaymentInputInvalid : ''}`}
+          >
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9,]*"
+              value={customDisplay}
+              onChange={(e) => setCustom(normalizeAmountInput(e.target.value))}
+              placeholder="예: 9,900"
+              className={styles.wizPaymentInput}
+              aria-label={`${label} 결제 금액`}
+              aria-invalid={customExceedsCap || undefined}
+            />
+            <span className={styles.wizPaymentInputUnit}>원</span>
+          </div>
+          <span
+            className={`${styles.wizPaymentHint} ${customExceedsCap ? styles.wizPaymentHintError : ''}`}
+          >
+            {customExceedsCap
+              ? `기본 ${DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 미만으로 입력해주세요.`
+              : `기본 ${DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 미만으로 설정할 수 있어요.`}
+          </span>
+        </>
       )}
     </div>
   );
@@ -1226,6 +1306,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
     if (trimmed === '') return null;              // 빈값이면 default 처리
     const n = Number(trimmed);
     if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0) return NaN; // invalid
+    if (n >= DEFAULT_PAYMENT_AMOUNT) return NaN;  // 직접입력은 기본 금액 미만만 허용
     return n;
   };
 
@@ -1241,7 +1322,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
       return;
     }
     if (paymentInvalid) {
-      toast.error('결제 금액은 0 이상의 정수여야 합니다.');
+      toast.error(`직접입력 결제 금액은 0 이상 ${DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 미만이어야 합니다.`);
       return;
     }
     setSubmitting(true);
@@ -1586,7 +1667,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 <div className={styles.wizPaymentHeader}>
                   <span className={styles.wizPaymentTitle}>결제 금액</span>
                   <span className={styles.wizPaymentSub}>
-                    기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 · A/B 각각 지정 가능
+                    기본 {DEFAULT_PAYMENT_AMOUNT.toLocaleString('ko-KR')}원 권장
                   </span>
                 </div>
                 <PaymentAmountField
