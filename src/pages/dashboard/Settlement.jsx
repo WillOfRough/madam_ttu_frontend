@@ -68,6 +68,10 @@ function isPending(status) {
   return status === 'pending' || status === 'confirmed' || status === 'ready_to_settle';
 }
 
+function isCancelled(status) {
+  return status === 'cancelled';
+}
+
 // 역할 매핑
 const ROLE_LABEL = {
   matchmaker: '매칭 매니저',
@@ -609,13 +613,14 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
 function TxRow({ s, onClick }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
+  const cancelled = isCancelled(s.status);
   const excluded = s.excluded === true;
 
   const roleLabel = ROLE_LABEL[s.role] || s.role;
   const roleIsMatch = s.role === 'matchmaker';
   const roleIsClient = s.role === 'client_owner';
 
-  const muted = excluded || refund;
+  const muted = excluded || refund || cancelled;
   const roleBg = muted ? 'var(--ink-100)' : roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
   const roleColor = muted ? 'var(--ink-400)' : roleIsMatch ? 'var(--tangerine-700)' : roleIsClient ? 'var(--male)' : 'var(--ink-500)';
   const badgeBg = roleIsMatch ? 'var(--tangerine-100)' : roleIsClient ? 'var(--male-100)' : 'var(--ink-100)';
@@ -838,6 +843,7 @@ function RefundSheet({ onClose }) {
 function ReceiptSheet({ s, onClose }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
+  const cancelled = isCancelled(s.status);
   const excluded = s.excluded === true;
   const matchLabel = s.matchId ? `매칭 #${String(s.matchId).slice(-6)}` : '매칭';
   const recipientName = s.managerName || '담당 매니저';
@@ -885,8 +891,8 @@ function ReceiptSheet({ s, onClose }) {
       <div
         className={styles.receiptAmount}
         style={{
-          color: excluded ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : 'var(--ink-900)',
-          textDecoration: excluded ? 'line-through' : 'none',
+          color: (excluded || cancelled) ? 'var(--ink-400)' : refund ? 'var(--rose-600)' : 'var(--ink-900)',
+          textDecoration: (excluded || cancelled) ? 'line-through' : 'none',
         }}
       >
         {(s.amount || 0) > 0 ? '+' : ''}{won(s.amount)}
