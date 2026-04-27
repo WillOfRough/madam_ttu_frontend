@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Link2, Sparkles, Inbox, BookOpen, Settings, Wallet, ChevronRight } from 'lucide-react';
+import { Link2, Sparkles, Inbox, BookOpen, Wallet, ChevronRight } from 'lucide-react';
 import useConnectionStore from '../../store/connectionStore';
 import styles from './More.module.css';
 
@@ -9,7 +9,6 @@ const ROWS = [
   { key: 'inquiries',   to: '/dashboard/inquiries',   icon: Inbox,       label: '문의',       sub: '회원 질문 수신함',   badgeKey: 'pendingInquiries' },
   { key: 'guide',       to: '/dashboard/guide',       icon: BookOpen,    label: '가이드',     sub: '문자 양식 · 업무 흐름' },
   { key: 'settlement',  to: '/dashboard/settlement',  icon: Wallet,      label: '정산',       sub: '이번달 정산 · 매칭별 내역' },
-  { key: 'settings',    to: '/dashboard/settings',    icon: Settings,    label: '설정',       sub: '내 정보 · 보안' },
 ];
 
 export default function More() {
