@@ -94,7 +94,7 @@ export default function Login() {
             <em>매니저</em>님.
           </h1>
           <p className={styles.heroSub}>
-            오늘도 세 쌍의 인연이 당신의 한 마디를 기다리고 있어요.
+            오늘도 누군가의 인연이 당신의 손길을 기다리고 있어요.
           </p>
         </div>
 
