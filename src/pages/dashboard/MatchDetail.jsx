@@ -108,7 +108,12 @@ function getStageHero(match) {
   const receiver = A.role === 'receiver' ? A : B.role === 'receiver' ? B : null;
   const proposerName = proposer?.clientName || 'A';
   const receiverName = receiver?.clientName || 'B';
-  const afterDone = match?.afterStatus === 'accepted' || match?.afterStatus === 'rejected';
+  const completedHero =
+    match?.afterStatus === 'accepted'
+      ? { color: 'mint',  icon: 'heart', title: '에프터가 성사되었어요',   sub: '아래 결과 링크로 두 분께 안내해 주세요.' }
+      : match?.afterStatus === 'rejected'
+      ? { color: 'rose',  icon: 'heart', title: '에프터가 미성사되었어요', sub: '정책에 따라 결과는 회원에게 공유하지 않습니다.' }
+      : { color: 'lilac', icon: 'heart', title: '미팅이 완료되었어요',     sub: '에프터 응답을 기다리고 있어요.' };
   const map = {
     draft:            { color: 'lilac',     icon: 'send',     title: '매칭을 시작할 준비가 되었어요', sub: `시작하면 ${proposerName}님께 프로필 링크 문자가 자동 발송돼요.` },
     proposal_sent:    { color: 'lilac',     icon: 'clock',    title: `${proposerName}님의 응답을 기다리고 있어요`,  sub: '프로필 링크 전달 후 응답 대기 중입니다.' },
@@ -117,9 +122,7 @@ function getStageHero(match) {
     scheduling:       { color: 'tangerine', icon: 'calendar', title: '양쪽 가용시간을 기다리고 있어요', sub: '둘 다 제출하면 공통 시간으로 자동 확정돼요.' },
     arranging:        { color: 'tangerine', icon: 'calendar', title: '공통 시간이 확정되었어요',        sub: '아래에서 약속 일시를 확인하고 확정하세요.' },
     scheduled:        { color: 'mint',      icon: 'mapPin',   title: '약속이 확정되었어요',             sub: '미팅 당일 두 분이 잘 만날 수 있도록 챙겨주세요.' },
-    completed: afterDone
-      ? { color: 'mint',  icon: 'heart', title: '에프터 응답이 도착했어요', sub: '아래 결과 링크로 두 분께 안내해 주세요.' }
-      : { color: 'lilac', icon: 'heart', title: '미팅이 완료되었어요',     sub: '에프터 응답을 기다리고 있어요.' },
+    completed:        completedHero,
     cancelled:        { color: 'rose',      icon: 'x',        title: '매칭이 취소되었어요',             sub: '' },
   };
   return map[status] || map.draft;
@@ -1001,8 +1004,8 @@ export default function MatchDetail() {
                 {match.status === 'completed' && (
                   <AfterLinkCard match={match} />
                 )}
-                {/* after result */}
-                {match.status === 'completed' && (match.afterStatus === 'accepted' || match.afterStatus === 'rejected') && (
+                {/* after result — 정책: 애프터 성사(accepted) 시에만 결과 링크를 회원에게 공유 */}
+                {match.status === 'completed' && match.afterStatus === 'accepted' && (
                   <AfterResultLinkCard match={match} />
                 )}
               </div>
