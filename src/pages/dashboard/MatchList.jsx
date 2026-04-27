@@ -851,7 +851,14 @@ export default function MatchList() {
       {showCreate && (
         <CreateMatchModal
           onClose={closeCreateModal}
-          onCreated={() => { closeCreateModal(); fetchMatches(); }}
+          onCreated={(matchId) => {
+            closeCreateModal();
+            if (matchId) {
+              navigate(`/dashboard/matches/${matchId}`);
+            } else {
+              fetchMatches();
+            }
+          }}
           initialClientAId={searchParams.get('clientA')}
           initialClientBId={searchParams.get('clientB')}
         />
@@ -1239,7 +1246,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
     }
     setSubmitting(true);
     try {
-      await matchService.createMatch({
+      const created = await matchService.createMatch({
         clientAId: clientA.id,
         clientBId: clientB.id,
         note,
@@ -1247,7 +1254,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
         paymentAmountB,
       });
       toast.success('매칭이 생성되었습니다.');
-      onCreated();
+      onCreated(created?.matchId);
     } catch (err) {
       toast.error(err.message || '매칭 생성에 실패했습니다.');
     }
