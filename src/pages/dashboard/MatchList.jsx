@@ -1478,12 +1478,12 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                     <strong>진행 중인 매칭이 있는 회원입니다</strong>
                   </div>
                   <p className={styles.activeMatchDesc}>
-                    동시에 여러 매칭을 진행하면 회원이 부담을 느껴 이탈할 수 있습니다.
+                    동시에 매칭을 여러 개 진행하면 혼돈을 줄 수 있으니 주의해주세요.
                   </p>
                   {activeMatches.A.length > 0 && (
                     <div className={styles.activeMatchClient}>
                       <span className={styles.activeMatchLabel}>{nameA}</span>
-                      <span className={styles.activeMatchCount}>진행 중 {activeMatches.A.length}건</span>
+                      <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.A.length}건</span>
                       {activeMatches.A.map((m) => (
                         <button
                           key={m.matchId}
@@ -1500,7 +1500,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                   {activeMatches.B.length > 0 && (
                     <div className={styles.activeMatchClient}>
                       <span className={styles.activeMatchLabel}>{nameB}</span>
-                      <span className={styles.activeMatchCount}>진행 중 {activeMatches.B.length}건</span>
+                      <span className={styles.activeMatchCount}>진행중인 매칭 {activeMatches.B.length}건</span>
                       {activeMatches.B.map((m) => (
                         <button
                           key={m.matchId}
@@ -1550,13 +1550,12 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                   valA={clientA.location || clientA.region}
                   valB={clientB.location || clientB.region}
                 />
-                <CompareRow label="MBTI" valA={clientA.mbti} valB={clientB.mbti} />
                 <CompareRow label="종교" valA={clientA.religion} valB={clientB.religion} />
               </div>
 
               {/* ── Auto-send info card ── */}
               <div className={styles.wizInfoCard}>
-                <Info size={13} strokeWidth={2} color="var(--lilac-600)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <Info size={13} strokeWidth={2} color="var(--tangerine-600)" style={{ flexShrink: 0, marginTop: 1 }} />
                 <span>
                   매칭 생성 후 &lsquo;매칭 시작&rsquo; 버튼을 누르면 {nameA}님께 프로포절 링크가 자동 발송돼요.
                 </span>

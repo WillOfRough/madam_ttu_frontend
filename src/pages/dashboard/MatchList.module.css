@@ -1149,17 +1149,18 @@
   letter-spacing: -0.01em;
 }
 
-/* ── Info card (lilac) ── */
+/* ── Info card (tangerine) ── */
 .wizInfoCard {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--lilac-100);
+  background: var(--tangerine-50);
+  border: 1px solid var(--tangerine-100);
   border-radius: var(--r-sm);
   font-size: 12px;
   font-weight: 500;
-  color: #4F3DA0;
+  color: var(--tangerine-700);
   line-height: 1.55;
 }
 
