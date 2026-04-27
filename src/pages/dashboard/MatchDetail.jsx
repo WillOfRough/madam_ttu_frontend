@@ -113,7 +113,7 @@ function getStageHero(match) {
     draft:            { color: 'lilac',     icon: 'send',     title: '매칭을 시작할 준비가 되었어요', sub: `시작하면 ${proposerName}님께 프로필 링크 문자가 자동 발송돼요.` },
     proposal_sent:    { color: 'lilac',     icon: 'clock',    title: `${proposerName}님의 응답을 기다리고 있어요`,  sub: '프로필 링크 전달 후 응답 대기 중입니다.' },
     proposal_accepted:{ color: 'lilac',     icon: 'check',    title: `${receiverName}님의 응답을 기다리고 있어요`,  sub: `${proposerName}님이 수락했습니다.` },
-    awaiting_payment: { color: 'amber',     icon: 'money',    title: '두 분 모두 입금을 확인해 주세요', sub: `${proposerName} · ${receiverName} 모두 입금이 완료되면 처리 버튼을 눌러주세요.` },
+    awaiting_payment: { color: 'amber',     icon: 'money',    title: '두 분 모두 입금이 확인 되면 다음 단계로 넘어갑니다', sub: '운영자가 입금 확인을 할 때까지 잠시 기다려주세요.' },
     scheduling:       { color: 'tangerine', icon: 'calendar', title: '양쪽 가용시간을 기다리고 있어요', sub: '둘 다 제출하면 공통 시간으로 자동 확정돼요.' },
     arranging:        { color: 'tangerine', icon: 'calendar', title: '공통 시간이 확정되었어요',        sub: '아래에서 약속 일시를 확인하고 확정하세요.' },
     scheduled:        { color: 'mint',      icon: 'mapPin',   title: '약속이 확정되었어요',             sub: '미팅 당일 두 분이 잘 만날 수 있도록 챙겨주세요.' },
@@ -843,10 +843,7 @@ export default function MatchDetail() {
                     ?? match.paymentSummary?.clientB?.amount
                     ?? 19900;
                   if (amtA === 0 && amtB === 0) return '양쪽 모두 무료 매칭이에요. 입금 확인 없이 바로 진행됩니다.';
-                  if (amtA === amtB) {
-                    return `계좌 내역에서 두 분 입금을 직접 확인해주세요 · ${amtA.toLocaleString('ko-KR')}원 × 2`;
-                  }
-                  return `계좌 내역에서 두 분 입금을 직접 확인해주세요 · A ${amtA.toLocaleString('ko-KR')}원 / B ${amtB.toLocaleString('ko-KR')}원`;
+                  return '입금이 확인되면 일정조율 단계로 자동으로 넘어가 각 회원에게 일정 조율 메시지가 전송됩니다.';
                 })()}
               </div>
               <button
@@ -854,7 +851,7 @@ export default function MatchDetail() {
                 onClick={() => setPaymentConfirmTarget('all')}
                 disabled={actionLoading}
               >
-                두 분 모두 입금 확인 완료
+                수동 입금 확인 (운영자 가이드 하에만 클릭해주세요)
                 <ArrowRight size={16} />
               </button>
             </>
