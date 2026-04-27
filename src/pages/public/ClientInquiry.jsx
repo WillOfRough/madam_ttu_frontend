@@ -183,10 +183,7 @@ export default function ClientInquiry() {
       <div className={styles.blobBottom} aria-hidden />
 
       <div className={styles.formWrap}>
-        <div className={styles.brandRow}>
-          <div className={styles.brandMark} />
-          <span className={styles.brandName}>Knots &amp; Links</span>
-        </div>
+        <BrandLogo className={styles.brandRow} />
 
         {/* Hero header */}
         <div className={styles.formHero}>
