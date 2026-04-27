@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Heart, Plus, Search, X, ChevronDown, ChevronUp,
+  Heart, Search, X, ChevronDown, ChevronUp,
   AlertTriangle, UserRound, Info, ArrowRight, ChevronRight,
   Sparkles, SlidersHorizontal, ArrowUpRight, ChevronLeft,
 } from 'lucide-react';
@@ -718,10 +718,9 @@ export default function MatchList() {
             className={styles.createBtn}
             onClick={() => setShowCreate(true)}
             type="button"
-            aria-label="새 매칭 생성"
+            aria-label="매칭 만들기"
           >
-            <Plus size={15} strokeWidth={2.5} />
-            새 매칭
+            매칭 만들기
           </button>
         </div>
       </div>
