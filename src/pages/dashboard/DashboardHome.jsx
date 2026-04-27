@@ -331,12 +331,15 @@ export default function DashboardHome() {
 
   /* Monthly settlement */
   useEffect(() => {
-    settlementService.getMonthlySummary()
+    const now = new Date();
+    settlementService.getMonthlySummary({ year: now.getFullYear(), month: now.getMonth() + 1 })
       .then((res) => {
-        const arr = Array.isArray(res) ? res : (res.data || res.months || []);
-        const now = new Date();
-        const thisMonth = arr.find((m) => m.year === now.getFullYear() && m.month === (now.getMonth() + 1));
-        setSettlementData(thisMonth || null);
+        const item = (res?.items || []).find((m) => m.month === (now.getMonth() + 1));
+        setSettlementData({
+          amount: item?.amount ?? 0,
+          count: item?.count ?? 0,
+          expectedTotal: res?.expectedTotal ?? 0,
+        });
       })
       .catch(() => setSettlementData(null));
   }, []);
@@ -358,16 +361,13 @@ export default function DashboardHome() {
   const pendingApproval = summary?.pendingCount ?? 0;
   const connectionsCount = connections?.length ?? 0;
 
-  /* Settlement KPI */
+  /* Settlement KPI — 이번달 정산대상 금액 + 받을 잔고 */
   const settlementAmount = settlementData
-    ? (settlementData.totalAmount ?? settlementData.amount ?? 0).toLocaleString('ko-KR')
+    ? (settlementData.amount || 0).toLocaleString('ko-KR')
     : '-';
-  const settlementPending = settlementData
-    ? (settlementData.pendingCount ?? settlementData.readyCount ?? 0)
-    : 0;
-  const settlementSub = settlementAmount === '-'
-    ? '데이터 없음'
-    : `대기 ${settlementPending}건`;
+  const settlementSub = settlementData
+    ? `잔고 ${(settlementData.expectedTotal || 0).toLocaleString('ko-KR')}원`
+    : '데이터 없음';
 
   return (
     <div className={styles.pageGrid}>

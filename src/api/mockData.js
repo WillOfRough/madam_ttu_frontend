@@ -2909,41 +2909,61 @@ export async function mockFetch(path, options = {}) {
       throw Object.assign(new Error('from, to는 필수 파라미터입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
     }
     const all = buildMySettlements();
+    // expectedTotal: confirmed/partial_refunded/ready_to_settle, excluded=false
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
+    // items: ready_to_settle + !excluded, 그룹 키 = matchEndedAt (KST)
     const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
     const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
-    const inRange = all.filter((s) => {
-      const t = new Date(s.createdAt).getTime();
-      return t >= fromTs && t <= toTs;
-    });
     const byDate = {};
-    for (const s of inRange) {
-      const date = new Date(s.createdAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
-      if (!byDate[date]) byDate[date] = { date, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
+    for (const s of all) {
+      if (s.excluded || s.status !== 'ready_to_settle') continue;
+      const endedAt = s.matchEndedAt;
+      if (!endedAt) continue;
+      const t = new Date(endedAt).getTime();
+      if (t < fromTs || t > toTs) continue;
+      const date = new Date(endedAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+      if (!byDate[date]) byDate[date] = { date, count: 0, amount: 0 };
       byDate[date].count += 1;
-      byDate[date].totalAmount += s.amount;
-      if (s.status === 'settled' || s.status === 'paid') byDate[date].paidAmount += s.amount;
-      else if (!s.excluded && (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle')) byDate[date].pendingAmount += s.amount;
+      byDate[date].amount += s.amount || 0;
     }
-    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+    return {
+      expectedTotal,
+      items: Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date)),
+    };
   }
 
   // GET /api/v1/settlements/monthly
   if (method === 'GET' && pathname === '/api/v1/settlements/monthly') {
     if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
     const year = parseInt(params.get('year') || String(new Date().getFullYear()), 10);
+    const monthParam = params.get('month');
+    const monthFilter = monthParam != null ? parseInt(monthParam, 10) : null;
+    if (monthFilter != null && (Number.isNaN(monthFilter) || monthFilter < 1 || monthFilter > 12)) {
+      throw Object.assign(new Error('month는 1~12 범위여야 합니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
     const all = buildMySettlements();
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
     const byMonth = {};
     for (const s of all) {
-      const d = new Date(s.createdAt);
+      if (s.excluded || s.status !== 'ready_to_settle') continue;
+      if (!s.matchEndedAt) continue;
+      const d = new Date(s.matchEndedAt);
       if (d.getFullYear() !== year) continue;
       const month = d.getMonth() + 1;
-      if (!byMonth[month]) byMonth[month] = { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
+      if (monthFilter != null && month !== monthFilter) continue;
+      if (!byMonth[month]) byMonth[month] = { month, count: 0, amount: 0 };
       byMonth[month].count += 1;
-      byMonth[month].totalAmount += s.amount;
-      if (s.status === 'settled' || s.status === 'paid') byMonth[month].paidAmount += s.amount;
-      else if (!s.excluded && (s.status === 'pending' || s.status === 'confirmed' || s.status === 'ready_to_settle')) byMonth[month].pendingAmount += s.amount;
+      byMonth[month].amount += s.amount || 0;
     }
-    return { year, items: Object.values(byMonth).sort((a, b) => a.month - b.month) };
+    return {
+      year,
+      expectedTotal,
+      items: Object.values(byMonth).sort((a, b) => a.month - b.month),
+    };
   }
 
   // GET /api/v1/settlements/match/:matchId

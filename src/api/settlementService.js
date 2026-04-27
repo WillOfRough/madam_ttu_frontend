@@ -18,9 +18,10 @@ export async function getDailySummary({ from, to }) {
 }
 
 // GET /api/v1/settlements/monthly — 월별 요약
-export async function getMonthlySummary({ year } = {}) {
+export async function getMonthlySummary({ year, month } = {}) {
   const query = new URLSearchParams();
   if (year != null) query.set('year', String(year));
+  if (month != null) query.set('month', String(month));
   const qs = query.toString();
   return apiFetch(`/api/v1/settlements/monthly${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }

@@ -153,6 +153,7 @@ export default function Settlement() {
   const [settlements, setSettlements] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalElements: 0 });
   const [dailySeries, setDailySeries] = useState([]);
+  const [expectedTotal, setExpectedTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -181,7 +182,8 @@ export default function Settlement() {
     ]).then(([monthlyRes, dailyRes]) => {
       if (cancelled) return;
       setMonthly(monthlyRes);
-      setDailySeries(Array.isArray(dailyRes) ? dailyRes : (dailyRes?.items || []));
+      setDailySeries(dailyRes?.items || []);
+      setExpectedTotal(dailyRes?.expectedTotal ?? monthlyRes?.expectedTotal ?? 0);
     }).catch(() => {
       if (cancelled) return;
     });
@@ -220,11 +222,11 @@ export default function Settlement() {
   // 기간/필터 변경 시 페이지 리셋
   useEffect(() => { setPage(0); }, [period, roleFilter]);
 
-  // 이번달 요약 계산
+  // 이번달 요약 계산 — 매칭 종료일 기준 ready_to_settle 합계
   const thisMonthSummary = useMemo(() => {
     const items = monthly?.items || [];
     const item = items.find((i) => i.month === month);
-    return item || { month, count: 0, totalAmount: 0, paidAmount: 0, pendingAmount: 0 };
+    return item || { month, count: 0, amount: 0 };
   }, [monthly, month]);
 
   // 이번달 역할별 계산 (settlements 목록에서) — 정산제외 건은 합계에서 제외
@@ -268,19 +270,17 @@ export default function Settlement() {
     const today = now.getDate();
     const map = {};
     dailySeries.forEach((d) => {
-      let day = d.day || d.d;
-      if (!day && typeof d.date === 'string' && d.date.includes('-')) {
-        day = parseInt(d.date.split('-')[2], 10);
+      if (typeof d.date === 'string' && d.date.includes('-')) {
+        const day = parseInt(d.date.split('-')[2], 10);
+        if (day) map[day] = d;
       }
-      if (day) map[day] = d;
     });
     return Array.from({ length: daysInMonth }, (_, i) => {
       const d = i + 1;
       const item = map[d] || {};
       return {
         d,
-        paid: item.paidAmount || item.settledAmount || item.paid || 0,
-        refund: item.refundAmount || item.refund || 0,
+        amount: item.amount || 0,
         count: item.count || 0,
         isFuture: d > today,
         isToday: d === today,
@@ -312,12 +312,11 @@ export default function Settlement() {
         {/* === Hero 카드 === */}
         <HeroCard
           monthLabel={getCurrentMonthLabel()}
-          accrued={thisMonthSummary.totalAmount || 0}
+          accrued={thisMonthSummary.amount || 0}
           count={thisMonthSummary.count || 0}
           matchmakerSum={matchmakerSum}
           clientOwnerSum={clientOwnerSum}
-          cumulative={monthly?.cumulativeTotal || 0}
-          cumulativeCount={monthly?.cumulativeCount || 0}
+          expectedTotal={expectedTotal}
           onPolicy={() => setShowSheet('policy')}
         />
 
@@ -481,7 +480,7 @@ export default function Settlement() {
 }
 
 /* === Hero 카드 === */
-function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, cumulative, cumulativeCount, onPolicy }) {
+function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, expectedTotal, onPolicy }) {
   return (
     <div className={styles.heroCard}>
       <div className={styles.heroGlow} />
@@ -523,10 +522,8 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, c
       </div>
 
       <div className={styles.heroCumulativeRow}>
-        <span className={styles.heroCumulativeLabel}>가입 후 누적</span>
-        <span className={styles.heroCumulativeValue}>
-          {won(cumulative)}원 <span className={styles.heroCumulativeCount}>· {cumulativeCount}건</span>
-        </span>
+        <span className={styles.heroCumulativeLabel}>받을 정산 잔고</span>
+        <span className={styles.heroCumulativeValue}>{won(expectedTotal)}원</span>
       </div>
     </div>
   );
@@ -593,9 +590,6 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
               {hasMatch && (
                 <span className={styles.calendarCellBadge}>{cell.count}</span>
               )}
-              {hasMatch && cell.refund < 0 && (
-                <span className={styles.calendarCellRefundDot} aria-hidden="true" />
-              )}
             </button>
           );
         })}
@@ -605,10 +599,6 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
         <span className={styles.calendarLegendItem}>
           <span className={styles.calendarLegendBadge}>1</span>
           매칭 종료 건수
-        </span>
-        <span className={styles.calendarLegendItem}>
-          <span className={styles.calendarLegendDot} style={{ background: 'var(--rose-500)' }} />
-          환불 차감 있음
         </span>
       </div>
     </div>
