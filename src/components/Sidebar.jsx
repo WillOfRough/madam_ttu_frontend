@@ -11,12 +11,12 @@ const NAV_ITEMS = [
   { to: '/dashboard/settlement', icon: Wallet, label: '정산' },
   { to: '/dashboard/connections', icon: Link2, label: '네트워크' },
   { to: '/dashboard/invites', icon: Mail, label: '초대' },
-  { to: '/dashboard/notifications', icon: Bell, label: '알림', badge: true },
-  { to: '/dashboard/inquiries', icon: MessageSquare, label: '문의' },
-  { to: '/dashboard/guide', icon: BookOpen, label: '가이드' },
 ];
 
 const FOOTER_ITEMS = [
+  { to: '/dashboard/notifications', icon: Bell, label: '알림', badge: true },
+  { to: '/dashboard/inquiries', icon: MessageSquare, label: '문의' },
+  { to: '/dashboard/guide', icon: BookOpen, label: '가이드' },
   { to: '/dashboard/settings', icon: Settings, label: '설정' },
 ];
 

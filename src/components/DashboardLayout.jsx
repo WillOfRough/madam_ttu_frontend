@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Bell, Settings } from 'lucide-react';
+import { Bell, Settings, MoreHorizontal } from 'lucide-react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MatchFloatingBar from './MatchFloatingBar';
@@ -51,6 +51,9 @@ function MobileHeader() {
         </NavLink>
         <NavLink to="/dashboard/settings" className={styles.mobileHeaderIcon} aria-label="설정">
           <Settings size={20} strokeWidth={1.8} />
+        </NavLink>
+        <NavLink to="/dashboard/more" className={styles.mobileHeaderIcon} aria-label="더보기">
+          <MoreHorizontal size={20} strokeWidth={1.8} />
         </NavLink>
       </div>
     </header>
