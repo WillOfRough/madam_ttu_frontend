@@ -967,6 +967,13 @@ function CompareRow({ label, valA, valB }) {
 
 const DEFAULT_PAYMENT_AMOUNT = 19900;
 
+const normalizeAmountInput = (raw) => {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  if (digits === '') return '';
+  const stripped = digits.replace(/^0+/, '');
+  return stripped === '' ? '0' : stripped;
+};
+
 function PaymentAmountField({ label, mode, setMode, custom, setCustom }) {
   const trimmed = (custom || '').trim();
   const parsedNum = trimmed === '' ? null : Number(trimmed);
@@ -1009,12 +1016,11 @@ function PaymentAmountField({ label, mode, setMode, custom, setCustom }) {
       {mode === 'custom' && (
         <div className={styles.wizPaymentInputWrap}>
           <input
-            type="number"
+            type="text"
             inputMode="numeric"
-            min="0"
-            step="1"
+            pattern="[0-9]*"
             value={custom}
-            onChange={(e) => setCustom(e.target.value)}
+            onChange={(e) => setCustom(normalizeAmountInput(e.target.value))}
             placeholder="예: 30000"
             className={`${styles.wizPaymentInput} ${customInvalid ? styles.wizPaymentInputInvalid : ''}`}
             aria-label={`${label} 결제 금액`}
