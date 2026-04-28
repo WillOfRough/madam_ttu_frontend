@@ -64,10 +64,6 @@ function isPaid(status) {
   return status === 'settled';
 }
 
-function isPending(status) {
-  return status === 'pending' || status === 'confirmed' || status === 'ready_to_settle';
-}
-
 function isCancelled(status) {
   return status === 'cancelled';
 }
@@ -157,7 +153,10 @@ export default function Settlement() {
   const [settlements, setSettlements] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalElements: 0 });
   const [dailySeries, setDailySeries] = useState([]);
-  const [expectedTotal, setExpectedTotal] = useState(0);
+  const [byRole, setByRole] = useState({
+    clientOwner: { expectedAmount: 0, settledAmount: 0 },
+    matchmaker: { expectedAmount: 0, settledAmount: 0 },
+  });
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -177,19 +176,29 @@ export default function Settlement() {
     return undefined;
   }, [roleFilter]);
 
-  // 초기 로드: 월별 요약 + 일별 차트
+  // 초기 로드: 월별 요약 + 일별 차트 + 역할별 누적 (allSettled — 한쪽 실패해도 나머지 표시)
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
+    Promise.allSettled([
       settlementService.getMonthlySummary({ year }),
       settlementService.getDailySummary({ from: thisMonthFrom, to: thisMonthTo }),
-    ]).then(([monthlyRes, dailyRes]) => {
+      settlementService.getByRoleSummary(),
+    ]).then(([monthlyR, dailyR, byRoleR]) => {
       if (cancelled) return;
-      setMonthly(monthlyRes);
-      setDailySeries(dailyRes?.items || []);
-      setExpectedTotal(dailyRes?.expectedTotal ?? monthlyRes?.expectedTotal ?? 0);
-    }).catch(() => {
-      if (cancelled) return;
+      if (monthlyR.status === 'fulfilled') setMonthly(monthlyR.value);
+      if (dailyR.status === 'fulfilled') setDailySeries(dailyR.value?.items || []);
+      if (byRoleR.status === 'fulfilled' && byRoleR.value) {
+        setByRole({
+          clientOwner: {
+            expectedAmount: byRoleR.value?.clientOwner?.expectedAmount ?? 0,
+            settledAmount: byRoleR.value?.clientOwner?.settledAmount ?? 0,
+          },
+          matchmaker: {
+            expectedAmount: byRoleR.value?.matchmaker?.expectedAmount ?? 0,
+            settledAmount: byRoleR.value?.matchmaker?.settledAmount ?? 0,
+          },
+        });
+      }
     });
     return () => { cancelled = true; };
   }, [year, thisMonthFrom, thisMonthTo]);
@@ -232,14 +241,6 @@ export default function Settlement() {
     const item = items.find((i) => i.month === month);
     return item || { month, count: 0, amount: 0 };
   }, [monthly, month]);
-
-  // 이번달 역할별 계산 (settlements 목록에서) — 정산제외 건은 합계에서 제외
-  const matchmakerSum = useMemo(() =>
-    settlements.filter(s => s.role === 'matchmaker' && isPending(s.status) && !s.excluded).reduce((a, s) => a + (s.amount || 0), 0),
-    [settlements]);
-  const clientOwnerSum = useMemo(() =>
-    settlements.filter(s => s.role === 'client_owner' && isPending(s.status) && !s.excluded).reduce((a, s) => a + (s.amount || 0), 0),
-    [settlements]);
 
   // 역할 + 선택 일자 필터 적용
   const filteredSettlements = useMemo(() => {
@@ -318,9 +319,7 @@ export default function Settlement() {
           monthLabel={getCurrentMonthLabel()}
           accrued={thisMonthSummary.amount || 0}
           count={thisMonthSummary.count || 0}
-          matchmakerSum={matchmakerSum}
-          clientOwnerSum={clientOwnerSum}
-          expectedTotal={expectedTotal}
+          byRole={byRole}
           onPolicy={() => setShowSheet('policy')}
         />
 
@@ -484,7 +483,11 @@ export default function Settlement() {
 }
 
 /* === Hero 카드 === */
-function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, expectedTotal, onPolicy }) {
+function HeroCard({ monthLabel, accrued, count, byRole, onPolicy }) {
+  const co = byRole?.clientOwner || { expectedAmount: 0, settledAmount: 0 };
+  const mm = byRole?.matchmaker || { expectedAmount: 0, settledAmount: 0 };
+  const totalExpected = (co.expectedAmount || 0) + (mm.expectedAmount || 0);
+
   return (
     <div className={styles.heroCard}>
       <div className={styles.heroGlow} />
@@ -509,25 +512,45 @@ function HeroCard({ monthLabel, accrued, count, matchmakerSum, clientOwnerSum, e
       <div className={styles.heroRoleRow}>
         <div className={styles.heroRolePanel}>
           <div className={styles.heroRoleLabel}>
-            <span className={styles.heroRoleDot} style={{ background: 'var(--tangerine-400)' }} />
-            매칭 매니저
-          </div>
-          <div className={styles.heroRoleAmount}>{won(matchmakerSum)}<span className={styles.heroRoleUnit}>원</span></div>
-          <div className={styles.heroRoleCount}>결제액의 약 25%</div>
-        </div>
-        <div className={styles.heroRolePanel}>
-          <div className={styles.heroRoleLabel}>
             <span className={styles.heroRoleDot} style={{ background: '#7AB2FF' }} />
             회원 매니저
           </div>
-          <div className={styles.heroRoleAmount}>{won(clientOwnerSum)}<span className={styles.heroRoleUnit}>원</span></div>
-          <div className={styles.heroRoleCount}>결제액의 약 12.5%</div>
+          <div className={styles.heroRoleLine}>
+            <span className={styles.heroRoleLineKey}>미정산</span>
+            <span className={styles.heroRoleLineVal}>
+              {won(co.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
+            </span>
+          </div>
+          <div className={styles.heroRoleLine}>
+            <span className={styles.heroRoleLineKey}>지급완료</span>
+            <span className={styles.heroRoleLineVal}>
+              {won(co.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
+            </span>
+          </div>
+        </div>
+        <div className={styles.heroRolePanel}>
+          <div className={styles.heroRoleLabel}>
+            <span className={styles.heroRoleDot} style={{ background: 'var(--tangerine-400)' }} />
+            매칭 매니저
+          </div>
+          <div className={styles.heroRoleLine}>
+            <span className={styles.heroRoleLineKey}>미정산</span>
+            <span className={styles.heroRoleLineVal}>
+              {won(mm.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
+            </span>
+          </div>
+          <div className={styles.heroRoleLine}>
+            <span className={styles.heroRoleLineKey}>지급완료</span>
+            <span className={styles.heroRoleLineVal}>
+              {won(mm.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
+            </span>
+          </div>
         </div>
       </div>
 
       <div className={styles.heroCumulativeRow}>
         <span className={styles.heroCumulativeLabel}>받을 정산 잔고</span>
-        <span className={styles.heroCumulativeValue}>{won(expectedTotal)}원</span>
+        <span className={styles.heroCumulativeValue}>{won(totalExpected)}원</span>
       </div>
     </div>
   );

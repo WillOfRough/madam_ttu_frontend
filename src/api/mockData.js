@@ -2966,6 +2966,43 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
+  // GET /api/v1/settlements/by-role — 역할별 누적 합계
+  if (method === 'GET' && pathname === '/api/v1/settlements/by-role') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const all = buildMySettlements();
+    let coExpected = 0, coSettled = 0;
+    let mmExpected = 0, mmSettled = 0;
+    for (const s of all) {
+      const isExpected = !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status);
+      const isSettled = s.status === 'settled';
+      if (!isExpected && !isSettled) continue;
+      // Mock 'both' role(매물+매칭)을 share 비율로 client_owner / matchmaker 로 분배
+      let coAmt = 0, mmAmt = 0;
+      const amount = s.amount || 0;
+      if (s.role === 'client_owner') {
+        coAmt = amount;
+      } else if (s.role === 'matchmaker') {
+        mmAmt = amount;
+      } else if (s.role === 'both') {
+        const shareTotal = s.share || 7;
+        const ownerShare = shareTotal === 10 ? 6 : 3; // 두 회원 모두 본인 매물=6, 한쪽만=3
+        coAmt = Math.floor((amount * ownerShare) / shareTotal);
+        mmAmt = amount - coAmt;
+      }
+      if (isExpected) {
+        coExpected += coAmt;
+        mmExpected += mmAmt;
+      } else if (isSettled) {
+        coSettled += coAmt;
+        mmSettled += mmAmt;
+      }
+    }
+    return {
+      clientOwner: { expectedAmount: coExpected, settledAmount: coSettled },
+      matchmaker: { expectedAmount: mmExpected, settledAmount: mmSettled },
+    };
+  }
+
   // GET /api/v1/settlements/match/:matchId
   if (method === 'GET' && /^\/api\/v1\/settlements\/match\/[^/]+$/.test(pathname)) {
     if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });

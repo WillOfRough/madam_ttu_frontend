@@ -26,6 +26,11 @@ export async function getMonthlySummary({ year, month } = {}) {
   return apiFetch(`/api/v1/settlements/monthly${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
+// GET /api/v1/settlements/by-role — 역할별(clientOwner/matchmaker) 누적 합계
+export async function getByRoleSummary() {
+  return apiFetch('/api/v1/settlements/by-role', { method: 'GET' });
+}
+
 // GET /api/v1/settlements/match/:matchId — 매칭별 정산
 export async function getMatchSettlements(matchId) {
   return apiFetch(`/api/v1/settlements/match/${matchId}`, { method: 'GET' });

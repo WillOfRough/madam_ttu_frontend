@@ -184,6 +184,28 @@
   margin-top: 1px;
 }
 
+.heroRoleLine {
+  margin-top: 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.heroRoleLineKey {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+
+.heroRoleLineVal {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  letter-spacing: -0.018em;
+}
+
 /* 누적 행 */
 .heroCumulativeRow {
   margin-top: 12px;
