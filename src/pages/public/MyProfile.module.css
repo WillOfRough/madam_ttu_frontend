@@ -892,3 +892,65 @@
     padding: 11px 12px;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   RE-VERIFY MODAL
+   ═══════════════════════════════════════════════ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 43, 75, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+  animation: fadeIn var(--duration-fast) var(--ease-out) both;
+}
+
+.modalCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: var(--shadow-float);
+  animation: scaleIn var(--duration-normal) var(--ease-out) both;
+}
+
+.modalTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--charcoal);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.modalDesc {
+  font-size: 0.88rem;
+  color: var(--charcoal-light);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.modalCancelBtn {
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--charcoal-light);
+  background: var(--bg);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.modalCancelBtn:hover {
+  background: var(--bg-dark);
+  color: var(--charcoal-mid);
+}

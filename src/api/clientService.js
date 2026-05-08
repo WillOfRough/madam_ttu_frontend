@@ -135,8 +135,8 @@ export async function getMyProfile(params) {
   return apiFetch(`/api/v1/clients/me?${query}`, { method: 'GET' });
 }
 
-export async function updateMyProfile(token, phone, data) {
-  const query = new URLSearchParams({ token, phone });
+export async function updateMyProfile(id, phone, verificationId, data) {
+  const query = new URLSearchParams({ id, phone, verificationId });
   return apiFetch(`/api/v1/clients/me?${query}`, {
     method: 'PUT',
     body: data,

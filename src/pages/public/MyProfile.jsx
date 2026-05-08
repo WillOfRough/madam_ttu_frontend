@@ -80,7 +80,7 @@ function SectionCard({ icon: Icon, title, children }) {
 /* ══════════════════════════════════════════════ */
 export default function MyProfile() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const clientId = searchParams.get('id');
 
   /* ── verification state ── */
   const [phone, setPhone] = useState('');
@@ -90,6 +90,11 @@ export default function MyProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState('');
+  const [verificationId, setVerificationId] = useState('');
+
+  /* ── re-verification modal state (verificationId 1회 소진 후 재인증) ── */
+  const [reverifyOpen, setReverifyOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
 
   /* ── edit state ── */
   const [editMode, setEditMode] = useState(false);
@@ -103,7 +108,7 @@ export default function MyProfile() {
   /* ─── photo handlers ─── */
   const refreshProfile = async () => {
     try {
-      const data = await getMyProfile({ token, phone: verifiedPhone });
+      const data = await getMyProfile({ id: clientId, phone: verifiedPhone });
       setProfile(data);
     } catch { /* silent */ }
   };
@@ -139,17 +144,19 @@ export default function MyProfile() {
   };
 
   /* ─── phone verified handler (called after OTP success) ─── */
-  const handlePhoneVerified = async () => {
-    if (!token) {
+  const handlePhoneVerified = async (verId) => {
+    if (!clientId) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
+    if (!verId) return;
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile({ token, phone });
+      const data = await getMyProfile({ id: clientId, phone });
       setProfile(data);
       setVerifiedPhone(phone);
+      setVerificationId(verId);
     } catch (err) {
       const msg = err.message || '';
       if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
@@ -196,25 +203,71 @@ export default function MyProfile() {
     onChange: (e) => setEditForm((f) => ({ ...f, [key]: e.target.value })),
   });
 
-  const handleSave = async () => {
+  const buildPayload = (form) => {
+    const payload = {};
+    for (const [key, val] of Object.entries(form)) {
+      if (val !== '' && val != null) {
+        payload[key] = key === 'height' ? Number(val) : val;
+      }
+    }
+    return payload;
+  };
+
+  const isVerificationStaleError = (err) => {
+    if (!err) return false;
+    if (![400, 401, 403, 410].includes(err.status)) return false;
+    const msg = err.message || '';
+    return msg.includes('인증') || msg.includes('만료') || msg.includes('verification') || msg.includes('verificationId');
+  };
+
+  const doSave = async (payload, verId) => {
     setSaving(true);
     try {
-      const payload = {};
-      for (const [key, val] of Object.entries(editForm)) {
-        if (val !== '' && val != null) {
-          payload[key] = key === 'height' ? Number(val) : val;
-        }
-      }
-      await updateMyProfile(token, verifiedPhone, payload);
-      const updated = await getMyProfile({ token, phone: verifiedPhone });
+      await updateMyProfile(clientId, verifiedPhone, verId, payload);
+      setVerificationId('');
+      const updated = await getMyProfile({ id: clientId, phone: verifiedPhone });
       setProfile(updated);
       setEditMode(false);
       toast.success('프로필이 저장되었습니다.');
+      return true;
     } catch (err) {
+      if (isVerificationStaleError(err)) {
+        setVerificationId('');
+        setPendingPayload(payload);
+        setReverifyOpen(true);
+        return false;
+      }
       toast.error(err.message || '저장에 실패했습니다.');
+      return false;
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = async () => {
+    const payload = buildPayload(editForm);
+    if (!verificationId) {
+      setPendingPayload(payload);
+      setReverifyOpen(true);
+      return;
+    }
+    await doSave(payload, verificationId);
+  };
+
+  const handleReverified = async (verId) => {
+    if (!verId) return;
+    setVerificationId(verId);
+    setReverifyOpen(false);
+    if (pendingPayload) {
+      const payload = pendingPayload;
+      setPendingPayload(null);
+      await doSave(payload, verId);
+    }
+  };
+
+  const closeReverify = () => {
+    setReverifyOpen(false);
+    setPendingPayload(null);
   };
 
   /* ══ STATE 1: phone verification ══ */
@@ -463,6 +516,28 @@ export default function MyProfile() {
           </>
         )}
       </div>
+
+      {reverifyOpen && (
+        <div className={styles.modalOverlay} onClick={closeReverify}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>본인 확인이 필요합니다</h3>
+            <p className={styles.modalDesc}>
+              변경 내용을 저장하려면 등록된 전화번호로 다시 인증해주세요.
+            </p>
+            <PhoneVerifyField
+              value={verifiedPhone}
+              onChange={() => {}}
+              onVerified={handleReverified}
+              phoneReadOnly
+            />
+            <div className={styles.modalActions}>
+              <button type="button" className={styles.modalCancelBtn} onClick={closeReverify} disabled={saving}>
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

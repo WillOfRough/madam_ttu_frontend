@@ -1496,13 +1496,14 @@ export async function mockFetch(path, options = {}) {
 
   // PUT /api/v1/clients/me (본인 프로필 수정)
   if (method === 'PUT' && pathname === '/api/v1/clients/me') {
-    const token = params.get('token');
+    const id = params.get('id');
     const phone = params.get('phone');
-    if (!token || !phone) throw Object.assign(new Error('token과 phone은 필수입니다.'), { status: 400 });
-    const invite = invites.find((inv) => inv.token === token);
-    if (!invite) throw Object.assign(new Error('유효하지 않은 초대 토큰입니다.'), { status: 404 });
+    const verificationId = params.get('verificationId');
+    if (!id || !phone || !verificationId) {
+      throw Object.assign(new Error('id, phone, verificationId는 필수입니다.'), { status: 400 });
+    }
     const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    const found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
+    const found = clients.find((c) => c.id === id && normalizePhone(c.phone) === normalizePhone(phone));
     if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
     const body = options.body || {};
     const editable = ['name','nickname','birthDate','phone','height','occupation','company','workLocation','education','location','religion','mbti','hobbies','introduction','idealType'];

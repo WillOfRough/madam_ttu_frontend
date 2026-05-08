@@ -63,14 +63,13 @@ export default function ClientDetail() {
   };
 
   const getProfileEditUrl = () => {
-    const token = client?.inviteToken?.token || client?.inviteToken?.id;
-    if (!token) return null;
-    return `${window.location.origin}/my-profile?token=${token}`;
+    if (!client?.id) return null;
+    return `${window.location.origin}/my-profile?id=${client.id}`;
   };
 
   const handleCopyProfileLink = async () => {
     const url = getProfileEditUrl();
-    if (!url) { toast.error('초대 토큰 정보가 없습니다.'); return; }
+    if (!url) { toast.error('회원 정보를 불러오는 중입니다.'); return; }
     try {
       await navigator.clipboard.writeText(url);
       setCopiedKey('link');
@@ -80,7 +79,7 @@ export default function ClientDetail() {
 
   const handleCopyProfileMessage = async () => {
     const url = getProfileEditUrl();
-    if (!url) { toast.error('초대 토큰 정보가 없습니다.'); return; }
+    if (!url) { toast.error('회원 정보를 불러오는 중입니다.'); return; }
     const name = client?.nickname || client?.name || '회원';
     const msg = `안녕하세요, ${name}님! Knots & Links 매니저입니다 😊\n\n더 좋은 매칭을 위해 프로필 정보를 최신 상태로 유지해 주시면 좋겠어요.\n아래 링크를 통해 직접 프로필을 확인하고 수정하실 수 있습니다.\n\n👉 ${url}\n\n정보가 정확할수록 더 어울리는 인연을 찾아드릴 수 있어요.\n궁금한 점이 있으시면 언제든 연락 주세요! 💛`;
     try {
