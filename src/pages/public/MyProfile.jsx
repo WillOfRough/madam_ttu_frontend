@@ -224,7 +224,6 @@ export default function MyProfile() {
     setSaving(true);
     try {
       await updateMyProfile(clientId, verifiedPhone, verId, payload);
-      setVerificationId('');
       const updated = await getMyProfile({ id: clientId, phone: verifiedPhone });
       setProfile(updated);
       setEditMode(false);
