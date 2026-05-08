@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  User, Phone, Edit3, Save, X,
+  User, Phone, Edit3, Save, X, CheckCircle2,
   MapPin, Briefcase, GraduationCap, Heart, Camera,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
@@ -92,9 +92,8 @@ export default function MyProfile() {
   const [verifiedPhone, setVerifiedPhone] = useState('');
   const [verificationId, setVerificationId] = useState('');
 
-  /* ── re-verification modal state (verificationId 1회 소진 후 재인증) ── */
-  const [reverifyOpen, setReverifyOpen] = useState(false);
-  const [pendingPayload, setPendingPayload] = useState(null);
+  /* ── completion state (저장 성공 후 완료 화면) ── */
+  const [completed, setCompleted] = useState(false);
 
   /* ── edit state ── */
   const [editMode, setEditMode] = useState(false);
@@ -203,71 +202,53 @@ export default function MyProfile() {
     onChange: (e) => setEditForm((f) => ({ ...f, [key]: e.target.value })),
   });
 
-  const buildPayload = (form) => {
+  const handleSave = async () => {
     const payload = {};
-    for (const [key, val] of Object.entries(form)) {
+    for (const [key, val] of Object.entries(editForm)) {
       if (val !== '' && val != null) {
         payload[key] = key === 'height' ? Number(val) : val;
       }
     }
-    return payload;
-  };
-
-  const isVerificationStaleError = (err) => {
-    if (!err) return false;
-    if (![400, 401, 403, 410].includes(err.status)) return false;
-    const msg = err.message || '';
-    return msg.includes('인증') || msg.includes('만료') || msg.includes('verification') || msg.includes('verificationId');
-  };
-
-  const doSave = async (payload, verId) => {
     setSaving(true);
     try {
-      await updateMyProfile(clientId, verifiedPhone, verId, payload);
-      const updated = await getMyProfile({ id: clientId, phone: verifiedPhone });
-      setProfile(updated);
-      setEditMode(false);
-      toast.success('프로필이 저장되었습니다.');
-      return true;
+      await updateMyProfile(clientId, verifiedPhone, verificationId, payload);
+      setCompleted(true);
     } catch (err) {
-      if (isVerificationStaleError(err)) {
-        setVerificationId('');
-        setPendingPayload(payload);
-        setReverifyOpen(true);
-        return false;
-      }
-      toast.error(err.message || '저장에 실패했습니다.');
-      return false;
+      toast.error(err.message || '저장에 실패했습니다. 매니저에게 받은 링크로 다시 시도해주세요.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSave = async () => {
-    const payload = buildPayload(editForm);
-    if (!verificationId) {
-      setPendingPayload(payload);
-      setReverifyOpen(true);
-      return;
-    }
-    await doSave(payload, verificationId);
-  };
+  /* ══ STATE 0: 저장 완료 ══ */
+  if (completed) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.verifyWrap}>
+          <div className={styles.brandMark}>
+            <span className={styles.brandDot} />
+            <span className={styles.brandName}>Knots &amp; Links</span>
+            <span className={styles.brandDot} />
+          </div>
 
-  const handleReverified = async (verId) => {
-    if (!verId) return;
-    setVerificationId(verId);
-    setReverifyOpen(false);
-    if (pendingPayload) {
-      const payload = pendingPayload;
-      setPendingPayload(null);
-      await doSave(payload, verId);
-    }
-  };
-
-  const closeReverify = () => {
-    setReverifyOpen(false);
-    setPendingPayload(null);
-  };
+          <div className={styles.verifyCard}>
+            <div className={`${styles.verifyIconRing} ${styles.doneIconRing}`}>
+              <CheckCircle2 size={28} strokeWidth={1.8} />
+            </div>
+            <h1 className={styles.verifyTitle}>수정이 완료되었습니다</h1>
+            <p className={styles.verifyDesc}>
+              프로필 변경사항이 안전하게 저장되었습니다.<br />
+              추가로 수정하실 내용이 있다면 매니저에게<br />
+              받은 링크로 다시 접속해주세요.
+            </p>
+            <p className={styles.verifyFootnote}>
+              이 창은 안전하게 닫으셔도 됩니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ══ STATE 1: phone verification ══ */
   if (!profile) {
@@ -515,28 +496,6 @@ export default function MyProfile() {
           </>
         )}
       </div>
-
-      {reverifyOpen && (
-        <div className={styles.modalOverlay} onClick={closeReverify}>
-          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>본인 확인이 필요합니다</h3>
-            <p className={styles.modalDesc}>
-              변경 내용을 저장하려면 등록된 전화번호로 다시 인증해주세요.
-            </p>
-            <PhoneVerifyField
-              value={verifiedPhone}
-              onChange={() => {}}
-              onVerified={handleReverified}
-              phoneReadOnly
-            />
-            <div className={styles.modalActions}>
-              <button type="button" className={styles.modalCancelBtn} onClick={closeReverify} disabled={saving}>
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

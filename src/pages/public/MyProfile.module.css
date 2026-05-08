@@ -91,6 +91,11 @@
   animation: breathe 3.2s ease-in-out infinite;
 }
 
+.doneIconRing {
+  background: rgba(34, 139, 89, 0.12);
+  color: #228b59;
+}
+
 @keyframes breathe {
   0%, 100% { box-shadow: 0 0 0 0 rgba(26, 43, 75, 0.10); }
   50%       { box-shadow: 0 0 0 12px rgba(26, 43, 75, 0.04); }
