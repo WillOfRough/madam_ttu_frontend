@@ -583,25 +583,47 @@ export default function ClientDetail() {
               }
             />
             <div className={styles.card}>
-              <div className={styles.infoGrid}>
+              <div className={styles.infoGroups}>
                 {[
-                  ['별명',     client.nickname || '-'],
-                  ['성별',     isMale ? '남성' : '여성'],
-                  ['출생연도', birthYear ? `${birthYear}년 (${age}세)` : (age ? `${age}세` : '-')],
-                  ['연락처',   client.phone || '-'],
-                  ['거주지역', client.location || '-'],
-                  ['키',       client.height ? `${client.height}cm` : '-'],
-                  ['직업',     client.occupation || '-'],
-                  ['회사',     client.company || '-'],
-                  ['학력',     client.education || '-'],
-                  ['회사 장소', client.workLocation || '-'],
-                  ['종교',     client.religion || '-'],
-                  ['MBTI',     client.mbti || '-'],
-                ].map(([label, value]) => (
-                  <span key={label} style={{ display: 'contents' }}>
-                    <span className={styles.infoLabel}>{label}</span>
-                    <span className={styles.infoValue}>{value}</span>
-                  </span>
+                  {
+                    title: '인적 사항',
+                    items: [
+                      { label: '별명', value: client.nickname || '-' },
+                      { label: '성별', value: isMale ? '남성' : '여성' },
+                      { label: '출생연도', value: birthYear ? `${birthYear}년 (${age}세)` : (age ? `${age}세` : '-') },
+                      { label: '키', value: client.height ? `${client.height}cm` : '-' },
+                      { label: 'MBTI', value: client.mbti || '-' },
+                      { label: '종교', value: client.religion || '-' },
+                    ],
+                  },
+                  {
+                    title: '연락 및 거주',
+                    items: [
+                      { label: '연락처', value: client.phone || '-' },
+                      { label: '거주지역', value: client.location || '-' },
+                    ],
+                  },
+                  {
+                    title: '직업 및 학력',
+                    items: [
+                      { label: '직업', value: client.occupation || '-' },
+                      { label: '회사', value: client.company || '-' },
+                      { label: '회사 장소', value: client.workLocation || '-' },
+                      { label: '학력', value: client.education || '-' },
+                    ],
+                  },
+                ].map((group) => (
+                  <div key={group.title} className={styles.infoGroup}>
+                    <div className={styles.infoGroupTitle}>{group.title}</div>
+                    <div className={styles.infoStackGrid}>
+                      {group.items.map((item) => (
+                        <div key={item.label} className={styles.infoStackCell}>
+                          <div className={styles.infoStackLabel}>{item.label}</div>
+                          <div className={styles.infoStackValue}>{item.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
