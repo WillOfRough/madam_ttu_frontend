@@ -727,13 +727,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px;
 }
 
 .todayCard {
-  background: #fff;
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: var(--sh-sm);
+  background: var(--ink-50);
+  border: 1px solid var(--ink-100);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: none;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -807,40 +809,178 @@
   display: none;
 }
 
-/* ── Page grid wrapper: mobile = single column ── */
-.pageGrid {
-  display: contents;
-}
-
-/* ── Home rail (right side notification panel) — hidden on mobile ── */
-.homeRail {
-  display: none;
-}
-
-/* ── Desktop main 2-column wrapper (mobile = stack) ── */
+/* ── Dashboard 3-col bottom grid ── */
 .desktopMain {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
-/* ── Desktop overrides: 3-column admin dashboard ── */
-@media (min-width: 769px) {
-  /* 3-column page grid: main + rail */
-  .pageGrid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 20px;
-    align-items: start;
-    padding: 0;
-    max-width: 1160px;
-    margin: 0 auto;
-  }
+.dashCol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 
+.dashCard {
+  background: #fff;
+  border: 1px solid var(--ink-100);
+  border-radius: 14px;
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dashCardBody {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-200) transparent;
+}
+
+.dashCardBody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashCardBody::-webkit-scrollbar-thumb {
+  background: var(--ink-200);
+  border-radius: 3px;
+}
+
+.dashCardBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Empty state (unified across all 3 columns) ── */
+.dashEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  min-height: 240px;
+  gap: 8px;
+}
+
+.dashEmptyIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--ink-50);
+  color: var(--ink-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.dashEmptyTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-700);
+  letter-spacing: -0.01em;
+}
+
+.dashEmptyDesc {
+  font-size: 12px;
+  color: var(--ink-400);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ── Notification list (column 3) ── */
+.notifList {
+  list-style: none;
+  margin: 0;
+  padding: 6px 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notifItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 120ms ease;
+}
+
+.notifItem:hover {
+  background: var(--ink-50);
+}
+
+.notifItemUnread {
+  background: var(--paper, rgba(15, 21, 38, 0.02));
+}
+
+.notifItemIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--tangerine-50);
+  color: var(--tangerine-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notifItemContent {
+  min-width: 0;
+}
+
+.notifItemTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notifItemTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notifItemDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rose-600);
+  flex-shrink: 0;
+}
+
+.notifItemMsg {
+  font-size: 11px;
+  color: var(--ink-500);
+  margin-top: 2px;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ── Desktop overrides ── */
+@media (min-width: 769px) {
   .page {
-    padding: 4px 0 24px;
-    gap: 18px;
-    max-width: 1160px;
+    padding: 4px 24px 24px;
+    gap: 22px;
+    max-width: 1440px;
     margin: 0 auto;
   }
 
@@ -858,201 +998,42 @@
     font-weight: 500;
   }
 
-  /* KPI strip 4-column */
+  /* KPI 4-col */
   .kpiGrid {
     grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
   }
 
-  /* 2-column main: TODO list (1.35fr) + Today schedule (1fr) */
+  /* 3-column equal grid for bottom */
   .desktopMain {
     display: grid;
-    grid-template-columns: 1.35fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
+  }
+
+  .dashCol {
+    height: 100%;
+  }
+
+  /* Card unified height across all 3 columns */
+  .dashCard {
+    min-height: 500px;
+    height: 100%;
+    max-height: 560px;
   }
 
   .sectionHeaderStandalone {
-    padding: 0 4px 10px;
+    padding: 0 4px 12px;
+    min-height: 52px;
+    align-items: flex-end;
   }
 
   .sectionTitleSerif {
-    font-size: 18px;
+    font-size: 17px;
   }
 
-  /* ── Right rail: notifications + activity ── */
-  .homeRail {
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: var(--sh-sm);
-    overflow: hidden;
-    position: sticky;
-    top: 16px;
-    max-height: calc(100vh - 32px);
-    min-width: 0;
-  }
-
-  .railHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 16px 8px;
-    border-bottom: 1px solid var(--ink-50);
-  }
-
-  .railTabs {
-    display: flex;
-    gap: 16px;
-  }
-
-  .railTab {
-    position: relative;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--ink-400);
-    padding: 4px 0;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .railTabActive {
-    color: var(--ink-900);
-  }
-
-  .railTabActive::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -8px;
-    height: 2px;
-    background: var(--ink-900);
-    border-radius: 2px;
-  }
-
-  .railTabBadge {
-    font-size: 10px;
-    font-weight: 800;
-    padding: 1px 6px;
-    border-radius: var(--r-pill);
-    background: var(--rose-600);
-    color: #fff;
-    line-height: 1.2;
-  }
-
-  .railReadAll {
-    font-size: 11.5px;
-    color: var(--ink-400);
-    font-weight: 600;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: color 120ms ease;
-  }
-
-  .railReadAll:hover {
-    color: var(--ink-700);
-  }
-
-  .railList {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 6px 12px;
-  }
-
-  .railItem {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-    transition: background 120ms ease;
-    margin-bottom: 2px;
-  }
-
-  .railItem:hover {
-    background: var(--ink-50);
-  }
-
-  .railItemUnread {
-    background: var(--paper);
-  }
-
-  .railItemIcon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--tangerine-50);
-    color: var(--tangerine-600);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .railItemContent {
-    min-width: 0;
-  }
-
-  .railItemTitleRow {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .railItemTitle {
+  .sectionSubSerif {
     font-size: 12.5px;
-    font-weight: 700;
-    color: var(--ink-900);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .railItemDot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--rose-600);
-    flex-shrink: 0;
-  }
-
-  .railItemMsg {
-    font-size: 11px;
-    color: var(--ink-500);
-    margin-top: 2px;
-    line-height: 1.45;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-
-  .railEmpty {
-    padding: 28px 14px;
-    text-align: center;
-    font-size: 12.5px;
-    color: var(--ink-400);
-  }
-}
-
-/* ── Wide desktop (≥1280px): hide rail when narrower so KPI gets room ── */
-@media (max-width: 1199px) {
-  .pageGrid {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-  .homeRail {
-    display: none !important;
   }
 }

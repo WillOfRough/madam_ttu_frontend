@@ -218,74 +218,67 @@ function NotifIcon({ type }) {
   return <Link2 size={14} />;
 }
 
-/* ── Right rail: notifications + activity ── */
-function HomeRail() {
+/* ── Notification column (3rd column in dashboard grid) ── */
+function NotificationsColumn() {
   const notifications = useNotificationStore((s) => s.notifications);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
   const markAllRead = useNotificationStore((s) => s.markAllAsRead);
   const navigate = useNavigate();
-  const [tab, setTab] = useState('noti');
 
   useEffect(() => {
     if (notifications.length === 0) fetchNotifications();
   }, []);
 
-  const recent = useMemo(() => (notifications || []).slice(0, 8), [notifications]);
+  const recent = useMemo(() => (notifications || []).slice(0, 12), [notifications]);
 
   return (
-    <aside className={styles.homeRail}>
-      <div className={styles.railHeader}>
-        <div className={styles.railTabs}>
-          <button
-            className={`${styles.railTab} ${tab === 'noti' ? styles.railTabActive : ''}`}
-            onClick={() => setTab('noti')}
-            type="button"
-          >
-            알림
-            {unreadCount > 0 && <span className={styles.railTabBadge}>{unreadCount}</span>}
-          </button>
-          <button
-            className={`${styles.railTab} ${tab === 'all' ? styles.railTabActive : ''}`}
-            onClick={() => navigate('/dashboard/notifications')}
-            type="button"
-          >
-            전체
-          </button>
+    <div className={styles.dashCol}>
+      <SectionHeader
+        title="알림"
+        sub={unreadCount > 0 ? `${unreadCount}건의 새 알림` : '모두 확인했어요'}
+        action={unreadCount > 0 ? '모두 읽음' : '전체보기'}
+        onAction={unreadCount > 0 ? markAllRead : () => navigate('/dashboard/notifications')}
+      />
+      <div className={styles.dashCard}>
+        <div className={styles.dashCardBody}>
+          {recent.length === 0 ? (
+            <div className={styles.dashEmpty}>
+              <div className={styles.dashEmptyIcon}>
+                <Bell size={22} strokeWidth={1.6} />
+              </div>
+              <div className={styles.dashEmptyTitle}>새 알림이 없어요</div>
+              <div className={styles.dashEmptyDesc}>
+                새로운 활동이 생기면 알려드릴게요
+              </div>
+            </div>
+          ) : (
+            <ul className={styles.notifList}>
+              {recent.map((n) => (
+                <li key={n.id || n.notificationId}>
+                  <button
+                    className={`${styles.notifItem} ${!n.read ? styles.notifItemUnread : ''}`}
+                    onClick={() => navigate('/dashboard/notifications')}
+                    type="button"
+                  >
+                    <div className={styles.notifItemIcon}>
+                      <NotifIcon type={n.type} />
+                    </div>
+                    <div className={styles.notifItemContent}>
+                      <div className={styles.notifItemTitleRow}>
+                        <span className={styles.notifItemTitle}>{n.title}</span>
+                        {!n.read && <span className={styles.notifItemDot} />}
+                      </div>
+                      {n.message && <div className={styles.notifItemMsg}>{n.message}</div>}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        {unreadCount > 0 && (
-          <button className={styles.railReadAll} onClick={markAllRead} type="button">
-            모두 읽음
-          </button>
-        )}
       </div>
-
-      <div className={styles.railList}>
-        {recent.length === 0 ? (
-          <div className={styles.railEmpty}>새 알림이 없어요</div>
-        ) : (
-          recent.map((n) => (
-            <button
-              key={n.id || n.notificationId}
-              className={`${styles.railItem} ${!n.read ? styles.railItemUnread : ''}`}
-              onClick={() => navigate('/dashboard/notifications')}
-              type="button"
-            >
-              <div className={styles.railItemIcon}>
-                <NotifIcon type={n.type} />
-              </div>
-              <div className={styles.railItemContent}>
-                <div className={styles.railItemTitleRow}>
-                  <span className={styles.railItemTitle}>{n.title}</span>
-                  {!n.read && <span className={styles.railItemDot} />}
-                </div>
-                {n.message && <div className={styles.railItemMsg}>{n.message}</div>}
-              </div>
-            </button>
-          ))
-        )}
-      </div>
-    </aside>
+    </div>
   );
 }
 
@@ -370,7 +363,6 @@ export default function DashboardHome() {
     : '데이터 없음';
 
   return (
-    <div className={styles.pageGrid}>
     <div className={styles.page}>
 
       {/* ── Greeting ── */}
@@ -386,7 +378,7 @@ export default function DashboardHome() {
         </p>
       </section>
 
-      {/* ── KPI 2×2 ── */}
+      {/* ── KPI 4-col ── */}
       <div className={styles.kpiGrid}>
         <KpiCard
           label="내 회원"
@@ -424,58 +416,82 @@ export default function DashboardHome() {
         />
       </div>
 
+      {/* ── 3-column dashboard bottom grid ── */}
       <div className={styles.desktopMain}>
-      {/* ── 지금 해야 할 일 ── */}
-      <div>
-        <SectionHeader
-          title="지금 해야 할 일"
-          sub={`${todoCount}건의 매칭이 매니저님을 기다려요`}
-          action="전체보기"
-          onAction={() => navigate('/dashboard/matches')}
-        />
-        <div className={styles.todoCard}>
-          {todoMatches == null ? (
-            <div className={styles.emptyText}>불러오는 중…</div>
-          ) : todoMatches.length === 0 ? (
-            <div className={styles.emptySuccess}>
-              <CheckCircle size={18} color="var(--mint-600)" strokeWidth={1.8} />
-              <span>처리할 매칭이 없어요</span>
+        {/* Col 1: 지금 해야 할 일 */}
+        <div className={styles.dashCol}>
+          <SectionHeader
+            title="지금 해야 할 일"
+            sub={`${todoCount}건의 매칭이 매니저님을 기다려요`}
+            action="전체보기"
+            onAction={() => navigate('/dashboard/matches')}
+          />
+          <div className={styles.dashCard}>
+            <div className={styles.dashCardBody}>
+              {todoMatches == null ? (
+                <div className={styles.dashEmpty}>
+                  <div className={styles.dashEmptyDesc}>불러오는 중…</div>
+                </div>
+              ) : todoMatches.length === 0 ? (
+                <div className={styles.dashEmpty}>
+                  <div className={styles.dashEmptyIcon} style={{ background: 'var(--mint-100)', color: 'var(--mint-600)' }}>
+                    <CheckCircle size={22} strokeWidth={1.6} />
+                  </div>
+                  <div className={styles.dashEmptyTitle}>처리할 매칭이 없어요</div>
+                  <div className={styles.dashEmptyDesc}>모든 매칭을 잘 처리하고 계세요</div>
+                </div>
+              ) : (
+                <div className={styles.todoList}>
+                  {todoMatches.map((m) => (
+                    <TodoRow
+                      key={m.matchId}
+                      match={m}
+                      onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className={styles.todoList}>
-              {todoMatches.map((m) => (
-                <TodoRow
-                  key={m.matchId}
-                  match={m}
-                  onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
-                />
-              ))}
-            </div>
-          )}
+          </div>
         </div>
+
+        {/* Col 2: 오늘의 일정 */}
+        <div className={styles.dashCol}>
+          <SectionHeader
+            title="오늘의 일정"
+            sub={`예정된 일정 ${scheduledMatches?.length || 0}건`}
+          />
+          <div className={styles.dashCard}>
+            <div className={styles.dashCardBody}>
+              {scheduledMatches == null ? (
+                <div className={styles.dashEmpty}>
+                  <div className={styles.dashEmptyDesc}>불러오는 중…</div>
+                </div>
+              ) : scheduledMatches.length === 0 ? (
+                <div className={styles.dashEmpty}>
+                  <div className={styles.dashEmptyIcon}>
+                    <Calendar size={22} strokeWidth={1.6} />
+                  </div>
+                  <div className={styles.dashEmptyTitle}>오늘 예정된 일정이 없어요</div>
+                  <div className={styles.dashEmptyDesc}>
+                    새 일정이 잡히면 이곳에 표시돼요
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.todayCardWrapper}>
+                  {scheduledMatches.map((m) => (
+                    <TodayCard key={m.matchId} match={m} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Col 3: 알림 */}
+        <NotificationsColumn />
       </div>
 
-      {/* ── 오늘의 일정 ── */}
-      <div>
-        <SectionHeader
-          title="오늘의 일정"
-        />
-        <div className={styles.todayCardWrapper}>
-          {scheduledMatches == null ? (
-            <div className={styles.emptyText}>불러오는 중…</div>
-          ) : scheduledMatches.length === 0 ? (
-            <div className={styles.emptyText}>오늘 예정된 일정이 없어요</div>
-          ) : (
-            scheduledMatches.map((m) => (
-              <TodayCard key={m.matchId} match={m} />
-            ))
-          )}
-        </div>
-      </div>
-      </div>
-
-    </div>
-    <HomeRail />
     </div>
   );
 }
