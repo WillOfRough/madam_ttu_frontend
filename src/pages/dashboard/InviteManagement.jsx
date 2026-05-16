@@ -388,80 +388,118 @@ function InviteCard({ invite, copiedId, onCopy, onEventCopy, onRevoke, navigate 
   const isRevoked = status === 'revoked';
   const n = useCount ?? (registeredClients?.length ?? 0);
   const clients = registeredClients || [];
+  const visibleClients = clients.slice(0, 3);
+  const overflowCount = Math.max(clients.length - visibleClients.length, 0);
 
   return (
     <div
       className={`${styles.card} ${isEvent && isActive ? styles.cardEvent : ''} ${isRevoked ? styles.cardRevoked : ''}`}
     >
-      {/* Header row: type badge + label + status badge */}
+      {/* ── Row 1: Header (Title + Actions) ── */}
       <div className={styles.cardHeader}>
-        {isEvent ? (
-          <span className={styles.typeBadgeEvent}>
-            <Sparkles size={9} />
-            이벤트
-          </span>
-        ) : (
-          <span className={styles.typeBadgeGeneral}>일반</span>
-        )}
-        <div className={styles.cardLabel}>{displayLabel || '라벨 없음'}</div>
-        {isRevoked ? (
-          <span className={styles.statusBadgeRevoked}>폐기</span>
-        ) : n > 0 ? (
-          <span className={styles.statusBadgeMint}>가입 {n}</span>
-        ) : (
-          <span className={styles.statusBadgeInk}>대기</span>
-        )}
-      </div>
-
-      {/* Event partner box */}
-      {isEvent && partner && (
-        <div className={styles.partnerBox}>
-          <span className={styles.partnerKey}>파트너</span>
-          <span className={styles.partnerValue}>{partner}</span>
-        </div>
-      )}
-
-      {/* Registered client chips */}
-      {clients.length > 0 && (
-        <div className={styles.clientChips}>
-          <span className={styles.clientsLabel}>등록:</span>
-          {clients.slice(0, 4).map((c) => (
-            <span
-              key={c.id || c.name}
-              className={styles.clientChip}
-              onClick={() => c.id && navigate(`/dashboard/clients/${c.id}`)}
-              style={c.id ? { cursor: 'pointer' } : {}}
-            >
-              {c.name || c}
+        <div className={styles.cardHeaderTitle}>
+          {isEvent ? (
+            <span className={styles.typeBadgeEvent}>
+              <Sparkles size={9} />
+              이벤트
             </span>
-          ))}
-          {clients.length > 4 && (
-            <span className={styles.clientOverflow}>+{clients.length - 4}</span>
+          ) : (
+            <span className={styles.typeBadgeGeneral}>일반</span>
+          )}
+          <div className={styles.cardLabelGroup}>
+            <div className={`${styles.cardLabel} ${!displayLabel ? styles.cardLabelMuted : ''}`}>
+              {displayLabel || '라벨 없음'}
+            </div>
+            <div className={styles.cardMeta}>
+              <Calendar size={10} aria-hidden="true" />
+              <span>{formatDate(createdAt)}</span>
+              {isEvent && partner && (
+                <>
+                  <span className={styles.cardMetaDivider}>·</span>
+                  <span className={styles.cardMetaPartner}>
+                    파트너 <strong>{partner}</strong>
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.cardActions}>
+          {isRevoked ? (
+            <span className={styles.statusBadgeRevoked}>폐기됨</span>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={styles.iconBtnPrimary}
+                onClick={() => onCopy(invite)}
+                title="링크 복사"
+                aria-label="링크 복사"
+              >
+                {copiedId === invite.id ? <Check size={14} /> : <Copy size={14} />}
+                <span className={styles.iconBtnLabel}>
+                  {copiedId === invite.id ? '복사됨' : '복사'}
+                </span>
+              </button>
+              {isEvent && isActive && (
+                <button
+                  type="button"
+                  className={styles.iconBtnGhost}
+                  onClick={() => onEventCopy(invite)}
+                  title="이벤트 페이지 미리보기"
+                >
+                  미리보기
+                </button>
+              )}
+              {isActive && (
+                <button
+                  type="button"
+                  className={styles.iconBtnDanger}
+                  onClick={() => onRevoke(invite)}
+                  title="링크 폐기"
+                  aria-label="링크 폐기"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Action row */}
-      <div className={styles.cardActions}>
-        <button className={styles.btnSoft} onClick={() => onCopy(invite)}>
-          {copiedId === invite.id ? <Check size={12} /> : <Copy size={12} />}
-          {copiedId === invite.id ? '복사됨!' : '복사'}
-        </button>
-        {isEvent && isActive && (
-          <button className={styles.btnGhostSm} onClick={() => onEventCopy(invite)}>
-            미리보기
-          </button>
-        )}
-        {isActive && (
-          <button className={styles.btnGhostSm} onClick={() => onRevoke(invite)}>
-            폐기
-          </button>
-        )}
-        <div style={{ flex: 1 }} />
-        <span className={styles.cardDate}>
-          <Calendar size={10} />
-          {formatDate(createdAt)}
-        </span>
+      {/* ── Row 2: Body (가입 회원 현황) ── */}
+      <div className={styles.cardBody}>
+        <div className={styles.bodyTitle}>
+          <span className={styles.bodyTitleLabel}>가입 회원</span>
+          <span className={`${styles.bodyCount} ${n > 0 ? styles.bodyCountActive : ''}`}>
+            총 {n}명
+          </span>
+        </div>
+        <div className={styles.bodyChips}>
+          {clients.length === 0 ? (
+            <span className={styles.bodyChipEmpty}>
+              {n === 0 ? '아직 가입한 회원이 없어요' : '회원 명단 정보 없음'}
+            </span>
+          ) : (
+            <>
+              {visibleClients.map((c) => (
+                <span
+                  key={c.id || c.name}
+                  className={styles.clientChip}
+                  onClick={() => c.id && navigate(`/dashboard/clients/${c.id}`)}
+                  style={c.id ? { cursor: 'pointer' } : undefined}
+                  title={c.id ? `${c.name || c} 상세 보기` : undefined}
+                >
+                  {c.name || c}
+                </span>
+              ))}
+              {overflowCount > 0 && (
+                <span className={styles.clientOverflow}>+{overflowCount}명</span>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
