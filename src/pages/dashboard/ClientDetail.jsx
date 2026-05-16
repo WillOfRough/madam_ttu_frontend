@@ -429,7 +429,7 @@ export default function ClientDetail() {
                 </div>
 
                 {client.nickname && (
-                  <div className={styles.heroNickname}>"{client.nickname}"</div>
+                  <div className={styles.heroNickname}>@{client.nickname}</div>
                 )}
 
                 <div className={styles.heroBadges}>
