@@ -87,17 +87,19 @@
   margin: 0;
 }
 
-/* ── Notification item ── */
+/* ── Notification item ──
+   Read state: pure white card, near-invisible ink-100 border, soft shadow only.
+   Unread state: very soft tangerine tint + 1px tangerine-100 border (no outer glow). */
 .item {
   position: relative;
   background: var(--paper-card);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   box-shadow: var(--sh-sm);
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  border: 1.5px solid transparent;
+  border: 1px solid var(--ink-100);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   overflow: hidden;
@@ -112,45 +114,47 @@
   outline-offset: 2px;
 }
 
-/* Unread: tangerine border + soft gradient bg + outer glow */
+/* Unread: soft tangerine tint + hairline tangerine border */
 .itemUnread {
-  background: linear-gradient(135deg, var(--tangerine-50), var(--paper-card));
-  border: 1.5px solid var(--tangerine-100);
-  box-shadow: 0 0 0 2px rgba(242, 107, 79, 0.05), var(--sh-sm);
+  background: var(--tangerine-50);
+  border: 1px solid var(--tangerine-100);
+  box-shadow: none;
 }
 
 .itemUnread:hover {
-  background: var(--tangerine-50);
+  background: #FFEEE3;
 }
 
-/* ── Icon tile: 36×36, radius 10 ── */
+/* ── Icon tile: 38×38, radius 12 (rounded-xl), no border, pastel solid ── */
 .iconTile {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   position: relative;
+  border: 0;
 }
 
-.iconTileMint      { background: var(--mint-100);      color: var(--mint-600); }
-.iconTileTangerine { background: var(--tangerine-100); color: var(--tangerine-600); }
-.iconTileLilac     { background: var(--lilac-100);     color: var(--lilac-600); }
-/* Tangerine tint — warm trust empty state */
-.iconTileInk       { background: var(--tangerine-50);  color: var(--tangerine-600); }
+/* Pastel solid fills — guide tones */
+.iconTileMint      { background: #DCF5E4; color: #2E9A66; } /* 연그린 */
+.iconTileTangerine { background: #FFE2D4; color: #E0683E; } /* 연오렌지 */
+.iconTileLilac     { background: #E8E1FB; color: #7C5BD6; } /* 연보라 */
+.iconTileInk       { background: #FFEFE4; color: #E0683E; } /* fallback 연오렌지 */
 
-/* Unread red dot: top-right corner of icon tile */
+/* Unread badge dot: top-right of icon tile (warm tangerine, white ring) */
 .unreadDot {
   position: absolute;
-  top: -1px;
-  right: -1px;
-  width: 7px;
-  height: 7px;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #EF4444;
+  background: #F26B4F;
   border: 2px solid #fff;
+  box-shadow: 0 0 0 0.5px rgba(242, 107, 79, 0.25);
   pointer-events: none;
 }
 
@@ -163,48 +167,51 @@
   gap: 2px;
 }
 
-/* Title: 14 700 ink-900 */
+/* Title: 14 600 (semibold) ink-900 */
 .itemTitle {
   display: block;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink-900);
   line-height: 1.35;
+  letter-spacing: -0.015em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Message: 12.5 500 ink-500, 1-line ellipsis */
+/* Message: 12.5 400 ink-400 (gray-500 tone), 1-line ellipsis */
 .itemMessage {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-size: 12.5px;
-  font-weight: 500;
-  color: var(--ink-500);
+  font-weight: 400;
+  color: var(--ink-400);
   line-height: 1.5;
 }
 
-/* Time: 11 500 ink-400 */
+/* Time: 10.5 500 ink-300 — relative phrasing, smaller for softness */
 .itemTime {
   display: block;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
-  color: var(--ink-400);
+  color: var(--ink-300);
+  margin-top: 2px;
+  letter-spacing: 0.005em;
 }
 
-/* ── Right chevron ── */
+/* ── Right chevron — only rendered on unread (hidden on read) ── */
 .itemChevron {
-  color: var(--ink-300);
+  color: var(--ink-200);
   flex-shrink: 0;
   transition: transform 0.12s, color 0.12s;
 }
 
 .item:hover .itemChevron {
   transform: translateX(2px);
-  color: var(--ink-500);
+  color: var(--ink-400);
 }
 
 /* ── Loading skeleton ── */
@@ -227,9 +234,9 @@
 }
 
 .skeletonIconTile {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   background: var(--ink-50);
   flex-shrink: 0;
   animation: shimmer 1.4s infinite;
@@ -347,15 +354,15 @@
 
   /* Roomier cards on desktop */
   .item {
-    padding: 16px 20px;
+    padding: 18px 20px;
     gap: 16px;
     border-radius: 14px;
   }
 
   .iconTile {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
   }
 
   .itemContent {
@@ -364,22 +371,24 @@
 
   .itemTitle {
     font-size: 15px;
+    font-weight: 600;
     line-height: 1.4;
   }
 
   .itemMessage {
     font-size: 13.5px;
     line-height: 1.5;
+    color: var(--ink-400);
   }
 
   .itemTime {
-    font-size: 12px;
-    color: var(--ink-400);
-    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--ink-300);
+    margin-top: 4px;
   }
 
   .itemChevron {
-    color: var(--ink-300);
+    color: var(--ink-200);
   }
 
   .loadingList {
@@ -394,9 +403,9 @@
   }
 
   .skeletonIconTile {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
   }
 }
 

@@ -143,7 +143,9 @@ export default function Notifications() {
           <span className={styles.itemTime}>{formatRelativeTime(notification.createdAt)}</span>
         </div>
 
-        <ChevronRight size={18} className={styles.itemChevron} />
+        {unread && (
+          <ChevronRight size={16} strokeWidth={1.5} className={styles.itemChevron} />
+        )}
       </li>
     );
   };
