@@ -1387,18 +1387,30 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
       >
         {/* ── Modal chrome: header ── */}
         <div className={styles.wizHeader}>
-          <button
-            type="button"
-            className={styles.wizNavBtn}
-            onClick={step > 1 ? () => { setStep((s) => s - 1); setSearchQuery(''); setSearchResults([]); } : onClose}
-            aria-label={step > 1 ? '이전 단계' : '닫기'}
-          >
-            {step > 1 ? <ChevronLeft size={18} strokeWidth={2} /> : <X size={18} strokeWidth={2} />}
-          </button>
+          {step > 1 ? (
+            <button
+              type="button"
+              className={styles.wizNavBtn}
+              onClick={() => { setStep((s) => s - 1); setSearchQuery(''); setSearchResults([]); }}
+              aria-label="이전 단계"
+            >
+              <ChevronLeft size={18} strokeWidth={2} />
+            </button>
+          ) : (
+            <span className={styles.wizNavBtnPlaceholder} aria-hidden="true" />
+          )}
           <div className={styles.wizHeaderCenter}>
             <span className={styles.wizHeaderTitle}>새 매칭 · {step}/3</span>
             <span className={styles.wizHeaderSub}>{stepTitle}</span>
           </div>
+          <button
+            type="button"
+            className={styles.wizNavBtn}
+            onClick={onClose}
+            aria-label="닫기"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
         </div>
 
         {/* ── Step content ── */}

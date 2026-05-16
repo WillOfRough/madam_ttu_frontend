@@ -630,6 +630,12 @@
   color: var(--ink-900);
 }
 
+.wizNavBtnPlaceholder {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
 .wizHeaderCenter {
   flex: 1;
   display: flex;
