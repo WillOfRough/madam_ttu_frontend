@@ -142,7 +142,50 @@
 .oathRuleNum_mint      { background: var(--mint-100);      color: var(--mint-600); }
 .oathRuleNum_lilac     { background: var(--lilac-100);     color: var(--lilac-600); }
 .oathRuleNum_rose      { background: var(--rose-100);      color: var(--rose-600); }
-.oathRuleText { font-size: 12.5px; color: var(--ink-700); line-height: 1.65; letter-spacing: -0.005em; flex: 1; }
+.oathRuleBody { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.oathRuleText { font-size: 12.5px; color: var(--ink-700); line-height: 1.65; letter-spacing: -0.005em; }
+.oathRuleBasis {
+  display: inline-flex; align-items: center; gap: 5px;
+  align-self: flex-start;
+  font-size: 10.5px; font-weight: 600; color: var(--ink-500);
+  background: var(--ink-50); padding: 3px 8px; border-radius: var(--r-pill, 999px);
+  letter-spacing: -0.005em; line-height: 1.45;
+}
+
+/* Legal warning block — 위반 시 효과 요약 */
+.oathLegalWarning {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FFF6EE 0%, #FFE5DA 100%);
+  border: 1px solid var(--tangerine-200);
+  box-shadow: 0 4px 14px rgba(242, 107, 79, 0.08);
+}
+.oathLegalWarningHead {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 800; letter-spacing: -0.005em;
+  color: var(--tangerine-700);
+  margin-bottom: 10px;
+  text-transform: none;
+}
+.oathLegalWarningList {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.oathLegalWarningList li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 11.5px; line-height: 1.6; color: var(--ink-700);
+  letter-spacing: -0.005em;
+}
+.oathLegalWarningList li::before {
+  content: '';
+  position: absolute; left: 2px; top: 8px;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--tangerine-600);
+}
+.oathLegalWarningList li strong { color: var(--tangerine-700); font-weight: 800; margin-right: 4px; }
+
 .oathAgreeRow { margin-top: 20px; }
 .oathAgreeBox {
   padding: 16px; border-radius: 14px; background: #fff;
