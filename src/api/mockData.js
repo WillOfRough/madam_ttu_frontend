@@ -2007,10 +2007,24 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/connections
   if (method === 'GET' && pathname === '/api/v1/connections') return { connections };
-  // GET /api/v1/invites/manager (매니저 초대 quota)
+  // GET /api/v1/invites/manager (매니저 초대 목록 + quota + pagination)
   if (method === 'GET' && pathname === '/api/v1/invites/manager') {
-    const activeCount = invites.filter((i) => i.status === 'active').length;
-    return { limit: 20, used: activeCount, remaining: 20 - activeCount };
+    const statusQ = params.get('status');
+    const page = parseInt(params.get('page') || '1', 10);
+    const limit = parseInt(params.get('limit') || '20', 10);
+    let filtered = invites;
+    if (statusQ) filtered = filtered.filter((i) => i.status === statusQ);
+    const start = (page - 1) * limit;
+    return {
+      data: filtered.slice(start, start + limit),
+      quota: { limit: 3, used: 2, remaining: 1 },
+      pagination: {
+        page,
+        limit,
+        total: filtered.length,
+        totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
+      },
+    };
   }
   // GET /api/v1/invites
   if (method === 'GET' && pathname === '/api/v1/invites') return invites;

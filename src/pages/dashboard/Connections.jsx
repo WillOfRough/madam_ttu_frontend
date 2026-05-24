@@ -490,6 +490,56 @@ export default function Connections() {
             </div>
           )}
 
+          {/* Quota hero — 행동 전에 잔여 수량 인지 (scarcity emphasis) */}
+          {displayQuota && displayQuota.limit !== null && (
+            <div
+              className={`${styles.quotaHero} ${displayQuota.remaining <= 1 ? styles.quotaHeroScarce : ''}`}
+            >
+              <div className={styles.quotaHeroHead}>
+                <span className={styles.quotaHeroTag}>INVITATION TICKETS</span>
+                <span className={styles.quotaHeroRemaining}>
+                  잔여 <strong>{displayQuota.remaining}</strong>장
+                </span>
+              </div>
+              <div className={styles.quotaHeroNumbers}>
+                <span className={styles.quotaHeroUsed}>{displayQuota.used}</span>
+                <span className={styles.quotaHeroSlash}>/</span>
+                <span className={styles.quotaHeroLimit}>{displayQuota.limit}</span>
+                <span className={styles.quotaHeroSuffix}>장 사용</span>
+              </div>
+              <div className={styles.quotaHeroBar}>
+                <div
+                  className={styles.quotaHeroFill}
+                  style={{ width: `${Math.min(100, (displayQuota.used / displayQuota.limit) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+          {displayQuota && displayQuota.limit === null && (
+            <div className={styles.quotaHero}>
+              <div className={styles.quotaHeroHead}>
+                <span className={styles.quotaHeroTag}>INVITATION TICKETS</span>
+                <span className={styles.quotaHeroRemaining}>무제한</span>
+              </div>
+              <div className={styles.quotaHeroNumbers}>
+                <span className={styles.quotaHeroUsed}>{displayQuota.used}</span>
+                <span className={styles.quotaHeroSuffix}>장 사용</span>
+              </div>
+            </div>
+          )}
+
+          {/* Warning callout — 신중한 공유 안내 */}
+          {displayQuota && displayQuota.limit !== null && (
+            <div className={styles.warningCallout} role="note">
+              <span className={styles.warningIcon} aria-hidden="true">⚠️</span>
+              <p className={styles.warningText}>
+                초대권은 계정당 총 <strong>{displayQuota.limit}장</strong>만 제공됩니다.
+                무분별한 링크 생성은 초대권 낭비로 이어질 수 있으니,
+                반드시 신뢰할 수 있는 매니저에게만 신중하게 공유해 주세요.
+              </p>
+            </div>
+          )}
+
           {/* Dark hero invite card */}
           <div className={styles.heroInviteCard}>
             <p className={styles.heroInviteCaption}>INVITE · 링크 한 번이면 충분해요</p>
@@ -635,30 +685,6 @@ export default function Connections() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* ── 초대권 현황 ── */}
-          {displayQuota && (
-            <div className={styles.quotaBox}>
-              <div className={styles.quotaInfo}>
-                <span className={styles.quotaLabel}>초대권 현황</span>
-                <span className={styles.quotaValue}>
-                  {displayQuota.limit === null ? (
-                    <>사용 {displayQuota.used}건 (무제한)</>
-                  ) : (
-                    <>{displayQuota.used} / {displayQuota.limit}건 사용 · 잔여 {displayQuota.remaining}건</>
-                  )}
-                </span>
-              </div>
-              {displayQuota.limit !== null && (
-                <div className={styles.quotaBar}>
-                  <div
-                    className={styles.quotaFill}
-                    style={{ width: `${Math.min(100, (displayQuota.used / displayQuota.limit) * 100)}%` }}
-                  />
-                </div>
-              )}
             </div>
           )}
 
