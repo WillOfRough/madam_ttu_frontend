@@ -6,8 +6,6 @@ import ConfirmModal from '../../components/ConfirmModal';
 import BrandLogo from '../../components/BrandLogo';
 import styles from './Login.module.css';
 
-const SUPPORT_EMAIL = 'admin@knotsandlinks.com';
-
 const REMEMBER_KEY = 'knl_remember_email';
 
 const LOGIN_ERROR_MESSAGES = {
@@ -47,7 +45,6 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [focusField, setFocusField] = useState(null);
   const [error, setError] = useState(null);
-  const [pwResetOpen, setPwResetOpen] = useState(false);
   const [inviteRequestOpen, setInviteRequestOpen] = useState(false);
 
   const canSubmit = email.includes('@') && password.length >= 4;
@@ -150,7 +147,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Remember + forgot */}
+          {/* Remember */}
           <div className={styles.metaRow}>
             <label className={styles.rememberLabel}>
               <input
@@ -164,13 +161,6 @@ export default function Login() {
               </div>
               <span className={styles.rememberText}>이메일 기억하기</span>
             </label>
-            <button
-              type="button"
-              className={styles.forgotBtn}
-              onClick={() => setPwResetOpen(true)}
-            >
-              비밀번호 재설정
-            </button>
           </div>
 
           {error && <p className={styles.error}>{error}</p>}
@@ -213,22 +203,6 @@ export default function Login() {
           </button>
         </p>
       </div>
-
-      {pwResetOpen && (
-        <ConfirmModal
-          title="비밀번호 재설정"
-          message={`비밀번호 재설정은 관리자에게 문의해주세요. ${SUPPORT_EMAIL}으로 메일을 보내드릴까요?`}
-          confirmLabel="메일 보내기"
-          cancelLabel="닫기"
-          onConfirm={() => {
-            const subject = encodeURIComponent('[Knots & Links] 비밀번호 재설정 요청');
-            const body = encodeURIComponent(`매니저 계정: ${email || '(이메일을 입력해주세요)'}\n\n비밀번호 재설정을 요청합니다.`);
-            window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
-            setPwResetOpen(false);
-          }}
-          onCancel={() => setPwResetOpen(false)}
-        />
-      )}
 
       {inviteRequestOpen && (
         <ConfirmModal
