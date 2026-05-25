@@ -168,6 +168,7 @@ export default function Proposal() {
 
   useEffect(() => {
     if (afterStatus === 'rejected') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMeetingFeedbackLoading(true);
       matchService.getFeedback(token)
         .then((res) => {

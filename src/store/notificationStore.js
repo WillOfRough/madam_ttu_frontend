@@ -35,29 +35,21 @@ const useNotificationStore = create((set, get) => ({
   },
 
   markAsRead: async (notificationId) => {
-    try {
-      await notificationService.markAsRead(notificationId);
-      set((state) => ({
-        notifications: state.notifications.map((n) =>
-          n.id === notificationId ? { ...n, read: true } : n
-        ),
-        unreadCount: Math.max(0, state.unreadCount - 1),
-      }));
-    } catch (err) {
-      throw err;
-    }
+    await notificationService.markAsRead(notificationId);
+    set((state) => ({
+      notifications: state.notifications.map((n) =>
+        n.id === notificationId ? { ...n, read: true } : n
+      ),
+      unreadCount: Math.max(0, state.unreadCount - 1),
+    }));
   },
 
   markAllAsRead: async () => {
-    try {
-      await notificationService.markAllAsRead();
-      set((state) => ({
-        notifications: state.notifications.map((n) => ({ ...n, read: true })),
-        unreadCount: 0,
-      }));
-    } catch (err) {
-      throw err;
-    }
+    await notificationService.markAllAsRead();
+    set((state) => ({
+      notifications: state.notifications.map((n) => ({ ...n, read: true })),
+      unreadCount: 0,
+    }));
   },
 
   startPolling: (intervalMs = 30000) => {

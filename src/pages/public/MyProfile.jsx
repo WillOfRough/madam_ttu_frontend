@@ -63,6 +63,7 @@ function FieldRow({ label, value, editMode, inputProps }) {
 }
 
 /* ─── Section card ─── */
+// eslint-disable-next-line no-unused-vars
 function SectionCard({ icon: Icon, title, children }) {
   return (
     <div className={styles.card}>

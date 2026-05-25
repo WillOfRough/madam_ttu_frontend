@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import * as connectionService from '../api/connectionService';
 
-const useConnectionStore = create((set, get) => ({
+const useConnectionStore = create((set) => ({
   connections: [],
   receivedRequests: [],
   sentRequests: [],
@@ -58,39 +58,27 @@ const useConnectionStore = create((set, get) => ({
   },
 
   sendRequest: async ({ email, message }) => {
-    try {
-      const req = await connectionService.sendRequest({ email, message });
-      set((s) => ({ sentRequests: [req, ...s.sentRequests] }));
-      return req;
-    } catch (err) {
-      throw err;
-    }
+    const req = await connectionService.sendRequest({ email, message });
+    set((s) => ({ sentRequests: [req, ...s.sentRequests] }));
+    return req;
   },
 
   acceptRequest: async (requestId) => {
-    try {
-      const result = await connectionService.acceptRequest(requestId);
-      set((s) => ({
-        receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
-        connections: result.connection
-          ? [...s.connections, { ...result.connection, clientCount: 0 }]
-          : s.connections,
-      }));
-      return result;
-    } catch (err) {
-      throw err;
-    }
+    const result = await connectionService.acceptRequest(requestId);
+    set((s) => ({
+      receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
+      connections: result.connection
+        ? [...s.connections, { ...result.connection, clientCount: 0 }]
+        : s.connections,
+    }));
+    return result;
   },
 
   rejectRequest: async (requestId) => {
-    try {
-      await connectionService.rejectRequest(requestId);
-      set((s) => ({
-        receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
-      }));
-    } catch (err) {
-      throw err;
-    }
+    await connectionService.rejectRequest(requestId);
+    set((s) => ({
+      receivedRequests: s.receivedRequests.filter((r) => r.id !== requestId),
+    }));
   },
 
   reset: () => set({ connections: [], receivedRequests: [], sentRequests: [], error: null }),

@@ -33,7 +33,6 @@ export default function ProposalAfter() {
 
   // After state
   const [myName, setMyName] = useState('');
-  const [afterStatus, setAfterStatus] = useState(null);
   const [myAfterResponse, setMyAfterResponse] = useState(null);
   const [afterError, setAfterError] = useState(null);
 
@@ -57,7 +56,6 @@ export default function ProposalAfter() {
       .then((res) => {
         if (res) {
           setMyName(res.myName || '');
-          setAfterStatus(res.afterStatus);
           const savedResponse = localStorage.getItem(`after_response_${token}`);
           if (savedResponse && res.afterStatus === 'rejected' && res.myAfterResponse === 'rejected') {
             setMyAfterResponse(savedResponse);
@@ -87,7 +85,9 @@ export default function ProposalAfter() {
     if (initialLoadDone && myAfterResponse === 'rejected') {
       // localStorage에 피드백 제출 기록이 있으면 바로 완료 처리
       if (localStorage.getItem(`after_feedback_${token}`)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFeedbackSubmitted(true);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFeedbackAlreadyDone(true);
         return;
       }
