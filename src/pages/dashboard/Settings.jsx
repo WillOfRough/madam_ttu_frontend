@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Pencil, Save, X, Lock, Eye, EyeOff, ChevronRight } from 'lucide-react';
+import {
+  LogOut,
+  User,
+  Pencil,
+  Save,
+  Lock,
+  Eye,
+  EyeOff,
+  ChevronRight,
+  Shield,
+  Sparkles,
+  AlertTriangle,
+  ArrowUpRight,
+} from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
+import useManagerInviteStore from '../../store/managerInviteStore';
 import { changePassword } from '../../api/authService';
 import { toast } from '../../store/toastStore';
 import { BANK_OPTIONS } from '../../data/constants';
@@ -16,6 +30,8 @@ export default function Settings() {
   const info = useManagerStore((s) => s.info);
   const fetchInfo = useManagerStore((s) => s.fetchInfo);
   const updateInfo = useManagerStore((s) => s.updateInfo);
+  const quota = useManagerInviteStore((s) => s.quota);
+  const fetchInvites = useManagerInviteStore((s) => s.fetchInvites);
   const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
@@ -32,7 +48,8 @@ export default function Settings() {
 
   useEffect(() => {
     fetchInfo();
-  }, [fetchInfo]);
+    fetchInvites({ page: 1, limit: 1 });
+  }, [fetchInfo, fetchInvites]);
 
   const handleStartEdit = () => {
     setForm({
@@ -103,218 +120,290 @@ export default function Settings() {
     navigate('/login');
   };
 
-  // ── Display name for avatar initial ──
+  // ── Display values ──
   const displayName = info?.name || name || '';
   const initial = displayName ? displayName[0] : '?';
+  const quotaLimit = quota?.limit ?? 3;
+  const quotaRemaining = quota?.remaining ?? 1;
+  const quotaUsed = quota?.used ?? (quotaLimit - quotaRemaining);
+  const usedRatio = quotaLimit > 0 ? Math.min(100, (quotaUsed / quotaLimit) * 100) : 0;
+  const isScarce = quotaRemaining <= 1;
 
   return (
     <div className={styles.page}>
-      {/* ── Page title ── */}
-      <div className={styles.pageHeader}>
+      {/* ── Page header ── */}
+      <header className={styles.pageHeader}>
+        <span className={styles.pageEyebrow}>
+          <Sparkles size={11} /> Account · Knots &amp; Links
+        </span>
         <h1 className={styles.pageTitle}>설정</h1>
-        <p className={styles.pageSubtitle}>내 정보와 보안 설정을 관리합니다</p>
-      </div>
+        <p className={styles.pageSubtitle}>내 정보·보안·초대 권한을 한눈에 관리하세요.</p>
+      </header>
 
-      {/* ── Profile hero card ── */}
-      <div className={styles.profileCard}>
-        <div className={styles.profileAvatar}>{initial}</div>
-        <div className={styles.profileMeta}>
-          <div className={styles.profileName}>{displayName || '-'} 매니저</div>
-          <div className={styles.profileEmail}>{info?.email || email || '-'}</div>
-          {info?.myClientCount != null && (
-            <div className={styles.profileStats}>
-              <span>회원 <strong>{info.myClientCount}</strong>명</span>
-              {info?.connections != null && (
-                <span>네트워크 <strong>{info.connections.length}</strong>명</span>
-              )}
-            </div>
-          )}
-        </div>
-        {!editing && (
-          <button className={styles.profileEditBtn} onClick={handleStartEdit}>
-            <Pencil size={13} /> 수정
-          </button>
-        )}
-      </div>
-
-      {/* ── Section: 계정 정보 ── */}
-      <div className={styles.sectionGroup}>
-        <div className={styles.sectionHeader}>
-          <User size={13} />
-          계정 정보
-        </div>
-
-        {editing ? (
-          <div className={styles.editForm}>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>이름</label>
-              <input
-                className={styles.formInput}
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="이름"
-              />
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>닉네임</label>
-              <input
-                className={styles.formInput}
-                value={form.nickname}
-                onChange={(e) => setForm((f) => ({ ...f, nickname: e.target.value }))}
-                placeholder="닉네임 (선택)"
-              />
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>연락처</label>
-              <PhoneVerifyField
-                value={form.phone}
-                onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
-                onVerified={setPhoneVerificationId}
-                inputClassName={styles.formInput}
-                initialVerified={!!info?.phone && form.phone === info.phone}
-              />
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>은행명</label>
-              <select
-                className={styles.formSelect}
-                value={form.bankName}
-                onChange={(e) => setForm((f) => ({ ...f, bankName: e.target.value }))}
-              >
-                <option value="">은행 선택</option>
-                {BANK_OPTIONS.map((bank) => (
-                  <option key={bank.value} value={bank.value}>{bank.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>계좌번호</label>
-              <input
-                className={styles.formInput}
-                value={form.bankNumber}
-                onChange={(e) => setForm((f) => ({ ...f, bankNumber: e.target.value }))}
-                placeholder="계좌번호 (-없이 입력)"
-              />
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>이메일</label>
-              <span className={styles.formReadonly}>{info?.email || email || '-'}</span>
-            </div>
-            <div className={styles.formActions}>
-              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
-                <Save size={13} /> {saving ? '저장 중...' : '저장'}
-              </button>
-              <button className={styles.cancelBtn} onClick={handleCancel} disabled={saving}>
-                <X size={13} /> 취소
-              </button>
+      {/* ── Bento grid ── */}
+      <div className={styles.bento}>
+        {/* Profile hero ────────────────────────────────────────────── */}
+        <section className={`${styles.card} ${styles.heroCard}`}>
+          <div className={styles.heroRow}>
+            <div className={styles.heroAvatar}>{initial}</div>
+            <div className={styles.heroMeta}>
+              <div className={styles.heroName}>{displayName || '-'} 매니저</div>
+              <div className={styles.heroEmail}>{info?.email || email || '-'}</div>
+              <div className={styles.heroStats}>
+                {info?.myClientCount != null && (
+                  <span className={styles.heroStat}>
+                    회원 <strong>{info.myClientCount}</strong>명
+                  </span>
+                )}
+                {info?.connections != null && (
+                  <span className={styles.heroStat}>
+                    네트워크 <strong>{info.connections.length}</strong>명
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className={styles.rowList}>
-            {[
-              { label: '이름', value: info?.name || name || '-' },
-              ...(info?.nickname ? [{ label: '닉네임', value: info.nickname }] : []),
-              { label: '이메일', value: info?.email || email || '-' },
-              { label: '연락처', value: info?.phone || '-' },
-              ...((info?.bankName && info?.bankNumber)
-                ? [{ label: '정산 계좌', value: `${info.bankName} ${info.bankNumber}` }]
-                : []),
-            ].map(({ label, value }) => (
-              <div key={label} className={styles.row}>
-                <span className={styles.rowLabel}>{label}</span>
-                <span className={styles.rowValue}>{value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        </section>
 
-      {/* ── Section: 보안 ── */}
-      <div className={styles.sectionGroup}>
-        <div className={styles.sectionHeader}>
-          <Lock size={13} />
-          보안
-        </div>
-
-        {pwOpen ? (
-          <div className={styles.editForm}>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>현재 비밀번호</label>
-              <div className={styles.pwWrap}>
-                <input
-                  className={styles.formInput}
-                  type={showCurrent ? 'text' : 'password'}
-                  value={pwForm.current}
-                  onChange={(e) => setPwForm((f) => ({ ...f, current: e.target.value }))}
-                  placeholder="현재 비밀번호"
-                />
-                <button type="button" className={styles.pwToggle} onClick={() => setShowCurrent((v) => !v)}>
-                  {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>새 비밀번호</label>
-              <div className={styles.pwWrap}>
-                <input
-                  className={styles.formInput}
-                  type={showNew ? 'text' : 'password'}
-                  value={pwForm.newPw}
-                  onChange={(e) => setPwForm((f) => ({ ...f, newPw: e.target.value }))}
-                  placeholder="6자 이상"
-                />
-                <button type="button" className={styles.pwToggle} onClick={() => setShowNew((v) => !v)}>
-                  {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-            <div className={styles.formField}>
-              <label className={styles.formLabel}>새 비밀번호 확인</label>
-              <div className={styles.pwWrap}>
-                <input
-                  className={styles.formInput}
-                  type={showConfirm ? 'text' : 'password'}
-                  value={pwForm.confirm}
-                  onChange={(e) => setPwForm((f) => ({ ...f, confirm: e.target.value }))}
-                  placeholder="새 비밀번호 재입력"
-                />
-                <button type="button" className={styles.pwToggle} onClick={() => setShowConfirm((v) => !v)}>
-                  {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-            <div className={styles.formActions}>
-              <button className={styles.saveBtn} onClick={handlePasswordChange} disabled={pwSaving}>
-                <Save size={13} /> {pwSaving ? '변경 중...' : '비밀번호 변경'}
-              </button>
-              <button
-                className={styles.cancelBtn}
-                onClick={() => { setPwOpen(false); setPwForm({ current: '', newPw: '', confirm: '' }); }}
-                disabled={pwSaving}
-              >
-                <X size={13} /> 취소
-              </button>
-            </div>
+        {/* Scarcity / invite quota ─────────────────────────────────── */}
+        <section className={`${styles.card} ${styles.scarcityCard}`}>
+          <div className={styles.scarcityHeader}>
+            <span className={styles.scarcityLabel}>나의 초대 권한</span>
+            <span className={styles.scarcityIconWrap} aria-hidden="true">
+              <AlertTriangle size={13} strokeWidth={2.5} />
+            </span>
           </div>
-        ) : (
-          <div className={styles.rowList}>
+          <div className={styles.scarcityCount}>
+            <span className={styles.scarcityCountNum}>{quotaRemaining}</span>
+            <span className={styles.scarcityCountDenom}>/ {quotaLimit} 장</span>
+          </div>
+          <p className={styles.scarcityCaption}>
+            {isScarce ? (
+              <>
+                현재 사용 가능한 초대권이 <strong>{quotaRemaining}장</strong>뿐입니다. 신중하게 사용하세요.
+              </>
+            ) : (
+              <>
+                남은 초대권 <strong>{quotaRemaining}장</strong>. 적절한 시점에 사용하세요.
+              </>
+            )}
+          </p>
+          <div className={styles.scarcityBar}>
+            <div
+              className={styles.scarcityBarFill}
+              style={{ width: `${usedRatio}%` }}
+            />
+          </div>
+          <div className={styles.scarcityFooter}>
+            <span>사용 {quotaUsed} · 잔여 {quotaRemaining}</span>
             <button
-              className={styles.rowBtn}
-              onClick={() => setPwOpen(true)}
+              type="button"
+              className={styles.scarcityLink}
+              onClick={() => navigate('/dashboard/invites')}
             >
-              <Lock size={16} className={styles.rowBtnIcon} />
-              <span className={styles.rowBtnLabel}>비밀번호 변경</span>
-              <ChevronRight size={15} className={styles.rowBtnChevron} />
+              초대 관리 <ArrowUpRight size={12} strokeWidth={2.5} />
             </button>
           </div>
-        )}
+        </section>
+
+        {/* Account info ────────────────────────────────────────────── */}
+        <section className={`${styles.card} ${styles.accountCard}`}>
+          <div className={styles.cardHead}>
+            <div className={styles.cardHeadLeft}>
+              <span className={styles.cardIconWrap}><User size={15} /></span>
+              <div>
+                <div className={styles.cardTitle}>계정 정보</div>
+                <div className={styles.cardSubtitle}>표시 이름과 연락처, 정산 계좌를 관리합니다.</div>
+              </div>
+            </div>
+            {!editing && (
+              <button className={styles.cardEditBtn} onClick={handleStartEdit}>
+                <Pencil size={11} /> 수정
+              </button>
+            )}
+          </div>
+
+          {editing ? (
+            <div className={styles.editForm}>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>이름</label>
+                <input
+                  className={styles.formInput}
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="이름"
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>닉네임</label>
+                <input
+                  className={styles.formInput}
+                  value={form.nickname}
+                  onChange={(e) => setForm((f) => ({ ...f, nickname: e.target.value }))}
+                  placeholder="닉네임 (선택)"
+                />
+              </div>
+              <div className={`${styles.formField} ${styles.formFieldFull}`}>
+                <label className={styles.formLabel}>연락처</label>
+                <PhoneVerifyField
+                  value={form.phone}
+                  onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
+                  onVerified={setPhoneVerificationId}
+                  inputClassName={styles.formInput}
+                  initialVerified={!!info?.phone && form.phone === info.phone}
+                />
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>은행명</label>
+                <select
+                  className={styles.formSelect}
+                  value={form.bankName}
+                  onChange={(e) => setForm((f) => ({ ...f, bankName: e.target.value }))}
+                >
+                  <option value="">은행 선택</option>
+                  {BANK_OPTIONS.map((bank) => (
+                    <option key={bank.value} value={bank.value}>{bank.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>계좌번호</label>
+                <input
+                  className={styles.formInput}
+                  value={form.bankNumber}
+                  onChange={(e) => setForm((f) => ({ ...f, bankNumber: e.target.value }))}
+                  placeholder="계좌번호 (-없이 입력)"
+                />
+              </div>
+              <div className={`${styles.formField} ${styles.formFieldFull}`}>
+                <label className={styles.formLabel}>이메일</label>
+                <span className={styles.formReadonly}>{info?.email || email || '-'}</span>
+              </div>
+              <div className={styles.formActions}>
+                <button className={styles.primaryBtn} onClick={handleSave} disabled={saving}>
+                  <Save size={13} /> {saving ? '저장 중...' : '변경 사항 저장'}
+                </button>
+                <button className={styles.ghostBtn} onClick={handleCancel} disabled={saving}>
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.rowList}>
+              {[
+                { label: '이름', value: info?.name || name || '-' },
+                ...(info?.nickname ? [{ label: '닉네임', value: info.nickname }] : []),
+                { label: '이메일', value: info?.email || email || '-' },
+                { label: '연락처', value: info?.phone || '-' },
+                ...((info?.bankName && info?.bankNumber)
+                  ? [{ label: '정산 계좌', value: `${info.bankName} ${info.bankNumber}` }]
+                  : []),
+              ].map(({ label, value }) => (
+                <div key={label} className={styles.row}>
+                  <span className={styles.rowLabel}>{label}</span>
+                  <span className={styles.rowValue}>{value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Security ────────────────────────────────────────────────── */}
+        <section className={`${styles.card} ${styles.securityCard}`}>
+          <div className={styles.cardHead}>
+            <div className={styles.cardHeadLeft}>
+              <span className={styles.cardIconWrap}><Shield size={15} /></span>
+              <div>
+                <div className={styles.cardTitle}>보안</div>
+                <div className={styles.cardSubtitle}>비밀번호와 인증을 관리합니다.</div>
+              </div>
+            </div>
+          </div>
+
+          {pwOpen ? (
+            <div className={styles.editForm}>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>현재 비밀번호</label>
+                <div className={styles.pwWrap}>
+                  <input
+                    className={styles.formInput}
+                    type={showCurrent ? 'text' : 'password'}
+                    value={pwForm.current}
+                    onChange={(e) => setPwForm((f) => ({ ...f, current: e.target.value }))}
+                    placeholder="현재 비밀번호"
+                  />
+                  <button type="button" className={styles.pwToggle} onClick={() => setShowCurrent((v) => !v)}>
+                    {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>새 비밀번호</label>
+                <div className={styles.pwWrap}>
+                  <input
+                    className={styles.formInput}
+                    type={showNew ? 'text' : 'password'}
+                    value={pwForm.newPw}
+                    onChange={(e) => setPwForm((f) => ({ ...f, newPw: e.target.value }))}
+                    placeholder="6자 이상"
+                  />
+                  <button type="button" className={styles.pwToggle} onClick={() => setShowNew((v) => !v)}>
+                    {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formField}>
+                <label className={styles.formLabel}>새 비밀번호 확인</label>
+                <div className={styles.pwWrap}>
+                  <input
+                    className={styles.formInput}
+                    type={showConfirm ? 'text' : 'password'}
+                    value={pwForm.confirm}
+                    onChange={(e) => setPwForm((f) => ({ ...f, confirm: e.target.value }))}
+                    placeholder="새 비밀번호 재입력"
+                  />
+                  <button type="button" className={styles.pwToggle} onClick={() => setShowConfirm((v) => !v)}>
+                    {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div className={styles.formActions}>
+                <button className={styles.primaryBtn} onClick={handlePasswordChange} disabled={pwSaving}>
+                  <Save size={13} /> {pwSaving ? '변경 중...' : '비밀번호 변경'}
+                </button>
+                <button
+                  className={styles.ghostBtn}
+                  onClick={() => { setPwOpen(false); setPwForm({ current: '', newPw: '', confirm: '' }); }}
+                  disabled={pwSaving}
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <button className={styles.rowBtn} onClick={() => setPwOpen(true)}>
+                <span className={styles.rowBtnIcon}><Lock size={16} /></span>
+                <span className={styles.rowBtnText}>
+                  <span className={styles.rowBtnLabel}>비밀번호 변경</span>
+                  <span className={styles.rowBtnHint}>최소 6자 · 영문·숫자 권장</span>
+                </span>
+                <ChevronRight size={16} className={styles.rowBtnChevron} />
+              </button>
+              <div className={styles.securityMeta}>
+                <span className={styles.securityDot} />
+                계정이 안전하게 보호되고 있습니다.
+              </div>
+            </>
+          )}
+        </section>
       </div>
 
-      {/* ── Destructive: logout ── */}
-      <div className={styles.logoutWrap}>
+      {/* ── Footer: subtle logout ── */}
+      <div className={styles.footer}>
+        <span className={styles.footerText}>이 기기에서 안전하게 로그아웃합니다.</span>
         <button className={styles.logoutBtn} onClick={handleLogout}>
-          <LogOut size={16} />
-          로그아웃
+          <LogOut size={14} /> 로그아웃
         </button>
       </div>
     </div>
