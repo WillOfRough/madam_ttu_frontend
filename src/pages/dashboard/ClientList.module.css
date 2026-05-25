@@ -422,12 +422,21 @@
 }
 
 .rowJob {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11.5px;
   color: var(--ink-700);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.rowFieldIcon {
+  color: var(--ink-400);
+  flex-shrink: 0;
 }
 
 .rowSep {
@@ -460,6 +469,27 @@
   border-radius: 4px;
   background: var(--ink-50);
   color: var(--ink-500);
+}
+
+.infoChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px 2px 6px;
+  border-radius: 4px;
+  background: var(--ink-50);
+  color: var(--ink-600);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoChip svg {
+  color: var(--ink-400);
+  flex-shrink: 0;
 }
 
 .tagMbti {
@@ -571,6 +601,9 @@
 }
 
 .cardJob {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11.5px;
   color: var(--ink-700);
   font-weight: 600;

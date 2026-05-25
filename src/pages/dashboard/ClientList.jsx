@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Search, ChevronRight, Users, List, Grid2X2,
   X, Heart, AlertTriangle, SlidersHorizontal, Sparkles,
+  Briefcase, Building2, MapPin,
 } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
@@ -87,31 +88,44 @@ function ClientRow({ client, onClick, isLast, selected, onToggleSelect }) {
           )}
         </div>
 
-        {/* Line 2: occupation · company */}
+        {/* Line 2: 💼 occupation · 🏢 company */}
         {(client.occupation || client.company) && (
           <div className={styles.rowLine2}>
-            <span className={styles.rowJob}>
-              {client.occupation}
-            </span>
+            {client.occupation && (
+              <span className={styles.rowJob}>
+                <Briefcase size={11} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
+                {client.occupation}
+              </span>
+            )}
             {client.occupation && client.company && (
               <span className={styles.rowSep}>·</span>
             )}
-            <span className={styles.rowCompany}>{client.company}</span>
+            {client.company && (
+              <span className={styles.rowCompany}>{client.company}</span>
+            )}
           </div>
         )}
 
-        {/* Line 3: location · MBTI · religion */}
-        <div className={styles.rowLine3}>
-          {client.location && (
-            <span className={styles.tagNeutral}>{client.location}</span>
-          )}
-          {client.mbti && (
-            <span className={styles.tagMbti}>{client.mbti}</span>
-          )}
-          {client.religion && (
-            <span className={styles.tagNeutral}>{client.religion}</span>
-          )}
-        </div>
+        {/* Line 3: 🏢 workLocation · 📍 residence · MBTI */}
+        {(client.workLocation || client.location || client.mbti) && (
+          <div className={styles.rowLine3}>
+            {client.workLocation && (
+              <span className={styles.infoChip} title={`회사 위치: ${client.workLocation}`}>
+                <Building2 size={10} strokeWidth={2} aria-hidden="true" />
+                {client.workLocation}
+              </span>
+            )}
+            {client.location && (
+              <span className={styles.infoChip} title={`사는 곳: ${client.location}`}>
+                <MapPin size={10} strokeWidth={2} aria-hidden="true" />
+                {client.location}
+              </span>
+            )}
+            {client.mbti && (
+              <span className={styles.tagMbti}>{client.mbti}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={styles.rowRight}>
@@ -166,7 +180,7 @@ function ClientCard({ client, onClick, selected, onToggleSelect }) {
         </div>
       </div>
 
-      {/* Name + gender chip + age */}
+      {/* Name + gender chip + age + height */}
       <div className={styles.cardName}>
         <span className={styles.rowName}>{client.name}</span>
         <span
@@ -179,17 +193,35 @@ function ClientCard({ client, onClick, selected, onToggleSelect }) {
           {client.gender === 'male' ? '남' : '여'}
         </span>
         {client.age && <span className={styles.rowAge}>{client.age}세</span>}
+        {client.height && (
+          <>
+            <span className={styles.rowDot}>·</span>
+            <span className={styles.rowHeight}>{client.height}cm</span>
+          </>
+        )}
       </div>
 
       {/* Job (truncated) */}
       {client.occupation && (
-        <div className={styles.cardJob}>{client.occupation}</div>
+        <div className={styles.cardJob}>
+          <Briefcase size={11} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
+          {client.occupation}
+        </div>
       )}
 
-      {/* Bottom chips: region · MBTI */}
+      {/* Bottom chips: 🏢 회사위치 · 📍 사는곳 · MBTI */}
       <div className={styles.cardChips}>
+        {client.workLocation && (
+          <span className={styles.infoChip} title={`회사 위치: ${client.workLocation}`}>
+            <Building2 size={10} strokeWidth={2} aria-hidden="true" />
+            {client.workLocation}
+          </span>
+        )}
         {client.location && (
-          <span className={styles.tagNeutral}>{client.location}</span>
+          <span className={styles.infoChip} title={`사는 곳: ${client.location}`}>
+            <MapPin size={10} strokeWidth={2} aria-hidden="true" />
+            {client.location}
+          </span>
         )}
         {client.mbti && (
           <span className={styles.tagMbti}>{client.mbti}</span>
