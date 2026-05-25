@@ -4,6 +4,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const DEV = import.meta.env.DEV;
 const USE_MOCK = DEV && !API_BASE && !import.meta.env.VITE_NO_MOCK;
 
+export function getPhotoUrl(photoId) {
+  if (USE_MOCK) {
+    return `https://picsum.photos/seed/${photoId}/400/400`;
+  }
+  return `${API_BASE}/api/v1/clients/photos/${photoId}`;
+}
+
 export class ApiError extends Error {
   constructor(message, status, body) {
     super(message);
