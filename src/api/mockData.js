@@ -2018,9 +2018,13 @@ export async function mockFetch(path, options = {}) {
     let filtered = invites;
     if (statusQ) filtered = filtered.filter((i) => i.status === statusQ);
     const start = (page - 1) * limit;
+    const isAdmin = currentUser?.role === 'admin';
+    const usedCount = invites.filter((i) => i.status !== 'revoked').length;
     return {
       data: filtered.slice(start, start + limit),
-      quota: { limit: 3, used: 2, remaining: 1 },
+      quota: isAdmin
+        ? { limit: null, used: usedCount, remaining: null }
+        : { limit: 3, used: 2, remaining: 1 },
       pagination: {
         page,
         limit,
