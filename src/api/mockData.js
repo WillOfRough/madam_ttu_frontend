@@ -1815,11 +1815,14 @@ export async function mockFetch(path, options = {}) {
   // PUT /api/v1/clients/me (본인 프로필 수정)
   if (method === 'PUT' && pathname === '/api/v1/clients/me') {
     const id = params.get('id');
+    const phone = params.get('phone');
     const verificationId = params.get('verificationId');
-    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
-    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
-    const found = clients.find((c) => c.id === id);
-    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if (!id || !phone || !verificationId) {
+      throw Object.assign(new Error('id, phone, verificationId는 필수입니다.'), { status: 400 });
+    }
+    const normalizePhone = (p) => (p || '').replace(/-/g, '');
+    const found = clients.find((c) => c.id === id && normalizePhone(c.phone) === normalizePhone(phone));
+    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
     const body = options.body || {};
     const editable = ['name','nickname','birthDate','phone','height','occupation','company','workLocation','education','location','religion','mbti','hobbies','introduction','idealType'];
     for (const key of editable) {

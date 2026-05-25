@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  User, Phone, Edit3, Save, X,
-  MapPin, Briefcase, GraduationCap, Heart, Camera, ShieldCheck,
+  User, Phone, Edit3, Save, X, CheckCircle2,
+  MapPin, Briefcase, GraduationCap, Heart, Camera,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
@@ -90,28 +90,35 @@ export default function MyProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verifiedPhone, setVerifiedPhone] = useState('');
-  const [verifiedId, setVerifiedId] = useState('');
+  const [verificationId, setVerificationId] = useState('');
+
+  /* ── completion state (저장 성공 후 완료 화면) ── */
+  const [completed, setCompleted] = useState(false);
 
   /* ── edit state ── */
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
-  const [editVerificationId, setEditVerificationId] = useState('');
-  const [editPhone, setEditPhone] = useState('');
 
   /* ── photo state ── */
   const [photoUploading, setPhotoUploading] = useState(false);
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
 
   /* ─── photo handlers ─── */
+  const refreshProfile = async () => {
+    try {
+      const data = await getMyProfile({ id: clientId, phone: verifiedPhone });
+      setProfile(data);
+    } catch { /* silent */ }
+  };
+
   const handlePhotoAdd = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0 || !profile?.id) return;
     setPhotoUploading(true);
     try {
       await addClientPhotos(profile.id, files);
-      const newUrls = files.map((f) => URL.createObjectURL(f));
-      setProfile((p) => ({ ...p, photoUrls: [...(p?.photoUrls || []), ...newUrls] }));
+      await refreshProfile();
       toast.success('사진이 추가되었습니다.');
     } catch (err) {
       toast.error(err.message || '사진 추가에 실패했습니다.');
@@ -127,10 +134,7 @@ export default function MyProfile() {
     setDeletingPhotoId(photoId);
     try {
       await deleteClientPhoto(profile.id, photoId);
-      setProfile((p) => ({
-        ...p,
-        photoUrls: (p?.photoUrls || []).filter((u) => u !== photoUrl),
-      }));
+      await refreshProfile();
       toast.success('사진이 삭제되었습니다.');
     } catch (err) {
       toast.error(err.message || '사진 삭제에 실패했습니다.');
@@ -138,29 +142,26 @@ export default function MyProfile() {
     setDeletingPhotoId(null);
   };
 
-  /* ─── phone verified handler (initial profile load) ─── */
-  const handlePhoneVerified = async (verificationId) => {
+  /* ─── phone verified handler (called after OTP success) ─── */
+  const handlePhoneVerified = async (verId) => {
     if (!clientId) {
       setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       return;
     }
-    if (!verificationId) return;
+    if (!verId) return;
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile({ id: clientId, verificationId });
+      const data = await getMyProfile({ id: clientId, phone });
       setProfile(data);
       setVerifiedPhone(phone);
-      setVerifiedId(verificationId);
+      setVerificationId(verId);
     } catch (err) {
       const msg = err.message || '';
-      const code = err.body?.error;
-      if (code === '4.002' || msg.includes('전화번호') || err.status === 404) {
-        setVerifyError('회원 정보를 찾을 수 없습니다. 매니저에게 문의해주세요.');
-      } else if (code === '7.002' || msg.includes('만료')) {
-        setVerifyError('인증이 만료되었습니다. 다시 인증해주세요.');
-      } else if (code === '7.004' || msg.includes('verificationId')) {
-        setVerifyError('인증이 필요합니다. 다시 인증해주세요.');
+      if (msg.includes('전화번호') || msg.includes('404') || err.status === 404) {
+        setVerifyError('전화번호가 일치하지 않습니다. 다시 확인해주세요.');
+      } else if (msg.includes('토큰') || msg.includes('초대')) {
+        setVerifyError('유효하지 않은 링크입니다. 매니저에게 문의해주세요.');
       } else {
         setVerifyError(msg || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
@@ -188,16 +189,12 @@ export default function MyProfile() {
       introduction: profile.introduction || '',
       idealType: profile.idealType || '',
     });
-    setEditPhone(verifiedPhone);
-    setEditVerificationId(verifiedId);
     setEditMode(true);
-  }, [profile, verifiedPhone, verifiedId]);
+  }, [profile]);
 
   const cancelEdit = useCallback(() => {
     setEditMode(false);
     setEditForm({});
-    setEditVerificationId('');
-    setEditPhone('');
   }, []);
 
   const field = (key) => ({
@@ -206,52 +203,62 @@ export default function MyProfile() {
   });
 
   const handleSave = async () => {
-    if (!editVerificationId) {
-      toast.error('수정을 위해 본인 인증이 필요합니다.');
-      return;
+    const payload = {};
+    for (const [key, val] of Object.entries(editForm)) {
+      if (val !== '' && val != null) {
+        payload[key] = key === 'height' ? Number(val) : val;
+      }
     }
     setSaving(true);
     try {
-      const payload = {};
-      for (const [key, val] of Object.entries(editForm)) {
-        if (val !== '' && val != null) {
-          payload[key] = key === 'height' ? Number(val) : val;
-        }
-      }
-      await updateMyProfile(profile.id, editVerificationId, payload);
-      setProfile((p) => ({ ...p, ...payload }));
-      setEditMode(false);
-      setEditVerificationId('');
-      setEditPhone('');
-      toast.success('프로필이 저장되었습니다.');
+      await updateMyProfile(clientId, verifiedPhone, verificationId, payload);
+      setCompleted(true);
     } catch (err) {
-      const code = err.body?.error;
-      if (code === '7.002') {
-        toast.error('인증이 만료되었습니다. 다시 인증해주세요.');
-      } else if (code === '7.004') {
-        toast.error('인증이 필요합니다. 다시 인증해주세요.');
-        setEditVerificationId('');
-      } else {
-        toast.error(err.message || '저장에 실패했습니다.');
-      }
+      toast.error(err.message || '저장에 실패했습니다. 매니저에게 받은 링크로 다시 시도해주세요.');
     } finally {
       setSaving(false);
     }
   };
 
+  /* ══ STATE 0: 저장 완료 ══ */
+  if (completed) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.verifyWrap}>
+          <div className={styles.brandMark}>
+            <span className={styles.brandDot} />
+            <span className={styles.brandName}>Knots &amp; Links</span>
+            <span className={styles.brandDot} />
+          </div>
+
+          <div className={styles.verifyCard}>
+            <div className={`${styles.verifyIconRing} ${styles.doneIconRing}`}>
+              <CheckCircle2 size={28} strokeWidth={1.8} />
+            </div>
+            <h1 className={styles.verifyTitle}>수정이 완료되었습니다</h1>
+            <p className={styles.verifyDesc}>
+              프로필 변경사항이 안전하게 저장되었습니다.<br />
+              추가로 수정하실 내용이 있다면 매니저에게<br />
+              받은 링크로 다시 접속해주세요.
+            </p>
+            <p className={styles.verifyFootnote}>
+              이 창은 안전하게 닫으셔도 됩니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   /* ══ STATE 1: phone verification ══ */
   if (!profile) {
     return (
       <div className={styles.page}>
-        {/* ambient blobs */}
-        <div className={styles.blobTop} aria-hidden />
-        <div className={styles.blobBottom} aria-hidden />
-
         <div className={styles.verifyWrap}>
-          {/* Brand */}
-          <div className={styles.brandRow}>
-            <div className={styles.brandMark} />
+          <div className={styles.brandMark}>
+            <span className={styles.brandDot} />
             <span className={styles.brandName}>Knots &amp; Links</span>
+            <span className={styles.brandDot} />
           </div>
 
           <div className={styles.verifyCard}>
@@ -279,17 +286,15 @@ export default function MyProfile() {
               )}
 
               {loading && (
-                <div className={styles.loadingRow}>
+                <div style={{ textAlign: 'center', padding: '12px 0' }}>
                   <span className={styles.btnSpinner} />
-                  <span>프로필을 불러오는 중...</span>
                 </div>
               )}
             </div>
 
-            <div className={styles.verifyFootnote}>
-              <ShieldCheck size={13} />
+            <p className={styles.verifyFootnote}>
               개인정보는 안전하게 보호됩니다.
-            </div>
+            </p>
           </div>
         </div>
       </div>
@@ -301,78 +306,42 @@ export default function MyProfile() {
 
   return (
     <div className={styles.page}>
-      {/* ambient blobs */}
-      <div className={styles.blobTop} aria-hidden />
-      <div className={styles.blobBottom} aria-hidden />
-
       <div className={styles.profileWrap}>
 
-        {/* ── brand bar ── */}
-        <div className={styles.brandRow}>
-          <div className={styles.brandMark} />
+        {/* ── top brand bar ── */}
+        <div className={styles.topBrand}>
+          <span className={styles.brandDot} />
           <span className={styles.brandName}>Knots &amp; Links</span>
+          <span className={styles.brandDot} />
         </div>
 
-        {/* ── hero identity strip ── */}
-        <div className={styles.heroStrip}>
-          <div className={styles.heroInfo}>
-            <div className={styles.heroName}>
-              {profile.nickname || profile.name}
-            </div>
-            <div className={styles.heroMeta}>
-              {profile.name}
-              {age ? ` · ${age}세` : ''}
-              {profile.occupation ? ` · ${profile.occupation}` : ''}
-            </div>
-          </div>
-          <div className={styles.heroActions}>
-            {!editMode ? (
+        {/* ── action buttons ── */}
+        <div className={styles.actionBar}>
+          {!editMode ? (
+            <>
               <button className={styles.editBtn} onClick={startEdit}>
-                <Edit3 size={14} />
+                <Edit3 size={15} />
                 프로필 수정
               </button>
-            ) : (
-              <div className={styles.editActionRow}>
-                <button
-                  className={styles.saveBtn}
-                  onClick={handleSave}
-                  disabled={saving || !editVerificationId}
-                >
-                  {saving ? <span className={styles.btnSpinnerSm} /> : <Save size={14} />}
-                  {saving ? '저장 중...' : '저장'}
-                </button>
-                <button className={styles.cancelBtn} onClick={cancelEdit} disabled={saving}>
-                  <X size={14} />
-                  취소
-                </button>
-              </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <>
+              <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+                {saving ? <span className={styles.btnSpinnerSm} /> : <Save size={15} />}
+                {saving ? '저장 중...' : '저장'}
+              </button>
+              <button className={styles.cancelBtn} onClick={cancelEdit} disabled={saving}>
+                <X size={15} />
+                취소
+              </button>
+            </>
+          )}
         </div>
 
         {editMode && (
           <div className={styles.editModeBanner}>
             <Edit3 size={13} />
             수정 모드 — 변경 후 저장 버튼을 눌러주세요
-          </div>
-        )}
-
-        {editMode && !editVerificationId && (
-          <div className={styles.card} style={{ padding: 16 }}>
-            <div className={styles.cardHeader} style={{ marginBottom: 8 }}>
-              <div className={styles.cardIconWrap}>
-                <ShieldCheck size={15} />
-              </div>
-              <h3 className={styles.cardTitle}>본인 인증</h3>
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--ink-700, #4a5568)', margin: '4px 0 12px' }}>
-              프로필 수정을 위해 전화번호 재인증이 필요합니다.
-            </p>
-            <PhoneVerifyField
-              value={editPhone}
-              onChange={setEditPhone}
-              onVerified={(verId) => verId && setEditVerificationId(verId)}
-            />
           </div>
         )}
 
@@ -526,16 +495,6 @@ export default function MyProfile() {
 
           </>
         )}
-
-        {/* ── inquiry ghost button ── */}
-        <div className={styles.inquiryBannerWrap}>
-          <div className={styles.inquiryBanner}>
-            <span>수정이 필요한 사항이 있으신가요?</span>
-            <a className={styles.inquiryLink} href={`/inquiry?id=${profile?.id}`}>
-              수정 문의하기
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );

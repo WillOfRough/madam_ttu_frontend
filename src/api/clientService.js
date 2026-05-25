@@ -137,8 +137,8 @@ export async function getMyProfile({ id, verificationId }) {
   });
 }
 
-export async function updateMyProfile(id, verificationId, data) {
-  const query = new URLSearchParams({ id, verificationId });
+export async function updateMyProfile(id, phone, verificationId, data) {
+  const query = new URLSearchParams({ id, phone, verificationId });
   return apiFetch(`/api/v1/clients/me?${query}`, {
     method: 'PUT',
     body: data,

@@ -18,7 +18,7 @@ function formatTimer(sec) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function PhoneVerifyField({ value, onChange, onVerified, inputClassName, disabled, initialVerified = false }) {
+export default function PhoneVerifyField({ value, onChange, onVerified, inputClassName, disabled, initialVerified = false, phoneReadOnly = false }) {
   const [code, setCode] = useState('');
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -123,7 +123,7 @@ export default function PhoneVerifyField({ value, onChange, onVerified, inputCla
           onChange={handlePhoneChange}
           placeholder="010-0000-0000"
           maxLength={13}
-          disabled={disabled || verified}
+          disabled={disabled || verified || phoneReadOnly}
         />
         {!verified && (
           <button
