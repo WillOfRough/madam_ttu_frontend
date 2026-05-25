@@ -4,6 +4,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Edit3, Trash2, X,
   ShieldCheck, Download, Copy, Link2, ChevronDown, Plus, Shield, Check,
+  AtSign, User, Cake, Ruler, Sparkles, HeartHandshake,
+  Phone, MapPin, Briefcase, Building2, Navigation, GraduationCap,
 } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import * as matchService from '../../api/matchService';
@@ -583,47 +585,28 @@ export default function ClientDetail() {
               }
             />
             <div className={styles.card}>
-              <div className={styles.infoGroups}>
+              <div className={styles.infoGrid}>
                 {[
-                  {
-                    title: '인적 사항',
-                    items: [
-                      { label: '별명', value: client.nickname || '-' },
-                      { label: '성별', value: isMale ? '남성' : '여성' },
-                      { label: '출생연도', value: birthYear ? `${birthYear}년 (${age}세)` : (age ? `${age}세` : '-') },
-                      { label: '키', value: client.height ? `${client.height}cm` : '-' },
-                      { label: 'MBTI', value: client.mbti || '-' },
-                      { label: '종교', value: client.religion || '-' },
-                    ],
-                  },
-                  {
-                    title: '연락 및 거주',
-                    items: [
-                      { label: '연락처', value: client.phone || '-' },
-                      { label: '거주지역', value: client.location || '-' },
-                    ],
-                  },
-                  {
-                    title: '직업 및 학력',
-                    items: [
-                      { label: '직업', value: client.occupation || '-' },
-                      { label: '회사', value: client.company || '-' },
-                      { label: '회사 장소', value: client.workLocation || '-' },
-                      { label: '학력', value: client.education || '-' },
-                    ],
-                  },
-                ].map((group) => (
-                  <div key={group.title} className={styles.infoGroup}>
-                    <div className={styles.infoGroupTitle}>{group.title}</div>
-                    <div className={styles.infoStackGrid}>
-                      {group.items.map((item) => (
-                        <div key={item.label} className={styles.infoStackCell}>
-                          <div className={styles.infoStackLabel}>{item.label}</div>
-                          <div className={styles.infoStackValue}>{item.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  [AtSign,         '별명',     client.nickname || '-'],
+                  [User,           '성별',     isMale ? '남성' : '여성'],
+                  [Cake,           '출생연도', birthYear ? `${birthYear}년 (${age}세)` : (age ? `${age}세` : '-')],
+                  [Phone,          '연락처',   client.phone || '-'],
+                  [MapPin,         '거주지역', client.location || '-'],
+                  [Ruler,          '키',       client.height ? `${client.height}cm` : '-'],
+                  [Briefcase,      '직업',     client.occupation || '-'],
+                  [Building2,      '회사',     client.company || '-'],
+                  [GraduationCap,  '학력',     client.education || '-'],
+                  [Navigation,     '회사 장소', client.workLocation || '-'],
+                  [HeartHandshake, '종교',     client.religion || '-'],
+                  [Sparkles,       'MBTI',     client.mbti || '-'],
+                ].map(([Icon, label, value]) => (
+                  <span key={label} style={{ display: 'contents' }}>
+                    <span className={styles.infoLabel}>
+                      <Icon size={13} strokeWidth={1.8} className={styles.infoLabelIcon} />
+                      {label}
+                    </span>
+                    <span className={styles.infoValue}>{value}</span>
+                  </span>
                 ))}
               </div>
             </div>
