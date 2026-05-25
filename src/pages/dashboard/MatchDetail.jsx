@@ -6,7 +6,7 @@ import {
   Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
   Link2, ChevronDown, ChevronUp, User, RefreshCw, Trash2,
   Heart, MessageSquare, FileText, Phone, Send,
-  ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2,
+  ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2, Mail,
 } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
@@ -286,6 +286,80 @@ function getRemindPreview(match, payments) {
   };
 }
 
+/* ─── auto-send history ──────────────────────────
+   각 단계에 진입할 때 시스템이 자동으로 발송한 안내 문자를
+   매치 데이터(타임스탬프) 로부터 파생하여 보여준다.
+─────────────────────────────────────────────────── */
+function formatAutoSendTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${mm}/${dd} ${hh}:${mi}`;
+}
+
+function buildAutoSendHistory(match) {
+  if (!match) return [];
+  const A = match.clientA || {};
+  const B = match.clientB || {};
+  const nameA = A.clientNickname || A.clientName || '회원A';
+  const nameB = B.clientNickname || B.clientName || '회원B';
+  const proposer = A.role === 'proposer' ? A : B.role === 'proposer' ? B : A;
+  const receiver = A.role === 'receiver' ? A : B.role === 'receiver' ? B : B;
+  const proposerName = proposer?.clientNickname || proposer?.clientName || nameA;
+  const receiverName = receiver?.clientNickname || receiver?.clientName || nameB;
+
+  const stepIdx = getStepIndex(match.status);
+
+  const entries = [
+    {
+      stepKey: 'proposal_sent',
+      label: '프로필 제안 안내',
+      recipients: [proposerName],
+      sentAt: match.startedAt || match.createdAt,
+    },
+    {
+      stepKey: 'proposal_accepted',
+      label: '프로필 제안 안내',
+      recipients: [receiverName],
+      sentAt: proposer?.respondedAt || null,
+    },
+    {
+      stepKey: 'awaiting_payment',
+      label: '입금 확인 안내',
+      recipients: [nameA, nameB],
+      sentAt: receiver?.respondedAt || null,
+    },
+    {
+      stepKey: 'scheduling',
+      label: '가용시간 등록 요청',
+      recipients: [nameA, nameB],
+      sentAt: match.paymentConfirmedAt || match.schedulingStartedAt || null,
+    },
+    {
+      stepKey: 'scheduled',
+      label: '만남 확정 안내',
+      recipients: [nameA, nameB],
+      sentAt: match.confirmedSchedule?.confirmedAt || match.scheduledAt || null,
+    },
+    {
+      stepKey: 'completed',
+      label: '에프터 응답 안내',
+      recipients: [nameA, nameB],
+      sentAt: match.completedAt || null,
+    },
+  ];
+
+  return entries.map((e) => ({
+    ...e,
+    stepIdx: getStepIndex(e.stepKey),
+    sent: getStepIndex(e.stepKey) <= stepIdx,
+  }));
+}
+
 function getRefundStatus(meetingDate) {
   if (!meetingDate) return null;
   const hours = (new Date(meetingDate) - new Date()) / (1000 * 60 * 60);
@@ -393,6 +467,11 @@ export default function MatchDetail() {
   const isCancelled = match.status === 'cancelled';
   const refundStatus = getRefundStatus(match.meetingDate);
   const heroConfig = getStageHero(match);
+  const autoSendHistory = buildAutoSendHistory(match);
+  const autoSendByStep = autoSendHistory.reduce((acc, e) => {
+    acc[e.stepKey] = e;
+    return acc;
+  }, {});
 
   /* ── handlers ── */
   const handlePaymentConfirm = async () => {
@@ -723,6 +802,54 @@ export default function MatchDetail() {
                       {done && <Check size={10} strokeWidth={3} />}
                       {now  && <span className={styles.stepperNodeDot} />}
                     </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className={styles.stepperEnvelopes}>
+              {STEPS.map((step, i) => {
+                const entry = autoSendByStep[step.key];
+                const show = i < stepIndex && entry && entry.sent;
+                const isFirst = i === 0;
+                const align =
+                  i <= 1 ? 'left'
+                  : i >= STEPS.length - 2 ? 'right'
+                  : 'center';
+                const tooltipAlignClass =
+                  align === 'left'  ? styles.stepperEnvelopeTooltipLeft
+                  : align === 'right' ? styles.stepperEnvelopeTooltipRight
+                  : styles.stepperEnvelopeTooltipCenter;
+                return (
+                  <div
+                    key={step.key}
+                    className={`${styles.stepperEnvelopeCell} ${isFirst ? styles.stepperEnvelopeCellFirst : ''}`}
+                  >
+                    {show && (
+                      <button
+                        type="button"
+                        className={styles.stepperEnvelope}
+                        aria-label={`${step.label} 단계 자동 발송 내역`}
+                      >
+                        <Mail size={9} strokeWidth={2.5} />
+                        <span
+                          className={`${styles.stepperEnvelopeTooltip} ${tooltipAlignClass}`}
+                          role="tooltip"
+                        >
+                          <span className={styles.stepperEnvelopeTooltipBody}>
+                            <strong>{entry.recipients.join(', ')}</strong>
+                            님에게{' '}
+                            <strong>[{entry.label}]</strong>
+                            <br />
+                            자동 문자 발송 완료
+                          </span>
+                          {entry.sentAt && (
+                            <span className={styles.stepperEnvelopeTooltipTime}>
+                              {formatAutoSendTime(entry.sentAt)}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -1199,13 +1326,16 @@ export default function MatchDetail() {
 
         {/* ── Scheduling: Waiting ── */}
         {match.status === 'scheduling' && (
-          <div className={styles.infoCard}>
-            <div className={styles.infoCardIcon}><Calendar size={16} /></div>
-            <div className={styles.infoCardText}>
-              <div className={styles.infoCardTitle}>일정 조율 중</div>
-              <div className={styles.infoCardSub}>양쪽 회원의 가용시간 등록을 기다리고 있습니다.</div>
+          <>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardIcon}><Calendar size={16} /></div>
+              <div className={styles.infoCardText}>
+                <div className={styles.infoCardTitle}>일정 조율 중</div>
+                <div className={styles.infoCardSub}>양쪽 회원의 가용시간 등록을 기다리고 있습니다.</div>
+              </div>
             </div>
-          </div>
+            <AutoSendHistoryCard history={autoSendHistory} />
+          </>
         )}
 
         {/* ── Refund Status ── */}
@@ -2195,6 +2325,38 @@ function GuideMessageCard({ title, hint, badge, participants, generateMsg }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function AutoSendHistoryCard({ history }) {
+  const sentList = (history || []).filter((e) => e.sent && e.sentAt);
+  if (sentList.length === 0) return null;
+
+  const sorted = [...sentList].sort((a, b) => {
+    const ta = new Date(a.sentAt).getTime();
+    const tb = new Date(b.sentAt).getTime();
+    return tb - ta;
+  });
+
+  return (
+    <div className={styles.autoSendHistoryCard}>
+      <div className={styles.autoSendHistoryHeader}>
+        <span className={styles.autoSendHistoryIcon}><Mail size={12} /></span>
+        <span className={styles.autoSendHistoryTitle}>자동 발송 히스토리</span>
+        <span className={styles.autoSendHistoryCount}>{sorted.length}건</span>
+      </div>
+      <ul className={styles.autoSendHistoryList}>
+        {sorted.map((e) => (
+          <li key={e.stepKey} className={styles.autoSendHistoryItem}>
+            <span className={styles.autoSendHistoryTime}>{formatAutoSendTime(e.sentAt)}</span>
+            <span className={styles.autoSendHistoryBadge}>자동발송</span>
+            <span className={styles.autoSendHistoryText}>
+              <strong>{e.recipients.join(', ')}</strong>에게 &lsquo;{e.label}&rsquo; 자동 문자 발송 완료
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
