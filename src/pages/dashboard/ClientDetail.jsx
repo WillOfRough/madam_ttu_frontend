@@ -422,7 +422,7 @@ export default function ClientDetail() {
                     {isMale ? '남' : '여'}
                   </span>
                   {age && (
-                    <span className={styles.heroAge}>{age}</span>
+                    <span className={styles.heroAge}>{age}세</span>
                   )}
                   {age && client.height && <span className={styles.heroDot}>·</span>}
                   {client.height && (
