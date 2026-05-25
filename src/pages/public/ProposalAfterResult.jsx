@@ -10,6 +10,17 @@ const ERROR_MESSAGES = {
   MATCH_CANCELLED: '이 매칭은 취소되었습니다.',
 };
 
+function PageHeader() {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
+    </div>
+  );
+}
+
 export default function ProposalAfterResult() {
   const { token } = useParams();
   const [loading, setLoading] = useState(true);
@@ -48,8 +59,8 @@ export default function ProposalAfterResult() {
   if (error) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>알림</p>
             <p className={styles.respondedStatus}>{error}</p>
@@ -59,33 +70,40 @@ export default function ProposalAfterResult() {
     );
   }
 
-  // 미성사
+  // ── 미성사 ──
   if (afterStatus === 'rejected') {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>🌿</div>
             <p className={styles.respondedLabel}>에프터 결과 안내</p>
             <p className={styles.respondedStatus}>
               인연을 찾는 과정이 늘 쉽지는 않죠.
             </p>
           </div>
-          <div className={styles.respondedBanner}>
-            <p className={styles.respondedStatus}>
-              비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
-              {myName ? ` ${myName}` : ''} 님께 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
-            </p>
-            <p className={styles.respondedStatus} style={{ marginTop: 12 }}>
-              저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
-            </p>
+          <div style={{
+            marginTop: 12,
+            padding: '16px 18px',
+            background: 'var(--paper-warm)',
+            borderRadius: 'var(--r-lg)',
+            fontSize: 13,
+            color: 'var(--ink-700)',
+            lineHeight: 1.7,
+            borderLeft: '3px solid var(--tangerine-200)',
+          }}>
+            비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
+            {myName ? ` ${myName}` : ''} 님께 더 좋은 매칭을 만들어 드리기 위해 노력할게요.
+            <br /><br />
+            저희가{myName ? ` ${myName}` : ''} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
           </div>
         </div>
       </div>
     );
   }
 
-  // 성사 + 프로필
+  // ── 성사 + 프로필 ──
   if (afterStatus === 'accepted' && profile) {
     const profileFields = [
       { label: '나이', value: profile.age ? `${profile.age}세` : null },
@@ -100,15 +118,26 @@ export default function ProposalAfterResult() {
 
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
+          {/* Success banner */}
           <div className={styles.afterSuccessBanner}>
-            <p className={styles.respondedLabel}>에프터가 성사되었습니다!</p>
-            <p className={styles.respondedStatus}>상대방의 연락처와 프로필입니다.</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 14 }}>
+              <span className={styles.celebrationDot} />
+              <span className={styles.celebrationDot} />
+              <span className={styles.celebrationDot} />
+            </div>
+            <p className={styles.respondedLabel} style={{ color: 'var(--mint-600)', fontFamily: 'var(--font-sans)', fontSize: 20 }}>
+              에프터가 성사되었습니다!
+            </p>
+            <p className={styles.respondedStatus} style={{ marginTop: 6 }}>
+              상대방의 연락처와 프로필입니다.
+            </p>
           </div>
 
+          {/* Photos */}
           {profile.photoUrls?.length > 0 && (
-            <div className={styles.card}>
+            <div className={styles.card} style={{ marginTop: 16 }}>
               <h3 className={styles.cardTitle}>사진</h3>
               <div className={styles.photoGallery}>
                 {profile.photoUrls.map((url, idx) => (
@@ -120,9 +149,11 @@ export default function ProposalAfterResult() {
             </div>
           )}
 
+          {/* Contact */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <Phone size={16} /> 연락처 정보
+              <Phone size={13} />
+              연락처 정보
             </h3>
             <div className={styles.fields}>
               <div className={styles.field}>
@@ -136,10 +167,12 @@ export default function ProposalAfterResult() {
             </div>
           </div>
 
+          {/* Profile details */}
           {profileFields.length > 0 && (
             <div className={styles.card}>
               <h3 className={styles.cardTitle}>
-                <User size={16} /> 프로필
+                <User size={13} />
+                프로필
               </h3>
               <div className={styles.fields}>
                 {profileFields.map(({ label, value }) => (
@@ -166,8 +199,8 @@ export default function ProposalAfterResult() {
   // Fallback
   return (
     <div className={styles.page}>
+      <PageHeader />
       <div className={styles.container}>
-        <h1 className={styles.logo}>Knots & Links</h1>
         <div className={styles.respondedBanner}>
           <p className={styles.respondedLabel}>알림</p>
           <p className={styles.respondedStatus}>아직 결과를 확인할 수 없습니다.</p>

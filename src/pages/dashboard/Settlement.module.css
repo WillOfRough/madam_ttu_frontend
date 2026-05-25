@@ -1,503 +1,1257 @@
 /* ═══════════════════════════════════════════════════════
-   Settlement Calendar — 정산 페이지
+   Settlement — 정산 페이지 리뉴얼 (Knots & Links Handoff)
+   Mobile-first · max-width 480px · ink + tangerine palette
    ═══════════════════════════════════════════════════════ */
 
+/* === 페이지 셸 === */
 .page {
-  max-width: 720px;
-  animation: slideUp var(--duration-normal) var(--ease-out) both;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.title {
-  font-size: 1.55rem;
-  font-weight: 800;
-  color: var(--charcoal);
-  letter-spacing: -0.03em;
-}
-
-/* ── Tab Navigation ── */
-.tabs {
+  min-height: 100%;
+  background: var(--paper);
   display: flex;
-  gap: 4px;
-  background: var(--bg-warm);
-  border-radius: var(--radius-sm);
-  padding: 3px;
-  margin-bottom: var(--space-xl);
+  flex-direction: column;
+  padding-bottom: 32px;
+  position: relative;
 }
 
-.tab {
+/* === 상단 헤더 === */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid transparent;
+}
+
+.backBtn {
+  padding: 6px;
+  margin-left: -6px;
+  color: var(--ink-700);
+  display: flex;
+  align-items: center;
+}
+
+.topBarTitle {
   flex: 1;
-  padding: 9px 16px;
-  border-radius: 7px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--charcoal-light);
-  background: transparent;
-  transition: all var(--duration-fast) var(--ease-out);
-  text-align: center;
-}
-
-.tab:hover {
-  color: var(--charcoal);
-}
-
-.tabActive {
-  background: var(--white);
-  color: var(--navy);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-
-/* ── Month Navigator ── */
-.monthNav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
-
-.monthLabel {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--charcoal);
-  min-width: 140px;
-  text-align: center;
-  letter-spacing: -0.01em;
-}
-
-.monthBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-xs);
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  color: var(--charcoal-mid);
-  transition: all var(--duration-fast) var(--ease-out);
-  box-shadow: var(--shadow-card);
-}
-
-.monthBtn:hover {
-  background: var(--navy);
-  color: var(--white);
-  border-color: var(--navy);
-}
-
-/* ── Summary Cards ── */
-.summaryGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: var(--space-xl);
-}
-
-.summaryCard {
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  box-shadow: var(--shadow-card);
-}
-
-.summaryLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--charcoal-light);
-  margin-bottom: 6px;
-  letter-spacing: 0.01em;
-}
-
-.summarySubLabel {
-  font-size: 0.68rem;
-  color: var(--charcoal-pale);
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-.summaryValue {
-  font-size: 1.35rem;
+  font-size: 16px;
   font-weight: 800;
-  color: var(--charcoal);
+  letter-spacing: -0.025em;
+  color: var(--ink-900);
+}
+
+.helpBtn {
+  padding: 6px;
+  color: var(--ink-500);
+  display: flex;
+  align-items: center;
+}
+
+/* === 콘텐츠 영역 === */
+.content {
+  padding: 4px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* === Hero 카드 === */
+.heroCard {
+  margin-top: 8px;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #0F1526 0%, #1F2B48 65%, #2C3A5E 100%);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(15, 21, 38, 0.15);
+}
+
+.heroGlow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(242, 107, 79, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.heroTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.heroMonthLabel {
+  font-size: 11px;
+  color: var(--tangerine-400);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.heroPolicyBtn {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.heroAmountBlock {
+  margin-top: 6px;
+  position: relative;
+}
+
+.heroAmount {
+  font-size: 36px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.038em;
+  line-height: 1.05;
+}
+
+.heroAmountUnit {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 3px;
+  font-weight: 600;
+}
+
+.heroAmountMeta {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 4px;
+}
+
+/* 역할별 패널 */
+.heroRoleRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.heroRolePanel {
+  flex: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.heroRoleLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.heroRoleDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.heroRoleAmount {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
   letter-spacing: -0.02em;
 }
 
-.summaryValueNavy {
-  composes: summaryValue;
-  color: var(--navy);
+.heroRoleUnit {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 2px;
+  font-weight: 600;
 }
 
-.summaryValueSuccess {
-  composes: summaryValue;
-  color: var(--success);
+.heroRoleCount {
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 1px;
 }
 
-.summaryUnit {
-  font-size: 0.82rem;
+.heroRoleLine {
+  margin-top: 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.heroRoleLineKey {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+
+.heroRoleLineVal {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  letter-spacing: -0.018em;
+}
+
+/* 누적 행 */
+.heroCumulativeRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.heroCumulativeLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 600;
+}
+
+.heroCumulativeValue {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.heroCumulativeCount {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
   font-weight: 600;
   margin-left: 2px;
 }
 
-/* ── Calendar Grid ── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin-bottom: var(--space-xl);
-  box-shadow: var(--shadow-card);
-}
-
-.cardHeader {
+/* === 다음 정산 안내 카드 === */
+.nextPayoutCard {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--tangerine-50) 0%, #fff 70%);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-light);
-  color: var(--charcoal);
+  gap: 10px;
+  border: 1px solid var(--tangerine-100);
 }
 
-.cardHeaderLeft {
+.nextPayoutIconWrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #fff;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--sh-sm);
 }
 
-.cardHeader h3 {
-  font-size: 0.95rem;
+.nextPayoutInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.nextPayoutCaption {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  font-weight: 600;
+}
+
+.nextPayoutMain {
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  margin-top: 1px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.nextPayoutDate {
+  color: var(--tangerine-700);
+}
+
+.nextPayoutAmount {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}
+
+.nextPayoutCount {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  font-weight: 500;
+}
+
+.nextPayoutThisMonth {
+  font-size: 10px;
+  color: var(--ink-400);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* === 매칭 종료 달력 카드 === */
+.calendarCard {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--sh-sm);
+  border: 1px solid rgba(15, 21, 38, 0.04);
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.calendarTitle {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+}
+
+.calendarSubtitle {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  margin-top: 2px;
+}
+
+.calendarWeekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.calendarWeekday {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-500);
+  padding: 4px 0;
+  letter-spacing: 0.02em;
+}
+
+.calendarWeekdaySun {
+  color: var(--rose-600);
+}
+
+.calendarWeekdaySat {
+  color: #3B7EE0;
 }
 
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-}
-
-.calendarDayHeader {
-  padding: 10px 4px;
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--charcoal-light);
-  background: var(--bg);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.calendarDayHeader:first-child {
-  color: var(--danger);
-}
-
-.calendarDayHeader:last-child {
-  color: var(--info);
-}
-
-.calendarCell {
-  min-height: 72px;
-  padding: 6px;
-  border-right: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
-  cursor: default;
-  transition: background var(--duration-fast) var(--ease-out);
-  position: relative;
-}
-
-.calendarCell:nth-child(7n) {
-  border-right: none;
-}
-
-.calendarCell:hover {
-  background: var(--bg);
+  gap: 2px;
 }
 
 .calendarCellEmpty {
-  composes: calendarCell;
-  background: var(--bg);
-  opacity: 0.5;
+  aspect-ratio: 1 / 1;
+}
+
+.calendarCell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  background: var(--ink-50);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 5px 6px;
+  border: 1px solid transparent;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  cursor: default;
+}
+
+.calendarCell:disabled {
+  cursor: default;
+}
+
+.calendarCellHasMatch {
+  background: var(--tangerine-50);
+  cursor: pointer;
+}
+
+.calendarCellHasMatch:hover {
+  background: var(--tangerine-100);
+}
+
+.calendarCellHasMatch:active {
+  transform: scale(0.97);
+}
+
+.calendarCellFuture {
+  opacity: 0.45;
 }
 
 .calendarCellToday {
-  background: var(--navy-glow);
+  border-color: var(--tangerine-500);
 }
 
-.calendarDate {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--charcoal-mid);
-  margin-bottom: 4px;
+.calendarCellSelected {
+  background: var(--tangerine-600);
+  border-color: var(--tangerine-700);
 }
 
-.calendarDateSun {
-  composes: calendarDate;
-  color: var(--danger);
+.calendarCellSelected:hover {
+  background: var(--tangerine-700);
 }
 
-.calendarDateSat {
-  composes: calendarDate;
-  color: var(--info);
+.calendarCellDay {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-700);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
-.calendarBadge {
+.calendarCellDaySun {
+  color: var(--rose-600);
+}
+
+.calendarCellDaySat {
+  color: #3B7EE0;
+}
+
+.calendarCellHasMatch .calendarCellDay {
+  color: var(--ink-900);
+}
+
+.calendarCellSelected .calendarCellDay,
+.calendarCellSelected .calendarCellDaySun,
+.calendarCellSelected .calendarCellDaySat {
+  color: #fff;
+}
+
+.calendarCellBadge {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--tangerine-600);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  margin-bottom: 2px;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
-.badgeMatch {
-  composes: calendarBadge;
-  background: var(--navy-glow);
-  color: var(--navy);
+.calendarCellSelected .calendarCellBadge {
+  background: #fff;
+  color: var(--tangerine-700);
 }
 
-.badgeRevenue {
-  composes: calendarBadge;
-  background: var(--coral-dim);
-  color: var(--coral);
+.calendarCellRefundDot {
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rose-500);
 }
 
-/* ── Manager Cards ── */
-.managerCard {
-  border-bottom: 1px solid var(--border-light);
-}
-
-.managerCard:last-of-type {
-  border-bottom: none;
-}
-
-.managerCardHeader {
+.calendarLegend {
   display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  font-size: 10px;
+  color: var(--ink-500);
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px 8px;
+  flex-wrap: wrap;
 }
 
-.managerCardName {
-  font-size: 0.92rem;
+.calendarLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.calendarLegendBadge {
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--tangerine-600);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendarLegendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* === 선택 일자 칩 === */
+.selectedDayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 999px;
+  background: var(--tangerine-100);
+  color: var(--tangerine-700);
+  font-size: 11px;
   font-weight: 700;
-  color: var(--charcoal);
+  border: none;
+  cursor: pointer;
 }
 
-.managerCardBody {
-  padding: 0 20px 14px;
+.selectedDayChip:hover {
+  background: var(--tangerine-200);
+}
+
+/* === 정산 내역 섹션 === */
+.listSection {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.listSectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.listSectionTitle {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  color: var(--ink-900);
+}
+
+.listSectionMeta {
+  font-size: 11px;
+  color: var(--ink-400);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 기간 세그먼트 */
+.segmentControl {
+  display: flex;
+  gap: 0;
+  padding: 3px;
+  background: var(--ink-100);
+  border-radius: 10px;
+}
+
+.segmentBtn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--ink-500);
+  transition: all 0.15s ease;
+}
+
+.segmentBtnActive {
+  background: #fff;
+  color: var(--ink-900);
+  box-shadow: var(--sh-sm);
+}
+
+/* 필터 칩 */
+.filterChipRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-left: -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-right: -16px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.filterChipRow::-webkit-scrollbar {
+  display: none;
+}
+
+.filterChip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid var(--ink-200);
+  background: #fff;
+  color: var(--ink-500);
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: all 0.12s ease;
+}
+
+.filterChipActive {
+  border-color: var(--ink-900);
+  background: var(--ink-900);
+  color: #fff;
+}
+
+/* === 상태 박스 (로딩/에러/빈 상태) === */
+.stateBox {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px 16px;
+  text-align: center;
+  box-shadow: var(--sh-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stateText {
+  font-size: 12.5px;
+  color: var(--ink-400);
+}
+
+.loadingDots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.loadingDots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-300);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.loadingDots span:nth-child(2) { animation-delay: 0.2s; }
+.loadingDots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+/* === 거래 목록 === */
+.txList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.txGroup {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.managerStatRow {
+.txGroupHeader {
+  font-size: 11px;
+  color: var(--ink-400);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0 4px 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.78rem;
+  gap: 6px;
 }
 
-.managerStatLabel {
-  flex-shrink: 0;
-  width: 62px;
+.txGroupDate {
+  font-variant-numeric: tabular-nums;
+}
+
+.txGroupLabel {
+  font-size: 9px;
+  color: var(--ink-300);
   font-weight: 600;
-  color: var(--charcoal-light);
 }
 
-.managerStatDetail {
+.txGroupLine {
   flex: 1;
-  color: var(--charcoal-pale);
-  font-size: 0.72rem;
+  height: 1px;
+  background: var(--ink-100);
 }
 
-.managerStatAmount {
-  flex-shrink: 0;
-  text-align: right;
-  font-weight: 700;
-  color: var(--charcoal);
+.txGroupSum {
+  font-variant-numeric: tabular-nums;
 }
 
-.managerStatRowTotal {
-  margin-top: 4px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--border-light);
+.txGroupItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.managerStatTotal {
-  flex-shrink: 0;
-  text-align: right;
-  font-weight: 800;
-  color: var(--navy);
-  font-size: 0.88rem;
-}
-
-/* ── Report Buttons ── */
-.reportBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  border-radius: var(--radius-xs);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--navy);
-  background: var(--navy-glow);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.reportBtn:hover {
-  background: var(--navy);
-  color: var(--white);
-}
-
-.reportAllBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: var(--radius-xs);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--white);
-  background: var(--navy);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.reportAllBtn:hover {
-  background: var(--navy-light);
-  transform: translateY(-1px);
-}
-
-/* ── Grand Total ── */
-.grandTotal {
+/* 거래 행 */
+.txRow {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: var(--sh-sm);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: var(--bg);
-  border-top: 1px solid var(--border-light);
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--charcoal);
+  gap: 12px;
+  cursor: pointer;
+  border: 1px solid rgba(15, 21, 38, 0.04);
+  width: 100%;
+  text-align: left;
+  transition: box-shadow 0.15s ease;
 }
 
-.grandTotalAmount {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--navy);
+.txRow:active {
+  box-shadow: var(--sh-md);
 }
 
-/* ── Empty State ── */
-.empty {
-  padding: 40px 20px;
-  text-align: center;
-  color: var(--charcoal-pale);
-  font-size: 0.88rem;
-}
-
-.emptyIcon {
-  margin-bottom: 12px;
-  color: var(--charcoal-pale);
-  opacity: 0.5;
-}
-
-/* ── Loading ── */
-.loading {
+.txRowIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  color: var(--charcoal-pale);
-  font-size: 0.88rem;
-  gap: var(--space-sm);
 }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
-  border-top-color: var(--navy);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.txRowBody {
+  flex: 1;
+  min-width: 0;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.txRowBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
 }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
+.txRoleBadge {
+  font-size: 9.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.txStatusBadge {
+  font-size: 9.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.txRowMatch {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.txRowPayout {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.txRowAmount {
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.018em;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.txRowAmountUnit {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  font-weight: 600;
+  margin-left: 1px;
+}
+
+/* === 페이지네이션 === */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 4px;
+  font-size: 0.78rem;
+  color: var(--ink-500);
+}
+
+.pagerBtn {
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fff;
+  color: var(--ink-700);
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  box-shadow: var(--sh-sm);
+}
+
+.pagerBtn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.pagerInfo {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* === 환불 정책 푸터 카드 === */
+.refundCard {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--sh-sm);
+  border: 1px solid rgba(15, 21, 38, 0.04);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.refundCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.refundCardIconWrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--rose-100);
+  color: var(--rose-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.refundCardTitle {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-900);
+  letter-spacing: -0.015em;
+}
+
+.refundCardRules {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.refundCardRule {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-top: 1px dashed var(--ink-100);
+}
+
+.refundCardRuleWhen {
+  color: var(--ink-500);
+  font-weight: 600;
+}
+
+.refundCardRuleText {
+  color: var(--ink-900);
+  font-weight: 700;
+}
+
+/* === 시트 === */
+.sheetOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  animation: overlayIn 0.15s ease;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sheetPanel {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 14px 18px 32px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: sheetUp 0.25s var(--ease-out);
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); opacity: 0.7; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.sheetHandle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-200);
+  margin: 0 auto 14px;
+}
+
+.sheetTitle {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink-900);
+}
+
+.sheetSubtitle {
+  font-size: 12px;
+  color: var(--ink-400);
+  margin-top: 3px;
+}
+
+/* ── Desktop (≥769px) ── */
+@media (min-width: 769px) {
   .page {
+    max-width: 1160px;
+    margin: 0 auto;
+  }
+
+  .topBar {
+    position: static;
+    background: transparent;
+    border-bottom: none;
+    padding: 0 0 8px;
+  }
+
+  .topBarTitle {
+    font-size: 26px;
+  }
+
+  .content {
+    gap: 14px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hero card: full width, more breathing room */
+  .heroCard {
+    padding: 22px 26px;
+  }
+
+  .heroAmount {
+    font-size: 44px;
+  }
+
+  /* Two-column layout: chart left, next payout right */
+  .desktopTopRow {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  /* Calendar card: more breathing room */
+  .calendarCard {
+    padding: 18px 20px;
+  }
+
+  /* Transaction list: constrained for readability */
+  .txList {
     max-width: 100%;
   }
 
-  .summaryGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
+  /* Sheet panel stays 480px — it's a bottom-sheet modal */
+}
 
-  .summaryCard {
-    padding: 12px 14px;
-  }
+.sheetSection {
+  margin-top: 18px;
+}
 
-  .summaryValue {
-    font-size: 1.15rem;
-  }
+.sheetSectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-500);
+  margin-bottom: 8px;
+  letter-spacing: 0.04em;
+}
 
-  .calendarCell {
-    min-height: 56px;
-    padding: 4px;
-  }
+.sheetConfirmBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--ink-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
 
-  .calendarBadge {
-    font-size: 0.58rem;
-    padding: 1px 4px;
-  }
+.sheetCancelBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--ink-100);
+  color: var(--ink-700);
+  font-size: 13px;
+  font-weight: 700;
+}
 
-  .calendarDate {
-    font-size: 0.65rem;
-  }
+/* 정산 정책 시트 내용 */
+.policyBox {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--paper);
+}
 
-  .managerCardHeader {
-    padding: 12px 16px 6px;
-  }
+.policyTotalCaption {
+  font-size: 11px;
+  color: var(--ink-500);
+}
 
-  .managerCardBody {
-    padding: 0 16px 12px;
-  }
+.policyTotalAmount {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  margin-top: 2px;
+  color: var(--ink-900);
+}
 
-  .managerStatRow {
-    font-size: 0.72rem;
-  }
+.policyTotalUnit {
+  font-size: 13px;
+  color: var(--ink-400);
+  margin-left: 2px;
+  font-weight: 600;
+}
 
-  .managerStatLabel {
-    width: 56px;
-  }
+.policyRuleList {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  .managerStatDetail {
-    font-size: 0.66rem;
-  }
+.policyRuleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fff;
+  border-radius: 10px;
+}
 
-  .reportBtn {
-    padding: 4px 8px;
-    font-size: 0.65rem;
-  }
+.policyRuleLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .reportAllBtn {
-    padding: 5px 10px;
-    font-size: 0.68rem;
-  }
+.policyRuleDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
-  .grandTotal {
-    padding: 14px 16px;
-    font-size: 0.82rem;
-  }
+.policyRuleName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
 
-  .monthLabel {
-    font-size: 0.95rem;
-  }
+.policyRoleDesc {
+  font-size: 10px;
+  color: var(--ink-400);
+}
+
+.policyRuleValue {
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}
+
+.policyHint {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--paper);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-500);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.policyScheduleBox {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-700);
+}
+
+/* 환불 정책 시트 내용 */
+.refundRuleList {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.refundRuleItem {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refundRuleNum {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.refundRuleContent {
+  flex: 1;
+}
+
+.refundRuleWhen {
+  font-size: 12px;
+  color: var(--ink-500);
+  font-weight: 600;
+}
+
+.refundRuleText {
+  font-size: 13.5px;
+  font-weight: 800;
+  margin-top: 1px;
+  color: var(--ink-900);
+}
+
+.refundRuleDeduct {
+  font-size: 10.5px;
+  color: var(--ink-400);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.refundRuleNote {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--paper-warm);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--ink-500);
+  line-height: 1.6;
+  border: 1px solid var(--tangerine-100);
+}
+
+/* 영수증 시트 */
+.receiptStatusLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.receiptAmount {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  margin-top: 4px;
+}
+
+.receiptAmountUnit {
+  font-size: 14px;
+  color: var(--ink-400);
+  margin-left: 3px;
+  font-weight: 600;
+}
+
+.receiptRoleDesc {
+  font-size: 13px;
+  color: var(--ink-500);
+  margin-top: 4px;
+}
+
+.receiptRows {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.receiptRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--paper);
+  border-radius: 8px;
+}
+
+.receiptRowKey {
+  font-size: 11.5px;
+  color: var(--ink-400);
+  font-weight: 600;
+}
+
+.receiptRowVal {
+  font-size: 12.5px;
+  color: var(--ink-900);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }

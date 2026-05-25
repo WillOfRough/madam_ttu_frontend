@@ -1,80 +1,89 @@
-.bottomNav {
-  display: none;
+/* ─── Bottom Tab Bar — fixed, 480px centered ─── */
+
+@keyframes softPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
 }
 
-@media (max-width: 768px) {
-  .bottomNav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--white);
-    border-top: 1px solid var(--border-light);
-    z-index: 100;
-    padding: 6px 0 2px;
-    padding-bottom: max(env(safe-area-inset-bottom, 2px), 6px);
-    box-shadow: 0 -2px 12px rgba(26, 43, 75, 0.04);
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .bottomNav::-webkit-scrollbar {
-    display: none;
-  }
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 480px;
+  width: 100%;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(15, 21, 38, 0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  min-height: 56px;
 }
 
 .tab {
-  flex: 0 0 auto;
-  min-width: 60px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
-  padding: 6px 8px;
-  color: var(--charcoal-pale);
+  padding: 8px 4px 6px;
+  color: var(--ink-400);
   text-decoration: none;
-  font-size: 0.62rem;
+  font-size: 10px;
   font-weight: 500;
-  transition: color var(--duration-fast) var(--ease-out);
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  transition: color 150ms ease;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tab:hover {
-  color: var(--navy);
+  color: var(--ink-700);
 }
 
-.active {
-  color: var(--coral);
+.tab.active {
+  color: var(--tangerine-600);
   font-weight: 700;
-}
-
-.label {
-  line-height: 1;
 }
 
 .iconWrap {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
 }
 
 .badge {
   position: absolute;
-  top: -4px;
-  right: -8px;
+  top: -3px;
+  right: -6px;
   min-width: 14px;
   height: 14px;
   padding: 0 3px;
-  border-radius: var(--radius-full);
-  background: var(--coral);
-  color: var(--white);
-  font-size: 0.55rem;
+  border-radius: var(--r-pill);
+  background: var(--tangerine-600);
+  color: #fff;
+  font-size: 9px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  border: 1.5px solid #fff;
+  animation: softPulse 2s ease-in-out infinite;
+}
+
+.label {
+  line-height: 1;
+}
+
+/* ── Desktop: hide BottomNav entirely ── */
+@media (min-width: 769px) {
+  .bottomNav {
+    display: none;
+  }
 }

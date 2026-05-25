@@ -1,7 +1,8 @@
+import { createPortal } from 'react-dom';
 import styles from './ConfirmModal.module.css';
 
 export default function ConfirmModal({ title, message, confirmLabel = '확인', cancelLabel = '취소', onConfirm, onCancel, danger = false }) {
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>{title}</h3>
@@ -18,6 +19,7 @@ export default function ConfirmModal({ title, message, confirmLabel = '확인', 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

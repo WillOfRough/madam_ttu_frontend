@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, ChevronDown, ChevronUp, Send, X, ExternalLink } from 'lucide-react';
+import { MessageSquare, ChevronDown, Send, X, ExternalLink } from 'lucide-react';
 import * as clientService from '../../api/clientService';
 import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
@@ -9,28 +9,66 @@ import styles from './InquiryList.module.css';
 
 const STATUS_TABS = [
   { value: '', label: '전체' },
-  { value: 'pending', label: '대기 중' },
-  { value: 'answered', label: '답변 완료' },
+  { value: 'pending', label: '대기' },
+  { value: 'answered', label: '답변완료' },
   { value: 'closed', label: '종료' },
 ];
 
 const CATEGORY_LABELS = {
   matching: '매칭',
-  profile_edit: '프로필 수정',
+  profile_edit: '프로필',
   schedule: '일정',
-  payment: '입금/결제',
+  payment: '입금',
   other: '기타',
 };
 
 const STATUS_LABELS = {
-  pending: '대기 중',
-  answered: '답변 완료',
+  pending: '대기',
+  answered: '답변완료',
   closed: '종료',
 };
 
-function formatDate(iso) {
+// 5-tone pastel avatar palette — deterministic by name hash
+const AVATAR_TONES = ['rose', 'lilac', 'mint', 'amber', 'tangerine'];
+
+function avatarTone(name = '') {
+  let hash = 0;
+  for (let i = 0; i < name.length; i += 1) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_TONES[hash % AVATAR_TONES.length];
+}
+
+// Last 2 chars of full name → given-name initial. Fallback to last char.
+function avatarInitial(name = '') {
+  const trimmed = name.trim();
+  if (!trimmed) return '·';
+  if (trimmed.length >= 3) return trimmed.slice(-2);
+  return trimmed.slice(-1);
+}
+
+function formatAbsolute(iso) {
   if (!iso) return '-';
-  return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleDateString('ko-KR', {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function formatRelativeTime(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return '방금 전';
+  if (minutes < 60) return `${minutes}분 전`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return '어제';
+  if (days < 7) return `${days}일 전`;
+  return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
+function snippetOf(text = '') {
+  const first = String(text).split('\n').find((l) => l.trim()) || '';
+  return first.length > 60 ? `${first.slice(0, 60)}…` : first;
 }
 
 export default function InquiryList() {
@@ -129,37 +167,38 @@ export default function InquiryList() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.titleRow}>
-        <h1 className={styles.title}>
-          <MessageSquare size={22} />
-          문의 관리
-        </h1>
+      {/* ── Page header ── */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>문의 관리</h1>
+        <p className={styles.pageSubtitle}>회원이 등록한 문의를 확인하고 답변합니다</p>
       </div>
 
-      {/* ── 필터 ── */}
-      <div className={styles.filters}>
-        <select
-          className={styles.filterSelect}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
+      {/* ── Filter bar (status chips + category select) ── */}
+      <div className={styles.filterBar}>
+        <div className={styles.chipRow}>
           {STATUS_TABS.map(({ value, label }) => (
-            <option key={value} value={value}>{label}</option>
+            <button
+              key={value}
+              className={`${styles.chip} ${statusFilter === value ? styles.chipActive : ''}`}
+              onClick={() => setStatusFilter(value)}
+            >
+              {label}
+            </button>
           ))}
-        </select>
+        </div>
         <select
-          className={styles.filterSelect}
+          className={styles.categorySelect}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
-          <option value="">전체 카테고리</option>
-          {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
-            <option key={val} value={val}>{label}</option>
+          <option value="">전체 유형</option>
+          {Object.entries(CATEGORY_LABELS).map(([val, lbl]) => (
+            <option key={val} value={val}>{lbl}</option>
           ))}
         </select>
       </div>
 
-      {/* ── 목록 ── */}
+      {/* ── List ── */}
       <div className={styles.listWrap}>
         {isLoading ? (
           <div className={styles.skeletonWrap}>
@@ -167,49 +206,81 @@ export default function InquiryList() {
           </div>
         ) : items.length === 0 ? (
           <div className={styles.empty}>
-            <MessageSquare size={32} strokeWidth={1.4} />
+            <MessageSquare size={32} strokeWidth={1.2} />
             <p>등록된 문의가 없습니다.</p>
           </div>
         ) : (
-          <div className={styles.list}>
+          <ul className={styles.list}>
             {items.map((item) => {
               const isOpen = expandedId === item.id;
+              const tone = avatarTone(item.clientName);
+              const initial = avatarInitial(item.clientName);
+
               return (
-                <div key={item.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
-                  {/* ── 요약 행 ── */}
-                  <button className={styles.cardHeader} onClick={() => handleExpand(item.id)}>
-                    <span className={`${styles.statusBadge} ${styles[`status_${item.status}`]}`}>
-                      {STATUS_LABELS[item.status] || item.status}
-                    </span>
-                    <span className={`${styles.categoryBadge}`}>
-                      {CATEGORY_LABELS[item.category] || item.category}
-                    </span>
-                    {item.matchId && (
-                      <span className={styles.matchBadge}>매칭</span>
-                    )}
-                    <span className={styles.clientName}>{item.clientName}</span>
-                    <span className={styles.itemTitle}>{item.title}</span>
-                    <span className={styles.itemDate}>{formatDate(item.createdAt)}</span>
-                    {isOpen ? <ChevronUp size={16} className={styles.chevron} /> : <ChevronDown size={16} className={styles.chevron} />}
+                <li
+                  key={item.id}
+                  className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}
+                >
+                  {/* ── Summary row (accordion trigger) ── */}
+                  <button
+                    className={styles.cardHeader}
+                    onClick={() => handleExpand(item.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className={styles.headerTop}>
+                      <span className={`${styles.statusPill} ${styles[`status_${item.status}`]}`}>
+                        <span className={styles.statusDot} aria-hidden />
+                        {STATUS_LABELS[item.status] || item.status}
+                      </span>
+                      <span className={styles.catPill}>
+                        {CATEGORY_LABELS[item.category] || item.category}
+                      </span>
+                      <span className={styles.elapsed} title={formatAbsolute(item.createdAt)}>
+                        {formatRelativeTime(item.createdAt)}
+                      </span>
+                      <ChevronDown
+                        size={15}
+                        className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
+                      />
+                    </div>
+
+                    <div className={styles.headerBody}>
+                      <div
+                        className={`${styles.avatar} ${styles[`avatar_${tone}`]}`}
+                        aria-hidden
+                      >
+                        {initial}
+                      </div>
+                      <div className={styles.headerText}>
+                        <span className={styles.clientName}>{item.clientName}</span>
+                        <span className={styles.itemTitle}>{item.title}</span>
+                        {item.content && (
+                          <span className={styles.snippet}>{snippetOf(item.content)}</span>
+                        )}
+                      </div>
+                    </div>
                   </button>
 
-                  {/* ── 상세 ── */}
+                  {/* ── Expanded body ── */}
                   {isOpen && (
                     <div className={styles.cardBody}>
                       {detailLoading || !detail ? (
-                        <div className={styles.skeletonWrap}><SkeletonLine /><SkeletonLine /></div>
+                        <div className={styles.skeletonInner}>
+                          <SkeletonLine />
+                          <SkeletonLine />
+                        </div>
                       ) : (
                         <>
                           <div className={styles.detailSection}>
-                            <p className={styles.detailLabel}>문의 내용</p>
+                            <p className={styles.sectionLabel}>문의 내용</p>
                             <p className={styles.detailContent}>{detail.content}</p>
-                            <p className={styles.detailMeta}>등록일: {formatDate(detail.createdAt)}</p>
+                            <p className={styles.detailMeta}>등록일 {formatAbsolute(detail.createdAt)}</p>
                             {detail.matchId && (
                               <button
                                 className={styles.matchLink}
                                 onClick={() => navigate(`/dashboard/matches/${detail.matchId}`)}
                               >
-                                <ExternalLink size={13} />
+                                <ExternalLink size={12} />
                                 해당 매칭 보기
                               </button>
                             )}
@@ -217,9 +288,9 @@ export default function InquiryList() {
 
                           {detail.answer && (
                             <div className={styles.answerSection}>
-                              <p className={styles.detailLabel}>답변</p>
+                              <p className={styles.sectionLabel}>답변</p>
                               <p className={styles.detailContent}>{detail.answer}</p>
-                              <p className={styles.detailMeta}>답변일: {formatDate(detail.answeredAt)}</p>
+                              <p className={styles.detailMeta}>답변일 {formatAbsolute(detail.answeredAt)}</p>
                             </div>
                           )}
 
@@ -238,7 +309,7 @@ export default function InquiryList() {
                                   onClick={handleClose}
                                   disabled={closing}
                                 >
-                                  <X size={14} />
+                                  <X size={13} />
                                   {closing ? '처리 중...' : '문의 종료'}
                                 </button>
                                 <button
@@ -246,7 +317,7 @@ export default function InquiryList() {
                                   onClick={handleAnswer}
                                   disabled={!answerText.trim() || submitting}
                                 >
-                                  <Send size={14} />
+                                  <Send size={13} />
                                   {submitting ? '등록 중...' : '답변 등록'}
                                 </button>
                               </div>
@@ -260,7 +331,7 @@ export default function InquiryList() {
                                 onClick={handleClose}
                                 disabled={closing}
                               >
-                                <X size={14} />
+                                <X size={13} />
                                 {closing ? '처리 중...' : '문의 종료'}
                               </button>
                             </div>
@@ -269,10 +340,10 @@ export default function InquiryList() {
                       )}
                     </div>
                   )}
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
       </div>
 

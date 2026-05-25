@@ -50,7 +50,112 @@ function randomToken(len = 12) {
 }
 
 // ── Inquiries ──────────────────────────────────────────
-const inquiries = [];
+const inquiries = [
+  {
+    id: 'inq001',
+    clientId: 's001',
+    matchId: null,
+    category: 'matching',
+    title: '소개해주신 분 답변이 늦어서요',
+    content: '지난 주에 매니저님께서 소개해주시기로 한 분의 답변이 아직 없어서 문의드립니다. 언제쯤 매칭이 진행될지 확인 부탁드려요.',
+    status: 'pending',
+    answer: null,
+    answeredAt: null,
+    updatedAt: null,
+    createdAt: '2026-04-25T10:30:00Z',
+  },
+  {
+    id: 'inq002',
+    clientId: 's002',
+    matchId: null,
+    category: 'profile_edit',
+    title: '직장 정보를 업데이트하고 싶어요',
+    content: '회사 내 부서가 바뀌어서 프로필의 직무 정보를 변경하고 싶습니다. 어떻게 신청하면 될까요?',
+    status: 'pending',
+    answer: null,
+    answeredAt: null,
+    updatedAt: null,
+    createdAt: '2026-04-25T14:15:00Z',
+  },
+  {
+    id: 'inq003',
+    clientId: 's007',
+    matchId: null,
+    category: 'schedule',
+    title: '약속 일정을 변경하고 싶습니다',
+    content: '이번 주 토요일에 갑작스러운 출장이 잡혀서 다음 주로 미루고 싶은데 가능할까요? 상대방께 양해 전달 부탁드립니다.',
+    status: 'answered',
+    answer: '안녕하세요. 상대방께 일정 변경 요청 전달드렸고, 다음 주 토요일 동일 시간으로 조정되었습니다. 확정되는 대로 다시 안내드릴게요.',
+    answeredAt: '2026-04-23T11:00:00Z',
+    updatedAt: '2026-04-23T11:00:00Z',
+    createdAt: '2026-04-22T20:30:00Z',
+  },
+  {
+    id: 'inq004',
+    clientId: 's001',
+    matchId: null,
+    category: 'payment',
+    title: '결제 영수증을 받을 수 있을까요?',
+    content: '연말정산 때문에 지난번 결제 내역 영수증이 필요해서요. 이메일로 보내주실 수 있나요?',
+    status: 'answered',
+    answer: '메일로 영수증 발송 완료했습니다. 혹시 수신이 안 되었다면 알려주세요.',
+    answeredAt: '2026-04-20T09:30:00Z',
+    updatedAt: '2026-04-20T09:30:00Z',
+    createdAt: '2026-04-19T18:00:00Z',
+  },
+  {
+    id: 'inq005',
+    clientId: 's010',
+    matchId: null,
+    category: 'matching',
+    title: '이상형 조건을 다시 정리하고 싶어요',
+    content: '몇 차례 만남을 통해 원하는 이상형이 좀 더 명확해진 것 같습니다. 상담을 다시 요청드릴 수 있을까요?',
+    status: 'pending',
+    answer: null,
+    answeredAt: null,
+    updatedAt: null,
+    createdAt: '2026-04-26T08:00:00Z',
+  },
+  {
+    id: 'inq006',
+    clientId: 's002',
+    matchId: null,
+    category: 'other',
+    title: '서비스 일시 정지 가능한가요?',
+    content: '해외 출장이 있어 한 달 정도 서비스를 일시 정지하고 싶습니다. 절차 안내 부탁드립니다.',
+    status: 'closed',
+    answer: '한 달간 서비스 일시 정지 처리 완료되었습니다. 복귀 시 다시 연락 주세요.',
+    answeredAt: '2026-04-15T16:00:00Z',
+    updatedAt: '2026-04-18T09:00:00Z',
+    createdAt: '2026-04-14T10:00:00Z',
+  },
+  {
+    id: 'inq007',
+    clientId: 's007',
+    matchId: null,
+    category: 'profile_edit',
+    title: '프로필 사진을 새 사진으로 교체하고 싶어요',
+    content: '최근에 찍은 사진이 더 잘 나와서 프로필 사진을 교체하고 싶어요. 어떻게 진행하면 좋을까요?',
+    status: 'pending',
+    answer: null,
+    answeredAt: null,
+    updatedAt: null,
+    createdAt: '2026-04-24T19:45:00Z',
+  },
+  {
+    id: 'inq008',
+    clientId: 's010',
+    matchId: null,
+    category: 'payment',
+    title: '환불 처리 일정 문의',
+    content: '지난 주 환불 신청한 건이 아직 입금되지 않았습니다. 처리 상황 확인 부탁드립니다.',
+    status: 'closed',
+    answer: '환불 처리 완료되었으며, 영업일 기준 3일 내 입금 예정입니다. 확인 부탁드릴게요.',
+    answeredAt: '2026-04-10T14:00:00Z',
+    updatedAt: '2026-04-12T10:00:00Z',
+    createdAt: '2026-04-09T13:30:00Z',
+  },
+];
 
 // ── Clients ────────────────────────────────────────────
 const clients = [
@@ -1167,6 +1272,52 @@ const matches = [
     createdByManagerId: 'mgr001',
     createdByManagerName: '김성중',
   },
+  // 14) awaiting_payment — 양쪽 수락 완료, 양쪽 입금 대기 중
+  {
+    matchId: 'match-pay01',
+    type: '1:1 소개팅',
+    status: 'awaiting_payment',
+    note: '양쪽 수락 완료 — 입금 확인 대기 중',
+    clientA: {
+      clientId: 's007', clientName: '윤예은', clientNickname: '크로스핏 예은', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-04-20T10:00:00Z',
+      proposalToken: 'PrTkPay01A',
+    },
+    clientB: {
+      clientId: 's008', clientName: '강도윤', clientNickname: null, clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-04-20T15:00:00Z',
+      proposalToken: 'PrTkPay01B',
+    },
+    payments: { A: 'pending', B: 'pending' },
+    createdAt: '2026-04-19T10:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
+  // 15) awaiting_payment — A 입금 완료, B 입금 대기 (부분 결제 상태)
+  {
+    matchId: 'match-pay02',
+    type: '1:1 소개팅',
+    status: 'awaiting_payment',
+    note: 'A 입금 완료, B 입금 대기 — 부분 결제 테스트',
+    clientA: {
+      clientId: 's009', clientName: '임수아', clientNickname: '베이킹 수아', clientGender: 'female',
+      managerName: '김성중', role: 'proposer',
+      response: 'accepted', respondedAt: '2026-04-21T11:00:00Z',
+      proposalToken: 'PrTkPay02A',
+    },
+    clientB: {
+      clientId: 's010', clientName: '오태양', clientNickname: 'AI 태양', clientGender: 'male',
+      managerName: '김성중', role: 'receiver',
+      response: 'accepted', respondedAt: '2026-04-21T16:00:00Z',
+      proposalToken: 'PrTkPay02B',
+    },
+    payments: { A: 'confirmed', B: 'pending' },
+    createdAt: '2026-04-20T09:00:00Z',
+    createdByManagerId: MANAGER_ID,
+    createdByManagerName: '김성중',
+  },
 ];
 
 // match003: 양쪽 가용시간 등록 완료 (arranging 상태)
@@ -1332,6 +1483,177 @@ function getReceiverToken(m) {
   return m.clientA.role === 'receiver' ? m.clientA.proposalToken : m.clientB.proposalToken;
 }
 
+// ── Payment helpers ──
+// 매칭 상태로부터 각 참가자의 결제 상태를 도출.
+// - 'scheduling' 이후 상태: 양쪽 모두 이미 paid (역산)
+// - 'awaiting_payment': m.payments.A/B 에 저장된 값 (기본 'pending')
+// - 'cancelled': pending 이었다면 cancelled, paid 였다면 그대로 paid
+// - 그 외 상태: pending (아직 결제 단계 진입 전)
+const POST_PAYMENT_STATUSES = ['scheduling', 'arranging', 'scheduled', 'completed'];
+
+function derivePaymentStatus(m, side) {
+  if (POST_PAYMENT_STATUSES.includes(m.status)) return 'paid';
+  if (m.status === 'cancelled') {
+    return m.payments?.[side] === 'paid' ? 'paid' : 'cancelled';
+  }
+  if (m.status === 'awaiting_payment') return m.payments?.[side] || 'pending';
+  return 'pending';
+}
+
+const DEFAULT_PAYMENT_AMOUNT = 19900;
+
+function buildPaymentResponse(m, side) {
+  const client = side === 'A' ? m.clientA : m.clientB;
+  let status = derivePaymentStatus(m, side);
+  const paidAt = status === 'paid' ? (m.paidAts?.[side] || m.createdAt) : null;
+  const overrideAmount = m.paymentAmounts?.[side];
+  const amount = (overrideAmount === null || overrideAmount === undefined) ? DEFAULT_PAYMENT_AMOUNT : overrideAmount;
+  let refundAmount = null;
+  let refundedAt = null;
+  const refund = m.refunds?.[side];
+  if (refund) {
+    status = refund.amount < amount ? 'partial_refunded' : 'refunded';
+    refundAmount = refund.amount;
+    refundedAt = refund.refundedAt || null;
+  }
+  return {
+    id: `pay-${m.matchId}-${side}`,
+    matchId: m.matchId,
+    matchParticipantId: client.clientId,
+    clientId: client.clientId,
+    clientName: client.deleted ? '삭제한 회원' : (client.clientName || null),
+    orderId: `ORD-${m.matchId.slice(-6)}-${side}`,
+    amount,
+    currency: 'KRW',
+    paymentMethod: 'manual',
+    status,
+    attemptNo: 1,
+    paidAt,
+    confirmedByManagerId: (status === 'paid' || status === 'partial_refunded' || status === 'refunded') ? MANAGER_ID : null,
+    refundedAt,
+    refundAmount,
+    cancelledAt: status === 'cancelled' ? (m.cancelledAt || null) : null,
+    createdAt: m.createdAt,
+  };
+}
+
+function buildPaymentSummary(m) {
+  return {
+    clientA: buildPaymentResponse(m, 'A'),
+    clientB: buildPaymentResponse(m, 'B'),
+  };
+}
+
+// ── Settlement helpers ──
+// completed 매칭마다 매니저 share 집계해서 Settlement row 생성.
+// 분배: clientA 매물=3, clientB 매물=3, 매칭 생성자=4 (겸직 시 합산 → 'both')
+// baseAmount: 결제 건수 × 10,000 (양쪽 paid 가정 → 20,000)
+let _settlementsCache = null;
+
+function computeSettlementsForMatch(m) {
+  if (m.status !== 'completed') return [];
+  const nameToId = Object.fromEntries(Object.values(managerMap).map((mg) => [mg.name, mg.id]));
+  const ownerAId = nameToId[m.clientA?.managerName] || null;
+  const ownerBId = nameToId[m.clientB?.managerName] || null;
+  const creatorId = m.createdByManagerId || null;
+
+  const shares = new Map();
+  if (ownerAId) shares.set(ownerAId, (shares.get(ownerAId) || 0) + 3);
+  if (ownerBId) shares.set(ownerBId, (shares.get(ownerBId) || 0) + 3);
+  if (creatorId) shares.set(creatorId, (shares.get(creatorId) || 0) + 4);
+
+  const baseAmount = 20000;
+  const createdAt = m.completedAt || m.meetingDate || m.createdAt;
+  const rows = [];
+  let idx = 0;
+  // 샘플 다양성: matchId 끝자리로 정산제외 케이스 생성
+  // - 끝자리 '3' → manual_confirm (수동 결제 확인 → 매칭 전체가 excluded)
+  // - 끝자리 '5' → zero_amount (0원 결제 → 매칭 전체가 excluded)
+  const lastChar = String(m.matchId).slice(-1);
+  let excluded = false;
+  let exclusionReason = null;
+  if (lastChar === '3') { excluded = true; exclusionReason = 'manual_confirm'; }
+  else if (lastChar === '5') { excluded = true; exclusionReason = 'zero_amount'; }
+
+  const clientAName = m.clientA?.clientName || null;
+  const clientBName = m.clientB?.clientName || null;
+  for (const [managerId, share] of shares) {
+    const mgr = managerMap[managerId] || { id: managerId, name: '알 수 없음' };
+    const isOwnerA = managerId === ownerAId;
+    const isOwnerB = managerId === ownerBId;
+    const isOwner = isOwnerA || isOwnerB;
+    const isCreator = managerId === creatorId;
+    let role;
+    if (isOwner && isCreator) role = 'both';
+    else if (isOwner) role = 'client_owner';
+    else role = 'matchmaker';
+    // ownedClientName: client_owner / both 일 때 매니저가 소유한 회원 이름
+    let ownedClientName = null;
+    if (isOwnerA && isOwnerB) ownedClientName = clientAName && clientBName ? `${clientAName} · ${clientBName}` : (clientAName || clientBName);
+    else if (isOwnerA) ownedClientName = clientAName;
+    else if (isOwnerB) ownedClientName = clientBName;
+    const { status: stlStatus, matchEndedAt, settledAt } = deriveSettlementStatus(m);
+    // excluded는 ready_to_settle / settled 로 전이 안 됨 — confirmed에서 멈춤
+    const finalStatus = excluded && (stlStatus === 'ready_to_settle' || stlStatus === 'settled')
+      ? 'confirmed'
+      : stlStatus;
+    rows.push({
+      id: `stl-${m.matchId}-${idx++}`,
+      matchId: m.matchId,
+      managerId,
+      managerName: mgr.name,
+      role,
+      share,
+      baseAmount,
+      amount: Math.floor((baseAmount * share) / 10),
+      status: finalStatus,
+      excluded,
+      exclusionReason,
+      settledAt: excluded ? null : settledAt,
+      settledById: null,
+      memo: null,
+      createdAt,
+      matchEndedAt,
+      clientAName,
+      clientBName,
+      ownedClientName,
+    });
+  }
+  return rows;
+}
+
+function deriveSettlementStatus(m) {
+  if (m.status === 'cancelled') {
+    const endedAt = m.cancelledAt || m.meetingDate || m.createdAt;
+    return { status: 'cancelled', matchEndedAt: endedAt, settledAt: null };
+  }
+  if (m.status === 'completed') {
+    const endedAt = m.completedAt || m.meetingDate || m.createdAt;
+    // 샘플 다양성을 위해 일부는 settled, 대부분은 ready_to_settle로 세팅
+    const settledSample = /[02]$/.test(m.matchId);
+    if (settledSample) {
+      return { status: 'settled', matchEndedAt: endedAt, settledAt: endedAt };
+    }
+    return { status: 'ready_to_settle', matchEndedAt: endedAt, settledAt: null };
+  }
+  if (m.status === 'scheduled' || m.status === 'arranging' || m.status === 'scheduling') {
+    return { status: 'confirmed', matchEndedAt: null, settledAt: null };
+  }
+  // draft / proposal_sent / proposal_accepted / awaiting_payment → 입금 전
+  return { status: 'pending', matchEndedAt: null, settledAt: null };
+}
+
+function buildAllSettlements() {
+  if (!_settlementsCache) {
+    _settlementsCache = matches.flatMap(computeSettlementsForMatch);
+  }
+  return _settlementsCache;
+}
+
+function buildMySettlements() {
+  return buildAllSettlements().filter((s) => s.managerId === currentUser.id);
+}
+
 export async function mockFetch(path, options = {}) {
   await delay(150 + Math.random() * 200);
 
@@ -1387,20 +1709,38 @@ export async function mockFetch(path, options = {}) {
   // POST /api/v1/managers/signup
   if (method === 'POST' && pathname === '/api/v1/managers/signup') {
     const body = options.body || {};
-    if (body.email && accounts[body.email]) {
-      if (body.bankName) accounts[body.email].bankName = body.bankName;
-      if (body.bankNumber) accounts[body.email].bankNumber = body.bankNumber;
+    if (body.email && body.password) {
+      accounts[body.email] = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `mgr-${Date.now()}`,
+        email: body.email,
+        password: body.password,
+        name: body.name || '',
+        nickname: body.nickname || '',
+        phone: body.phone || '',
+        role: 'manager',
+        bankName: body.bankName || null,
+        bankNumber: body.bankNumber || null,
+      };
     }
-    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
+    return { success: true, message: '가입이 완료되었습니다.' };
   }
   // POST /api/v1/managers/register
   if (method === 'POST' && pathname === '/api/v1/managers/register') {
     const body = options.body || {};
-    if (currentUser) {
-      if (body.bankName) currentUser.bankName = body.bankName;
-      if (body.bankNumber) currentUser.bankNumber = body.bankNumber;
+    if (body.email && body.password) {
+      accounts[body.email] = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `mgr-${Date.now()}`,
+        email: body.email,
+        password: body.password,
+        name: body.name || '',
+        nickname: body.nickname || '',
+        phone: body.phone || '',
+        role: 'manager',
+        bankName: body.bankName || null,
+        bankNumber: body.bankNumber || null,
+      };
     }
-    return { success: true, message: '가입이 완료되었습니다. 로그인해주세요.' };
+    return { success: true, message: '가입이 완료되었습니다.' };
   }
   // GET /api/v1/invites/:id/clients
   if (method === 'GET' && /^\/api\/v1\/invites\/[^/]+\/clients$/.test(pathname)) {
@@ -1449,37 +1789,15 @@ export async function mockFetch(path, options = {}) {
     return { content: filtered.slice(start, start + size), pagination: { page, size, totalElements: filtered.length, totalPages: Math.ceil(filtered.length / size) } };
   }
 
-  // GET /api/v1/clients/me (본인 프로필 조회)
-  if (method === 'GET' && pathname === '/api/v1/clients/me') {
-    const id = params.get('id');
-    const token = params.get('token');
-    const phone = params.get('phone');
-    if ((!id && !token) || !phone) throw Object.assign(new Error('id(또는 token)와 phone은 필수입니다.'), { status: 400 });
-    const normalizePhone = (p) => (p || '').replace(/-/g, '');
-    let found = null;
-    // id로 직접 조회 (문의하기 링크)
-    if (id) {
-      found = clients.find((c) => c.id === id && normalizePhone(c.phone) === normalizePhone(phone));
-    }
-    // token으로 조회 (프로필 페이지)
-    if (!found && token) {
-      const invite = invites.find((inv) => inv.token === token);
-      if (invite) {
-        found = clients.find((c) => c.inviteToken?.id === invite.id && normalizePhone(c.phone) === normalizePhone(phone));
-      }
-      if (!found) {
-        for (const match of matches) {
-          const side = match.clientA?.proposalToken === token ? match.clientA
-                     : match.clientB?.proposalToken === token ? match.clientB
-                     : null;
-          if (side) {
-            found = clients.find((c) => c.id === side.clientId && normalizePhone(c.phone) === normalizePhone(phone));
-            break;
-          }
-        }
-      }
-    }
-    if (!found) throw Object.assign(new Error('전화번호가 일치하지 않습니다.'), { status: 404 });
+  // POST /api/v1/clients/me (본인 프로필 조회)
+  if (method === 'POST' && pathname === '/api/v1/clients/me') {
+    const body = options.body || {};
+    const id = body.id;
+    const verificationId = body.verificationId;
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
     const birthYear = found.birthDate ? new Date(found.birthDate).getFullYear() : null;
     const age = birthYear ? new Date().getFullYear() - birthYear : null;
     return {
@@ -1513,6 +1831,22 @@ export async function mockFetch(path, options = {}) {
       }
     }
     return { success: true, message: '프로필이 수정되었습니다.' };
+  }
+
+  // DELETE /api/v1/clients/me (본인 탈퇴)
+  if (method === 'DELETE' && pathname === '/api/v1/clients/me') {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const idx = clients.findIndex((c) => c.id === id);
+    if (idx === -1) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    for (const m of matches) {
+      if (m.clientA?.clientId === id) { m.clientA.deleted = true; m.clientA.clientName = '삭제된 회원'; m.clientA.clientGender = null; }
+      if (m.clientB?.clientId === id) { m.clientB.deleted = true; m.clientB.clientName = '삭제된 회원'; m.clientB.clientGender = null; }
+    }
+    clients.splice(idx, 1);
+    return { success: true, message: '탈퇴가 완료되었습니다.' };
   }
 
   // POST /api/v1/inquiries/:id/answer (답변 등록)
@@ -1599,6 +1933,7 @@ export async function mockFetch(path, options = {}) {
         clientName: client?.nickname || client?.name || '알 수 없음',
         matchId: inq.matchId || null,
         category: inq.category, title: inq.title,
+        content: inq.content,
         status: inq.status, createdAt: inq.createdAt, answeredAt: inq.answeredAt || null,
       };
     });
@@ -1675,10 +2010,24 @@ export async function mockFetch(path, options = {}) {
 
   // GET /api/v1/connections
   if (method === 'GET' && pathname === '/api/v1/connections') return { connections };
-  // GET /api/v1/invites/manager (매니저 초대 quota)
+  // GET /api/v1/invites/manager (매니저 초대 목록 + quota + pagination)
   if (method === 'GET' && pathname === '/api/v1/invites/manager') {
-    const activeCount = invites.filter((i) => i.status === 'active').length;
-    return { limit: 20, used: activeCount, remaining: 20 - activeCount };
+    const statusQ = params.get('status');
+    const page = parseInt(params.get('page') || '1', 10);
+    const limit = parseInt(params.get('limit') || '20', 10);
+    let filtered = invites;
+    if (statusQ) filtered = filtered.filter((i) => i.status === statusQ);
+    const start = (page - 1) * limit;
+    return {
+      data: filtered.slice(start, start + limit),
+      quota: { limit: 3, used: 2, remaining: 1 },
+      pagination: {
+        page,
+        limit,
+        total: filtered.length,
+        totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
+      },
+    };
   }
   // GET /api/v1/invites
   if (method === 'GET' && pathname === '/api/v1/invites') return invites;
@@ -1812,12 +2161,22 @@ export async function mockFetch(path, options = {}) {
     const foundA = clients.find((c) => c.id === body.clientAId);
     const foundB = clients.find((c) => c.id === body.clientBId);
     if (!foundA || !foundB) throw Object.assign(new Error('회원을 찾을 수 없습니다.'), { status: 404 });
+    const validateAmount = (v, name) => {
+      if (v === undefined || v === null) return null;
+      if (!Number.isInteger(v) || v < 0) {
+        throw Object.assign(new Error(`${name}은(는) 0 이상의 정수여야 합니다.`), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+      }
+      return v;
+    };
+    const paymentAmountA = validateAmount(body.paymentAmountA, 'paymentAmountA');
+    const paymentAmountB = validateAmount(body.paymentAmountB, 'paymentAmountB');
     const tokenA = randomToken();
     const tokenB = randomToken();
     const newMatch = {
       matchId: `match${Date.now()}`, type: body.type || null, status: 'draft', note: body.note || '',
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
+      paymentAmounts: { A: paymentAmountA, B: paymentAmountB },
       createdAt: new Date().toISOString(),
       createdByManagerId: currentUser.id,
       createdByManagerName: currentUser.name,
@@ -1892,6 +2251,7 @@ export async function mockFetch(path, options = {}) {
       availableTimes: allAvailableTimes,
       confirmedSchedule,
       afterStatus: found.afterStatus || null,
+      paymentSummary: buildPaymentSummary(found),
     };
   }
 
@@ -1969,6 +2329,7 @@ export async function mockFetch(path, options = {}) {
         m.createdByManagerId === myId ||
         m.clientA?.ownerManagerName === myName ||
         m.clientB?.ownerManagerName === myName,
+      paymentSummary: buildPaymentSummary(m),
     }));
     return {
       data: withAccessible,
@@ -1976,12 +2337,50 @@ export async function mockFetch(path, options = {}) {
     };
   }
 
-  // POST /api/v1/matches/:matchId/confirm-payment (입금 확인)
+  // GET /api/v1/matches/:matchId/payments (결제 현황 조회)
+  if (method === 'GET' && /^\/api\/v1\/matches\/[^/]+\/payments$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    return [buildPaymentResponse(m, 'A'), buildPaymentResponse(m, 'B')];
+  }
+
+  // POST /api/v1/matches/:matchId/payments/:participantId/confirm (개별 입금 확인)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/payments\/[^/]+\/confirm$/.test(pathname)) {
+    const segments = pathname.split('/');
+    const id = segments[4];
+    const participantId = segments[6];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (m.status !== 'awaiting_payment') {
+      throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 409, body: { error: 'MATCH_INVALID_STATUS' } });
+    }
+    const side = m.clientA.clientId === participantId ? 'A' : m.clientB.clientId === participantId ? 'B' : null;
+    if (!side) throw Object.assign(new Error('해당 참가자를 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (!m.payments) m.payments = { A: 'pending', B: 'pending' };
+    if (!m.paidAts) m.paidAts = {};
+    m.payments[side] = 'paid';
+    m.paidAts[side] = new Date().toISOString();
+    if (m.payments.A === 'paid' && m.payments.B === 'paid') {
+      m.status = 'scheduling';
+      return { success: true, message: '입금 확인 완료. 양쪽 결제 완료로 일정조율 단계로 전이되었습니다.' };
+    }
+    return { success: true, message: '입금이 확인되었습니다.' };
+  }
+
+  // POST /api/v1/matches/:matchId/confirm-payment (입금 확인 — 양쪽 한번에, fallback)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/confirm-payment$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const m = matches.find((match) => match.matchId === id);
-    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (m.status !== 'awaiting_payment') throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 400 });
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { error: 'MATCH_NOT_FOUND' } });
+    if (m.status !== 'awaiting_payment') {
+      throw Object.assign(new Error('awaiting_payment 상태에서만 입금 확인할 수 있습니다.'), { status: 409, body: { error: 'MATCH_INVALID_STATUS' } });
+    }
+    if (!m.payments) m.payments = { A: 'pending', B: 'pending' };
+    if (!m.paidAts) m.paidAts = {};
+    const now = new Date().toISOString();
+    if (m.payments.A !== 'paid') { m.payments.A = 'paid'; m.paidAts.A = now; }
+    if (m.payments.B !== 'paid') { m.payments.B = 'paid'; m.paidAts.B = now; }
     m.status = 'scheduling';
     return { success: true, message: '입금이 확인되었습니다. 일정조율 안내가 발송되었습니다.' };
   }
@@ -2009,15 +2408,22 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '일정이 확정되었습니다.' };
   }
 
-  // POST /api/v1/matches/:matchId/reschedule (가용시간 재등록 요청)
+  // POST /api/v1/matches/:matchId/reschedule (가용시간 재등록 요청 — arranging / scheduled 모두 허용)
   if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/reschedule$/.test(pathname)) {
     const id = pathname.split('/').slice(-2, -1)[0];
     const m = matches.find((match) => match.matchId === id);
     if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404 });
-    if (m.status !== 'arranging') throw Object.assign(new Error('arranging 상태에서만 재등록 요청할 수 있습니다.'), { status: 400 });
-    // Clear available times and revert to scheduling
+    if (m.status !== 'arranging' && m.status !== 'scheduled') {
+      throw Object.assign(new Error('arranging 또는 scheduled 상태에서만 재등록 요청할 수 있습니다.'), { status: 400, body: { errorCode: '9.007' } });
+    }
+    // Clear available times and any confirmed schedule, revert to scheduling
     delete availableTimes[m.clientA.proposalToken];
     delete availableTimes[m.clientB.proposalToken];
+    m.confirmedAt = null;
+    m.meetingDate = null;
+    m.location = '';
+    m.locationLink = null;
+    m.endTime = '';
     m.status = 'scheduling';
     return { success: true, message: '가용시간 재등록이 요청되었습니다.' };
   }
@@ -2039,6 +2445,64 @@ export async function mockFetch(path, options = {}) {
     m.meetingDate = `${body.date}T${body.startTime}`;
     // Preserve existing selected row; DO NOT modify availableTimes `selected` flags
     return { success: true, message: '약속 일정이 변경되었습니다.', data: null };
+  }
+
+  // POST /api/v1/matches/:matchId/remind (상태별 안내 LMS 재발송)
+  if (method === 'POST' && /^\/api\/v1\/matches\/[^/]+\/remind$/.test(pathname)) {
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const m = matches.find((match) => match.matchId === id);
+    if (!m) throw Object.assign(new Error('매칭을 찾을 수 없습니다.'), { status: 404, body: { errorCode: '9.001' } });
+    const tokenA = m.clientA?.proposalToken;
+    const tokenB = m.clientB?.proposalToken;
+    const idA = m.clientA?.clientId;
+    const idB = m.clientB?.clientId;
+    let action;
+    let sentToParticipantIds = [];
+    switch (m.status) {
+      case 'proposal_sent':
+        action = 'proposal';
+        if (m.clientA?.role === 'proposer' && idA) sentToParticipantIds = [idA];
+        else if (m.clientB?.role === 'proposer' && idB) sentToParticipantIds = [idB];
+        break;
+      case 'proposal_accepted':
+        action = 'proposal';
+        if (m.clientA?.role === 'receiver' && idA) sentToParticipantIds = [idA];
+        else if (m.clientB?.role === 'receiver' && idB) sentToParticipantIds = [idB];
+        break;
+      case 'awaiting_payment': {
+        action = 'payment';
+        const pA = (m.paymentA?.status || 'pending') !== 'confirmed';
+        const pB = (m.paymentB?.status || 'pending') !== 'confirmed';
+        sentToParticipantIds = [pA && idA, pB && idB].filter(Boolean);
+        break;
+      }
+      case 'scheduling': {
+        action = 'scheduling';
+        const submittedA = (availableTimes[tokenA] || []).length > 0;
+        const submittedB = (availableTimes[tokenB] || []).length > 0;
+        const pendingA = !submittedA && idA;
+        const pendingB = !submittedB && idB;
+        sentToParticipantIds = [pendingA, pendingB].filter(Boolean);
+        if (sentToParticipantIds.length === 0) {
+          sentToParticipantIds = [idA, idB].filter(Boolean);
+        }
+        break;
+      }
+      case 'scheduled':
+        action = 'meeting';
+        sentToParticipantIds = [idA, idB].filter(Boolean);
+        break;
+      case 'completed': {
+        action = 'after';
+        const pendA = (m.afterResponses?.A || 'pending') === 'pending';
+        const pendB = (m.afterResponses?.B || 'pending') === 'pending';
+        sentToParticipantIds = [pendA && idA, pendB && idB].filter(Boolean);
+        break;
+      }
+      default:
+        throw Object.assign(new Error('리마인드 대상 상태가 아닙니다.'), { status: 400, body: { errorCode: '9.007' } });
+    }
+    return { action, sentToParticipantIds };
   }
 
   // GET /api/v1/matches/:matchId/available-times (매니저용 가용시간 조회 — 상태 제한 없음)
@@ -2165,8 +2629,9 @@ export async function mockFetch(path, options = {}) {
       m.status = 'proposal_accepted';
       return { success: true, message: '응답이 등록되었습니다.' };
     } else {
-      // receiver(B) 수락 → scheduling
-      m.status = 'scheduling';
+      // receiver(B) 수락 → awaiting_payment (양쪽 수락 완료, 입금 대기)
+      m.status = 'awaiting_payment';
+      m.payments = { A: 'pending', B: 'pending' };
       return { success: true, message: '응답이 등록되었습니다.' };
     }
   }
@@ -2419,6 +2884,169 @@ export async function mockFetch(path, options = {}) {
   if (method === 'POST' && pathname === '/api/v1/notifications/read-all') {
     mockNotifications.forEach((n) => { n.read = true; });
     return { success: true };
+  }
+
+  // ── Settlement APIs ──
+
+  // GET /api/v1/settlements (페이징 + 필터)
+  if (method === 'GET' && pathname === '/api/v1/settlements') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const all = buildMySettlements();
+    const statusParam = params.get('status');
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    let filtered = all;
+    if (statusParam) filtered = filtered.filter((s) => s.status === statusParam);
+    if (fromParam) {
+      const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() >= fromTs);
+    }
+    if (toParam) {
+      const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() <= toTs);
+    }
+    const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const start = page * size;
+    return {
+      data: sorted.slice(start, start + size),
+      pagination: {
+        page, size, totalElements: sorted.length, totalPages: Math.ceil(sorted.length / size) || 1,
+      },
+    };
+  }
+
+  // GET /api/v1/settlements/daily
+  if (method === 'GET' && pathname === '/api/v1/settlements/daily') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    if (!fromParam || !toParam) {
+      throw Object.assign(new Error('from, to는 필수 파라미터입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
+    const all = buildMySettlements();
+    // expectedTotal: confirmed/partial_refunded/ready_to_settle, excluded=false
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
+    // items: ready_to_settle + !excluded, 그룹 키 = matchEndedAt (KST)
+    const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+    const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+    const byDate = {};
+    for (const s of all) {
+      if (s.excluded || s.status !== 'ready_to_settle') continue;
+      const endedAt = s.matchEndedAt;
+      if (!endedAt) continue;
+      const t = new Date(endedAt).getTime();
+      if (t < fromTs || t > toTs) continue;
+      const date = new Date(endedAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+      if (!byDate[date]) byDate[date] = { date, count: 0, amount: 0 };
+      byDate[date].count += 1;
+      byDate[date].amount += s.amount || 0;
+    }
+    return {
+      expectedTotal,
+      items: Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date)),
+    };
+  }
+
+  // GET /api/v1/settlements/monthly
+  if (method === 'GET' && pathname === '/api/v1/settlements/monthly') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const year = parseInt(params.get('year') || String(new Date().getFullYear()), 10);
+    const monthParam = params.get('month');
+    const monthFilter = monthParam != null ? parseInt(monthParam, 10) : null;
+    if (monthFilter != null && (Number.isNaN(monthFilter) || monthFilter < 1 || monthFilter > 12)) {
+      throw Object.assign(new Error('month는 1~12 범위여야 합니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
+    const all = buildMySettlements();
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
+    const byMonth = {};
+    for (const s of all) {
+      if (s.excluded || s.status !== 'ready_to_settle') continue;
+      if (!s.matchEndedAt) continue;
+      const d = new Date(s.matchEndedAt);
+      if (d.getFullYear() !== year) continue;
+      const month = d.getMonth() + 1;
+      if (monthFilter != null && month !== monthFilter) continue;
+      if (!byMonth[month]) byMonth[month] = { month, count: 0, amount: 0 };
+      byMonth[month].count += 1;
+      byMonth[month].amount += s.amount || 0;
+    }
+    return {
+      year,
+      expectedTotal,
+      items: Object.values(byMonth).sort((a, b) => a.month - b.month),
+    };
+  }
+
+  // GET /api/v1/settlements/by-role — 역할별 누적 합계
+  if (method === 'GET' && pathname === '/api/v1/settlements/by-role') {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const all = buildMySettlements();
+    let coExpected = 0, coSettled = 0;
+    let mmExpected = 0, mmSettled = 0;
+    for (const s of all) {
+      const isExpected = !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status);
+      const isSettled = s.status === 'settled';
+      if (!isExpected && !isSettled) continue;
+      // Mock 'both' role(매물+매칭)을 share 비율로 client_owner / matchmaker 로 분배
+      let coAmt = 0, mmAmt = 0;
+      const amount = s.amount || 0;
+      if (s.role === 'client_owner') {
+        coAmt = amount;
+      } else if (s.role === 'matchmaker') {
+        mmAmt = amount;
+      } else if (s.role === 'both') {
+        const shareTotal = s.share || 7;
+        const ownerShare = shareTotal === 10 ? 6 : 3; // 두 회원 모두 본인 매물=6, 한쪽만=3
+        coAmt = Math.floor((amount * ownerShare) / shareTotal);
+        mmAmt = amount - coAmt;
+      }
+      if (isExpected) {
+        coExpected += coAmt;
+        mmExpected += mmAmt;
+      } else if (isSettled) {
+        coSettled += coAmt;
+        mmSettled += mmAmt;
+      }
+    }
+    return {
+      clientOwner: { expectedAmount: coExpected, settledAmount: coSettled },
+      matchmaker: { expectedAmount: mmExpected, settledAmount: mmSettled },
+    };
+  }
+
+  // GET /api/v1/settlements/match/:matchId
+  if (method === 'GET' && /^\/api\/v1\/settlements\/match\/[^/]+$/.test(pathname)) {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const matchId = pathname.split('/').pop();
+    const all = buildAllSettlements();
+    return all.filter((s) => s.matchId === matchId);
+  }
+
+  // POST /api/v1/settlements/:id/settle (지급 완료 처리)
+  if (method === 'POST' && /^\/api\/v1\/settlements\/[^/]+\/settle$/.test(pathname)) {
+    if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const memo = params.get('memo') || null;
+    const all = buildAllSettlements();
+    const target = all.find((s) => s.id === id);
+    if (!target) throw Object.assign(new Error('정산 내역을 찾을 수 없습니다.'), { status: 404, body: { error: 'SETTLEMENT_NOT_FOUND' } });
+    if (target.excluded) {
+      throw Object.assign(new Error('정산제외 건은 지급 처리할 수 없습니다.'), { status: 400, body: { errorCode: '11.003', error: 'SETTLEMENT_EXCLUDED' } });
+    }
+    if (target.status === 'settled' || target.status === 'paid') {
+      throw Object.assign(new Error('이미 정산 완료된 건입니다.'), { status: 409, body: { error: 'SETTLEMENT_INVALID_STATUS' } });
+    }
+    target.status = 'settled';
+    target.settledAt = new Date().toISOString();
+    target.settledById = currentUser.id;
+    if (memo) target.memo = memo;
+    return { success: true, message: '정산이 완료 처리되었습니다.' };
   }
 
   // fallback

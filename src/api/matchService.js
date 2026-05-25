@@ -1,9 +1,12 @@
 import { apiFetch } from './config';
 
-export async function createMatch({ clientAId, clientBId, type, note }) {
+export async function createMatch({ clientAId, clientBId, type, note, paymentAmountA, paymentAmountB }) {
+  const body = { clientAId, clientBId, type, note };
+  if (paymentAmountA !== undefined && paymentAmountA !== null) body.paymentAmountA = paymentAmountA;
+  if (paymentAmountB !== undefined && paymentAmountB !== null) body.paymentAmountB = paymentAmountB;
   return apiFetch('/api/v1/matches', {
     method: 'POST',
-    body: { clientAId, clientBId, type, note },
+    body,
   });
 }
 
@@ -78,6 +81,16 @@ export async function confirmPayment(matchId) {
   });
 }
 
+export async function getMatchPayments(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/payments`, { method: 'GET' });
+}
+
+export async function confirmParticipantPayment(matchId, participantId) {
+  return apiFetch(`/api/v1/matches/${matchId}/payments/${participantId}/confirm`, {
+    method: 'POST',
+  });
+}
+
 export async function rescheduleMatch(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}/reschedule`, {
     method: 'POST',
@@ -93,6 +106,10 @@ export async function updateMatchSchedule(matchId, { date, startTime, endTime, l
 
 export async function getMatchAvailableTimes(matchId) {
   return apiFetch(`/api/v1/matches/${matchId}/available-times`, { method: 'GET' });
+}
+
+export async function remindMatch(matchId) {
+  return apiFetch(`/api/v1/matches/${matchId}/remind`, { method: 'POST' });
 }
 
 export async function deleteMatch(matchId) {

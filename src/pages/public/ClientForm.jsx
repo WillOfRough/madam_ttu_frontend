@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, ImagePlus, X as XIcon } from 'lucide-react';
+import { ArrowLeft, RefreshCw, ImagePlus, X as XIcon, ShieldCheck } from 'lucide-react';
 import useClientFormStore, { NAME_PATTERN } from '../../store/clientFormStore';
 import * as clientService from '../../api/clientService';
 import TextField from '../../components/TextField';
 import SelectField from '../../components/SelectField';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
 import RadioGroup from '../../components/RadioGroup';
-import ProgressBar from '../../components/ProgressBar';
 import StepTransition from '../../components/StepTransition';
 import KeywordTagInput from '../../components/KeywordTagInput';
 import {
@@ -22,11 +21,18 @@ import {
 } from '../../data/constants';
 import styles from './ClientForm.module.css';
 
+const STEP_LABELS = ['기본', '매력', '라이프', '진심'];
 const STEP_TITLES = [
-  '당신을 알아가는 첫걸음',
-  '당신의 매력을 보여주세요',
-  '당신만의 색깔',
-  '진심을 담아',
+  '먼저, 기본 정보부터.',
+  '이제 매력을 들려주세요.',
+  '라이프스타일을 알려주세요.',
+  '마지막이에요, 조금만 더.',
+];
+const STEP_SUBS = [
+  '본인을 확인할 수 있는 최소한의 정보예요.',
+  '직장·학력 등 매니저가 매칭에 참고하는 정보예요.',
+  '종교·성향·취미로 잘 맞는 분을 찾아요.',
+  '당신을 가장 잘 표현하는 몇 가지를 골라주세요.',
 ];
 
 const PHONE_REGEX = /^010-\d{4}-\d{4}$/;
@@ -108,6 +114,47 @@ function validateStep(step, form) {
     }
   }
   return errors;
+}
+
+/* ── Step progress dots ── */
+function StepDots({ step }) {
+  return (
+    <div className={styles.stepDots}>
+      {STEP_LABELS.map((label, i) => (
+        <div key={i} className={styles.stepDotItem}>
+          <div
+            className={[
+              styles.dot,
+              i < step ? styles.dotDone : '',
+              i === step ? styles.dotActive : '',
+            ].join(' ')}
+          />
+          {i < STEP_LABELS.length - 1 && (
+            <div className={[styles.dotLine, i < step ? styles.dotLineDone : ''].join(' ')} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Section label ── */
+function SectionLabel({ n, children, required, count }) {
+  return (
+    <div className={styles.sectionLabel}>
+      <span className={styles.sectionN}>{n}</span>
+      <span className={styles.sectionT}>
+        {children}
+        {required && <span className={styles.sectionReq}> *</span>}
+      </span>
+      {count && <span className={styles.sectionCount}>{count}</span>}
+    </div>
+  );
+}
+
+/* ── White card wrap ── */
+function FieldCard({ children }) {
+  return <div className={styles.fieldCard}>{children}</div>;
 }
 
 export default function ClientForm() {
@@ -208,62 +255,63 @@ export default function ClientForm() {
 
   return (
     <div className={styles.page}>
+      {/* ambient blobs */}
+      <div className={styles.blobTop} aria-hidden />
+      <div className={styles.blobBottom} aria-hidden />
+
       <div className={styles.container}>
+        {/* ── Header ── */}
         <div className={styles.header}>
           <div className={styles.topRow}>
-            {step > 0 && (
-              <button className={styles.backBtn} onClick={() => { prevStep(); setTouched({}); }}>
-                <ArrowLeft size={18} /> 뒤로
-              </button>
-            )}
-            <span className={styles.logo}>Knots & Links</span>
+            <div className={styles.brand}>
+              <div className={styles.brandMark} />
+              <span className={styles.brandName}>Knots &amp; Links</span>
+            </div>
+            <span className={styles.stepCounter}>{step + 1} / 4</span>
           </div>
 
-          <p className={styles.notice}>이 링크는 귀하만을 위한 일회성 링크입니다</p>
+          {/* Progress dots */}
+          <StepDots step={step} />
 
-          <ProgressBar
-            current={step + 1}
-            total={4}
-            label={`Step ${step + 1}/4`}
-            progressText={STEP_TITLES[step]}
-          />
+          {/* Step title */}
+          <div className={styles.stepTitle}>{STEP_TITLES[step]}</div>
+          <div className={styles.stepSub}>{STEP_SUBS[step]}</div>
         </div>
 
         <StepTransition stepKey={step}>
-          {/* Step 1: 기본 정보 */}
+          {/* ── Step 0: 기본 ── */}
           {step === 0 && (
             <div className={styles.fields}>
-              <TextField
-                label="당신의 이름을 알려주세요"
-                hint="매칭 진행 시 매니저만 확인하며, 상대방에게는 별명으로 소개됩니다."
-                value={form.name}
-                onChange={(v) => { setField('name', v); markTouched('name'); }}
-                placeholder="홍길동"
-                maxLength={20}
-                required
-                error={getError('name')}
-              />
+              <SectionLabel n="01" required>본명</SectionLabel>
+              <FieldCard>
+                <TextField
+                  label="한글 이름"
+                  value={form.name}
+                  onChange={(v) => { setField('name', v); markTouched('name'); }}
+                  placeholder="홍길동"
+                  maxLength={20}
+                  required
+                  error={getError('name')}
+                />
+              </FieldCard>
 
-              <div className={styles.nicknameSection}>
-                <label className={styles.fieldLabel}>
-                  이곳에서 불릴 당신만의 별명을 골라주세요
-                  <span className={styles.optionalBadge}>선택</span>
-                </label>
-                <p className={styles.nicknameHint}>
-                  입력하지 않으면 아래 추천 별명이 사용됩니다
-                </p>
-                <div className={styles.nicknameRow}>
-                  <div className={styles.nicknamePreview}>
-                    <span className={styles.nicknameEmoji}>🎭</span>
-                    <span className={styles.nicknameText}>{displayNickname}</span>
-                  </div>
+              <SectionLabel n="02" count={form.nickname ? form.nickname.length + '/50' : undefined}>
+                프로필 별명
+                <span className={styles.optBadge}>선택</span>
+              </SectionLabel>
+              <FieldCard>
+                <div className={styles.nicknameDisplay}>
+                  <span className={styles.nicknameVal}>{displayNickname}</span>
                   <button type="button" className={styles.rerollBtn} onClick={rerollNickname}>
-                    <RefreshCw size={16} />
-                    다른 별명
+                    <RefreshCw size={13} />
+                    다시
                   </button>
                 </div>
+                <p className={styles.nicknameHint}>
+                  매칭 상대에게 처음 보여지는 이름이에요. 마음에 드실 때까지 바꿔보세요.
+                </p>
                 <input
-                  className={styles.nicknameInput}
+                  className={`${styles.nicknameInput} ${getError('nickname') ? styles.nicknameInputError : ''}`}
                   value={form.nickname}
                   onChange={(e) => setField('nickname', e.target.value)}
                   onBlur={() => markTouched('nickname')}
@@ -271,239 +319,281 @@ export default function ClientForm() {
                   maxLength={50}
                 />
                 {getError('nickname') && <span className={styles.fieldError}>{getError('nickname')}</span>}
-              </div>
+              </FieldCard>
 
-              <RadioGroup
-                name="gender"
-                label="성별"
-                options={GENDER_OPTIONS}
-                value={form.gender}
-                onChange={(v) => { setField('gender', v); markTouched('gender'); }}
-                required
-                error={getError('gender')}
-              />
-
-              <TextField
-                label="당신이 세상에 온 해를 알려주세요 (숫자 4자리)"
-                value={form.birthYear}
-                onChange={(v) => { setField('birthYear', v.replace(/\D/g, '').slice(0, 4)); markTouched('birthYear'); }}
-                placeholder="1994"
-                maxLength={4}
-                required
-                error={getError('birthYear')}
-              />
-
-              <div className={styles.fieldWrap}>
-                <label className={styles.fieldLabel}>
-                  연락처
-                  <span className={styles.requiredBadge}>필수</span>
-                </label>
-                <PhoneVerifyField
-                  value={form.phone}
-                  onChange={(v) => { setField('phone', v); markTouched('phone'); }}
-                  onVerified={setVerificationId}
+              <SectionLabel n="03" required>기본 정보</SectionLabel>
+              <FieldCard>
+                <RadioGroup
+                  name="gender"
+                  label="성별"
+                  options={GENDER_OPTIONS}
+                  value={form.gender}
+                  onChange={(v) => { setField('gender', v); markTouched('gender'); }}
+                  required
+                  error={getError('gender')}
                 />
-                {getError('phone') && (
-                  <p className={styles.verifyHint}>
-                    <span>{getError('phone')}</span>
-                  </p>
-                )}
-                {!getError('phone') && !verificationId && form.phone && /^010-\d{4}-\d{4}$/.test(form.phone) && (
-                  <p className={styles.verifyHint}>
-                    <span>휴대폰 인증을 완료해야 다음 단계로 넘어갈 수 있어요.</span>
-                  </p>
-                )}
-              </div>
-              <p className={styles.phoneHint}>
-                연락처는 매칭 성사 시에만 상대방에게 공유됩니다. 그 전에는 절대 노출되지 않으니 안심하세요.
-              </p>
+                <div className={styles.cardDivider} />
+                <TextField
+                  label="출생연도 (숫자 4자리)"
+                  value={form.birthYear}
+                  onChange={(v) => { setField('birthYear', v.replace(/\D/g, '').slice(0, 4)); markTouched('birthYear'); }}
+                  placeholder="1994"
+                  maxLength={4}
+                  required
+                  error={getError('birthYear')}
+                />
+                <div className={styles.cardDivider} />
+                <div className={styles.fieldWrap}>
+                  <label className={styles.fieldLabel}>
+                    연락처
+                    <span className={styles.reqBadge}>필수</span>
+                  </label>
+                  <PhoneVerifyField
+                    value={form.phone}
+                    onChange={(v) => { setField('phone', v); markTouched('phone'); }}
+                    onVerified={setVerificationId}
+                  />
+                  {getError('phone') && (
+                    <span className={styles.fieldError}>{getError('phone')}</span>
+                  )}
+                  {!getError('phone') && !verificationId && form.phone && PHONE_REGEX.test(form.phone) && (
+                    <p className={styles.verifyHint}><span>휴대폰 인증을 완료해야 다음 단계로 넘어갈 수 있어요.</span></p>
+                  )}
+                </div>
+              </FieldCard>
 
-              <TextField
-                label="현재 어디에 살고 계신가요?"
-                hint="만남 장소를 정하는 데 도움이 되니 구체적으로 적어주세요."
-                value={form.location}
-                onChange={(v) => { setField('location', v); markTouched('location'); }}
-                placeholder="예) 서울 영등포구, 경기도 용인 수지"
-                required
-                error={getError('location')}
-              />
+              <div className={styles.trustNote}>
+                <ShieldCheck size={13} />
+                연락처는 매칭 성사 시에만 상대방에게 공유됩니다. 그 전에는 절대 노출되지 않으니 안심하세요.
+              </div>
+
+              <SectionLabel n="04" required>거주 지역</SectionLabel>
+              <FieldCard>
+                <TextField
+                  label="시/도 · 시군구"
+                  hint="만남 장소를 정하는 데 도움이 되니 구체적으로 적어주세요."
+                  value={form.location}
+                  onChange={(v) => { setField('location', v); markTouched('location'); }}
+                  placeholder="예) 서울 영등포구, 경기도 용인 수지"
+                  required
+                  error={getError('location')}
+                />
+              </FieldCard>
             </div>
           )}
 
-          {/* Step 2: 모습 */}
+          {/* ── Step 1: 매력 ── */}
           {step === 1 && (
             <div className={styles.fields}>
-              <TextField
-                label="당신의 멋진 비율을 상상할 수 있게 키를 알려주세요"
-                value={form.height}
-                onChange={(v) => { setField('height', v); markTouched('height'); }}
-                placeholder="178 (cm)"
-                type="number"
-                required
-                error={getError('height')}
-              />
-              <TextField
-                label="어떤 가치 있는 일로 당신의 하루를 채우고 계신가요?"
-                value={form.occupation}
-                onChange={(v) => { setField('occupation', v); markTouched('occupation'); }}
-                placeholder="소프트웨어 엔지니어"
-                required
-                error={getError('occupation')}
-              />
-              <TextField
-                label="현재 다니고 계신 회사명은 어디인가요?"
-                value={form.company}
-                onChange={(v) => { setField('company', v); markTouched('company'); }}
-                placeholder="예) 삼성전자, 네이버, 프리랜서"
-                required
-                error={getError('company')}
-              />
-              <TextField
-                label="회사 위치"
-                hint="만남 장소를 정할 때 참고되니 구/동 단위로 적어주세요."
-                value={form.companyLocation}
-                onChange={(v) => { setField('companyLocation', v); markTouched('companyLocation'); }}
-                placeholder="예) 서울 강남구 역삼동, 경기 성남시 판교"
-                required
-                error={getError('companyLocation')}
-              />
-              <SelectField
-                label="최종 학력이 어떻게 되시나요?"
-                value={form.education}
-                onChange={(v) => { setField('education', v); markTouched('education'); }}
-                options={EDUCATION_OPTIONS}
-                placeholder="최종 학력을 선택해주세요"
-                required
-                error={getError('education')}
-              />
-              <TextField
-                label="학교"
-                value={form.school}
-                onChange={(v) => { setField('school', v); markTouched('school'); }}
-                placeholder="예) OO대학교"
-                required={false}
-              />
+              <SectionLabel n="01" required>외적 정보</SectionLabel>
+              <FieldCard>
+                <div className={styles.heightWrap}>
+                  <div className={styles.heightLabel}>
+                    키 <span className={styles.sectionReq}>*</span>
+                  </div>
+                  {form.height ? (
+                    <div className={styles.heightDisplay}>
+                      <span className={styles.heightVal}>{form.height}</span>
+                      <span className={styles.heightUnit}>cm</span>
+                    </div>
+                  ) : null}
+                  <TextField
+                    label=""
+                    value={form.height}
+                    onChange={(v) => { setField('height', v); markTouched('height'); }}
+                    placeholder="178"
+                    type="number"
+                    required
+                    error={getError('height')}
+                  />
+                </div>
+              </FieldCard>
+
+              <SectionLabel n="02" required>직업</SectionLabel>
+              <FieldCard>
+                <TextField
+                  label="직업"
+                  value={form.occupation}
+                  onChange={(v) => { setField('occupation', v); markTouched('occupation'); }}
+                  placeholder="소프트웨어 엔지니어"
+                  required
+                  error={getError('occupation')}
+                />
+                <div className={styles.cardDivider} />
+                <TextField
+                  label="회사명"
+                  value={form.company}
+                  onChange={(v) => { setField('company', v); markTouched('company'); }}
+                  placeholder="예) 삼성전자, 네이버, 프리랜서"
+                  required
+                  error={getError('company')}
+                />
+                <div className={styles.cardDivider} />
+                <TextField
+                  label="회사 위치"
+                  hint="만남 장소를 정할 때 참고되니 구/동 단위로 적어주세요."
+                  value={form.companyLocation}
+                  onChange={(v) => { setField('companyLocation', v); markTouched('companyLocation'); }}
+                  placeholder="예) 서울 강남구 역삼동"
+                  required
+                  error={getError('companyLocation')}
+                />
+              </FieldCard>
+
+              <SectionLabel n="03" required>학력</SectionLabel>
+              <FieldCard>
+                <SelectField
+                  label="최종 학력"
+                  value={form.education}
+                  onChange={(v) => { setField('education', v); markTouched('education'); }}
+                  options={EDUCATION_OPTIONS}
+                  placeholder="최종 학력을 선택해주세요"
+                  required
+                  error={getError('education')}
+                />
+                <div className={styles.cardDivider} />
+                <TextField
+                  label="학교"
+                  value={form.school}
+                  onChange={(v) => { setField('school', v); markTouched('school'); }}
+                  placeholder="예) OO대학교"
+                  required={false}
+                />
+              </FieldCard>
             </div>
           )}
 
-          {/* Step 3: 취향 */}
+          {/* ── Step 2: 라이프 ── */}
           {step === 2 && (
             <div className={styles.fields}>
-              <SelectField
-                label="혹시 종교가 있으신가요?"
-                value={form.religion}
-                onChange={(v) => { setField('religion', v); markTouched('religion'); }}
-                options={RELIGION_OPTIONS}
-                placeholder="선택해주세요"
-                required
-                error={getError('religion')}
-              />
-              <SelectField
-                label="MBTI가 어떻게 되시나요?"
-                value={form.mbti}
-                onChange={(v) => { setField('mbti', v); markTouched('mbti'); }}
-                options={[...MBTI_OPTIONS, { value: '잘 모르겠어요', label: '잘 모르겠어요' }]}
-                placeholder="선택해주세요"
-                required
-                error={getError('mbti')}
-              />
-              <KeywordTagInput
-                label="일상 속에서 당신을 미소 짓게 하는 활동은 무엇인가요?"
-                hint="최소 3개 이상 선택해주세요. 클릭하거나 직접 입력할 수 있어요!"
-                suggestions={HOBBY_KEYWORDS}
-                selected={form.hobbies}
-                onToggle={(kw) => { toggleKeyword('hobbies', kw); markTouched('hobbies'); }}
-                required
-                error={getError('hobbies')}
-              />
+              <SectionLabel n="01" required>종교</SectionLabel>
+              <FieldCard>
+                <SelectField
+                  label=""
+                  value={form.religion}
+                  onChange={(v) => { setField('religion', v); markTouched('religion'); }}
+                  options={RELIGION_OPTIONS}
+                  placeholder="선택해주세요"
+                  required
+                  error={getError('religion')}
+                />
+              </FieldCard>
+
+              <SectionLabel n="02" required>MBTI</SectionLabel>
+              <FieldCard>
+                <SelectField
+                  label=""
+                  value={form.mbti}
+                  onChange={(v) => { setField('mbti', v); markTouched('mbti'); }}
+                  options={[...MBTI_OPTIONS, { value: '잘 모르겠어요', label: '잘 모르겠어요' }]}
+                  placeholder="선택해주세요"
+                  required
+                  error={getError('mbti')}
+                />
+                <p className={styles.mbtiFoot}>잘 모르시면 '잘 모르겠어요'를 선택해주세요.</p>
+              </FieldCard>
+
+              <SectionLabel n="03" required count={`${form.hobbies.length}개 선택`}>취미</SectionLabel>
+              <FieldCard>
+                <KeywordTagInput
+                  label=""
+                  hint="최소 3개 이상 선택해주세요. 클릭하거나 직접 입력할 수 있어요!"
+                  suggestions={HOBBY_KEYWORDS}
+                  selected={form.hobbies}
+                  onToggle={(kw) => { toggleKeyword('hobbies', kw); markTouched('hobbies'); }}
+                  required
+                  error={getError('hobbies')}
+                />
+              </FieldCard>
             </div>
           )}
 
-          {/* Step 4: 진심 */}
+          {/* ── Step 3: 진심 ── */}
           {step === 3 && (
             <div className={styles.fields}>
-              <KeywordTagInput
-                label="나를 표현하는 키워드"
-                hint="최소 2개 이상 선택해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
-                suggestions={INTRO_KEYWORDS}
-                selected={form.introKeywords}
-                onToggle={(kw) => { toggleKeyword('introKeywords', kw); markTouched('introKeywords'); }}
-                required
-                error={getError('introKeywords')}
-              />
+              <SectionLabel n="01" required count={`${form.introKeywords.length}개`}>
+                나를 표현하는 키워드
+              </SectionLabel>
+              <FieldCard>
+                <KeywordTagInput
+                  label=""
+                  hint="최소 2개 이상 선택해주세요. 키워드만으로도 당신이 어떤 사람인지 느껴져요!"
+                  suggestions={INTRO_KEYWORDS}
+                  selected={form.introKeywords}
+                  onToggle={(kw) => { toggleKeyword('introKeywords', kw); markTouched('introKeywords'); }}
+                  required
+                  error={getError('introKeywords')}
+                />
+              </FieldCard>
 
-              <div className={styles.guidedIntro}>
-                <div className={styles.guidedIntroNotice}>
-                  <p className={styles.guidedIntroNoticeTitle}>✍️ 질문에 답하면 자기소개가 완성돼요</p>
-                  <p className={styles.guidedIntroNoticeText}>
-                    어렵게 생각하지 마세요! 아래 질문에 편하게 답변하면 자연스러운 자기소개가 만들어집니다.
-                  </p>
-                </div>
-
+              <SectionLabel n="02" required>자기소개</SectionLabel>
+              <div className={styles.introNotice}>
+                <span>질문에 답하면 자기소개가 완성돼요</span>
+                <p>어렵게 생각하지 마세요! 아래 질문에 편하게 답변하면 자연스러운 자기소개가 만들어집니다.</p>
+              </div>
+              <FieldCard>
                 <TextField
                   label="휴일에는 주로 뭘 하시나요?"
                   value={form.introQ1}
-                  onChange={(v) => { setField('introQ1', v); markTouched('introQ1'); }}
+                  onChange={(v) => { setField('introQ1', v); markTouched('introQ1'); markTouched('introLength'); }}
                   placeholder="카페에서 책 읽거나 넷플릭스 봐요"
                   required
                   error={getError('introQ1')}
                 />
+                <div className={styles.cardDivider} />
                 <TextField
                   label="나만의 매력이나 자신 있는 점은?"
                   value={form.introQ2}
-                  onChange={(v) => { setField('introQ2', v); }}
+                  onChange={(v) => { setField('introQ2', v); markTouched('introLength'); }}
                   placeholder="요리를 잘해서 친구들이 집에 자주 놀러 와요"
                   required={false}
+                  error={!getError('introQ1') ? getError('introLength') : undefined}
                 />
-                {getError('introLength') && <p className={styles.fieldError}>{getError('introLength')}</p>}
+              </FieldCard>
+
+              <SectionLabel n="03" required>이상형</SectionLabel>
+              <div className={styles.idealNotice}>
+                <span>구체적일수록 딱 맞는 사람을 만나요</span>
+                <p>
+                  "키 175 이상", "MBTI가 E인 사람", "강남 근처 거주" — 이렇게 구체적으로 적을수록
+                  매칭 확률이 올라갑니다.
+                </p>
               </div>
-
-              <div className={styles.idealSection}>
-                <div className={styles.idealNotice}>
-                  <p className={styles.idealNoticeTitle}>💡 구체적일수록 딱 맞는 사람을 만나요</p>
-                  <p className={styles.idealNoticeText}>
-                    "키 175 이상", "MBTI가 E인 사람", "강남 근처 거주" — 이렇게 구체적으로 적을수록
-                    매칭 확률이 올라갑니다. 외모, 성격, 재력, 거주지, 종교, 라이프스타일 등
-                    솔직하게 적어주세요. 정확한 기준이 정확한 만남을 만듭니다.
-                  </p>
-                </div>
-
+              <FieldCard>
                 <KeywordTagInput
-                  label="내 마음을 움직이는 키워드"
+                  label="이상형 키워드"
                   hint="어떤 사람에게 마음이 끌리나요? 솔직하게 골라주세요!"
                   suggestions={IDEAL_KEYWORDS}
                   selected={form.idealKeywords}
                   onToggle={(kw) => toggleKeyword('idealKeywords', kw)}
                   required={false}
                 />
-
-                <div className={styles.idealTypeWrap}>
-                  <p className={styles.idealPrivacyNotice}>
-                    🔒 이상형은 <strong>담당 매니저만 확인</strong>하며, 상대방에게는 공개되지 않아요. 부담 없이 솔직하게 적어주세요.
-                  </p>
-                  <TextField
-                    label="어떤 사람이 이상형인가요?"
-                    hint="외모, 성격, 재력, 거주지, 종교 등 구체적으로 적을수록 딱 맞는 사람을 만날 확률이 올라가요."
-                    value={form.idealType}
-                    onChange={(v) => { setField('idealType', v); markTouched('idealType'); }}
-                    placeholder="예) 눈이 큰 사람, 키 175 이상, 좋은 회사 다니는 사람, 강남 근처 거주, MBTI E인 사람"
-                    multiline
-                    maxLength={500}
-                    required
-                    error={getError('idealType')}
-                  />
+                <div className={styles.cardDivider} />
+                <div className={styles.privacyNote}>
+                  <ShieldCheck size={13} />
+                  이상형은 <strong>담당 매니저만 확인</strong>하며, 상대방에게는 공개되지 않아요.
                 </div>
-              </div>
+                <TextField
+                  label="어떤 사람이 이상형인가요?"
+                  hint="외모, 성격, 재력, 거주지, 종교 등 구체적으로 적을수록 딱 맞는 사람을 만날 확률이 올라가요."
+                  value={form.idealType}
+                  onChange={(v) => { setField('idealType', v); markTouched('idealType'); }}
+                  placeholder="예) 눈이 큰 사람, 키 175 이상, 좋은 회사 다니는 사람, 강남 근처 거주"
+                  multiline
+                  maxLength={500}
+                  required
+                  error={getError('idealType')}
+                />
+              </FieldCard>
 
-              <div className={styles.photoSection}>
-                <label className={styles.fieldLabel}>
-                  당신의 매력을 보여줄 사진을 올려주세요
-                  <span className={styles.requiredMark}> *</span>
-                </label>
-                <p className={styles.photoHint}>최소 2장 필수, 최대 5장 (장당 10MB / JPG, PNG, WebP)</p>
-                <p className={styles.photoWarning}>
-                  얼굴이 잘 보이는 사진을 올려주세요. 마스크 착용, 선글라스, 과도한 필터, 옆모습·뒷모습 등 얼굴 확인이 어려운 사진은 매칭에 불이익이 있을 수 있습니다.
-                </p>
+              <SectionLabel n="04" required count={`${form.photos.length}/5`}>
+                사진
+              </SectionLabel>
+              <div className={styles.photoWarningBox}>
+                얼굴이 잘 보이는 사진을 올려주세요. 마스크·선글라스·과도한 필터·뒷모습 등은 매칭에 불이익이 있을 수 있어요.
+              </div>
+              <FieldCard>
+                <p className={styles.photoHint}>최소 2장 필수 · 최대 5장 · 장당 10MB · JPG, PNG, WebP</p>
                 <div className={styles.photoGrid}>
                   {form.photos.map((file, idx) => (
                     <div key={idx} className={styles.photoItem}>
@@ -514,12 +604,13 @@ export default function ClientForm() {
                         onLoad={() => setLoadedPhotos((prev) => ({ ...prev, [idx]: true }))}
                         className={loadedPhotos[idx] ? styles.photoLoaded : styles.photoLoading}
                       />
+                      {idx === 0 && <div className={styles.photoBadge}>대표</div>}
                       <button
                         type="button"
                         className={styles.photoRemoveBtn}
                         onClick={() => removePhoto(idx)}
                       >
-                        <XIcon size={14} />
+                        <XIcon size={13} />
                       </button>
                     </div>
                   ))}
@@ -529,7 +620,7 @@ export default function ClientForm() {
                       className={styles.photoAdd}
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <ImagePlus size={24} />
+                      <ImagePlus size={22} />
                       <span>추가</span>
                     </button>
                   )}
@@ -547,31 +638,45 @@ export default function ClientForm() {
                 />
                 {photoError && <p className={styles.fieldError}>{photoError}</p>}
                 {getError('photos') && <p className={styles.fieldError}>{getError('photos')}</p>}
-              </div>
+              </FieldCard>
 
               {error && <p className={styles.error}>{error}</p>}
             </div>
           )}
         </StepTransition>
 
+        {/* ── Bottom nav ── */}
         <div className={styles.nav}>
-          {step < 3 ? (
-            <button
-              className={styles.nextBtn}
-              onClick={handleNext}
-              disabled={(hasErrors && Object.keys(touched).length > 0) || (step === 0 && !verificationId)}
-            >
-              다음 →
-            </button>
-          ) : (
-            <button
-              className={styles.submitBtn}
-              onClick={handleSubmitClick}
-              disabled={submitting}
-            >
-              {submitting ? '제출 중...' : '최종 제출하기'}
-            </button>
-          )}
+          <div className={styles.navInner}>
+            {step > 0 ? (
+              <button
+                className={styles.prevBtn}
+                onClick={() => { prevStep(); setTouched({}); }}
+              >
+                <ArrowLeft size={16} />
+                이전
+              </button>
+            ) : (
+              <div />
+            )}
+            {step < 3 ? (
+              <button
+                className={styles.nextBtn}
+                onClick={handleNext}
+                disabled={(hasErrors && Object.keys(touched).length > 0) || (step === 0 && !verificationId)}
+              >
+                다음
+              </button>
+            ) : (
+              <button
+                className={styles.submitBtn}
+                onClick={handleSubmitClick}
+                disabled={submitting}
+              >
+                {submitting ? '제출 중...' : '신청 완료'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

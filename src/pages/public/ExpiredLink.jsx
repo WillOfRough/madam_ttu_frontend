@@ -6,7 +6,7 @@ export default function ExpiredLink() {
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.iconWrap}>
-          <AlertTriangle size={48} />
+          <AlertTriangle size={36} />
         </div>
         <h1 className={styles.title}>링크가 만료되었습니다</h1>
         <p className={styles.message}>

@@ -2,14 +2,32 @@ import { useState } from 'react';
 import ConfirmModal from '../ConfirmModal';
 import styles from '../Proposal.module.css';
 
+function PageHeader() {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
+    </div>
+  );
+}
+
 export default function AfterChoice({ onAccept, onReject, submitting }) {
   const [modal, setModal] = useState(null); // 'accept' | 'reject' | null
 
   return (
     <div className={styles.page}>
+      <PageHeader />
       <div className={styles.container}>
-        <h1 className={styles.logo}>Knots & Links</h1>
         <div className={styles.afterCard}>
+          {/* Decorative pulse */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 18 }}>
+            <span className={styles.afterWaitingDot} style={{ background: 'var(--tangerine-600)' }} />
+            <span className={styles.afterWaitingDot} style={{ background: 'var(--mint-600)', animationDelay: '0.2s' }} />
+            <span className={styles.afterWaitingDot} style={{ background: 'var(--lilac-600)', animationDelay: '0.4s' }} />
+          </div>
+
           <h2 className={styles.afterTitle}>미팅은 어떠셨나요?</h2>
           <p className={styles.afterDesc}>
             상대방을 다시 만나고 싶으시다면 에프터를 신청해주세요.
@@ -17,18 +35,18 @@ export default function AfterChoice({ onAccept, onReject, submitting }) {
           </p>
           <div className={styles.afterActions}>
             <button
-              className={styles.acceptBtn}
-              onClick={() => setModal('accept')}
-              disabled={submitting}
-            >
-              {submitting ? '처리 중...' : '더 만나고 싶어요!'}
-            </button>
-            <button
               className={styles.rejectBtn}
               onClick={() => setModal('reject')}
               disabled={submitting}
             >
               괜찮아요
+            </button>
+            <button
+              className={styles.acceptBtn}
+              onClick={() => setModal('accept')}
+              disabled={submitting}
+            >
+              {submitting ? '처리 중...' : '더 만나고 싶어요!'}
             </button>
           </div>
         </div>

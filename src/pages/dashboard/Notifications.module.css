@@ -1,250 +1,411 @@
+/* ── Notifications — Knots & Links Warm Trust renewal ── */
+
 .page {
-  max-width: 720px;
-  animation: slideUp var(--duration-normal) var(--ease-out) both;
+  padding: 0 0 100px;
+  background: var(--paper);
+  min-height: 100vh;
+  animation: fadeUp 0.22s ease both;
 }
 
-/* ── Header ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Sticky header ── */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(246, 247, 251, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 14px 16px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--ink-50);
 }
 
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.headerIcon {
-  color: var(--navy);
-}
-
+/* Title — matches MatchList/ClientList header style */
 .title {
-  font-size: 1.55rem;
+  font-family: var(--font-sans);
+  font-size: 22px;
   font-weight: 800;
-  color: var(--charcoal);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
+  color: var(--ink-900);
+  margin: 0;
+  line-height: 1.15;
 }
 
-/* ── Read All Button ── */
 .readAllBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 8px 16px;
-  border: 1.5px solid var(--navy);
-  border-radius: var(--radius-sm);
-  color: var(--navy);
-  font-size: 0.78rem;
-  font-weight: 650;
-  background: transparent;
-  transition: all var(--duration-fast) var(--ease-out);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tangerine-700);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  border-radius: 6px;
+  transition: color 0.12s;
   white-space: nowrap;
 }
-
 .readAllBtn:hover {
-  background: var(--navy);
-  color: var(--white);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--navy-glow);
+  color: var(--tangerine-600);
 }
 
-/* ── Notification List ── */
+/* ── Section groups ── */
+.sectionGroup {
+  margin-top: 14px;
+  padding: 0 16px;
+}
+
+.sectionGroup + .sectionGroup {
+  margin-top: 14px;
+}
+
+/* Section label — matches tab section dividers */
+.sectionLabel {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+  padding-left: 4px;
+  margin: 12px 0 10px;
+}
+
+/* ── Notification list ── */
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   list-style: none;
-  margin-bottom: var(--space-xl);
+  padding: 0;
+  margin: 0;
 }
 
-/* ── Notification Item ── */
+/* ── Notification item ──
+   Read state: pure white card, near-invisible ink-100 border, soft shadow only.
+   Unread state: very soft tangerine tint + 1px tangerine-100 border (no outer glow). */
 .item {
   position: relative;
+  background: var(--paper-card);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: var(--sh-sm);
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: var(--space-md);
-  padding: 18px 20px 18px 28px;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--ink-100);
   cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition: box-shadow var(--duration-fast) var(--ease-out),
-              border-color var(--duration-fast) var(--ease-out),
-              transform var(--duration-fast) var(--ease-out),
-              background var(--duration-fast) var(--ease-out);
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+  overflow: hidden;
 }
 
 .item:hover {
-  border-color: var(--border);
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-1px);
-  background: var(--bg);
+  background: var(--paper);
 }
 
 .item:focus-visible {
-  outline: 2px solid var(--navy);
+  outline: 2px solid var(--tangerine-600);
   outline-offset: 2px;
 }
 
-/* ── Unread Item ── */
+/* Unread: soft tangerine tint + hairline tangerine border */
 .itemUnread {
-  background: var(--navy-glow);
-  border-color: rgba(26, 43, 75, 0.12);
+  background: var(--tangerine-50);
+  border: 1px solid var(--tangerine-100);
+  box-shadow: none;
 }
 
 .itemUnread:hover {
-  background: rgba(26, 43, 75, 0.12);
-  border-color: rgba(26, 43, 75, 0.18);
+  background: #FFEEE3;
 }
 
-/* ── Unread Dot ── */
+/* ── Icon tile: 38×38, radius 12 (rounded-xl), no border, pastel solid ── */
+.iconTile {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  border: 0;
+}
+
+/* Pastel solid fills — guide tones */
+.iconTileMint      { background: #DCF5E4; color: #2E9A66; } /* 연그린 */
+.iconTileTangerine { background: #FFE2D4; color: #E0683E; } /* 연오렌지 */
+.iconTileLilac     { background: #E8E1FB; color: #7C5BD6; } /* 연보라 */
+.iconTileInk       { background: #FFEFE4; color: #E0683E; } /* fallback 연오렌지 */
+
+/* Unread badge dot: top-right of icon tile (warm tangerine, white ring) */
 .unreadDot {
   position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--coral);
-  flex-shrink: 0;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F26B4F;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 0.5px rgba(242, 107, 79, 0.25);
+  pointer-events: none;
 }
 
-/* ── Item Content ── */
+/* ── Item content (right of icon) ── */
 .itemContent {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
+/* Title: 14 600 (semibold) ink-900 */
 .itemTitle {
-  font-size: 0.9rem;
-  font-weight: 650;
-  color: var(--charcoal);
-  letter-spacing: -0.01em;
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Message: 12.5 400 ink-400 (gray-500 tone), 1-line ellipsis */
 .itemMessage {
-  font-size: 0.84rem;
-  color: var(--charcoal-light);
-  line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-400);
+  line-height: 1.5;
 }
 
+/* Time: 10.5 500 ink-300 — relative phrasing, smaller for softness */
 .itemTime {
-  font-size: 0.75rem;
-  color: var(--charcoal-pale);
+  display: block;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ink-300);
   margin-top: 2px;
+  letter-spacing: 0.005em;
 }
 
+/* ── Right chevron — only rendered on unread (hidden on read) ── */
 .itemChevron {
-  color: var(--charcoal-pale);
+  color: var(--ink-200);
   flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-out),
-              color var(--duration-fast) var(--ease-out);
+  transition: transform 0.12s, color 0.12s;
 }
 
 .item:hover .itemChevron {
   transform: translateX(2px);
-  color: var(--charcoal-light);
+  color: var(--ink-400);
 }
 
-/* ── Loading Skeleton ── */
+/* ── Loading skeleton ── */
 .loadingList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding: 14px 16px;
 }
 
 .skeletonItem {
-  padding: 18px 20px;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
+  background: var(--paper-card);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: var(--sh-sm);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeletonIconTile {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--ink-50);
+  flex-shrink: 0;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeletonBody {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .skeletonTitle,
 .skeletonMessage,
 .skeletonTime {
-  border-radius: var(--radius-xs);
-  background: linear-gradient(90deg, var(--bg-dark) 25%, var(--bg-warm) 50%, var(--bg-dark) 75%);
-  background-size: 200% 100%;
+  border-radius: 4px;
+  background: var(--ink-50);
   animation: shimmer 1.4s infinite;
 }
 
-.skeletonTitle {
-  height: 14px;
-  width: 40%;
-}
+.skeletonTitle   { height: 14px; width: 60%; }
+.skeletonMessage { height: 12px; width: 82%; animation-delay: 0.15s; }
+.skeletonTime    { height: 10px; width: 28%; animation-delay: 0.3s; }
 
-.skeletonMessage {
-  height: 12px;
-  width: 75%;
-}
-
-.skeletonTime {
-  height: 10px;
-  width: 18%;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ── Empty State ── */
+/* ── Empty state — tangerine tint for warmth ── */
 .empty {
+  padding: 80px 24px;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  padding: var(--space-3xl) var(--space-lg);
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  color: var(--charcoal-pale);
-  font-size: 0.9rem;
-  text-align: center;
+  gap: 12px;
 }
 
 .emptyIcon {
-  color: var(--border);
-  opacity: 0.8;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--tangerine-50);
+  color: var(--tangerine-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ── Responsive ── */
-@media (max-width: 640px) {
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-600, var(--ink-500));
+  margin: 0;
+}
+
+.emptyHint {
+  font-size: 13px;
+  color: var(--ink-400);
+  margin: 0;
+  text-align: center;
+  line-height: 1.55;
+}
+
+@keyframes shimmer {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.42; }
+  100% { opacity: 1; }
+}
+
+/* ── Desktop (≥769px) — single-column vertical list, centered, 800px max ── */
+@media (min-width: 769px) {
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px 64px;
+  }
+
+  .header {
+    position: static;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    padding: 28px 0 18px;
+  }
+
   .title {
-    font-size: 1.35rem;
-  }
-
-  .item {
-    padding: 14px 16px 14px 24px;
-  }
-
-  .unreadDot {
-    left: 8px;
+    font-size: 26px;
   }
 
   .readAllBtn {
-    padding: 7px 12px;
-    font-size: 0.75rem;
+    font-size: 14px;
+  }
+
+  .sectionGroup {
+    padding: 0;
+    margin-top: 24px;
+  }
+
+  .sectionGroup + .sectionGroup {
+    margin-top: 28px;
+  }
+
+  .sectionLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-500);
+    letter-spacing: -0.01em;
+    padding-left: 2px;
+    margin: 0 0 10px;
+  }
+
+  /* Vertical list — single column, generous gap */
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Roomier cards on desktop */
+  .item {
+    padding: 18px 20px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .iconTile {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .itemContent {
+    gap: 4px;
+  }
+
+  .itemTitle {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .itemMessage {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-400);
+  }
+
+  .itemTime {
+    font-size: 11.5px;
+    color: var(--ink-300);
+    margin-top: 4px;
+  }
+
+  .itemChevron {
+    color: var(--ink-200);
+  }
+
+  .loadingList {
+    padding: 14px 0;
+    gap: 10px;
+  }
+
+  .skeletonItem {
+    padding: 16px 20px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+
+  .skeletonIconTile {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
   }
 }
+

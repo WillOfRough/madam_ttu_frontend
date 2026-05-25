@@ -11,6 +11,17 @@ const AFTER_ERROR_MESSAGES = {
   '9.014': '이 매칭은 종료되었습니다.',
 };
 
+function PageHeader() {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
+    </div>
+  );
+}
+
 export default function ProposalAfter() {
   const { token } = useParams();
   const [loading, setLoading] = useState(true);
@@ -127,8 +138,8 @@ export default function ProposalAfter() {
   if (error) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>알림</p>
             <p className={styles.respondedStatus}>{error}</p>
@@ -145,8 +156,8 @@ export default function ProposalAfter() {
     }
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>알림</p>
             <p className={styles.respondedStatus}>{message}</p>
@@ -159,8 +170,8 @@ export default function ProposalAfter() {
   if (afterError) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>알림</p>
             <p className={styles.respondedStatus}>{afterError}</p>
@@ -197,9 +208,11 @@ export default function ProposalAfter() {
     if (feedbackAlreadyDone || feedbackSubmitted) {
       return (
         <div className={styles.page}>
+          <PageHeader />
           <div className={styles.container}>
-            <h1 className={styles.logo}>Knots & Links</h1>
             <div className={styles.respondedBanner}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>🌱</div>
+              <p className={styles.respondedLabel}>피드백 감사합니다</p>
               <p className={styles.respondedStatus}>
                 비록 이번 만남은 닿지 못했지만, 보내주신 피드백을 꼼꼼히 보고
                 {myName ? ` ${myName} 님께` : ''} 더 좋은 매칭을 만들어 드리기 위해 노력할게요.

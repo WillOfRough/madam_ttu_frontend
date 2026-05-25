@@ -32,11 +32,13 @@ import ClientDetail from './pages/dashboard/ClientDetail';
 import Connections from './pages/dashboard/Connections';
 import InviteManagement from './pages/dashboard/InviteManagement';
 import Settings from './pages/dashboard/Settings';
+import Settlement from './pages/dashboard/Settlement';
 import MatchList from './pages/dashboard/MatchList';
 import MatchDetail from './pages/dashboard/MatchDetail';
 import ManagerGuide from './pages/dashboard/ManagerGuide';
 import Notifications from './pages/dashboard/Notifications';
 import InquiryList from './pages/dashboard/InquiryList';
+import More from './pages/dashboard/More';
 
 function AuthListener() {
   const navigate = useNavigate();
@@ -137,8 +139,10 @@ export default function App() {
             <Route path="/dashboard/matches/:matchId" element={<MatchDetail />} />
             <Route path="/dashboard/notifications" element={<Notifications />} />
             <Route path="/dashboard/settings" element={<Settings />} />
+            <Route path="/dashboard/settlement" element={<Settlement />} />
             <Route path="/dashboard/guide" element={<ManagerGuide />} />
             <Route path="/dashboard/inquiries" element={<InquiryList />} />
+            <Route path="/dashboard/more" element={<More />} />
           </Route>
         </Route>
 

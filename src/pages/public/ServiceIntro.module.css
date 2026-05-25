@@ -1,256 +1,158 @@
+/* ServiceIntro — Warm Trust service intro */
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  justify-content: center;
-  padding: var(--space-xl) var(--space-lg);
-  background: var(--bg);
+  min-height: 100vh; min-height: 100dvh;
+  background: var(--paper);
+  display: flex; justify-content: center;
+  padding: 0 20px 120px;
 }
 
 .container {
-  max-width: 540px;
-  width: 100%;
+  max-width: 480px; width: 100%;
+  padding-top: 48px;
+}
+
+/* ── Desktop responsive ── */
+@media (min-width: 769px) {
+  .page {
+    padding: 0 40px 120px;
+  }
+  .container {
+    max-width: 760px;
+    padding-top: 56px;
+  }
+  .hero {
+    padding: 44px 32px 40px;
+  }
+  .brand {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 900px;
+  }
 }
 
 /* ── Hero ── */
 .hero {
   text-align: center;
-  padding: 48px 24px 40px;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  margin-bottom: var(--space-xl);
-  animation: heroIn 0.8s var(--ease-out) both;
+  padding: 36px 24px 32px;
+  background: var(--paper-card); border-radius: 20px;
+  box-shadow: var(--sh-md); margin-bottom: 28px;
+  animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative; overflow: hidden;
+}
+
+.hero::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(242,107,79,.12) 0%, rgba(242,107,79,0) 70%);
+  pointer-events: none;
 }
 
 @keyframes heroIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .brand {
-  display: block;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.04em;
-  line-height: 1;
+  display: block; font-size: 22px; font-weight: 800;
+  font-family: var(--font-sans);
+  color: var(--ink-900); letter-spacing: -0.04em; line-height: 1;
+  margin-bottom: 12px;
 }
 
 .divider {
-  width: 32px;
-  height: 2px;
-  background: var(--coral);
-  margin: 16px auto;
-  border-radius: 1px;
+  width: 28px; height: 2px; background: var(--tangerine-600);
+  margin: 0 auto 16px; border-radius: 1px;
 }
 
 .tagline {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--charcoal-mid);
-  line-height: 1.7;
-  letter-spacing: -0.01em;
+  font-size: 14px; font-weight: 500; color: var(--ink-500);
+  line-height: 1.7; letter-spacing: -0.01em;
 }
 
 /* ── Sections ── */
-.section {
-  margin-bottom: var(--space-xl);
-}
+.section { margin-bottom: 28px; }
 
 .sectionHeader {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--navy);
-  letter-spacing: -0.02em;
-  margin-bottom: var(--space-md);
-  padding-left: 4px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+  font-size: 14px; font-weight: 800; color: var(--ink-700);
+  letter-spacing: -0.02em; margin-bottom: 12px;
+  padding-left: 2px;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 
-.sectionHeader.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
+.sectionHeader.revealed { opacity: 1; transform: translateY(0); }
 
 /* ── Cards ── */
 .card {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-card);
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--paper-card); border-radius: 16px;
+  border: 1px solid var(--ink-50);
+  padding: 18px 18px; margin-bottom: 10px;
+  box-shadow: var(--sh-sm);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s ease;
 }
 
-.card.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
+.card.revealed { opacity: 1; transform: translateY(0); }
+.card:hover { box-shadow: var(--sh-md); }
 
 .cardEmoji {
-  font-size: 1.6rem;
-  line-height: 1;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-warm);
-  border-radius: var(--radius-md);
+  font-size: 20px; line-height: 1; flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tangerine-50); border-radius: 12px;
+  border: 1px solid var(--tangerine-100);
 }
 
-.cardBody {
-  flex: 1;
-  min-width: 0;
-}
+.cardBody { flex: 1; min-width: 0; }
 
 .cardTitle {
-  font-size: 0.92rem;
-  font-weight: 750;
-  color: var(--charcoal);
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-  line-height: 1.3;
+  font-size: 13px; font-weight: 800; color: var(--ink-800, var(--ink-700));
+  letter-spacing: -0.02em; margin-bottom: 5px; line-height: 1.35;
 }
 
 .cardDesc {
-  font-size: 0.82rem;
-  font-weight: 400;
-  color: var(--charcoal-mid);
-  line-height: 1.7;
-  word-break: keep-all;
+  font-size: 12px; color: var(--ink-500);
+  line-height: 1.7; word-break: keep-all;
 }
 
-/* ── SMS Notice Banner ── */
+/* ── SMS Banner ── */
 .smsBanner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: var(--navy-glow);
-  border: 1px solid rgba(26, 43, 75, 0.14);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  display: flex; align-items: flex-start; gap: 11px;
+  background: var(--paper-card); border-radius: 14px;
+  border: 1px solid var(--ink-100);
+  padding: 14px 16px; margin-bottom: 12px;
+  box-shadow: var(--sh-sm);
 }
 
-.smsBannerIcon {
-  flex-shrink: 0;
-  color: var(--navy);
-  margin-top: 1px;
-}
+.smsBannerIcon { flex-shrink: 0; color: var(--ink-400); margin-top: 1px; }
 
 .smsBannerText {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--charcoal);
-  line-height: 1.65;
-  word-break: keep-all;
+  font-size: 12px; color: var(--ink-500);
+  line-height: 1.65; word-break: keep-all;
 }
 
-.smsBannerText strong {
-  color: var(--navy);
-  font-weight: 700;
-}
-
-@media (max-width: 640px) {
-  .smsBanner {
-    padding: 12px 14px;
-    gap: 10px;
-  }
-
-  .smsBannerText {
-    font-size: 0.77rem;
-  }
-}
+.smsBannerText strong { color: var(--ink-700); font-weight: 700; }
 
 /* ── CTA ── */
 .ctaWrap {
-  position: sticky;
-  bottom: 0;
-  padding: 16px 0 20px;
-  background: linear-gradient(to top, var(--bg) 60%, transparent);
+  position: sticky; bottom: 0;
+  padding: 16px 0 calc(20px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--paper) 65%, transparent);
 }
 
 .ctaBtn {
-  display: block;
-  width: 100%;
-  padding: 16px;
-  background: var(--navy);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 16px 18px; border-radius: 14px; border: none; cursor: pointer;
+  background: linear-gradient(180deg, var(--tangerine-600) 0%, var(--tangerine-700) 100%);
+  color: #fff; font-size: 15px; font-weight: 800;
+  letter-spacing: -0.01em; font-family: var(--font-sans);
+  box-shadow: 0 10px 24px rgba(242,107,79,.32);
+  transition: all 0.2s;
 }
 
-.ctaBtn:hover {
-  background: var(--charcoal);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-lg);
-}
-
-.ctaBtn:active {
-  transform: translateY(0);
-}
-
-/* ── Responsive ── */
-@media (max-width: 640px) {
-  .page {
-    padding: var(--space-md) var(--space-sm);
-  }
-
-  .hero {
-    padding: 36px 20px 32px;
-  }
-
-  .brand {
-    font-size: 1.5rem;
-  }
-
-  .tagline {
-    font-size: 0.92rem;
-  }
-
-  .sectionHeader {
-    font-size: 0.95rem;
-  }
-
-  .card {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .cardEmoji {
-    width: 36px;
-    height: 36px;
-    font-size: 1.35rem;
-  }
-
-  .cardTitle {
-    font-size: 0.88rem;
-  }
-
-  .cardDesc {
-    font-size: 0.8rem;
-  }
-}
+.ctaBtn:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(242,107,79,.38); }

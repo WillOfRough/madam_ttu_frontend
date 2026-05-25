@@ -107,11 +107,11 @@ export default function MatchFloatingBar() {
     setCreating(true);
     try {
       const [a, b] = selected;
-      await matchService.createMatch({ clientAId: a.id, clientBId: b.id });
+      const created = await matchService.createMatch({ clientAId: a.id, clientBId: b.id });
       toast.success(`${a.nickname || a.name} ↔ ${b.nickname || b.name} 매칭이 생성되었습니다.`);
       clearSelectedForMatch();
       setShowConfirm(false);
-      navigate('/dashboard/matches');
+      navigate(created?.matchId ? `/dashboard/matches/${created.matchId}` : '/dashboard/matches');
     } catch (err) {
       toast.error(err.message || '매칭 생성에 실패했습니다.');
     }

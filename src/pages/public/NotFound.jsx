@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Home } from 'lucide-react';
 import styles from './NotFound.module.css';
 
 export default function NotFound() {
@@ -10,6 +11,7 @@ export default function NotFound() {
         <h1 className={styles.code}>404</h1>
         <p className={styles.message}>페이지를 찾을 수 없습니다.</p>
         <button className={styles.btn} onClick={() => navigate('/')}>
+          <Home size={14} />
           홈으로 돌아가기
         </button>
       </div>

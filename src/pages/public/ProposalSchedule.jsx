@@ -40,6 +40,22 @@ function formatDateISO(date) {
   return `${y}-${m}-${d}`;
 }
 
+function PageHeader({ step, total }) {
+  return (
+    <div className={styles.brandHeader}>
+      <div className={styles.brandMark}>
+        <div className={styles.brandMarkDot} />
+      </div>
+      <span className={styles.brandName}>Knots &amp; Links</span>
+      {step && total && (
+        <span style={{ marginLeft: 'auto', fontSize: 10.5, fontWeight: 700, color: 'var(--ink-400)', fontVariantNumeric: 'tabular-nums' }}>
+          {step} / {total}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function ProposalSchedule() {
   const { token } = useParams();
   const [data, setData] = useState(null);
@@ -168,8 +184,8 @@ export default function ProposalSchedule() {
     }
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>알림</p>
             <p className={styles.respondedStatus}>{message}</p>
@@ -184,8 +200,8 @@ export default function ProposalSchedule() {
   if (alreadySubmitted) {
     return (
       <div className={styles.page}>
+        <PageHeader />
         <div className={styles.container}>
-          <h1 className={styles.logo}>Knots & Links</h1>
           <div className={styles.respondedBanner}>
             <p className={styles.respondedLabel}>가용시간을 전달했습니다</p>
             <p className={styles.respondedStatus}>
@@ -197,36 +213,55 @@ export default function ProposalSchedule() {
     );
   }
 
-  // Calendar + Time Chip UI
+  // ── Calendar + Time Chip UI ──
   return (
     <div className={styles.page}>
+      <PageHeader step={2} total={3} />
       <div className={styles.container}>
-        <h1 className={styles.logo}>Knots & Links</h1>
 
-        <div className={styles.schedulingHeader}>
-          <div className={styles.schedulingCelebration}>
-            <span className={styles.celebrationDot} />
-            <span className={styles.celebrationDot} />
-            <span className={styles.celebrationDot} />
+        {/* Title block */}
+        <div className={styles.pageTitleBlock}>
+          <div className={`${styles.progressBadge} ${styles.tangerine}`}>
+            <span className={styles.progressBadgeDot} />
+            일정 선택
           </div>
-          <h2 className={styles.schedulingTitle}>매칭이 성사되었습니다!</h2>
-          <p className={styles.schedulingDesc}>
-            {cp?.nickname ? `${cp.nickname}님과 ` : ''}만나기 편한 시간을
-            <br />
-            모두 골라주세요
+          <h1 className={styles.pageTitle}>언제 만나기 좋으세요?</h1>
+          <p className={styles.pageSubtitle}>
+            {cp?.nickname ? `${cp.nickname}님과 ` : ''}만나기 편한 시간을 모두 골라주세요.
+            두 분이 겹치는 시간으로 약속이 잡혀요.
           </p>
-          <span className={styles.schedulingBadge}>최대한 많이 선택해 주셔야 만남의 성사율이 높아요</span>
         </div>
 
+        {/* Quick actions */}
         <div className={styles.quickActions}>
           <button className={styles.quickBtn} onClick={selectWeekends} type="button">
-            주말만 선택
+            주말만
           </button>
           <button className={styles.quickBtn} onClick={selectAllDates} type="button">
             전체 선택
           </button>
+          {totalSlotCount > 0 && (
+            <span style={{
+              marginLeft: 'auto',
+              fontSize: 11,
+              fontWeight: 700,
+              padding: '6px 10px',
+              background: 'var(--mint-100)',
+              borderRadius: 'var(--r-pill)',
+              color: 'var(--mint-600)',
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {totalSlotCount}개 선택됨
+            </span>
+          )}
         </div>
 
+        {/* Hint */}
+        <p style={{ fontSize: 11, color: 'var(--ink-400)', marginBottom: 12, lineHeight: 1.5 }}>
+          날짜를 선택 후 아래에서 시간대를 고르세요. 최대한 많이 선택할수록 성사율이 높아요.
+        </p>
+
+        {/* Calendar Grid */}
         <div className={styles.calendarCard}>
           <div className={styles.calendarDayNames}>
             {DAY_NAMES.map((name, i) => (
@@ -270,6 +305,7 @@ export default function ProposalSchedule() {
           ))}
         </div>
 
+        {/* Time chips for selected dates */}
         {sortedSelectedDates.length > 0 && (
           <div className={styles.chipSection}>
             <p className={styles.chipSectionTitle}>시간대를 선택해주세요</p>
@@ -350,6 +386,25 @@ export default function ProposalSchedule() {
           </div>
         )}
 
+        {/* Reassurance note */}
+        <div style={{
+          padding: '12px 14px',
+          background: 'var(--paper-warm)',
+          borderRadius: 'var(--r-md)',
+          display: 'flex',
+          gap: 10,
+          alignItems: 'flex-start',
+          marginBottom: 80,
+        }}>
+          <span style={{ color: 'var(--tangerine-600)', fontSize: 13, flexShrink: 0, marginTop: 1 }}>ⓘ</span>
+          <p style={{ fontSize: 11.5, color: 'var(--ink-700)', lineHeight: 1.6 }}>
+            선택하신 시간은 상대방에게 바로 공개되지 않아요.{' '}
+            <strong style={{ color: 'var(--ink-900)' }}>겹치는 시간이 있다면</strong>{' '}
+            매니저가 안전한 장소로 약속을 잡아드려요.
+          </p>
+        </div>
+
+        {/* Sticky CTA */}
         <div className={styles.ctaSection}>
           {totalSlotCount > 0 && (
             <p className={styles.ctaInfo}>
@@ -369,7 +424,7 @@ export default function ProposalSchedule() {
               ? '전송 중...'
               : totalSlotCount === 0
                 ? '날짜와 시간대를 선택해주세요'
-                : '이 시간대면 언제든 좋아요'}
+                : '이 시간대면 언제든 좋아요 →'}
           </button>
         </div>
       </div>
