@@ -8,6 +8,7 @@ import useManagerStore from '../../store/managerStore';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useNotificationStore from '../../store/notificationStore';
+import useClientListStore from '../../store/clientListStore';
 import * as matchService from '../../api/matchService';
 import * as settlementService from '../../api/settlementService';
 import { SkeletonCard } from '../../components/Skeleton';
@@ -395,7 +396,20 @@ export default function DashboardHome() {
           icon={AlertTriangle}
           tone="amber"
           pulse
-          onClick={() => navigate('/dashboard/clients')}
+          onClick={() => {
+            useClientListStore.setState((s) => ({
+              filters: {
+                ...s.filters,
+                owner: 'all',
+                gender: null,
+                status: null,
+                approval: 'pending',
+                name: '',
+              },
+              page: 1,
+            }));
+            navigate('/dashboard/clients');
+          }}
         />
         <KpiCard
           label="네트워크"
