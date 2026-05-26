@@ -382,7 +382,7 @@ export default function DashboardHome() {
       {/* ── KPI 4-col ── */}
       <div className={styles.kpiGrid}>
         <KpiCard
-          label="내 회원"
+          label="회원"
           value={clientCount}
           sub="이번주 +1"
           icon={Users}
