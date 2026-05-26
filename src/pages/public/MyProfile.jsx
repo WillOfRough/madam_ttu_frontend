@@ -226,10 +226,9 @@ export default function MyProfile() {
     return (
       <div className={styles.page}>
         <div className={styles.verifyWrap}>
-          <div className={styles.brandMark}>
-            <span className={styles.brandDot} />
+          <div className={styles.brandRow}>
+            <div className={styles.brandMark} />
             <span className={styles.brandName}>Knots &amp; Links</span>
-            <span className={styles.brandDot} />
           </div>
 
           <div className={styles.verifyCard}>
@@ -256,10 +255,9 @@ export default function MyProfile() {
     return (
       <div className={styles.page}>
         <div className={styles.verifyWrap}>
-          <div className={styles.brandMark}>
-            <span className={styles.brandDot} />
+          <div className={styles.brandRow}>
+            <div className={styles.brandMark} />
             <span className={styles.brandName}>Knots &amp; Links</span>
-            <span className={styles.brandDot} />
           </div>
 
           <div className={styles.verifyCard}>
@@ -310,10 +308,9 @@ export default function MyProfile() {
       <div className={styles.profileWrap}>
 
         {/* ── top brand bar ── */}
-        <div className={styles.topBrand}>
-          <span className={styles.brandDot} />
+        <div className={styles.brandRow}>
+          <div className={styles.brandMark} />
           <span className={styles.brandName}>Knots &amp; Links</span>
-          <span className={styles.brandDot} />
         </div>
 
         {/* ── action buttons ── */}
