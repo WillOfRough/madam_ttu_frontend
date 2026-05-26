@@ -435,10 +435,24 @@ export default function ClientDetail() {
                 )}
 
                 <div className={styles.heroBadges}>
-                  <span className={styles.badgeMint}>
-                    <span className={styles.badgeMintDot} />
-                    활성
-                  </span>
+                  {client.approvalStatus === 'pending' ? (
+                    <span className={styles.badgeAmber}>
+                      <span className={styles.badgeAmberDot} />
+                      승인대기
+                    </span>
+                  ) : client.approvalStatus === 'rejected' ? (
+                    <span className={styles.badgeRose}>
+                      <span className={styles.badgeRoseDot} />
+                      승인거절
+                    </span>
+                  ) : currentStatus === 'active' ? (
+                    <span className={styles.badgeMint}>
+                      <span className={styles.badgeMintDot} />
+                      활동
+                    </span>
+                  ) : (
+                    <span className={styles.badgeInk}>{currentStatusLabel}</span>
+                  )}
                   {client.isOwner && (
                     <span className={styles.badgeInk}>내 회원</span>
                   )}
