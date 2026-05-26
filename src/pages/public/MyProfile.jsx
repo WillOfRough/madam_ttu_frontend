@@ -108,7 +108,7 @@ export default function MyProfile() {
   /* ─── photo handlers ─── */
   const refreshProfile = async () => {
     try {
-      const data = await getMyProfile({ id: clientId, phone: verifiedPhone });
+      const data = await getMyProfile({ id: clientId, verificationId });
       setProfile(data);
     } catch { /* silent */ }
   };
@@ -153,7 +153,7 @@ export default function MyProfile() {
     setLoading(true);
     setVerifyError('');
     try {
-      const data = await getMyProfile({ id: clientId, phone });
+      const data = await getMyProfile({ id: clientId, verificationId: verId });
       setProfile(data);
       setVerifiedPhone(phone);
       setVerificationId(verId);
