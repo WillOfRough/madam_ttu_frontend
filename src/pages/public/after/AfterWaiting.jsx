@@ -1,3 +1,4 @@
+import { CheckCircle2 } from 'lucide-react';
 import styles from '../Proposal.module.css';
 
 function PageHeader() {
@@ -17,15 +18,13 @@ export default function AfterWaiting() {
       <PageHeader />
       <div className={styles.container}>
         <div className={styles.afterWaitingCard}>
-          <div className={styles.afterWaitingIcon}>
-            <span className={styles.afterWaitingDot} />
-            <span className={styles.afterWaitingDot} />
-            <span className={styles.afterWaitingDot} />
+          <div className={styles.afterWaitingDoneIcon}>
+            <CheckCircle2 size={48} strokeWidth={2} />
           </div>
-          <p className={styles.afterWaitingTitle}>응답이 전달되었습니다</p>
+          <p className={styles.afterWaitingTitle}>응답이 완료되었습니다</p>
           <p className={styles.afterWaitingDesc}>
-            아직 상대방의 선택이 완료되지 않았어요.
-            <br />결과는 매니저가 별도로 안내드릴 예정입니다.
+            서로 애프터를 수락한 경우에만, 상대방의 이름과
+            <br />연락처가 담긴 프로필 링크를 보내드려요.
           </p>
         </div>
       </div>
