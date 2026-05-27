@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import * as clientService from '../api/clientService';
 import * as matchService from '../api/matchService';
 
-const useClientListStore = create((set, get) => ({
+const ACTIVE_MATCH_STATUSES = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
+
+const useClientListStore = create((set, get) => {
+  // 최신 요청만 상태에 반영하기 위한 시퀀스 가드 (빠른 연속 검색 시 stale 응답 차단)
+  let activeReq = 0;
+
+  return {
   clients: [],
   totalCount: 0,
   filteredCount: 0,
@@ -40,66 +46,66 @@ const useClientListStore = create((set, get) => ({
   setPage: (page) => set({ page }),
 
   fetchClients: async () => {
+    const reqId = ++activeReq;
     const { page, limit, filters } = get();
     set({ isLoading: true, error: null });
     try {
-      const result = await clientService.listClients({
-        ...filters,
-        page,
-        limit,
-      });
-      const clients = result.data || result.clients || result;
+      // 1단계: 회원 목록 — 도착 즉시 렌더 (통계/매칭 배지를 기다리지 않음)
+      const result = await clientService.listClients({ ...filters, page, limit });
+      if (reqId !== activeReq) return; // 더 최신 검색이 진행 중이면 폐기
+
+      const list = result.data || result.clients || result;
       const filteredCount = result.pagination?.total ?? result.totalCount ?? 0;
 
-      // genderCounts: API 응답에 있으면 사용, 없으면 별도 조회
-      let genderCounts = result.genderCounts;
-      if (!genderCounts) {
-        const baseFilters = { ...filters, gender: null, page: 1, limit: 1 };
-        const [maleRes, femaleRes] = await Promise.all([
-          clientService.listClients({ ...baseFilters, gender: 'male' }).catch(() => null),
-          clientService.listClients({ ...baseFilters, gender: 'female' }).catch(() => null),
-        ]);
-        genderCounts = {
-          male: maleRes?.pagination?.total ?? maleRes?.totalCount ?? 0,
-          female: femaleRes?.pagination?.total ?? femaleRes?.totalCount ?? 0,
-        };
-      }
-
-      // 매칭 목록에서 각 회원별 진행 중 매칭 수 계산
-      const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
-      let activeMatchMap = {};
-      try {
-        const matchRes = await matchService.listMatches({ size: 200 });
-        const matchList = matchRes.data || matchRes.matches || [];
-        for (const m of matchList) {
-          if (!activeStatuses.includes(m.status)) continue;
-          const aId = m.clientA?.clientId;
-          const bId = m.clientB?.clientId;
-          if (aId) activeMatchMap[aId] = (activeMatchMap[aId] || 0) + 1;
-          if (bId) activeMatchMap[bId] = (activeMatchMap[bId] || 0) + 1;
-        }
-      } catch { /* 매칭 조회 실패 시 무시 */ }
-
-      const enrichedClients = clients.map((c) => ({
-        ...c,
-        activeMatchCount: c.activeMatchCount ?? activeMatchMap[c.id] ?? 0,
-      }));
-
       // 비활성/휴면 회원을 맨 뒤로 정렬
-      enrichedClients.sort((a, b) => {
+      const sorted = [...list].sort((a, b) => {
         const aActive = (a.status || 'active') === 'active' ? 0 : 1;
         const bActive = (b.status || 'active') === 'active' ? 0 : 1;
         return aActive - bActive;
       });
 
-      set({
-        clients: enrichedClients,
-        filteredCount,
-        totalCount: genderCounts.male + genderCounts.female,
-        genderCounts,
-        isLoading: false,
-      });
+      set({ clients: sorted, filteredCount, isLoading: false });
+
+      // 2단계: 성별 카운트 — 비차단. 응답에 있으면 즉시, 없으면 백그라운드 조회
+      if (result.genderCounts) {
+        const gc = result.genderCounts;
+        set({ genderCounts: gc, totalCount: gc.male + gc.female });
+      } else {
+        const baseFilters = { ...filters, gender: null, page: 1, limit: 1 };
+        Promise.all([
+          clientService.listClients({ ...baseFilters, gender: 'male' }).catch(() => null),
+          clientService.listClients({ ...baseFilters, gender: 'female' }).catch(() => null),
+        ]).then(([maleRes, femaleRes]) => {
+          if (reqId !== activeReq) return;
+          const gc = {
+            male: maleRes?.pagination?.total ?? maleRes?.totalCount ?? 0,
+            female: femaleRes?.pagination?.total ?? femaleRes?.totalCount ?? 0,
+          };
+          set({ genderCounts: gc, totalCount: gc.male + gc.female });
+        });
+      }
+
+      // 3단계: 진행 중 매칭 수 — 비차단. 도착하면 "매칭중" 배지만 병합
+      matchService.listMatches({ size: 200 }).then((matchRes) => {
+        if (reqId !== activeReq) return;
+        const matchList = matchRes.data || matchRes.matches || [];
+        const activeMatchMap = {};
+        for (const m of matchList) {
+          if (!ACTIVE_MATCH_STATUSES.includes(m.status)) continue;
+          const aId = m.clientA?.clientId;
+          const bId = m.clientB?.clientId;
+          if (aId) activeMatchMap[aId] = (activeMatchMap[aId] || 0) + 1;
+          if (bId) activeMatchMap[bId] = (activeMatchMap[bId] || 0) + 1;
+        }
+        set((state) => ({
+          clients: state.clients.map((c) => ({
+            ...c,
+            activeMatchCount: c.activeMatchCount ?? activeMatchMap[c.id] ?? 0,
+          })),
+        }));
+      }).catch(() => { /* 매칭 조회 실패 시 배지만 생략 */ });
     } catch (err) {
+      if (reqId !== activeReq) return;
       set({ isLoading: false, error: err.message });
     }
   },
@@ -113,6 +119,7 @@ const useClientListStore = create((set, get) => ({
     filters: { owner: 'all', gender: null, approval: null, status: null, sort: 'createdAt:desc', name: '' },
     error: null,
   }),
-}));
+  };
+});
 
 export default useClientListStore;

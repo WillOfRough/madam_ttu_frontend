@@ -625,7 +625,7 @@ export default function ClientList() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>회원</h1>
-          {!isLoading && totalCount > 0 && (
+          {totalCount > 0 && (
             <div className={styles.titleSub}>
               총 {totalCount}명
               <span className={styles.dotSep}>·</span>
@@ -677,7 +677,7 @@ export default function ClientList() {
       </div>
 
       {/* ── KPI strip ── */}
-      {!isLoading && totalCount > 0 && (
+      {totalCount > 0 && (
         <div className={styles.kpiStrip}>
           <button
             className={`${styles.kpiCard} ${!filters.gender ? styles.kpiCardActive : ''}`}
