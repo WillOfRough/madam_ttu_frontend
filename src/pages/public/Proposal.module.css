@@ -976,6 +976,13 @@
   margin-bottom: 16px;
 }
 
+.afterWaitingDoneIcon {
+  display: flex;
+  justify-content: center;
+  color: var(--mint-600);
+  margin-bottom: 16px;
+}
+
 .afterWaitingDot {
   width: 9px;
   height: 9px;
