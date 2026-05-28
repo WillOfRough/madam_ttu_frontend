@@ -15,7 +15,9 @@ import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
-import { scorePair, topPairs, topChips } from './matchScore';
+import { scorePair, topPairs, topChips, pairKey } from './matchScore';
+
+const REC_MIN_SCORE = 60;
 import styles from './MatchList.module.css';
 
 /* ─── Stage config ─── */
@@ -270,9 +272,12 @@ function PairCard({ pair, onCreateMatch }) {
   );
 }
 
-function RecommendedPairsCompact({ clients, onCreateMatch }) {
+function RecommendedPairsCompact({ clients, excludePairKeys, onCreateMatch }) {
   const [open, setOpen] = useState(false);
-  const pairs = useMemo(() => topPairs(clients, 3), [clients]);
+  const pairs = useMemo(
+    () => topPairs(clients, 3, { excludePairKeys, minScore: REC_MIN_SCORE }),
+    [clients, excludePairKeys],
+  );
 
   if (pairs.length === 0) return null;
 
@@ -567,6 +572,7 @@ export default function MatchList() {
   const [onlyMine,     setOnlyMine]     = useState(Boolean(myManagerId));
   const [activeTab,    setActiveTab]    = useState('all');
   const [allClients,   setAllClients]   = useState([]);
+  const [recExcludePairs, setRecExcludePairs] = useState(null);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [filterOpen,   setFilterOpen]   = useState(false);
   const searchInputRef = useRef(null);
@@ -617,6 +623,29 @@ export default function MatchList() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeClients.length]);
+
+  /* Build exclusion set for recommended pairs: 제안발송(proposal_sent) 이상 이력 보유 페어는 제외.
+     draft 단계는 아직 제안 발송 전이므로 이력으로 보지 않는다. */
+  useEffect(() => {
+    let cancelled = false;
+    matchService.listMatches({ size: 200 })
+      .then((res) => {
+        if (cancelled) return;
+        const list = res.data || res.matches || [];
+        const keys = new Set();
+        for (const m of list) {
+          if (!m || m.status === 'draft') continue;
+          const aId = m.clientA?.clientId;
+          const bId = m.clientB?.clientId;
+          if (aId && bId) keys.add(pairKey(aId, bId));
+        }
+        setRecExcludePairs(keys);
+      })
+      .catch(() => {
+        if (!cancelled) setRecExcludePairs(new Set());
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   /* Debounce search → clientName filter */
   useEffect(() => {
@@ -778,6 +807,7 @@ export default function MatchList() {
       {/* ── Recommended pairs (below tab strip, always visible) ── */}
       <RecommendedPairsCompact
         clients={allClients}
+        excludePairKeys={recExcludePairs}
         onCreateMatch={(aId, bId) => {
           setSearchParams({ create: '1', clientA: aId, clientB: bId });
           setShowCreate(true);

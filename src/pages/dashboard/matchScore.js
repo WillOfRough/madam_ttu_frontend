@@ -173,19 +173,34 @@ export function scorePair(a, b) {
 }
 
 /**
+ * Canonical pair key — order-independent so (a,b) and (b,a) map to the same key.
+ */
+export function pairKey(idA, idB) {
+  const sA = String(idA);
+  const sB = String(idB);
+  return sA < sB ? `${sA}|${sB}` : `${sB}|${sA}`;
+}
+
+/**
  * Returns top-N recommended pairs from a flat client list.
  * @param {Array} clients
  * @param {number} n
+ * @param {{ excludePairKeys?: Set<string>, minScore?: number|null }} [options]
+ *   - excludePairKeys: pairs with key in this set are skipped (e.g. 제안발송 이상 이력 보유)
+ *   - minScore: drop pairs scoring below this threshold (null = no filter)
  * @returns {Array<{ a, b, total, signals }>}
  */
-export function topPairs(clients, n = 3) {
+export function topPairs(clients, n = 3, options = {}) {
+  const { excludePairKeys = null, minScore = null } = options;
   const pairs = [];
   for (let i = 0; i < clients.length; i++) {
     for (let j = i + 1; j < clients.length; j++) {
       const a = clients[i];
       const b = clients[j];
       if (!hardFilter(a, b)) continue;
+      if (excludePairKeys && excludePairKeys.has(pairKey(a.id, b.id))) continue;
       const { total, signals } = scorePair(a, b);
+      if (minScore != null && total < minScore) continue;
       pairs.push({ a, b, total, signals });
     }
   }
