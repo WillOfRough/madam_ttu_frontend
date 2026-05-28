@@ -1,9 +1,8 @@
 # 환경별 분기 파일은 자동 머지 금지.
 # dev↔prd 머지 시 git이 자동 해결하지 않고 항상 충돌을 발생시켜
 # 머지 수행자가 명시적으로 확인 후 해결하도록 강제한다.
-# (현재 브랜치 값이 임시 결과로 남으므로 그대로 add 하면 현재 브랜치 환경 유지)
 #
-# nginx.conf 는 nginx.conf.template + Cloud Run env(BACKEND_HOST) 로 환경 분기 처리되므로
-# 더 이상 branch 별 분기 파일이 아니다. (Step 1 적용 완료)
-vite.config.js -merge
+# nginx.conf  : Step 1 — nginx.conf.template + Cloud Run env(BACKEND_HOST) 로 통합
+# vite.config.js : Step 2 — .env.development(.local) 로 분리, 단일 파일화
+# .mcp.json (잔여) : Step 3 에서 gitignore 전환 예정
 .mcp.json -merge
