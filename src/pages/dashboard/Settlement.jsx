@@ -68,13 +68,19 @@ function isCancelled(status) {
   return status === 'cancelled';
 }
 
-// 합산금액 집계 대상: 실제 정산완료된 건만 (입금대기·환불·취소·정산제외는 제외)
-function isCountedForTotal(s) {
-  return s?.status === 'settled' && s?.excluded !== true;
+// 정산 내역 탭 옵션: 정산대상(받을 차례) / 정산완료(지급된 내역)
+const STATUS_TAB_OPTIONS = [
+  { k: 'ready_to_settle', l: '정산대상' },
+  { k: 'settled',         l: '정산완료' },
+];
+
+// 선택된 status에 부합하면서 정산제외가 아닌 건만 합산
+function isCountedFor(s, status) {
+  return s?.status === status && s?.excluded !== true;
 }
 
-function sumSettledAmount(list) {
-  return list.reduce((a, s) => a + (isCountedForTotal(s) ? (s.amount || 0) : 0), 0);
+function sumAmount(list, status) {
+  return list.reduce((a, s) => a + (isCountedFor(s, status) ? (s.amount || 0) : 0), 0);
 }
 
 // 역할 매핑
@@ -154,6 +160,7 @@ export default function Settlement() {
   // 기간·필터 상태
   const [period, setPeriod] = useState('this');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('ready_to_settle');
   const [selectedDay, setSelectedDay] = useState(null); // 달력에서 선택한 일자 (1~말일)
   const [showSheet, setShowSheet] = useState(null); // null | 'policy' | 'refund' | settlement-object
 
@@ -176,9 +183,6 @@ export default function Settlement() {
   // 이번달 KPI용 from/to
   const thisMonthFrom = `${year}-${String(month).padStart(2, '0')}-01`;
   const thisMonthTo = `${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`;
-
-  // 정산 내역 = 실제 정산완료된 건만 조회 (입금대기·환불·취소·제외 건은 달력에서 확인)
-  const statusFilter = 'settled';
 
   // 초기 로드: 월별 요약 + 일별 차트 + 역할별 누적 (allSettled — 한쪽 실패해도 나머지 표시)
   useEffect(() => {
@@ -237,7 +241,7 @@ export default function Settlement() {
   }, [periodRange, statusFilter, page]);
 
   // 기간/필터 변경 시 페이지 리셋
-  useEffect(() => { setPage(0); }, [period, roleFilter]);
+  useEffect(() => { setPage(0); }, [period, roleFilter, statusFilter]);
 
   // 이번달 요약 계산 — 매칭 종료일 기준 ready_to_settle 합계
   const thisMonthSummary = useMemo(() => {
@@ -246,9 +250,9 @@ export default function Settlement() {
     return item || { month, count: 0, amount: 0 };
   }, [monthly, month]);
 
-  // 역할 + 선택 일자 필터 적용 (서버가 settled만 반환하지만 안전망)
+  // 역할 + 선택 일자 필터 적용 (서버가 statusFilter만 반환하지만 안전망 + 정산제외 컷)
   const filteredSettlements = useMemo(() => {
-    let list = settlements.filter(isCountedForTotal);
+    let list = settlements.filter((s) => isCountedFor(s, statusFilter));
     if (roleFilter === 'match') list = list.filter(s => s.role === 'matchmaker');
     else if (roleFilter === 'member') list = list.filter(s => s.role === 'client_owner');
     if (selectedDay != null) {
@@ -259,7 +263,7 @@ export default function Settlement() {
       });
     }
     return list;
-  }, [settlements, roleFilter, selectedDay, year, month]);
+  }, [settlements, statusFilter, roleFilter, selectedDay, year, month]);
 
   // 일자별 그룹
   const grouped = useMemo(() => {
@@ -346,7 +350,7 @@ export default function Settlement() {
             <div>
               <div className={styles.listSectionTitle}>정산 내역</div>
               <div className={styles.listSectionMeta}>
-                {filteredSettlements.length}건 · {won(sumSettledAmount(filteredSettlements))}원
+                {filteredSettlements.length}건 · {won(sumAmount(filteredSettlements, statusFilter))}원
               </div>
             </div>
             {selectedDay != null && (
@@ -377,7 +381,20 @@ export default function Settlement() {
             ))}
           </div>
 
-          {/* 필터 칩 */}
+          {/* 상태 칩 — 정산대상(받을 차례) / 정산완료(지급된 내역) */}
+          <div className={styles.filterChipRow}>
+            {STATUS_TAB_OPTIONS.map((o) => (
+              <button
+                key={o.k}
+                className={`${styles.filterChip} ${statusFilter === o.k ? styles.filterChipActive : ''}`}
+                onClick={() => setStatusFilter(o.k)}
+              >
+                {o.l}
+              </button>
+            ))}
+          </div>
+
+          {/* 역할 칩 */}
           <div className={styles.filterChipRow}>
             {[
               { k: 'all', l: '전체' },
@@ -414,7 +431,7 @@ export default function Settlement() {
           ) : (
             <div className={styles.txList}>
               {grouped.map(([date, items]) => {
-                const sum = sumSettledAmount(items);
+                const sum = sumAmount(items, statusFilter);
                 return (
                   <div key={date} className={styles.txGroup}>
                     <div className={styles.txGroupHeader}>
