@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# 개발자별 환경 오버라이드 (커밋 금지)
+.env.local
+.env.development.local
+.env.production.local
+
+# Claude Code MCP 설정은 개발자별 로컬 설정. 최초 clone 시 .mcp.json.example 복사.
+.mcp.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -62,3 +62,14 @@ Claude(에이전트) 가 dev 브랜치에서 테스트용 회원·매니저·매
 
 - 매니저: sungjoong.kim@hancom.com / hancom123 (김성중)
 - 관리자: admin@admin.com / hancom123
+
+## 최초 clone 후 로컬 셋업
+
+```bash
+npm ci
+cp .mcp.json.example .mcp.json   # Claude Code MCP 설정 (gitignore 대상)
+```
+
+`.mcp.json` 은 개발자별 로컬 설정이라 추적하지 않는다. 기본값은 dev 백엔드를
+가리키며, prd MCP 가 필요한 특수 상황에서만 로컬에서 직접 수정한다.
+(prd 환경 쓰기 금지 안전 규칙 준수)

@@ -9,6 +9,7 @@ import {
   ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2, Mail,
 } from 'lucide-react';
 import * as matchService from '../../api/matchService';
+import { getApiErrorMessage } from '../../api/config';
 import { toast } from '../../store/toastStore';
 import StatusBadge from '../../components/StatusBadge';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -549,7 +550,7 @@ export default function MatchDetail() {
       toast.success('약속이 확정되었습니다.');
       reload();
     } catch (err) {
-      toast.error(err.message || '약속 확정에 실패했습니다.');
+      toast.error(getApiErrorMessage(err, '약속 확정에 실패했습니다.'));
     }
     setActionLoading(false);
     setShowConfirm(false);
@@ -1593,7 +1594,7 @@ export default function MatchDetail() {
               <p className={styles.modalDesc}>선택된 시간: {formatSlotDisplay(selectedSlot)}</p>
             )}
             <div className={styles.modalField}>
-              <label className={styles.modalLabel}>장소</label>
+              <label className={styles.modalLabel}>장소 (필수)</label>
               <input
                 className={styles.modalInput}
                 value={venue}
@@ -1628,7 +1629,7 @@ export default function MatchDetail() {
               <button
                 className={styles.sheetConfirmBtn}
                 onClick={handleConfirmSchedule}
-                disabled={actionLoading || !selectedTimeId}
+                disabled={actionLoading || !selectedTimeId || !venue.trim()}
               >
                 {actionLoading ? '확정 중...' : '약속 확정'}
               </button>

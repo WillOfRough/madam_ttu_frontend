@@ -1,8 +1,0 @@
-# 환경별 분기 파일은 자동 머지 금지.
-# dev↔prd 머지 시 git이 자동 해결하지 않고 항상 충돌을 발생시켜
-# 머지 수행자가 명시적으로 확인 후 해결하도록 강제한다.
-# (현재 브랜치 값이 임시 결과로 남으므로 그대로 add 하면 현재 브랜치 환경 유지)
-#
-# dev 브랜치는 dev-knotsandlinks-backend(개발), prd 브랜치는 love-soul(운영)
-nginx.conf -merge
-vite.config.js -merge

@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "love-soul": {
-      "type": "http",
-      "url": "https://love-soul-265481232089.asia-northeast3.run.app/mcp"
-    }
-  }
-}
