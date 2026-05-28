@@ -20,6 +20,20 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * ApiError에서 사용자에게 보여줄 메시지를 추출한다.
+ * 백엔드 VALIDATION_ERROR는 details에 필드별 구체 메시지(예: { location: "장소는 필수입니다." })를
+ * 담아주는데, 상위 message는 "입력값을 확인해주세요." 처럼 일반적이라 details를 우선 사용한다.
+ */
+export function getApiErrorMessage(err, fallback = '요청을 처리하지 못했습니다.') {
+  const details = err?.body?.details;
+  if (details && typeof details === 'object') {
+    const msgs = Object.values(details).filter((v) => typeof v === 'string' && v.trim());
+    if (msgs.length) return msgs.join('\n');
+  }
+  return err?.message || fallback;
+}
+
 export async function apiFetch(path, options = {}) {
   const { body, headers, skipUnauthorizedEvent, ...rest } = options;
 
