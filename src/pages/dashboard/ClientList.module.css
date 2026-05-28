@@ -753,6 +753,7 @@
 }
 
 .selectCheck {
+  position: relative;
   width: 22px;
   height: 22px;
   border-radius: 6px;
@@ -764,6 +765,16 @@
   flex-shrink: 0;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease, transform 120ms ease;
+}
+/* Expand the tap target to ~44x44 without changing visual size */
+.selectCheck::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 .selectCheck:hover {
   border-color: var(--tangerine-600);
