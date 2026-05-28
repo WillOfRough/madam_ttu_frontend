@@ -384,7 +384,7 @@ export default function DashboardHome() {
         <KpiCard
           label="회원"
           value={clientCount}
-          sub="이번주 +1"
+          sub="내 담당 회원"
           icon={Users}
           tone="ink"
           onClick={() => navigate('/dashboard/clients')}
