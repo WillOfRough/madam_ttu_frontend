@@ -221,21 +221,47 @@ export default function Settlement() {
     return () => { cancelled = true; };
   }, [year, thisMonthFrom, thisMonthTo]);
 
-  // 기간/필터 변경 시 목록 재조회
+  // 기간/필터 변경 시 목록 재조회.
+  // '전체' 탭은 status=ready_to_settle / status=settled 두 번 호출 후 병합·클라이언트 페이지네이션.
+  // (백엔드 status 파라미터가 단일 값만 받기 때문에 status 미전송 시 cancelled/refunded 등이 섞여 들어와
+  //  첫 20건이 전부 표시 제외 대상이 되어 결과가 비어 보이는 문제를 회피)
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
 
-    const params = {
-      from: periodRange.from,
-      to: periodRange.to,
-      page,
-      size: 20,
-    };
-    if (statusFilter !== 'all') params.status = statusFilter;
+    const PAGE_SIZE = 20;
+    const dateKeyOf = (s) => s?.matchEndedAt || s?.createdAt || '';
+    const sortByDateDesc = (list) => list.sort((a, b) => dateKeyOf(b).localeCompare(dateKeyOf(a)));
 
-    settlementService.listSettlements(params)
+    const promise = statusFilter === 'all'
+      ? Promise.all([
+          settlementService.listSettlements({
+            from: periodRange.from, to: periodRange.to,
+            page: 0, size: 100, status: 'ready_to_settle',
+          }),
+          settlementService.listSettlements({
+            from: periodRange.from, to: periodRange.to,
+            page: 0, size: 100, status: 'settled',
+          }),
+        ]).then(([r1, r2]) => {
+          const merged = sortByDateDesc([...(r1?.data || []), ...(r2?.data || [])]);
+          const start = page * PAGE_SIZE;
+          return {
+            data: merged.slice(start, start + PAGE_SIZE),
+            pagination: {
+              page,
+              totalPages: Math.max(1, Math.ceil(merged.length / PAGE_SIZE)),
+              totalElements: merged.length,
+            },
+          };
+        })
+      : settlementService.listSettlements({
+          from: periodRange.from, to: periodRange.to,
+          page, size: PAGE_SIZE, status: statusFilter,
+        });
+
+    promise
       .then((res) => {
         if (cancelled) return;
         setSettlements(res?.data || []);
