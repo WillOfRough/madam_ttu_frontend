@@ -1,8 +1,11 @@
 import { mockFetch } from './mockData';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 const DEV = import.meta.env.DEV;
-const USE_MOCK = DEV && !API_BASE && !import.meta.env.VITE_NO_MOCK;
+const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+// DEV: vite proxy(/api)가 dev 백엔드로 포워딩 + 쿠키 도메인 localhost 리라이트.
+// 절대주소로 직접 fetch 하면 CORS/쿠키 문제로 세션이 안 잡히므로 상대경로 사용.
+const API_BASE = DEV ? '' : RAW_API_BASE;
+const USE_MOCK = DEV && !RAW_API_BASE && !import.meta.env.VITE_NO_MOCK;
 
 export function getPhotoUrl(photoId) {
   if (USE_MOCK) {
