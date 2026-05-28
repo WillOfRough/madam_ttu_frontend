@@ -1,8 +1,0 @@
-# 환경별 분기 파일은 자동 머지 금지.
-# dev↔prd 머지 시 git이 자동 해결하지 않고 항상 충돌을 발생시켜
-# 머지 수행자가 명시적으로 확인 후 해결하도록 강제한다.
-#
-# nginx.conf  : Step 1 — nginx.conf.template + Cloud Run env(BACKEND_HOST) 로 통합
-# vite.config.js : Step 2 — .env.development(.local) 로 분리, 단일 파일화
-# .mcp.json (잔여) : Step 3 에서 gitignore 전환 예정
-.mcp.json -merge
