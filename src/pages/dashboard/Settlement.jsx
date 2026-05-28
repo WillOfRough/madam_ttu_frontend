@@ -68,15 +68,25 @@ function isCancelled(status) {
   return status === 'cancelled';
 }
 
-// 정산 내역 탭 옵션: 정산대상(받을 차례) / 정산완료(지급된 내역)
+// 정산 내역 탭 옵션
 const STATUS_TAB_OPTIONS = [
-  { k: 'ready_to_settle', l: '정산대상' },
-  { k: 'settled',         l: '정산완료' },
+  { k: 'all',             l: '전체' },
+  { k: 'ready_to_settle', l: '정산 대상' },
+  { k: 'settled',         l: '정산 완료' },
 ];
 
-// 선택된 status에 부합하면서 정산제외가 아닌 건만 합산
+const ROLE_TAB_OPTIONS = [
+  { k: 'all',    l: '전체' },
+  { k: 'match',  l: '매칭 매니저' },
+  { k: 'member', l: '회원 매니저' },
+];
+
+// 정산제외(excluded)는 항상 합산/표시에서 제외.
+// status === 'all' 이면 정산대상/정산완료 둘 다 통과.
 function isCountedFor(s, status) {
-  return s?.status === status && s?.excluded !== true;
+  if (!s || s.excluded === true) return false;
+  if (status === 'all') return s.status === 'ready_to_settle' || s.status === 'settled';
+  return s.status === status;
 }
 
 function sumAmount(list, status) {
@@ -222,8 +232,8 @@ export default function Settlement() {
       to: periodRange.to,
       page,
       size: 20,
-      status: statusFilter,
     };
+    if (statusFilter !== 'all') params.status = statusFilter;
 
     settlementService.listSettlements(params)
       .then((res) => {
@@ -381,34 +391,43 @@ export default function Settlement() {
             ))}
           </div>
 
-          {/* 상태 칩 — 정산대상(받을 차례) / 정산완료(지급된 내역) */}
-          <div className={styles.filterChipRow}>
-            {STATUS_TAB_OPTIONS.map((o) => (
-              <button
-                key={o.k}
-                className={`${styles.filterChip} ${statusFilter === o.k ? styles.filterChipActive : ''}`}
-                onClick={() => setStatusFilter(o.k)}
-              >
-                {o.l}
-              </button>
-            ))}
-          </div>
+          {/* 필터 툴바 — 상태(정산 대상/완료) + 유형(역할) */}
+          <div className={styles.filterToolbar}>
+            <div className={styles.filterGroup}>
+              <span className={styles.filterGroupLabel}>상태</span>
+              <div className={styles.segGroup} role="tablist" aria-label="정산 상태">
+                {STATUS_TAB_OPTIONS.map((o) => (
+                  <button
+                    key={o.k}
+                    type="button"
+                    role="tab"
+                    aria-selected={statusFilter === o.k}
+                    className={`${styles.segChip} ${statusFilter === o.k ? styles.segChipActive : ''}`}
+                    onClick={() => setStatusFilter(o.k)}
+                  >
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* 역할 칩 */}
-          <div className={styles.filterChipRow}>
-            {[
-              { k: 'all', l: '전체' },
-              { k: 'match', l: '매칭 매니저' },
-              { k: 'member', l: '회원 매니저' },
-            ].map((o) => (
-              <button
-                key={o.k}
-                className={`${styles.filterChip} ${roleFilter === o.k ? styles.filterChipActive : ''}`}
-                onClick={() => setRoleFilter(o.k)}
-              >
-                {o.l}
-              </button>
-            ))}
+            <div className={styles.filterGroup}>
+              <span className={styles.filterGroupLabel}>유형</span>
+              <div className={styles.segGroup} role="tablist" aria-label="매니저 유형">
+                {ROLE_TAB_OPTIONS.map((o) => (
+                  <button
+                    key={o.k}
+                    type="button"
+                    role="tab"
+                    aria-selected={roleFilter === o.k}
+                    className={`${styles.segChip} ${roleFilter === o.k ? styles.segChipActive : ''}`}
+                    onClick={() => setRoleFilter(o.k)}
+                  >
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 거래 목록 */}
