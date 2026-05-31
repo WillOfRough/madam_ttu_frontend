@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar } from 'lucide-react';
+import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar, Megaphone, Share2 } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
 import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
@@ -51,6 +51,9 @@ export default function InviteManagement() {
   const [filter, setFilter] = useState('all'); // all | general | event | revoked
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
+  const [aboutCopied, setAboutCopied] = useState(false);
+
+  const aboutUrl = `${window.location.origin}/about`;
 
   // General sheet
   const [showGeneral, setShowGeneral] = useState(false);
@@ -101,6 +104,34 @@ export default function InviteManagement() {
     toast.success('링크가 복사되었습니다.');
     setTimeout(() => setCopiedId(null), 2000);
   }, []);
+
+  const handleAboutCopy = useCallback(() => {
+    navigator.clipboard.writeText(aboutUrl);
+    setAboutCopied(true);
+    toast.success('소개 페이지 링크가 복사되었습니다.');
+    setTimeout(() => setAboutCopied(false), 2000);
+  }, [aboutUrl]);
+
+  const handleAboutShare = useCallback(async () => {
+    const shareData = {
+      title: 'Knots & Links',
+      text: '진심이 닿는 만남을, 매니저와 함께. Knots & Links 소개 페이지를 확인해 보세요.',
+      url: aboutUrl,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          navigator.clipboard.writeText(aboutUrl);
+          toast.success('링크가 복사되었습니다.');
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(aboutUrl);
+      toast.success('링크가 복사되었습니다.');
+    }
+  }, [aboutUrl]);
 
   const handleEventCopy = useCallback((invite) => {
     const token = invite.token || invite.id;
@@ -185,6 +216,41 @@ export default function InviteManagement() {
           <div className={styles.introCopy}>
             <span className={styles.introEmphasis}>일반 링크</span>는 내가 직접 회원을 모실 때,<br />
             <span className={styles.introAccent}>이벤트 링크</span>는 파트너사와 공동 개최할 때 쓰세요.
+          </div>
+        </div>
+
+        {/* ── 서비스 소개 페이지 공유 카드 ── */}
+        <div className={styles.aboutCard}>
+          <div className={styles.aboutHead}>
+            <div className={styles.aboutIcon}>
+              <Megaphone size={16} strokeWidth={2.2} />
+            </div>
+            <div className={styles.aboutHeadText}>
+              <div className={styles.aboutTitle}>서비스 소개 페이지</div>
+              <div className={styles.aboutDesc}>처음 만나는 분께 카톡으로 보내주세요</div>
+            </div>
+          </div>
+          <div className={styles.aboutUrlBox}>
+            <Link2 size={13} className={styles.aboutUrlIcon} />
+            <span className={styles.aboutUrlText}>{aboutUrl}</span>
+          </div>
+          <div className={styles.aboutActions}>
+            <button
+              type="button"
+              className={`${styles.aboutBtn} ${aboutCopied ? styles.aboutBtnCopied : styles.aboutBtnCopy}`}
+              onClick={handleAboutCopy}
+            >
+              {aboutCopied ? <Check size={13} /> : <Copy size={13} />}
+              {aboutCopied ? '복사됨' : '링크 복사'}
+            </button>
+            <button
+              type="button"
+              className={`${styles.aboutBtn} ${styles.aboutBtnShare}`}
+              onClick={handleAboutShare}
+            >
+              <Share2 size={13} />
+              공유하기
+            </button>
           </div>
         </div>
 
