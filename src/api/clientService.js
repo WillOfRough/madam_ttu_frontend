@@ -50,6 +50,12 @@ function compressImage(file) {
   });
 }
 
+export async function checkNicknameAvailable(nickname) {
+  const query = new URLSearchParams({ nickname });
+  const res = await apiFetch(`/api/v1/clients/check-nickname?${query}`, { method: 'GET' });
+  return res?.data === true;
+}
+
 export async function createClient(data, photos = []) {
   const formData = new FormData();
   for (const [key, value] of Object.entries(data)) {

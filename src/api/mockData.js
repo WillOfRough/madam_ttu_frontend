@@ -1664,6 +1664,14 @@ export async function mockFetch(path, options = {}) {
   const pathname = url.pathname;
   const params = url.searchParams;
 
+  // GET /api/v1/clients/check-nickname?nickname=... (별명 중복 확인 — mock)
+  if (method === 'GET' && pathname === '/api/v1/clients/check-nickname') {
+    const nick = (params.get('nickname') || '').trim();
+    if (!nick) throw Object.assign(new Error('별명을 입력해주세요.'), { status: 400 });
+    const taken = clients.some((c) => (c.nickname || '').trim() === nick);
+    return { success: true, message: taken ? '이미 사용 중인 별명이에요.' : '사용 가능한 닉네임입니다.', data: !taken };
+  }
+
   // POST /api/v1/verification/send (인증번호 발송 — mock)
   if (method === 'POST' && pathname === '/api/v1/verification/send') {
     const body = options.body || {};
