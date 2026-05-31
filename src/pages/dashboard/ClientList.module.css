@@ -786,6 +786,31 @@
   border-color: var(--tangerine-600);
 }
 
+/* 같은 성별이 이미 선택된 상태 — 시각적으로 흐리게 처리하고 슬래시(/) 표시로 차단 의도를 명확히 한다. */
+.selectCheckDisabled {
+  opacity: 0.4;
+  background: var(--ink-50);
+  border-color: var(--ink-200);
+  border-style: dashed;
+  cursor: not-allowed;
+  position: relative;
+}
+.selectCheckDisabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 1.5px;
+  background: var(--ink-400);
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.selectCheckDisabled:hover {
+  border-color: var(--ink-200);
+  transform: none;
+}
+
 /* ── Floating selection bar (portaled, position:fixed is safe from body) ── */
 .selectionBar {
   position: fixed;

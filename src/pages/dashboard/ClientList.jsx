@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
+import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import styles from './ClientList.module.css';
@@ -52,7 +53,7 @@ function MatchStatusBadge({ client }) {
 }
 
 // ── Row (normal density) ──────────────────────────────────
-function ClientRow({ client, onClick, isLast, selected, onToggleSelect }) {
+function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect }) {
   return (
     <div
       className={`${styles.row} ${isLast ? styles.rowLast : ''} ${selected ? styles.rowSelected : ''}`}
@@ -131,10 +132,11 @@ function ClientRow({ client, onClick, isLast, selected, onToggleSelect }) {
       <div className={styles.rowRight}>
         <MatchStatusBadge client={client} />
         <button
-          className={`${styles.selectCheck} ${selected ? styles.selectCheckOn : ''}`}
+          className={`${styles.selectCheck} ${selected ? styles.selectCheckOn : ''} ${disabled && !selected ? styles.selectCheckDisabled : ''}`}
           onClick={(e) => { e.stopPropagation(); onToggleSelect(client); }}
-          aria-label={selected ? '선택 해제' : '매칭 선택'}
+          aria-label={selected ? '선택 해제' : (disabled ? '같은 성별은 선택 불가' : '매칭 선택')}
           aria-pressed={selected}
+          aria-disabled={disabled && !selected}
           type="button"
         >
           {selected && (
@@ -150,7 +152,7 @@ function ClientRow({ client, onClick, isLast, selected, onToggleSelect }) {
 }
 
 // ── Card (grid thumbnail) ─────────────────────────────────
-function ClientCard({ client, onClick, selected, onToggleSelect }) {
+function ClientCard({ client, onClick, selected, disabled, onToggleSelect }) {
   return (
     <div
       className={`${styles.cardItem} ${selected ? styles.cardItemSelected : ''}`}
@@ -165,10 +167,11 @@ function ClientCard({ client, onClick, selected, onToggleSelect }) {
         <div className={styles.cardHeaderRight}>
           <MatchStatusBadge client={client} />
           <button
-            className={`${styles.selectCheck} ${styles.cardCheck} ${selected ? styles.selectCheckOn : ''}`}
+            className={`${styles.selectCheck} ${styles.cardCheck} ${selected ? styles.selectCheckOn : ''} ${disabled && !selected ? styles.selectCheckDisabled : ''}`}
             onClick={(e) => { e.stopPropagation(); onToggleSelect(client); }}
-            aria-label={selected ? '선택 해제' : '매칭 선택'}
+            aria-label={selected ? '선택 해제' : (disabled ? '같은 성별은 선택 불가' : '매칭 선택')}
             aria-pressed={selected}
+            aria-disabled={disabled && !selected}
             type="button"
           >
             {selected && (
@@ -528,7 +531,8 @@ export default function ClientList() {
   // All hooks before any early return
   const [density, setDensity] = useState('list'); // list | card
   const [nameInput, setNameInput] = useState(filters.name || '');
-  const [selectedIds, setSelectedIds] = useState([]); // max 2
+  // 선택된 회원(최대 2명) — 페이지 이동 시에도 유지되도록 ID가 아닌 객체 전체를 보관한다.
+  const [selectedClients, setSelectedClients] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const searchInputRef = useRef(null);
@@ -550,30 +554,30 @@ export default function ClientList() {
   };
 
   const handleToggleSelect = (client) => {
-    setSelectedIds((prev) => {
-      if (prev.includes(client.id)) return prev.filter((id) => id !== client.id);
-      if (prev.length >= 2) return [prev[1], client.id];
-      return [...prev, client.id];
+    setSelectedClients((prev) => {
+      if (prev.some((c) => c.id === client.id)) {
+        return prev.filter((c) => c.id !== client.id);
+      }
+      // 같은 성별 2명은 매칭할 수 없으므로 선택 자체를 차단한다.
+      if (prev.length === 1 && prev[0].gender === client.gender) {
+        toast.warning('성별이 다른 회원만 매칭할 수 있어요.');
+        return prev;
+      }
+      if (prev.length >= 2) return [prev[1], client];
+      return [...prev, client];
     });
   };
 
-  // Prune stale selections when the visible client list changes (page/filter)
-  useEffect(() => {
-    setSelectedIds((prev) => {
-      if (prev.length === 0) return prev;
-      const visibleIds = new Set(clients.map((c) => c.id));
-      const next = prev.filter((id) => visibleIds.has(id));
-      return next.length === prev.length ? prev : next;
-    });
-  }, [clients]);
-
-  const selectedClients = selectedIds
-    .map((id) => clients.find((c) => c.id === id))
-    .filter(Boolean);
+  const selectedIdSet = new Set(selectedClients.map((c) => c.id));
+  const lockedGender = selectedClients.length === 1 ? selectedClients[0].gender : null;
 
   const handleCreateMatchFromSelection = () => {
     const [a, b] = selectedClients;
     if (!a || !b) return;
+    if (a.gender === b.gender) {
+      toast.warning('성별이 다른 회원만 매칭할 수 있어요.');
+      return;
+    }
     navigate(`/dashboard/matches?create=1&clientA=${a.id}&clientB=${b.id}`);
   };
 
@@ -805,7 +809,8 @@ export default function ClientList() {
                   key={client.id}
                   client={client}
                   onClick={() => handleRowClick(client)}
-                  selected={selectedIds.includes(client.id)}
+                  selected={selectedIdSet.has(client.id)}
+                  disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
                   onToggleSelect={handleToggleSelect}
                 />
               ))}
@@ -818,7 +823,8 @@ export default function ClientList() {
                   client={client}
                   onClick={() => handleRowClick(client)}
                   isLast={i === clients.length - 1}
-                  selected={selectedIds.includes(client.id)}
+                  selected={selectedIdSet.has(client.id)}
+                  disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
                   onToggleSelect={handleToggleSelect}
                 />
               ))}
@@ -838,10 +844,10 @@ export default function ClientList() {
       />
 
       {/* ── Floating selection bar (portaled) ── */}
-      {selectedIds.length > 0 && (
+      {selectedClients.length > 0 && (
         <SelectionBar
           selectedClients={selectedClients}
-          onClear={() => setSelectedIds([])}
+          onClear={() => setSelectedClients([])}
           onCreateMatch={handleCreateMatchFromSelection}
         />
       )}
