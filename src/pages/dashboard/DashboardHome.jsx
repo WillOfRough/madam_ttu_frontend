@@ -395,7 +395,7 @@ export default function DashboardHome() {
           sub="확인 필요"
           icon={AlertTriangle}
           tone="amber"
-          pulse
+          pulse={pendingApproval > 0}
           onClick={() => {
             useClientListStore.setState((s) => ({
               filters: {
