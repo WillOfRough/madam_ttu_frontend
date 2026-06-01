@@ -37,7 +37,7 @@ function ClientAvatar({ client, size = 36 }) {
 }
 
 // ── Status badge ─────────────────────────────────────────
-function MatchStatusBadge({ client }) {
+function MatchStatusBadge({ client, matchesLoaded }) {
   if (client.approvalStatus === 'pending') {
     return <span className={`${styles.statusBadge} ${styles.statusPending}`}>승인대기</span>;
   }
@@ -47,6 +47,10 @@ function MatchStatusBadge({ client }) {
   if ((client.status || 'active') !== 'active') {
     return <span className={`${styles.statusBadge} ${styles.statusInactive}`}>매칭불가</span>;
   }
+  // 매칭 데이터 도착 전엔 중립 자리표시자 — '매칭가능'을 미리 보였다가 '매칭중'으로 뒤집히는 깜빡임 방지
+  if (!matchesLoaded) {
+    return <span className={`${styles.statusBadge} ${styles.statusLoading}`} aria-label="매칭 상태 확인 중" />;
+  }
   if (client.activeMatchCount > 0) {
     return <span className={`${styles.statusBadge} ${styles.statusMatching}`}>매칭중</span>;
   }
@@ -54,7 +58,7 @@ function MatchStatusBadge({ client }) {
 }
 
 // ── Row (normal density) ──────────────────────────────────
-function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect }) {
+function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.row} ${isLast ? styles.rowLast : ''} ${selected ? styles.rowSelected : ''}`}
@@ -131,7 +135,7 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
       </div>
 
       <div className={styles.rowRight}>
-        <MatchStatusBadge client={client} />
+        <MatchStatusBadge client={client} matchesLoaded={matchesLoaded} />
         <button
           className={`${styles.selectCheck} ${selected ? styles.selectCheckOn : ''} ${disabled && !selected ? styles.selectCheckDisabled : ''}`}
           onClick={(e) => { e.stopPropagation(); onToggleSelect(client); }}
@@ -153,7 +157,7 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
 }
 
 // ── Card (grid thumbnail) ─────────────────────────────────
-function ClientCard({ client, onClick, selected, disabled, onToggleSelect }) {
+function ClientCard({ client, onClick, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.cardItem} ${selected ? styles.cardItemSelected : ''}`}
@@ -166,7 +170,7 @@ function ClientCard({ client, onClick, selected, disabled, onToggleSelect }) {
       <div className={styles.cardHeader}>
         <ClientAvatar client={client} size={48} />
         <div className={styles.cardHeaderRight}>
-          <MatchStatusBadge client={client} />
+          <MatchStatusBadge client={client} matchesLoaded={matchesLoaded} />
           <button
             className={`${styles.selectCheck} ${styles.cardCheck} ${selected ? styles.selectCheckOn : ''} ${disabled && !selected ? styles.selectCheckDisabled : ''}`}
             onClick={(e) => { e.stopPropagation(); onToggleSelect(client); }}
@@ -523,7 +527,7 @@ function FilterSheet({ open, onClose, filters, setFilter, connections }) {
 export default function ClientList() {
   const {
     clients, totalCount, filteredCount, genderCounts,
-    page, limit, filters, isLoading, error,
+    page, limit, filters, isLoading, error, matchesLoaded,
     setFilter, setPage, fetchClients,
   } = useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
@@ -811,6 +815,7 @@ export default function ClientList() {
                   selected={selectedIdSet.has(client.id)}
                   disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
                   onToggleSelect={handleToggleSelect}
+                  matchesLoaded={matchesLoaded}
                 />
               ))}
             </div>
@@ -825,6 +830,7 @@ export default function ClientList() {
                   selected={selectedIdSet.has(client.id)}
                   disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
                   onToggleSelect={handleToggleSelect}
+                  matchesLoaded={matchesLoaded}
                 />
               ))}
             </div>
