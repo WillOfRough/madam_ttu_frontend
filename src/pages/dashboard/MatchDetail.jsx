@@ -63,6 +63,16 @@ export default function MatchDetail() {
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showRemindConfirm, setShowRemindConfirm] = useState(false);
   const [participantTab, setParticipantTab] = useState('profile');
+  // 단계 봉투 아이콘: 모바일(터치)에서 hover 가 없어 탭으로 열고 닫는다.
+  const [openEnvelope, setOpenEnvelope] = useState(null);
+
+  // 봉투 툴팁이 열려 있을 때 바깥을 탭하면 닫는다.
+  useEffect(() => {
+    if (!openEnvelope) return undefined;
+    const close = () => setOpenEnvelope(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [openEnvelope]);
 
   const reload = () => {
     matchService.getMatchDetail(matchId).then(setMatch).catch((err) => {
@@ -486,8 +496,13 @@ export default function MatchDetail() {
                     {show && (
                       <button
                         type="button"
-                        className={styles.stepperEnvelope}
+                        className={`${styles.stepperEnvelope} ${openEnvelope === step.key ? styles.stepperEnvelopeOpen : ''}`}
                         aria-label={`${step.label} 단계 자동 발송 내역`}
+                        aria-expanded={openEnvelope === step.key}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenEnvelope(openEnvelope === step.key ? null : step.key);
+                        }}
                       >
                         <Mail size={9} strokeWidth={2.5} />
                         <span
