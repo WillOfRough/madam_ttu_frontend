@@ -46,6 +46,12 @@ function relativeTime(dateStr) {
   return new Date(dateStr).toLocaleDateString('ko-KR');
 }
 
+function formatConnectedDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function Connections() {
   const navigate = useNavigate();
   const managerInviteQuota = useAuthStore((s) => s.managerInviteQuota);
@@ -436,10 +442,14 @@ export default function Connections() {
                           <span className={styles.successBadge}>성사 {conn.sharedMatchCount}</span>
                         )}
                       </div>
+                      {conn.email && conn.name && conn.name !== conn.email && (
+                        <span className={styles.connEmail}>{conn.email}</span>
+                      )}
                       <span className={styles.connMeta}>
                         공유회원 {conn.clientCount ?? 0}
                         {(conn.sharedMatchCount ?? 0) > 0 && ` · 함께 매칭 ${conn.sharedMatchCount}`}
                         {conn.lastActivityAt && ` · 활동 ${relativeTime(conn.lastActivityAt)}`}
+                        {conn.connectedAt && ` · 연결 ${formatConnectedDate(conn.connectedAt)}`}
                       </span>
                     </div>
                     <div className={styles.connectionItemRight}>
