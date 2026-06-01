@@ -557,10 +557,10 @@
 .hobbyChip {
   padding: 6px 10px;
   border-radius: 999px;
-  background: var(--paper-warm);
-  color: var(--tangerine-700);
+  background: var(--tangerine-50);
+  color: var(--tangerine-800);
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
   border: 1px solid var(--tangerine-100);
 }
 

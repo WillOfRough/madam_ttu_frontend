@@ -33,21 +33,12 @@ const STATUS_OPTIONS = [
 ];
 
 // ── KeyChip ──────────────────────────────────────────────
-const KEY_CHIP_TONES = {
-  tangerine: { bg: 'var(--tangerine-50)',        fg: 'var(--tangerine-700)' },
-  ink:       { bg: 'var(--ink-50)',               fg: 'var(--ink-900)' },
-  lilac:     { bg: 'rgba(122,95,214,.1)',         fg: 'var(--lilac-600)' },
-  mint:      { bg: 'var(--mint-100)',             fg: '#1A7A50' },
-  rose:      { bg: '#FDE2E7',                     fg: 'var(--rose-600)' },
-};
-const TONE_CYCLE = ['tangerine', 'ink', 'lilac', 'mint', 'rose'];
-
-function KeyChip({ tone = 'tangerine', children }) {
-  const { bg, fg } = KEY_CHIP_TONES[tone] || KEY_CHIP_TONES.tangerine;
+function KeyChip({ children }) {
   return (
     <span style={{
-      padding: '3px 9px', borderRadius: 999, background: bg, color: fg,
-      fontSize: 11, fontWeight: 700, letterSpacing: '-0.01em',
+      padding: '4px 11px', borderRadius: 999,
+      background: 'var(--tangerine-50)', color: 'var(--tangerine-800)',
+      fontSize: 11, fontWeight: 600, letterSpacing: '-0.01em',
       display: 'inline-block',
     }}>
       {children}
@@ -163,6 +154,19 @@ export default function ClientDetail() {
   })();
   const photoUrls  = client?.photoUrls || [];
   const matchCount = matchHistory.length;
+
+  // ── 선호 조건 (spec 014: 상세 응답의 preferred* 구조화 필드) ──
+  const prefAgeText = client?.preferredAgeAny
+    ? '상관없음'
+    : (client?.preferredAgeMin != null && client?.preferredAgeMax != null
+        ? `${client.preferredAgeMin}~${client.preferredAgeMax}세`
+        : null);
+  const prefHeightText = client?.preferredHeightAny
+    ? '상관없음'
+    : (client?.preferredHeightMin != null && client?.preferredHeightMax != null
+        ? `${client.preferredHeightMin}~${client.preferredHeightMax}cm`
+        : null);
+  const hasPreference = !!(prefAgeText || prefHeightText);
 
   // ── status change ──
   const handleStatusChange = async (newStatus) => {
@@ -686,8 +690,8 @@ export default function ClientDetail() {
                 <div className={styles.card}>
                   {introData.keywords.length > 0 && (
                     <div className={styles.keyChips}>
-                      {introData.keywords.map((kw, i) => (
-                        <KeyChip key={kw} tone={TONE_CYCLE[i % TONE_CYCLE.length]}>{kw}</KeyChip>
+                      {introData.keywords.map((kw) => (
+                        <KeyChip key={kw}>{kw}</KeyChip>
                       ))}
                     </div>
                   )}
@@ -705,14 +709,37 @@ export default function ClientDetail() {
                 <div className={styles.card}>
                   {idealData.keywords.length > 0 && (
                     <div className={styles.keyChips}>
-                      {idealData.keywords.map((kw, i) => (
-                        <KeyChip key={kw} tone={TONE_CYCLE[(i + 2) % TONE_CYCLE.length]}>{kw}</KeyChip>
+                      {idealData.keywords.map((kw) => (
+                        <KeyChip key={kw}>{kw}</KeyChip>
                       ))}
                     </div>
                   )}
                   {idealData.text && (
                     <p className={styles.narrativeText}>{idealData.text}</p>
                   )}
+                </div>
+              </>
+            )}
+
+            {/* ── 7c. 선호 조건 (나이·키 범위) ── */}
+            {hasPreference && (
+              <>
+                <SectionHeader title="선호 조건" />
+                <div className={styles.card}>
+                  <div className={styles.infoGrid}>
+                    {[
+                      [Cake,  '선호 나이', prefAgeText || '-'],
+                      [Ruler, '선호 키',   prefHeightText || '-'],
+                    ].map(([Icon, label, value]) => (
+                      <span key={label} style={{ display: 'contents' }}>
+                        <span className={styles.infoLabel}>
+                          <Icon size={13} strokeWidth={1.8} className={styles.infoLabelIcon} />
+                          {label}
+                        </span>
+                        <span className={styles.infoValue}>{value}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
