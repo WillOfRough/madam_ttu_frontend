@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, ImagePlus, X as XIcon, ShieldCheck } from 'lucide-react';
-import useClientFormStore, { NAME_PATTERN } from '../../store/clientFormStore';
+import useClientFormStore, { NAME_PATTERN, AGE_BOUNDS, HEIGHT_BOUNDS } from '../../store/clientFormStore';
 import * as clientService from '../../api/clientService';
 import TextField from '../../components/TextField';
 import SelectField from '../../components/SelectField';
@@ -9,6 +9,7 @@ import PhoneVerifyField from '../../components/PhoneVerifyField';
 import RadioGroup from '../../components/RadioGroup';
 import StepTransition from '../../components/StepTransition';
 import KeywordTagInput from '../../components/KeywordTagInput';
+import RangeSlider from '../../components/RangeSlider';
 import {
   GENDER_OPTIONS,
   EDUCATION_OPTIONS,
@@ -612,6 +613,42 @@ export default function ClientForm() {
                 </p>
               </div>
               <FieldCard>
+                <div className={styles.rangeBlock}>
+                  <RangeSlider
+                    label="선호 나이"
+                    unit="세"
+                    min={AGE_BOUNDS.min}
+                    max={AGE_BOUNDS.max}
+                    valueMin={form.preferredAgeMin}
+                    valueMax={form.preferredAgeMax}
+                    onChange={({ min, max }) => {
+                      setField('preferredAgeMin', min);
+                      setField('preferredAgeMax', max);
+                    }}
+                    anyChecked={form.preferredAgeAny}
+                    onToggleAny={(v) => setField('preferredAgeAny', v)}
+                    hint="연상·연하·동갑 중 어느 폭이 편한지 알려주세요."
+                  />
+                </div>
+                <div className={styles.cardDivider} />
+                <div className={styles.rangeBlock}>
+                  <RangeSlider
+                    label="선호 키"
+                    unit="cm"
+                    min={HEIGHT_BOUNDS.min}
+                    max={HEIGHT_BOUNDS.max}
+                    valueMin={form.preferredHeightMin}
+                    valueMax={form.preferredHeightMax}
+                    onChange={({ min, max }) => {
+                      setField('preferredHeightMin', min);
+                      setField('preferredHeightMax', max);
+                    }}
+                    anyChecked={form.preferredHeightAny}
+                    onToggleAny={(v) => setField('preferredHeightAny', v)}
+                    hint="편안하게 마주할 수 있는 키의 범위를 골라주세요."
+                  />
+                </div>
+                <div className={styles.cardDivider} />
                 <KeywordTagInput
                   label="이상형 키워드"
                   hint="어떤 사람에게 마음이 끌리나요? 솔직하게 골라주세요!"

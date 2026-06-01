@@ -636,6 +636,13 @@
 }
 .introNotice p { font-size: 11.5px; color: var(--ink-500); line-height: 1.65; margin: 0; }
 
+/* range slider block inside ideal card */
+.rangeBlock {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 2px;
+}
+
 /* ideal notice */
 .idealNotice {
   background: var(--tangerine-50); border: 1px solid var(--tangerine-100);

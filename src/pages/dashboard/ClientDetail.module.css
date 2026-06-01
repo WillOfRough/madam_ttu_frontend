@@ -441,6 +441,13 @@
   font-size: 13px;
 }
 
+/* 이상형 카드 안에 녹인 선호 조건(나이·키) */
+.idealPrefBlock {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ink-50);
+}
+
 .infoLabel {
   display: inline-flex;
   align-items: center;

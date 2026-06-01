@@ -702,8 +702,8 @@ export default function ClientDetail() {
               </>
             )}
 
-            {/* ── 7b. 이상형 ── */}
-            {(idealData.keywords.length > 0 || idealData.text) && (
+            {/* ── 7b. 이상형 (선호 나이·키 범위 포함) ── */}
+            {(idealData.keywords.length > 0 || idealData.text || hasPreference) && (
               <>
                 <SectionHeader title="이상형" />
                 <div className={styles.card}>
@@ -717,29 +717,24 @@ export default function ClientDetail() {
                   {idealData.text && (
                     <p className={styles.narrativeText}>{idealData.text}</p>
                   )}
-                </div>
-              </>
-            )}
-
-            {/* ── 7c. 선호 조건 (나이·키 범위) ── */}
-            {hasPreference && (
-              <>
-                <SectionHeader title="선호 조건" />
-                <div className={styles.card}>
-                  <div className={styles.infoGrid}>
-                    {[
-                      [Cake,  '선호 나이', prefAgeText || '-'],
-                      [Ruler, '선호 키',   prefHeightText || '-'],
-                    ].map(([Icon, label, value]) => (
-                      <span key={label} style={{ display: 'contents' }}>
-                        <span className={styles.infoLabel}>
-                          <Icon size={13} strokeWidth={1.8} className={styles.infoLabelIcon} />
-                          {label}
-                        </span>
-                        <span className={styles.infoValue}>{value}</span>
-                      </span>
-                    ))}
-                  </div>
+                  {hasPreference && (
+                    <div className={(idealData.keywords.length > 0 || idealData.text) ? styles.idealPrefBlock : undefined}>
+                      <div className={styles.infoGrid}>
+                        {[
+                          [Cake,  '선호 나이', prefAgeText || '-'],
+                          [Ruler, '선호 키',   prefHeightText || '-'],
+                        ].map(([Icon, label, value]) => (
+                          <span key={label} style={{ display: 'contents' }}>
+                            <span className={styles.infoLabel}>
+                              <Icon size={13} strokeWidth={1.8} className={styles.infoLabelIcon} />
+                              {label}
+                            </span>
+                            <span className={styles.infoValue}>{value}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}

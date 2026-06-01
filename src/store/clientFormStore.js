@@ -27,10 +27,20 @@ const INITIAL_FORM = {
   introKeywords: [],
   idealType: '',
   idealKeywords: [],
+  // 선호 범위
+  preferredAgeMin: 25,
+  preferredAgeMax: 40,
+  preferredAgeAny: false,
+  preferredHeightMin: 160,
+  preferredHeightMax: 185,
+  preferredHeightAny: false,
   photos: [],
   consentPrivacy: false,
   consentThirdParty: false,
 };
+
+export const AGE_BOUNDS = { min: 20, max: 65 };
+export const HEIGHT_BOUNDS = { min: 145, max: 200 };
 
 const MAX_PHOTOS = 5;
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
@@ -107,6 +117,7 @@ const useClientFormStore = create((set, get) => ({
       form.introKeywords.length > 0 ? `[${form.introKeywords.join(', ')}] ` : '',
       introAnswers,
     ].join('');
+    // 선호 나이/키 범위는 구조화 필드(preferred*)로 전송하므로 idealType 텍스트에 합성하지 않는다 (spec 014).
     const idealText = [
       form.idealKeywords.length > 0 ? `[${form.idealKeywords.join(', ')}] ` : '',
       form.idealType,
@@ -135,6 +146,12 @@ const useClientFormStore = create((set, get) => ({
       hobbies: form.hobbies.length > 0 ? form.hobbies.join(', ') : undefined,
       introduction: introText,
       idealType: idealText || undefined,
+      preferredAgeMin: form.preferredAgeAny ? null : form.preferredAgeMin,
+      preferredAgeMax: form.preferredAgeAny ? null : form.preferredAgeMax,
+      preferredAgeAny: !!form.preferredAgeAny,
+      preferredHeightMin: form.preferredHeightAny ? null : form.preferredHeightMin,
+      preferredHeightMax: form.preferredHeightAny ? null : form.preferredHeightMax,
+      preferredHeightAny: !!form.preferredHeightAny,
     };
   },
 
