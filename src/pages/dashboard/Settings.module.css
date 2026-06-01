@@ -115,7 +115,7 @@
   background:
     radial-gradient(420px 220px at 110% -30%, rgba(242,107,79,0.32), transparent 60%),
     radial-gradient(360px 240px at -10% 120%, rgba(31,43,72,0.55), transparent 60%),
-    linear-gradient(135deg, #131A30 0%, #0F1526 60%, #1F2B48 100%);
+    linear-gradient(135deg, #131A30 0%, var(--ink-900) 60%, var(--ink-700) 100%);
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow:
     0 30px 60px -28px rgba(15,21,38,0.55),
@@ -350,7 +350,7 @@
   left: 0;
   height: 100%;
   border-radius: var(--r-pill);
-  background: linear-gradient(90deg, #F4B543 0%, #E59324 100%);
+  background: linear-gradient(90deg, #F4B543 0%, var(--amber-600) 100%);
   box-shadow:
     0 0 8px rgba(229,147,36,0.55),
     0 0 16px rgba(229,147,36,0.30);

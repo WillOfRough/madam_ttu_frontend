@@ -160,7 +160,7 @@
 
 .idealPrivacyNotice {
   display: block; padding: 11px 14px;
-  background: var(--mint-100, #d4f1e2); border: 1px solid rgba(46,174,119,.25);
+  background: var(--mint-100); border: 1px solid rgba(46,174,119,.25);
   border-radius: var(--r-sm);
   font-size: 12px; color: var(--ink-600, var(--ink-500)); line-height: 1.6;
   letter-spacing: -0.005em;
@@ -288,7 +288,7 @@
 
 .error {
   font-size: 13px; font-weight: 600; color: var(--danger);
-  padding: 11px 14px; background: var(--rose-100, #fbdde3);
+  padding: 11px 14px; background: var(--rose-100);
   border-radius: var(--r-sm); border-left: 3px solid var(--danger);
 }
 

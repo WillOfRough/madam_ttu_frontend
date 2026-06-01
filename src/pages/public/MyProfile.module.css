@@ -93,7 +93,7 @@
 .verifyError {
   display: flex; align-items: center; gap: 6px;
   color: var(--danger); font-size: 12px; font-weight: 700;
-  background: var(--rose-100, #fbdde3); padding: 10px 14px;
+  background: var(--rose-100); padding: 10px 14px;
   border-radius: var(--r-sm); text-align: left;
   animation: shakeIn 0.3s ease;
 }
@@ -176,7 +176,7 @@
   background: var(--paper-card); color: var(--ink-500);
   border: 1.5px solid var(--ink-100);
 }
-.cancelBtn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); background: var(--rose-100, #fbdde3); }
+.cancelBtn:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); background: var(--rose-100); }
 .cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Edit mode banner ── */
@@ -196,10 +196,12 @@
 }
 
 /* ── Section cards ── */
+/* surface는 공통 Card.module.css 에서 가져온다(모서리 16px 표준화). 테두리·여백은 페이지 고유 */
 .card {
-  background: var(--paper-card); border: 1px solid var(--ink-50);
-  border-radius: 18px; padding: 20px 22px; margin-bottom: 14px;
-  box-shadow: var(--sh-sm); transition: box-shadow 0.2s;
+  composes: card from '../../components/Card.module.css';
+  border: 1px solid var(--ink-50);
+  padding: 20px 22px; margin-bottom: 14px;
+  transition: box-shadow 0.2s;
 }
 .card:hover { box-shadow: var(--sh-md); }
 

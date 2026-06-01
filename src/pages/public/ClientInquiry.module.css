@@ -50,7 +50,7 @@
 .verifyError {
   display: flex; align-items: center; gap: 6px;
   color: var(--danger); font-size: 12px; font-weight: 700;
-  background: var(--rose-100, #fbdde3); padding: 10px 14px;
+  background: var(--rose-100); padding: 10px 14px;
   border-radius: var(--r-sm); text-align: left;
   animation: shakeIn 0.3s ease;
 }

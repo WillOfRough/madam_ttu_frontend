@@ -157,7 +157,7 @@
   margin-top: 18px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #FFF6EE 0%, #FFE5DA 100%);
+  background: linear-gradient(135deg, #FFF6EE 0%, var(--tangerine-100) 100%);
   border: 1px solid var(--tangerine-200);
   box-shadow: 0 4px 14px rgba(242, 107, 79, 0.08);
 }

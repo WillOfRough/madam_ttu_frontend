@@ -29,11 +29,7 @@
 
 /* Title — matches MatchList/ClientList header style */
 .title {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  color: var(--ink-900);
+  composes: pageTitle from '../../styles/typography.module.css';
   margin: 0;
   line-height: 1.15;
 }
@@ -152,7 +148,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #F26B4F;
+  background: var(--tangerine-600);
   border: 2px solid #fff;
   box-shadow: 0 0 0 0.5px rgba(242, 107, 79, 0.25);
   pointer-events: none;

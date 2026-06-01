@@ -426,10 +426,9 @@
 .sectionEditBtn:active { transform: translateY(0); }
 
 /* ── Card ── */
+/* surface(배경·모서리·그림자)는 공통 Card.module.css 에서 가져온다. 여백만 페이지 고유 */
 .card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: var(--sh-sm);
+  composes: card from '../../components/Card.module.css';
   padding: 14px;
   margin-bottom: 4px;
 }

@@ -87,7 +87,7 @@
 
 .kpiCardWaiting {
   background: #FFF0F2;
-  border-color: #FBDDE3;
+  border-color: var(--rose-100);
 }
 
 .kpiLabel {
@@ -453,7 +453,7 @@
 /* Rose-tinted received request card */
 .requestCardWaiting {
   background: #FFF0F2;
-  border: 1px solid #FBDDE3;
+  border: 1px solid var(--rose-100);
   border-radius: var(--r-md);
   padding: 14px;
   margin-bottom: 8px;
@@ -647,7 +647,7 @@
 }
 
 .avatarRose {
-  background: #FBDDE3;
+  background: var(--rose-100);
   color: #B13149;
 }
 
@@ -693,7 +693,7 @@
 }
 
 .disconnectBtn:hover {
-  background: #FBDDE3;
+  background: var(--rose-100);
   color: #B13149;
 }
 
@@ -1329,7 +1329,7 @@
 }
 
 .dangerBtn:hover {
-  background: #FBDDE3;
+  background: var(--rose-100);
   color: #B13149;
 }
 

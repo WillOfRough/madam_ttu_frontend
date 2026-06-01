@@ -1,0 +1,21 @@
+.card {
+  background: var(--paper-card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-sm);
+}
+
+.bordered {
+  border: 1px solid var(--ink-100);
+}
+
+.padSm { padding: 12px 14px; }
+.padMd { padding: 14px 16px; }
+.padLg { padding: 20px 22px; }
+
+.interactive {
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.15s ease;
+}
+.interactive:hover {
+  box-shadow: var(--sh-md);
+}

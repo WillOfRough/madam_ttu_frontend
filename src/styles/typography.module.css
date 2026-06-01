@@ -1,0 +1,10 @@
+/* 공통 타이포 단일 출처. 페이지 제목 폰트를 전역 변경할 때 여기만 고치면 된다. */
+
+/* 대시보드 페이지 제목 (회원/매칭/알림/더보기 등) */
+.pageTitle {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--ink-900);
+}
