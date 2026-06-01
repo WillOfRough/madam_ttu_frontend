@@ -18,6 +18,7 @@ import { toast } from '../../store/toastStore';
 import { scorePair, topPairs, topChips, pairKey } from './matchScore';
 
 const REC_MIN_SCORE = 60;
+import EmptyState from '../../components/EmptyState';
 import styles from './MatchList.module.css';
 
 /* ─── Stage config ─── */
@@ -825,14 +826,14 @@ export default function MatchList() {
       {isLoading ? (
         <SkeletonTable rows={4} columns={3} />
       ) : matches.length === 0 && !error ? (
-        <div className={styles.empty}>
-          <Heart size={36} strokeWidth={1.2} color="var(--ink-300)" />
-          <p>
-            {(searchInput || filters.status || filters.managerId)
+        <EmptyState
+          icon={Heart}
+          title={
+            (searchInput || filters.status || filters.managerId)
               ? '검색 결과가 없습니다.'
-              : '매칭 내역이 없습니다.'}
-          </p>
-        </div>
+              : '매칭 내역이 없습니다.'
+          }
+        />
       ) : activeTab === 'todo' ? (
         <>
           <TodoGroups

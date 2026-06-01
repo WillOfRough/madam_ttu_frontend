@@ -465,22 +465,7 @@
   cursor: not-allowed;
 }
 
-/* ── Empty state ── */
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 64px 24px;
-  color: var(--ink-400);
-  font-size: 13px;
-}
-
-.empty p {
-  font-size: 13px;
-  color: var(--ink-400);
-}
+/* ── Empty state — EmptyState 컴포넌트로 대체됨 ── */
 
 /* ── Skeleton ── */
 .skeletonWrap {

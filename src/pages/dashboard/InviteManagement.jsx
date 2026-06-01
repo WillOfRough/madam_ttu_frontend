@@ -7,6 +7,7 @@ import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonListItem } from '../../components/Skeleton';
+import EmptyState from '../../components/EmptyState';
 import styles from './InviteManagement.module.css';
 
 // ── Type parser ──────────────────────────────────────────────────────────────
@@ -318,10 +319,7 @@ export default function InviteManagement() {
           {isLoading ? (
             [1, 2, 3].map((i) => <SkeletonListItem key={i} />)
           ) : filtered.length === 0 ? (
-            <div className={styles.empty}>
-              <Link2 size={20} color="var(--ink-300)" />
-              <p className={styles.emptyText}>해당하는 링크가 없어요</p>
-            </div>
+            <EmptyState icon={Link2} title="해당하는 링크가 없어요" />
           ) : (
             filtered.map((invite) => (
               <InviteCard

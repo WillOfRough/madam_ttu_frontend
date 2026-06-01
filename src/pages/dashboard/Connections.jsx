@@ -14,6 +14,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
+import EmptyState from '../../components/EmptyState';
 import styles from './Connections.module.css';
 
 /* ── Avatar color hash ── */
@@ -416,17 +417,11 @@ export default function Connections() {
                 {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
               </div>
             ) : sortedConnections.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIconWrap}>
-                  <Users size={24} strokeWidth={1.3} />
-                </div>
-                <p className={styles.emptyTitle}>
-                  {nameFilter ? '검색 결과가 없습니다' : '네트워크 매니저가 없습니다'}
-                </p>
-                {!nameFilter && (
-                  <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
-                )}
-              </div>
+              <EmptyState
+                icon={Users}
+                title={nameFilter ? '검색 결과가 없습니다' : '네트워크 매니저가 없습니다'}
+                hint={!nameFilter ? '초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.' : undefined}
+              />
             ) : (
               <div className={styles.list}>
                 {sortedConnections.map((conn) => (
@@ -713,12 +708,7 @@ export default function Connections() {
                 {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
               </div>
             ) : managerInvites.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIconWrap}>
-                  <UserPlus size={24} strokeWidth={1.3} />
-                </div>
-                <p className={styles.emptyTitle}>매니저 초대 내역이 없습니다</p>
-              </div>
+              <EmptyState icon={UserPlus} title="매니저 초대 내역이 없습니다" />
             ) : (
               <>
                 <div className={styles.list}>

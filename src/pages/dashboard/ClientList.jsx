@@ -11,6 +11,7 @@ import useConnectionStore from '../../store/connectionStore';
 import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
+import EmptyState from '../../components/EmptyState';
 import styles from './ClientList.module.css';
 
 // ── Avatar ──────────────────────────────────────────────
@@ -789,17 +790,15 @@ export default function ClientList() {
       {isLoading && clients.length === 0 ? (
         <SkeletonTable rows={6} columns={4} />
       ) : clients.length === 0 && !isLoading && !error ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>
-            <Users size={28} strokeWidth={1.5} />
-          </div>
-          <p className={styles.emptyTitle}>등록된 회원이 없습니다</p>
-          <p className={styles.emptyDesc}>
-            {filters.name || filters.gender || filters.status || filters.approval
+        <EmptyState
+          icon={Users}
+          title="등록된 회원이 없습니다"
+          hint={
+            filters.name || filters.gender || filters.status || filters.approval
               ? '검색 조건을 바꿔 다시 시도해보세요.'
-              : '초대 링크를 발송해 회원을 추가하세요.'}
-          </p>
-        </div>
+              : '초대 링크를 발송해 회원을 추가하세요.'
+          }
+        />
       ) : (
         <>
           {density === 'card' ? (

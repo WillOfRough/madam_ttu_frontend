@@ -396,25 +396,7 @@
   margin-top: 12px;
 }
 
-/* ── 빈 상태 ── */
-.empty {
-  background: var(--paper-card);
-  border: 1px solid var(--ink-100);
-  border-radius: var(--r-md);
-  padding: 28px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  box-shadow: var(--sh-sm);
-}
-
-.emptyText {
-  font-size: 12.5px;
-  color: var(--ink-400);
-  margin: 0;
-}
+/* ── 빈 상태 — EmptyState 컴포넌트로 대체됨 ── */
 
 /* ════════════════════════════════════════════
    링크 카드 (Table-Row Style)

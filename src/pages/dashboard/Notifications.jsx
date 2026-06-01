@@ -5,6 +5,7 @@ import {
   Heart, Calendar, User, Link2, MessageSquare, Check, Bell,
 } from 'lucide-react';
 import useNotificationStore from '../../store/notificationStore';
+import EmptyState from '../../components/EmptyState';
 import styles from './Notifications.module.css';
 
 function formatRelativeTime(dateStr) {
@@ -188,13 +189,11 @@ export default function Notifications() {
           ))}
         </div>
       ) : notifications.length === 0 ? (
-        <div className={styles.empty}>
-          <div className={styles.emptyIcon}>
-            <Bell size={28} strokeWidth={1.3} />
-          </div>
-          <p className={styles.emptyTitle}>새 알림이 없습니다</p>
-          <p className={styles.emptyHint}>매칭·네트워크 활동이 생기면 여기에 표시돼요.</p>
-        </div>
+        <EmptyState
+          icon={Bell}
+          title="새 알림이 없습니다"
+          hint="매칭·네트워크 활동이 생기면 여기에 표시돼요."
+        />
       ) : (
         <>
           {renderSection('오늘', today)}
