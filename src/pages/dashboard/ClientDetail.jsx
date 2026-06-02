@@ -370,7 +370,9 @@ export default function ClientDetail() {
       scheduled: '약속 확정', completed: '완료', cancelled: '취소',
     };
     const statusLabel = statusMap[m.status] || m.status || '';
-    return { title: `${partnerName}님과 매칭 · ${statusLabel}`, sub: new Date(m.createdAt).toLocaleDateString('ko-KR') };
+    const dateLabel = new Date(m.createdAt).toLocaleDateString('ko-KR');
+    const sub = m.createdByManagerName ? `${dateLabel} · 매칭 생성 ${m.createdByManagerName}` : dateLabel;
+    return { title: `${partnerName}님과 매칭 · ${statusLabel}`, sub };
   };
 
   // ── LOADING ──
