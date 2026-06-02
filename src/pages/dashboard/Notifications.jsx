@@ -5,6 +5,7 @@ import {
   Heart, Calendar, User, Link2, MessageSquare, Check, Bell,
 } from 'lucide-react';
 import useNotificationStore from '../../store/notificationStore';
+import { isImportantNotification } from '../../api/notificationTypes';
 import EmptyState from '../../components/EmptyState';
 import styles from './Notifications.module.css';
 
@@ -115,8 +116,10 @@ export default function Notifications() {
     await markAllAsRead();
   };
 
-  const hasUnread = notifications.some((n) => !n.read);
-  const { today, older } = groupNotifications(notifications);
+  // "당연한 것들"(routine)은 숨기고 중요 알림만 노출
+  const visibleNotifications = notifications.filter((n) => isImportantNotification(n.type));
+  const hasUnread = visibleNotifications.some((n) => !n.read);
+  const { today, older } = groupNotifications(visibleNotifications);
 
   const renderItem = (notification) => {
     const { tone, Icon: TypeIcon } = getTypeStyle(notification.type);
@@ -188,7 +191,7 @@ export default function Notifications() {
             </div>
           ))}
         </div>
-      ) : notifications.length === 0 ? (
+      ) : visibleNotifications.length === 0 ? (
         <EmptyState
           icon={Bell}
           title="새 알림이 없습니다"
@@ -203,7 +206,7 @@ export default function Notifications() {
           {today.length === 0 && older.length === 0 && (
             <div className={styles.sectionGroup}>
               <ul className={styles.list} role="list">
-                {notifications.map(renderItem)}
+                {visibleNotifications.map(renderItem)}
               </ul>
             </div>
           )}
