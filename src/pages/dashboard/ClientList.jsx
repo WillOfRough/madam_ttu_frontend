@@ -379,19 +379,31 @@ function FilterSheet({ open, onClose, filters, setFilter, connections }) {
     { value: 'female', label: '여성' },
   ];
 
-  const statusChips = [
-    { value: '', label: '전체' },
-    { value: 'active', label: '활성' },
-    { value: 'inactive', label: '비활성' },
-    { value: 'dormant', label: '휴면' },
+  // '상태'와 '승인'은 매니저 머릿속에선 한 축이라 단일 상태 축으로 합친다.
+  // 각 칩이 어떤 백엔드 파라미터(status / approval)를 거는지 함께 들고 있다.
+  const stateChips = [
+    { key: 'all',      label: '전체',    status: null,       approval: null },
+    { key: 'pending',  label: '승인대기', status: null,       approval: 'pending' },
+    { key: 'active',   label: '활성',    status: 'active',   approval: null },
+    { key: 'inactive', label: '비활성',   status: 'inactive', approval: null },
+    { key: 'dormant',  label: '휴면',    status: 'dormant',  approval: null },
+    { key: 'rejected', label: '거절',    status: null,       approval: 'rejected' },
   ];
 
-  const approvalChips = [
-    { value: '', label: '전체' },
-    { value: 'pending', label: '승인대기' },
-    { value: 'approved', label: '승인됨' },
-    { value: 'rejected', label: '거절됨' },
-  ];
+  // 현재 필터 → 활성 칩 key 역산 (승인 축이 status 축보다 우선)
+  const activeStateKey =
+    currentApproval === 'pending'  ? 'pending'  :
+    currentApproval === 'rejected' ? 'rejected' :
+    currentStatus   === 'active'   ? 'active'   :
+    currentStatus   === 'inactive' ? 'inactive' :
+    currentStatus   === 'dormant'  ? 'dormant'  : 'all';
+
+  const applyState = (chip) => {
+    // 활성 칩을 다시 누르면 해제(=전체)
+    const turnOff = activeStateKey === chip.key && chip.key !== 'all';
+    setFilter('status',   turnOff ? null : chip.status);
+    setFilter('approval', turnOff ? null : chip.approval);
+  };
 
   return createPortal(
     <div
@@ -464,35 +476,17 @@ function FilterSheet({ open, onClose, filters, setFilter, connections }) {
           </div>
         </div>
 
-        {/* Section: 상태 */}
+        {/* Section: 상태 (승인+활성/비활성 단일 축) */}
         <div className={styles.sheetSection}>
           <span className={styles.sheetKicker}>상태</span>
           <div className={styles.chipRow}>
-            {statusChips.map((chip) => (
+            {stateChips.map((chip) => (
               <button
-                key={chip.value || 'all'}
+                key={chip.key}
                 type="button"
-                aria-pressed={currentStatus === chip.value}
-                className={`${styles.filterChip} ${currentStatus === chip.value ? styles.filterChipActive : ''}`}
-                onClick={() => applyField('status', chip.value)}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section: 승인 */}
-        <div className={styles.sheetSection}>
-          <span className={styles.sheetKicker}>승인</span>
-          <div className={styles.chipRow}>
-            {approvalChips.map((chip) => (
-              <button
-                key={chip.value || 'all'}
-                type="button"
-                aria-pressed={currentApproval === chip.value}
-                className={`${styles.filterChip} ${currentApproval === chip.value ? styles.filterChipActive : ''}`}
-                onClick={() => applyField('approval', chip.value)}
+                aria-pressed={activeStateKey === chip.key}
+                className={`${styles.filterChip} ${activeStateKey === chip.key ? styles.filterChipActive : ''}`}
+                onClick={() => applyState(chip)}
               >
                 {chip.label}
               </button>

@@ -60,27 +60,6 @@ const STATUS_STEP_LABELS = {
   cancelled: '매칭 종료',
 };
 
-/* ─── Filter chips config ─── */
-const STATUS_CHIPS = [
-  { value: 'todo',              label: '매니저 할일' },
-  { value: 'active',            label: '진행중 전체' },
-  { value: 'draft',             label: '대기중' },
-  { value: 'proposal_sent',     label: '제안발송' },
-  { value: 'proposal_accepted', label: '상대수락' },
-  { value: 'awaiting_payment',  label: '입금대기' },
-  { value: 'scheduling',        label: '일정조율' },
-  { value: 'arranging',         label: '조율확정' },
-  { value: 'scheduled',         label: '약속확정' },
-  { value: 'completed',         label: '완료' },
-  { value: 'cancelled',         label: '취소' },
-];
-
-const AFTER_CHIPS = [
-  { value: 'pending',  label: '응답 대기' },
-  { value: 'accepted', label: '성사' },
-  { value: 'rejected', label: '미성사' },
-];
-
 function formatDate(iso) {
   if (!iso) return '-';
   return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
@@ -310,88 +289,33 @@ function RecommendedPairsCompact({ clients, excludePairKeys, onCreateMatch }) {
 }
 
 /* ─── TodoGroups ─── */
-const TODO_GROUPS = [
-  {
-    key: 'now',
-    label: '🔥 지금 바로',
-    tone: 'rose',
-    fg: '#B13149',
-    bg: 'var(--rose-100)',
-    filter: (m) => m.status === 'awaiting_payment' || m.status === 'draft',
-  },
-  {
-    key: 'today',
-    label: '오늘 중',
-    tone: 'amber',
-    fg: '#9A5E0E',
-    bg: 'var(--amber-100)',
-    filter: (m) =>
-      m.status === 'arranging' ||
-      (m.status === 'completed' && (!m.afterStatus || m.afterStatus === 'pending')),
-  },
-  {
-    key: 'soon',
-    label: '곧',
-    tone: 'tangerine',
-    fg: 'var(--tangerine-700)',
-    bg: 'var(--tangerine-100)',
-    filter: (m) =>
-      m.status === 'scheduling' || m.status === 'scheduled' || m.status === 'proposal_sent',
-  },
-];
-
-function TodoGroups({ matches, onMatch }) {
-  return (
-    <div className={styles.todoGroups}>
-      {TODO_GROUPS.map((group) => {
-        const items = matches.filter(group.filter);
-        if (items.length === 0) return null;
-        return (
-          <div key={group.key} className={styles.todoGroup}>
-            <div className={styles.todoGroupHeader}>
-              <span className={styles.todoGroupLabel} style={{ color: group.fg }}>{group.label}</span>
-              <div className={styles.todoGroupDivider} />
-              <span className={styles.todoGroupCount} style={{ background: group.bg, color: group.fg }}>
-                {items.length}건
-              </span>
-            </div>
-            <div className={styles.cardList}>
-              {items.map((m) => (
-                <MatchCard
-                  key={m.matchId}
-                  match={m}
-                  onClick={() => {
-                    if (m.accessible === false) {
-                      toast.info('연결된 매니저의 매칭입니다. 열람 권한이 없습니다.');
-                      return;
-                    }
-                    onMatch(m.matchId);
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ─── Tab bar ─── */
+/* ─── Tab bar ─── 매칭 상태의 단일 축. 전체/대기/진행중/완료/취소 5구분. */
 const TABS = [
-  { k: 'todo',     label: '할 일' },
-  { k: 'progress', label: '진행 중' },
-  { k: 'done',     label: '완료' },
-  { k: 'all',      label: '전체' },
+  { k: 'all',       label: '전체' },
+  { k: 'draft',     label: '대기' },
+  { k: 'progress',  label: '진행 중' },
+  { k: 'done',      label: '완료' },
+  { k: 'cancelled', label: '취소' },
 ];
 
 /* ─── Status filter map for tabs → store filter ─── */
 const TAB_STATUS_MAP = {
-  todo:     'todo',
-  progress: 'active',
-  done:     'completed',
-  all:      null,
+  all:       null,
+  draft:     'draft',
+  progress:  'active',
+  done:      'completed',
+  cancelled: 'cancelled',
 };
+
+/* 탭 하이라이트는 filters.status 한 곳에서 파생한다(단일 소스). */
+function tabFromStatus(status) {
+  if (!status) return 'all';
+  if (status === 'draft') return 'draft';
+  if (status === 'active') return 'progress';
+  if (status === 'completed') return 'done';
+  if (status === 'cancelled') return 'cancelled';
+  return null;
+}
 
 /* ─── iOS Toggle ─── */
 function IOSToggle({ checked, onChange }) {
@@ -409,7 +333,7 @@ function IOSToggle({ checked, onChange }) {
 }
 
 /* ─── Filter Bottom Sheet ─── */
-function FilterSheet({ open, onClose, filters, setFilter, myManagerId, onlyMine, setOnlyMine, totalCount }) {
+function FilterSheet({ open, onClose, setFilter, myManagerId, onlyMine, setOnlyMine, totalCount }) {
   // Escape key
   useEffect(() => {
     if (!open) return;
@@ -428,29 +352,15 @@ function FilterSheet({ open, onClose, filters, setFilter, myManagerId, onlyMine,
 
   if (!open) return null;
 
-  const currentStatus = filters.status || null;
-
-  const handleStatusChip = (value) => {
-    setFilter('status', currentStatus === value ? null : value);
-  };
-
-  const handleAfterChip = (value) => {
-    setFilter('status', currentStatus === value ? null : value);
-  };
-
   const handleOnlyMineToggle = (checked) => {
     setOnlyMine(checked);
     setFilter('managerId', checked && myManagerId ? myManagerId : '');
   };
 
   const handleReset = () => {
-    setFilter('status', null);
     setFilter('managerId', '');
     setOnlyMine(false);
   };
-
-  const afterChipValues = AFTER_CHIPS.map((c) => c.value);
-  const isAfterStatus = afterChipValues.includes(currentStatus);
 
   return createPortal(
     <div
@@ -470,58 +380,7 @@ function FilterSheet({ open, onClose, filters, setFilter, myManagerId, onlyMine,
         {/* Title */}
         <h2 id="filter-sheet-title" className={styles.sheetTitle}>필터</h2>
 
-        {/* Section 1: 상태 */}
-        <div className={styles.sheetSection}>
-          <span className={styles.sheetKicker}>매칭 상태</span>
-          <div className={styles.chipGrid}>
-            {STATUS_CHIPS.map((chip) => (
-              <button
-                key={chip.value}
-                type="button"
-                aria-pressed={currentStatus === chip.value}
-                className={`${styles.filterChip} ${currentStatus === chip.value && !isAfterStatus ? styles.filterChipActive : ''}`}
-                onClick={() => handleStatusChip(chip.value)}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 2: 에프터 */}
-        <div className={styles.sheetSection}>
-          <span className={styles.sheetKicker}>에프터</span>
-          <div className={styles.chipRow}>
-            {AFTER_CHIPS.map((chip) => (
-              <button
-                key={chip.value}
-                type="button"
-                aria-pressed={currentStatus === chip.value}
-                className={`${styles.filterChip} ${currentStatus === chip.value ? styles.filterChipActive : ''}`}
-                onClick={() => handleAfterChip(chip.value)}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Section 3: 특수 필터 */}
-        <div className={styles.sheetSection}>
-          <span className={styles.sheetKicker}>특수 필터</span>
-          <div className={styles.chipRow}>
-            <button
-              type="button"
-              aria-pressed={currentStatus === 'has_deleted_member'}
-              className={`${styles.filterChip} ${currentStatus === 'has_deleted_member' ? styles.filterChipActive : ''}`}
-              onClick={() => handleStatusChip('has_deleted_member')}
-            >
-              삭제 회원 포함
-            </button>
-          </div>
-        </div>
-
-        {/* Section 4: 담당자 */}
+        {/* 담당자 — 매칭 상태는 상단 탭에서 고른다(전체/대기/진행중/완료/취소) */}
         {myManagerId && (
           <div className={styles.sheetSection}>
             <span className={styles.sheetKicker}>담당자</span>
@@ -571,7 +430,6 @@ export default function MatchList() {
   const [showCreate,   setShowCreate]   = useState(false);
   const [searchInput,  setSearchInput]  = useState(filters.clientName || '');
   const [onlyMine,     setOnlyMine]     = useState(Boolean(myManagerId));
-  const [activeTab,    setActiveTab]    = useState('all');
   const [allClients,   setAllClients]   = useState([]);
   const [recExcludePairs, setRecExcludePairs] = useState(null);
   const [searchOpen,   setSearchOpen]   = useState(false);
@@ -679,8 +537,9 @@ export default function MatchList() {
     }
   }, [searchOpen]);
 
+  /* 탭은 주 상태축 — status 한 곳만 갱신하면 하이라이트는 파생으로 따라온다. */
+  const activeTab = tabFromStatus(filters.status);
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
     setFilter('status', TAB_STATUS_MAP[tab]);
   };
 
@@ -706,8 +565,8 @@ export default function MatchList() {
   /* Stable close handler for FilterSheet — prevents effect re-registration on every render */
   const handleFilterSheetClose = useCallback(() => setFilterOpen(false), []);
 
-  /* Is any filter non-default? */
-  const hasActiveFilter = Boolean(filters.status) || Boolean(filters.managerId);
+  /* Is any sheet filter non-default? (매칭 상태는 탭이 담당하므로 제외) */
+  const hasActiveFilter = Boolean(filters.managerId);
 
   const totalPages = Math.ceil(totalCount / size);
 
@@ -846,14 +705,6 @@ export default function MatchList() {
               : '매칭 내역이 없습니다.'
           }
         />
-      ) : activeTab === 'todo' ? (
-        <>
-          <TodoGroups
-            matches={matches}
-            onMatch={(matchId) => navigate(`/dashboard/matches/${matchId}`)}
-          />
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-        </>
       ) : (
         <>
           <div className={styles.cardList}>
@@ -882,7 +733,6 @@ export default function MatchList() {
       <FilterSheet
         open={filterOpen}
         onClose={handleFilterSheetClose}
-        filters={filters}
         setFilter={setFilter}
         myManagerId={myManagerId}
         onlyMine={onlyMine}
