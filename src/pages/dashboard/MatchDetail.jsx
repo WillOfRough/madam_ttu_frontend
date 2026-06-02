@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
+import { backOr } from '../../utils/navBack';
 import {
   ChevronLeft,
   Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
@@ -436,7 +437,7 @@ export default function MatchDetail() {
       <div className={styles.topNav}>
         <button
           className={styles.backBtn}
-          onClick={() => navigate('/dashboard/matches')}
+          onClick={() => backOr(navigate, '/dashboard/matches')}
           aria-label="뒤로 가기"
         >
           <ChevronLeft size={22} />

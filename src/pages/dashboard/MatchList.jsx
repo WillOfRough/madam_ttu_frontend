@@ -582,9 +582,13 @@ export default function MatchList() {
   useEffect(() => {
     const statusParam = searchParams.get('status');
     const createParam = searchParams.get('create');
+    // 검색어는 URL(?name=) 기준: 상세 복귀(뒤로가기)면 쿼리가 살아있어 복원되고,
+    // 다른 탭에서 새로 들어오면 쿼리가 없어 store 에 남아있던 검색어를 비운다.
+    const nameParam = searchParams.get('name') || '';
     const patch = {};
     if (statusParam) patch.status = statusParam;
     if (myManagerId) patch.managerId = myManagerId;
+    if ((filters.clientName || '') !== nameParam) patch.clientName = nameParam;
     if (Object.keys(patch).length > 0) {
       setFilters(patch);
       if (statusParam) {
@@ -593,6 +597,8 @@ export default function MatchList() {
         setSearchParams(next, { replace: true });
       }
     }
+    setSearchInput(nameParam);
+    if (nameParam) setSearchOpen(true);
     if (createParam === '1') {
       setShowCreate(true);
     }
@@ -648,13 +654,19 @@ export default function MatchList() {
     return () => { cancelled = true; };
   }, []);
 
-  /* Debounce search → clientName filter */
+  /* Debounce search → clientName filter (+ URL ?name= 동기화) */
   useEffect(() => {
     const h = setTimeout(() => {
       if (filters.clientName !== searchInput) setFilter('clientName', searchInput);
+      // 검색어를 URL 에 반영 → 상세 복귀(뒤로가기)·새로고침·링크공유에서 검색 유지
+      if ((searchParams.get('name') || '') !== searchInput) {
+        const next = new URLSearchParams(searchParams);
+        if (searchInput) next.set('name', searchInput); else next.delete('name');
+        setSearchParams(next, { replace: true });
+      }
     }, 300);
     return () => clearTimeout(h);
-  }, [searchInput, filters.clientName, setFilter]);
+  }, [searchInput, filters.clientName, setFilter, searchParams, setSearchParams]);
 
   useEffect(() => {
     fetchMatches();

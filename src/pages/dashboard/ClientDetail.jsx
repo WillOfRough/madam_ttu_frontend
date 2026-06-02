@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
+import { backOr } from '../../utils/navBack';
 import {
   ChevronLeft, Edit3, Trash2, X,
   ShieldCheck, Download, Copy, Link2, ChevronDown, Plus, Shield, Check,
@@ -403,7 +404,7 @@ export default function ClientDetail() {
       <div className={styles.topNav}>
         <button
           className={styles.backBtn}
-          onClick={() => navigate('/dashboard/clients')}
+          onClick={() => backOr(navigate, '/dashboard/clients')}
           aria-label="목록으로"
         >
           <ChevronLeft size={22} />

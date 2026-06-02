@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, ChevronRight, Users, List, Grid2X2,
   X, Heart, AlertTriangle, SlidersHorizontal, Sparkles,
@@ -532,6 +532,7 @@ export default function ClientList() {
   } = useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // All hooks before any early return
   const [density, setDensity] = useState('list'); // list | card
@@ -552,6 +553,11 @@ export default function ClientList() {
     const v = e.target.value;
     setNameInput(v);
     debouncedSetFilter('name', v);
+    // 검색어를 URL(?name=)에 반영 → 상세를 다녀와도(뒤로가기) 검색이 복원되고,
+    // 새로고침·링크공유에도 검색 상태가 유지된다.
+    const next = new URLSearchParams(searchParams);
+    if (v) next.set('name', v); else next.delete('name');
+    setSearchParams(next, { replace: true });
   };
 
   const handleRowClick = (client) => {
@@ -593,6 +599,9 @@ export default function ClientList() {
       if (v) {
         setNameInput('');
         setFilter('name', null);
+        const next = new URLSearchParams(searchParams);
+        next.delete('name');
+        setSearchParams(next, { replace: true });
       }
       return !v;
     });
@@ -612,6 +621,17 @@ export default function ClientList() {
       searchInputRef.current.focus();
     }
   }, [searchOpen]);
+
+  // 진입 시 검색어는 URL(?name=) 을 기준으로 맞춘다.
+  //  · 상세에서 뒤로가기로 오면 ?name= 이 살아있어 검색이 복원된다.
+  //  · 다른 탭에서 새로 들어오면 쿼리가 없어(=깨끗한 경로) store 에 남아있던 검색어를 비운다.
+  useEffect(() => {
+    const urlName = searchParams.get('name') || '';
+    setNameInput(urlName);
+    if ((filters.name || '') !== urlName) setFilter('name', urlName || null);
+    if (urlName) setSearchOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchClients();
