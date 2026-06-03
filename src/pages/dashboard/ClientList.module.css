@@ -535,9 +535,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.statNeglect  { background: var(--rose-100);  color: var(--rose-600); }
-.statSuccess  { background: var(--amber-100); color: var(--amber-600); }
-.statUnviewed { background: var(--lilac-100); color: var(--lilac-600); }
+.statNeglect { background: var(--rose-100);  color: var(--rose-600); }
+.statSuccess { background: var(--amber-100); color: var(--amber-600); }
 
 /* ── '오늘의 회원' 로테이션 섹션 ── */
 .spotlightSection {

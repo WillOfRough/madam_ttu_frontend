@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, ChevronRight, Users, List, Grid2X2,
   X, Heart, AlertTriangle, SlidersHorizontal, Sparkles,
-  Briefcase, Building2, MapPin, Clock, Star, ChevronDown, ChevronUp, EyeOff,
+  Briefcase, Building2, MapPin, Clock, Star, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
@@ -39,9 +39,9 @@ function isStatEligible(client) {
   return client.approvalStatus === 'approved' && (client.status || 'active') === 'active';
 }
 
-// ── 방문 도장 (프로필 열람 기록) ────────────────────────────
+// ── 프로필 열람 기록 ────────────────────────────────────────
 // 매니저가 어떤 회원 프로필을 열어봤는지 localStorage 에 기록해,
-// 한 번도 안 봤거나 오래 안 본 회원에 '미확인' 배지를 붙인다.
+// '오늘의 회원' 선정 시 아직 안 본 회원을 우대하는 데 쓴다. (화면 노출 없음)
 // (기기 단위 MVP — 매니저 계정 단위로 정확히 하려면 백엔드 열람 로그가 필요)
 const VIEWS_KEY = 'clientList.viewedAt';
 // 이 일수 이상 안 열어봤으면 다시 '미확인'으로 되돌린다
@@ -68,26 +68,19 @@ function isUnviewed(clientId, views) {
   return !t || (Date.now() - t) > VIEW_STALE_DAYS * DAY_MS;
 }
 
-// ── 통계 배지 (방치일수 / 성사율 / 미확인) ──────────────────
-function StatBadges({ client, stat, matchesLoaded, unviewed }) {
-  if (!isStatEligible(client)) return null;
+// ── 통계 배지 (방치일수 / 성사율) ───────────────────────────
+function StatBadges({ client, stat, matchesLoaded }) {
+  if (!matchesLoaded || !isStatEligible(client)) return null;
 
-  // 매칭 통계 기반 배지는 매칭 데이터 도착 후에만 — 미확인은 로컬 기록이라 즉시 표시 가능
-  const days = matchesLoaded ? getNeglectDays(client, stat) : null;
+  const days = getNeglectDays(client, stat);
   const isServing = (stat?.active ?? client.activeMatchCount ?? 0) > 0;
-  const showNeglect = matchesLoaded && !isServing && days != null && days >= NEGLECT_DAYS;
-  const successPct = matchesLoaded ? getSuccessRate(stat) : null;
+  const showNeglect = !isServing && days != null && days >= NEGLECT_DAYS;
+  const successPct = getSuccessRate(stat);
 
-  if (!showNeglect && successPct == null && !unviewed) return null;
+  if (!showNeglect && successPct == null) return null;
 
   return (
     <div className={styles.statBadgeRow}>
-      {unviewed && (
-        <span className={`${styles.statBadge} ${styles.statUnviewed}`}>
-          <EyeOff size={10} strokeWidth={2.5} aria-hidden="true" />
-          미확인
-        </span>
-      )}
       {showNeglect && (
         <span className={`${styles.statBadge} ${styles.statNeglect}`}>
           <Clock size={10} strokeWidth={2.5} aria-hidden="true" />
@@ -228,7 +221,7 @@ function MatchStatusBadge({ client, matchesLoaded }) {
 }
 
 // ── Row (normal density) ──────────────────────────────────
-function ClientRow({ client, stat, unviewed, onClick, isLast, selected, disabled, onToggleSelect, matchesLoaded }) {
+function ClientRow({ client, stat, onClick, isLast, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.row} ${isLast ? styles.rowLast : ''} ${selected ? styles.rowSelected : ''}`}
@@ -301,8 +294,8 @@ function ClientRow({ client, stat, unviewed, onClick, isLast, selected, disabled
           </div>
         )}
 
-        {/* Line 4: 통계 배지 (방치일수 / 성사율 / 미확인) */}
-        <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} unviewed={unviewed} />
+        {/* Line 4: 통계 배지 (방치일수 / 성사율) */}
+        <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} />
       </div>
 
       <div className={styles.rowRight}>
@@ -328,7 +321,7 @@ function ClientRow({ client, stat, unviewed, onClick, isLast, selected, disabled
 }
 
 // ── Card (grid thumbnail) ─────────────────────────────────
-function ClientCard({ client, stat, unviewed, onClick, selected, disabled, onToggleSelect, matchesLoaded }) {
+function ClientCard({ client, stat, onClick, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.cardItem} ${selected ? styles.cardItemSelected : ''}`}
@@ -407,8 +400,8 @@ function ClientCard({ client, stat, unviewed, onClick, selected, disabled, onTog
         </div>
       )}
 
-      {/* 통계 배지 (방치일수 / 성사율 / 미확인) */}
-      <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} unviewed={unviewed} />
+      {/* 통계 배지 (방치일수 / 성사율) */}
+      <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} />
     </div>
   );
 }
@@ -1017,7 +1010,6 @@ export default function ClientList() {
                   key={client.id}
                   client={client}
                   stat={matchStats[client.id]}
-                  unviewed={isUnviewed(client.id, views)}
                   onClick={() => handleRowClick(client)}
                   selected={selectedIdSet.has(client.id)}
                   disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
@@ -1033,7 +1025,6 @@ export default function ClientList() {
                   key={client.id}
                   client={client}
                   stat={matchStats[client.id]}
-                  unviewed={isUnviewed(client.id, views)}
                   onClick={() => handleRowClick(client)}
                   isLast={i === clients.length - 1}
                   selected={selectedIdSet.has(client.id)}
