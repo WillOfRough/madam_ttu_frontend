@@ -14,28 +14,6 @@ import { SkeletonTable } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
 import styles from './ClientList.module.css';
 
-// ── Avatar ──────────────────────────────────────────────
-function ClientAvatar({ client, size = 36 }) {
-  const isMale = client.gender === 'male';
-  const bg = isMale ? 'var(--male-100)' : 'var(--female-100)';
-  const fg = isMale ? '#2A5CC7' : '#B73673';
-  const initial = client.name ? client.name.slice(1) : '?';
-  return (
-    <div
-      style={{
-        width: size, height: size, borderRadius: '50%',
-        background: bg, color: fg,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.38, fontWeight: 700,
-        letterSpacing: '-0.02em', flexShrink: 0,
-        fontFamily: 'var(--font-sans)',
-      }}
-    >
-      {initial}
-    </div>
-  );
-}
-
 // ── Status badge ─────────────────────────────────────────
 function MatchStatusBadge({ client, matchesLoaded }) {
   if (client.approvalStatus === 'pending') {
@@ -67,8 +45,6 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
-      <ClientAvatar client={client} size={36} />
-
       <div className={styles.rowInfo}>
         {/* Line 1: name · gender badge · age · height */}
         <div className={styles.rowLine1}>
@@ -112,23 +88,23 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
           </div>
         )}
 
-        {/* Line 3: 🏢 workLocation · 📍 residence · MBTI */}
-        {(client.workLocation || client.location || client.mbti) && (
+        {/* Line 3: 🏢 근무지역 / 📍 거주지역 */}
+        {(client.workLocation || client.location) && (
           <div className={styles.rowLine3}>
             {client.workLocation && (
-              <span className={styles.infoChip} title={`회사 위치: ${client.workLocation}`}>
-                <Building2 size={10} strokeWidth={2} aria-hidden="true" />
+              <span className={styles.rowRegion} title={`근무 지역: ${client.workLocation}`}>
+                <Building2 size={12} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
                 {client.workLocation}
               </span>
             )}
+            {client.workLocation && client.location && (
+              <span className={styles.rowSep}>/</span>
+            )}
             {client.location && (
-              <span className={styles.infoChip} title={`사는 곳: ${client.location}`}>
-                <MapPin size={10} strokeWidth={2} aria-hidden="true" />
+              <span className={styles.rowRegion} title={`거주 지역: ${client.location}`}>
+                <MapPin size={12} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
                 {client.location}
               </span>
-            )}
-            {client.mbti && (
-              <span className={styles.tagMbti}>{client.mbti}</span>
             )}
           </div>
         )}
@@ -166,9 +142,28 @@ function ClientCard({ client, onClick, selected, disabled, onToggleSelect, match
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
-      {/* Card header: avatar left, status + checkbox right */}
+      {/* Card header: 이름 블록(좌) · 상태배지 + 체크박스(우상단) */}
       <div className={styles.cardHeader}>
-        <ClientAvatar client={client} size={48} />
+        <div className={styles.cardName}>
+          <span className={styles.rowName}>{client.name}</span>
+          {client.nickname && <span className={styles.rowNickname}>{client.nickname}</span>}
+          <span
+            className={styles.genderBadge}
+            style={{
+              background: client.gender === 'male' ? '#DCE8FF' : '#FFD9EA',
+              color: client.gender === 'male' ? '#2A5CC7' : '#B73673',
+            }}
+          >
+            {client.gender === 'male' ? '남' : '여'}
+          </span>
+          {client.age && <span className={styles.rowAge}>{client.age}세</span>}
+          {client.height && (
+            <>
+              <span className={styles.rowDot}>·</span>
+              <span className={styles.rowHeight}>{client.height}cm</span>
+            </>
+          )}
+        </div>
         <div className={styles.cardHeaderRight}>
           <MatchStatusBadge client={client} matchesLoaded={matchesLoaded} />
           <button
@@ -188,53 +183,34 @@ function ClientCard({ client, onClick, selected, disabled, onToggleSelect, match
         </div>
       </div>
 
-      {/* Name + gender chip + age + height */}
-      <div className={styles.cardName}>
-        <span className={styles.rowName}>{client.name}</span>
-        <span
-          className={styles.genderBadge}
-          style={{
-            background: client.gender === 'male' ? '#DCE8FF' : '#FFD9EA',
-            color: client.gender === 'male' ? '#2A5CC7' : '#B73673',
-          }}
-        >
-          {client.gender === 'male' ? '남' : '여'}
-        </span>
-        {client.age && <span className={styles.rowAge}>{client.age}세</span>}
-        {client.height && (
-          <>
-            <span className={styles.rowDot}>·</span>
-            <span className={styles.rowHeight}>{client.height}cm</span>
-          </>
-        )}
-      </div>
-
-      {/* Job (truncated) */}
+      {/* Line 2: 💼 직업 */}
       {client.occupation && (
         <div className={styles.cardJob}>
-          <Briefcase size={11} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
+          <Briefcase size={12} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
           {client.occupation}
         </div>
       )}
 
-      {/* Bottom chips: 🏢 회사위치 · 📍 사는곳 · MBTI */}
-      <div className={styles.cardChips}>
-        {client.workLocation && (
-          <span className={styles.infoChip} title={`회사 위치: ${client.workLocation}`}>
-            <Building2 size={10} strokeWidth={2} aria-hidden="true" />
-            {client.workLocation}
-          </span>
-        )}
-        {client.location && (
-          <span className={styles.infoChip} title={`사는 곳: ${client.location}`}>
-            <MapPin size={10} strokeWidth={2} aria-hidden="true" />
-            {client.location}
-          </span>
-        )}
-        {client.mbti && (
-          <span className={styles.tagMbti}>{client.mbti}</span>
-        )}
-      </div>
+      {/* Line 3: 🏢 근무지역 / 📍 거주지역 */}
+      {(client.workLocation || client.location) && (
+        <div className={styles.cardChips}>
+          {client.workLocation && (
+            <span className={styles.rowRegion} title={`근무 지역: ${client.workLocation}`}>
+              <Building2 size={12} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
+              {client.workLocation}
+            </span>
+          )}
+          {client.workLocation && client.location && (
+            <span className={styles.rowSep}>/</span>
+          )}
+          {client.location && (
+            <span className={styles.rowRegion} title={`거주 지역: ${client.location}`}>
+              <MapPin size={12} strokeWidth={2} className={styles.rowFieldIcon} aria-hidden="true" />
+              {client.location}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

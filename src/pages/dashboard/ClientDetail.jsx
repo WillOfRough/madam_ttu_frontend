@@ -418,10 +418,6 @@ export default function ClientDetail() {
           <div className={styles.heroLayout}>
             {/* Left: Identity */}
             <div className={styles.heroIdentity}>
-              <div className={`${styles.avatar} ${isMale ? styles.avatarMale : styles.avatarFemale}`}>
-                {client.name ? client.name.slice(1) : '?'}
-              </div>
-
               <div className={styles.heroInfo}>
                 <div className={styles.heroNameRow}>
                   <span className={styles.heroName}>{client.name}</span>

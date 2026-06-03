@@ -361,7 +361,7 @@
 }
 
 .rowName {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--ink-900);
   letter-spacing: -0.02em;
@@ -370,9 +370,9 @@
 }
 
 .rowNickname {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-400);
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -388,22 +388,22 @@
 }
 
 .rowAge {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-700);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
 .rowDot {
-  font-size: 11px;
-  color: var(--ink-200);
+  font-size: 13px;
+  color: var(--ink-300);
   flex-shrink: 0;
 }
 
 .rowHeight {
-  font-size: 11.5px;
-  color: var(--ink-400);
+  font-size: 13px;
+  color: var(--ink-600);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -421,9 +421,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--ink-700);
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -436,66 +436,40 @@
 }
 
 .rowSep {
-  font-size: 10px;
-  color: var(--ink-200);
+  font-size: 13px;
+  color: var(--ink-300);
   flex-shrink: 0;
 }
 
 .rowCompany {
-  font-size: 11px;
-  color: var(--ink-400);
+  font-size: 13px;
+  color: var(--ink-500);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Line 3 */
+/* Line 3 — 지역(근무/거주) 평문 */
 .rowLine3 {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
-.tagNeutral {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--ink-50);
-  color: var(--ink-500);
-}
-
-.infoChip {
+.rowRegion {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 2px 7px 2px 6px;
-  border-radius: 4px;
-  background: var(--ink-50);
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-600);
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.infoChip svg {
-  color: var(--ink-400);
-  flex-shrink: 0;
-}
-
-.tagMbti {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--paper-warm);
-  color: var(--tangerine-700);
-  letter-spacing: 0.02em;
+  min-width: 0;
 }
 
 /* Right side */
@@ -604,18 +578,19 @@
 .cardName {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .cardJob {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--ink-700);
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
