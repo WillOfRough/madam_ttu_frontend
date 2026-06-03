@@ -6,6 +6,8 @@ import useMatchStore from './matchStore';
 import useConnectionStore from './connectionStore';
 import useNotificationStore from './notificationStore';
 import useManagerStore from './managerStore';
+import useInviteStore from './inviteStore';
+import useManagerInviteStore from './managerInviteStore';
 
 // 매니저 계정에 종속된 데이터 store 일괄 초기화.
 // SPA 라 로그아웃해도 zustand 모듈 싱글톤(특히 clientListStore 의 poolCache 등
@@ -17,6 +19,8 @@ function resetDataStores() {
   useConnectionStore.getState().reset();
   useNotificationStore.getState().reset();
   useManagerStore.getState().reset();
+  useInviteStore.getState().reset();
+  useManagerInviteStore.getState().reset();
 }
 
 const useAuthStore = create(

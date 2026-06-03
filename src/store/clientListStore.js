@@ -93,7 +93,9 @@ const useClientListStore = create((set, get) => {
   // '제안이 필요한 회원' 큐레이션용 활성 회원 풀 (현재 페이지와 무관하게 전체에서 뽑는다)
   let poolCache = null;
 
-  // 매칭 목록 한 번 받아 matchMap + statsMap 동시 갱신
+  // 매칭 목록 한 번 받아 matchMap + statsMap 재료를 만든다.
+  // 캐시 할당은 호출부에서 reqId 가드 후에 한다 — 로그아웃(reset) 후 도착한
+  // 인플라이트 응답이 이전 매니저의 데이터로 캐시를 되살리는 것을 막기 위함.
   const fetchMatchStats = () => matchService.listMatches({ size: 200 }).then((matchRes) => {
     const matchList = matchRes.data || matchRes.matches || [];
     const freshMap = {};
@@ -104,8 +106,7 @@ const useClientListStore = create((set, get) => {
       if (aId) freshMap[aId] = (freshMap[aId] || 0) + 1;
       if (bId) freshMap[bId] = (freshMap[bId] || 0) + 1;
     }
-    matchMap = freshMap;
-    statsMap = buildStats(matchList);
+    return { freshMap, freshStats: buildStats(matchList) };
   });
 
   return {
@@ -165,11 +166,18 @@ const useClientListStore = create((set, get) => {
       if (isClientSort) {
         // 클라이언트 전역 정렬: 한 번에 크게 받아 클라에서 정렬·슬라이스(페이지 경계 어긋남 방지).
         // 통계 정렬일 때만 매칭 통계를 함께 기다린다(나이순은 통계가 필요 없음).
-        [result] = await Promise.all([
+        let statRes;
+        [result, statRes] = await Promise.all([
           clientService.listClients({ ...filters, sort: 'createdAt:desc', page: 1, limit: 200 }),
-          needsStats && !statsMap ? fetchMatchStats().catch(() => { statsMap = statsMap || {}; }) : Promise.resolve(),
+          needsStats && !statsMap ? fetchMatchStats().catch(() => null) : Promise.resolve(null),
         ]);
         if (reqId !== activeReq) return; // 더 최신 검색이 진행 중이면 폐기
+        if (statRes) {
+          matchMap = statRes.freshMap;
+          statsMap = statRes.freshStats;
+        } else if (needsStats && !statsMap) {
+          statsMap = {}; // 통계 조회 실패 — 빈 통계로 정렬 폴백
+        }
 
         const list = result.data || result.clients || result;
         const sorted = needsStats
@@ -226,8 +234,10 @@ const useClientListStore = create((set, get) => {
 
       // 3단계: 진행 중 매칭 수 + 회원별 통계 — 비차단으로 항상 새로고침해 캐시를 갱신하고
       // 도착하면 배지를 최신값으로 정정한다.
-      fetchMatchStats().then(() => {
+      fetchMatchStats().then(({ freshMap, freshStats }) => {
         if (reqId !== activeReq) return;
+        matchMap = freshMap;
+        statsMap = freshStats;
         set((state) => ({
           clients: state.clients.map((c) => ({ ...c, activeMatchCount: matchMap[c.id] ?? 0 })),
           matchStats: statsMap,
@@ -243,6 +253,7 @@ const useClientListStore = create((set, get) => {
       if (!poolCache) {
         clientService.listClients({ approval: 'approved', status: 'active', sort: 'createdAt:desc', page: 1, limit: 200 })
           .then((poolRes) => {
+            if (reqId !== activeReq) return; // reset(로그아웃)·최신 검색 이후 도착한 응답 폐기
             poolCache = poolRes.data || poolRes.clients || poolRes;
             set({ statsPool: poolCache });
           })
@@ -255,6 +266,9 @@ const useClientListStore = create((set, get) => {
   },
 
   reset: () => {
+    // 진행 중이던 요청의 응답이 reset 이후 도착해 이전 매니저의 데이터로
+    // 상태·캐시를 되살리지 않도록 시퀀스를 올려 전부 무효화한다.
+    activeReq += 1;
     matchMap = null;
     statsMap = null;
     poolCache = null;
