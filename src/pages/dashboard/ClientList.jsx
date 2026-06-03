@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, ChevronRight, Users, List, Grid2X2,
   X, Heart, AlertTriangle, SlidersHorizontal, Sparkles,
-  Briefcase, Building2, MapPin,
+  Briefcase, Building2, MapPin, Clock, Star, ChevronDown, ChevronUp, EyeOff,
 } from 'lucide-react';
 import useClientListStore from '../../store/clientListStore';
 import useConnectionStore from '../../store/connectionStore';
@@ -13,6 +13,198 @@ import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
 import styles from './ClientList.module.css';
+
+// ── 매칭 통계 헬퍼 ─────────────────────────────────────────
+const DAY_MS = 24 * 60 * 60 * 1000;
+// 이 일수 이상 제안이 없으면 '방치'로 본다
+const NEGLECT_DAYS = 7;
+
+// 마지막 제안일(없으면 가입일) 기준 경과 일수
+function getNeglectDays(client, stat) {
+  const base = stat?.lastProposalAt || client.createdAt;
+  if (!base) return null;
+  const days = Math.floor((Date.now() - new Date(base).getTime()) / DAY_MS);
+  return days >= 0 ? days : 0;
+}
+
+// 성사율 % — 매칭 2건 이상 + 성사율 50% 이상일 때만 배지로 노출
+function getSuccessRate(stat) {
+  if (!stat || stat.total < 2) return null;
+  const pct = Math.round((stat.completed / stat.total) * 100);
+  return pct >= 50 ? pct : null;
+}
+
+// 통계 배지 대상 여부 — 승인 완료 + 활동 중인 회원만
+function isStatEligible(client) {
+  return client.approvalStatus === 'approved' && (client.status || 'active') === 'active';
+}
+
+// ── 방문 도장 (프로필 열람 기록) ────────────────────────────
+// 매니저가 어떤 회원 프로필을 열어봤는지 localStorage 에 기록해,
+// 한 번도 안 봤거나 오래 안 본 회원에 '미확인' 배지를 붙인다.
+// (기기 단위 MVP — 매니저 계정 단위로 정확히 하려면 백엔드 열람 로그가 필요)
+const VIEWS_KEY = 'clientList.viewedAt';
+// 이 일수 이상 안 열어봤으면 다시 '미확인'으로 되돌린다
+const VIEW_STALE_DAYS = 30;
+
+function loadViews() {
+  try {
+    return JSON.parse(localStorage.getItem(VIEWS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function recordView(clientId) {
+  const views = loadViews();
+  views[clientId] = Date.now();
+  try {
+    localStorage.setItem(VIEWS_KEY, JSON.stringify(views));
+  } catch { /* 저장 실패해도 동작에는 지장 없음 */ }
+}
+
+function isUnviewed(clientId, views) {
+  const t = views[clientId];
+  return !t || (Date.now() - t) > VIEW_STALE_DAYS * DAY_MS;
+}
+
+// ── 통계 배지 (방치일수 / 성사율 / 미확인) ──────────────────
+function StatBadges({ client, stat, matchesLoaded, unviewed }) {
+  if (!isStatEligible(client)) return null;
+
+  // 매칭 통계 기반 배지는 매칭 데이터 도착 후에만 — 미확인은 로컬 기록이라 즉시 표시 가능
+  const days = matchesLoaded ? getNeglectDays(client, stat) : null;
+  const isServing = (stat?.active ?? client.activeMatchCount ?? 0) > 0;
+  const showNeglect = matchesLoaded && !isServing && days != null && days >= NEGLECT_DAYS;
+  const successPct = matchesLoaded ? getSuccessRate(stat) : null;
+
+  if (!showNeglect && successPct == null && !unviewed) return null;
+
+  return (
+    <div className={styles.statBadgeRow}>
+      {unviewed && (
+        <span className={`${styles.statBadge} ${styles.statUnviewed}`}>
+          <EyeOff size={10} strokeWidth={2.5} aria-hidden="true" />
+          미확인
+        </span>
+      )}
+      {showNeglect && (
+        <span className={`${styles.statBadge} ${styles.statNeglect}`}>
+          <Clock size={10} strokeWidth={2.5} aria-hidden="true" />
+          {days}일째 제안 없음
+        </span>
+      )}
+      {successPct != null && (
+        <span className={`${styles.statBadge} ${styles.statSuccess}`}>
+          <Star size={10} strokeWidth={2.5} aria-hidden="true" />
+          성사율 {successPct}%
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── '오늘의 회원' 로테이션 섹션 ─────────────────────────────
+// 뒤 페이지에 묻혀 잘 안 보이는 회원에게 노출 기회를 주는 게 목적.
+// 날짜 기반 시드라 하루 동안은 고정, 자정이 지나면 새 조합으로 바뀐다.
+
+// 문자열 시드 → 0~1 의사난수 (FNV-1a)
+function dailyRand(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
+
+function SpotlightSection({ pool, stats, views, genderFilter, matchesLoaded, onClientClick }) {
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('clientList.spotlightCollapsed') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  if (!matchesLoaded || !pool?.length) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const picks = pool
+    .filter((c) => isStatEligible(c))
+    .filter((c) => !genderFilter || c.gender === genderFilter)
+    .filter((c) => (stats[c.id]?.active ?? 0) === 0) // 매칭 진행 중인 회원은 제외
+    .map((c) => {
+      const total = stats[c.id]?.total ?? 0;
+      // 노출 가중 샘플링 (Efraimidis–Spirakis): 제안 이력이 적을수록 뽑힐 확률이 높지만
+      // 순수 랜덤성이 섞여 있어 특정 회원만 반복 노출되지 않는다.
+      // 매니저가 아직 열어보지 않은(미확인) 회원은 확률 2배 부스트.
+      const weight = (1 / (1 + total)) * (isUnviewed(c.id, views) ? 2 : 1);
+      return { client: c, total, key: dailyRand(`${today}:${c.id}`) ** (1 / weight) };
+    })
+    .sort((a, b) => b.key - a.key)
+    .slice(0, 10);
+
+  if (picks.length === 0) return null;
+
+  const toggle = () => {
+    setCollapsed((v) => {
+      try {
+        localStorage.setItem('clientList.spotlightCollapsed', v ? '0' : '1');
+      } catch { /* 저장 실패해도 동작에는 지장 없음 */ }
+      return !v;
+    });
+  };
+
+  return (
+    <div className={styles.spotlightSection}>
+      <button className={styles.spotlightHeader} onClick={toggle} type="button" aria-expanded={!collapsed}>
+        <Sparkles size={13} strokeWidth={2.5} className={styles.spotlightHeaderIcon} aria-hidden="true" />
+        <span className={styles.spotlightTitle}>오늘의 회원</span>
+        <span className={styles.spotlightHint}>매일 새로 뽑아요</span>
+        <span className={styles.spotlightToggle}>
+          {collapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+        </span>
+      </button>
+
+      {!collapsed && (
+        <div className={styles.spotlightScroll} role="list">
+          {picks.map(({ client, total }) => (
+            <div
+              key={client.id}
+              className={styles.spotlightCard}
+              role="listitem"
+              tabIndex={0}
+              onClick={() => onClientClick(client)}
+              onKeyDown={(e) => e.key === 'Enter' && onClientClick(client)}
+            >
+              <div className={styles.spotlightCardName}>
+                <span className={styles.rowName}>{client.name}</span>
+                <span
+                  className={styles.genderBadge}
+                  style={{
+                    background: client.gender === 'male' ? '#DCE8FF' : '#FFD9EA',
+                    color: client.gender === 'male' ? '#2A5CC7' : '#B73673',
+                  }}
+                >
+                  {client.gender === 'male' ? '남' : '여'}
+                </span>
+              </div>
+              <div className={styles.spotlightCardMeta}>
+                {client.age ? `${client.age}세` : ''}
+                {client.age && client.occupation ? ' · ' : ''}
+                {client.occupation || ''}
+              </div>
+              <span className={styles.spotlightChip}>
+                {total === 0 ? '첫 제안 대기' : `제안 ${total}회`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Status badge ─────────────────────────────────────────
 function MatchStatusBadge({ client, matchesLoaded }) {
@@ -36,7 +228,7 @@ function MatchStatusBadge({ client, matchesLoaded }) {
 }
 
 // ── Row (normal density) ──────────────────────────────────
-function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect, matchesLoaded }) {
+function ClientRow({ client, stat, unviewed, onClick, isLast, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.row} ${isLast ? styles.rowLast : ''} ${selected ? styles.rowSelected : ''}`}
@@ -108,6 +300,9 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
             )}
           </div>
         )}
+
+        {/* Line 4: 통계 배지 (방치일수 / 성사율 / 미확인) */}
+        <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} unviewed={unviewed} />
       </div>
 
       <div className={styles.rowRight}>
@@ -133,7 +328,7 @@ function ClientRow({ client, onClick, isLast, selected, disabled, onToggleSelect
 }
 
 // ── Card (grid thumbnail) ─────────────────────────────────
-function ClientCard({ client, onClick, selected, disabled, onToggleSelect, matchesLoaded }) {
+function ClientCard({ client, stat, unviewed, onClick, selected, disabled, onToggleSelect, matchesLoaded }) {
   return (
     <div
       className={`${styles.cardItem} ${selected ? styles.cardItemSelected : ''}`}
@@ -211,6 +406,9 @@ function ClientCard({ client, onClick, selected, disabled, onToggleSelect, match
           )}
         </div>
       )}
+
+      {/* 통계 배지 (방치일수 / 성사율 / 미확인) */}
+      <StatBadges client={client} stat={stat} matchesLoaded={matchesLoaded} unviewed={unviewed} />
     </div>
   );
 }
@@ -498,6 +696,7 @@ export default function ClientList() {
   const {
     clients, totalCount, filteredCount, genderCounts,
     page, limit, filters, isLoading, error, matchesLoaded,
+    matchStats, statsPool,
     setFilter, setPage, fetchClients,
   } = useClientListStore();
   const { connections, fetchConnections } = useConnectionStore();
@@ -530,7 +729,12 @@ export default function ClientList() {
     setSearchParams(next, { replace: true });
   };
 
+  // 프로필 열람 기록 (방문 도장) — 컴포넌트 마운트 시 localStorage 에서 1회 로드.
+  // 상세를 다녀오면 목록이 리마운트되므로 초기화 함수가 최신 기록을 다시 읽는다.
+  const [views] = useState(loadViews);
+
   const handleRowClick = (client) => {
+    recordView(client.id); // 방문 도장 — 다음 진입부터 '미확인' 배지 해제
     navigate(`/dashboard/clients/${client.id}`);
   };
 
@@ -733,13 +937,24 @@ export default function ClientList() {
         </div>
       )}
 
+      {/* ── '오늘의 회원' 로테이션 ── */}
+      <SpotlightSection
+        pool={statsPool}
+        stats={matchStats}
+        views={views}
+        genderFilter={filters.gender}
+        matchesLoaded={matchesLoaded}
+        onClientClick={handleRowClick}
+      />
+
       {/* ── Sort + density ── */}
       <div className={styles.sortRow}>
         <div className={styles.sortBtns}>
           {[
             { value: 'createdAt:desc', label: '최근' },
+            { value: 'neglect:desc',   label: '미제안순' },
+            { value: 'success:desc',   label: '성사율' },
             { value: 'birthDate:asc',  label: '나이순' },
-            { value: 'name:asc',       label: '이름순' },
           ].map((s) => (
             <button
               key={s.value}
@@ -801,6 +1016,8 @@ export default function ClientList() {
                 <ClientCard
                   key={client.id}
                   client={client}
+                  stat={matchStats[client.id]}
+                  unviewed={isUnviewed(client.id, views)}
                   onClick={() => handleRowClick(client)}
                   selected={selectedIdSet.has(client.id)}
                   disabled={lockedGender !== null && client.gender === lockedGender && !selectedIdSet.has(client.id)}
@@ -815,6 +1032,8 @@ export default function ClientList() {
                 <ClientRow
                   key={client.id}
                   client={client}
+                  stat={matchStats[client.id]}
+                  unviewed={isUnviewed(client.id, views)}
                   onClick={() => handleRowClick(client)}
                   isLast={i === clients.length - 1}
                   selected={selectedIdSet.has(client.id)}
