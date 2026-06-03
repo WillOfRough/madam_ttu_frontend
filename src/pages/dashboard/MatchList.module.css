@@ -51,11 +51,7 @@
 }
 
 .title {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--ink-900);
-  letter-spacing: -0.035em;
+  composes: pageTitle from '../../styles/typography.module.css';
   flex: 1;
 }
 
@@ -435,18 +431,7 @@
   font-size: 13px;
 }
 
-/* ── Empty ── */
-.empty {
-  padding: 56px 24px;
-  text-align: center;
-  color: var(--ink-400);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  line-height: 1.6;
-}
+/* ── Empty — EmptyState 컴포넌트로 대체됨 ── */
 
 /* ── Card list ── */
 .cardList {

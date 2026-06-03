@@ -29,11 +29,7 @@
 
 /* Title — matches MatchList/ClientList header style */
 .title {
-  font-family: var(--font-sans);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  color: var(--ink-900);
+  composes: pageTitle from '../../styles/typography.module.css';
   margin: 0;
   line-height: 1.15;
 }
@@ -152,7 +148,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #F26B4F;
+  background: var(--tangerine-600);
   border: 2px solid #fff;
   box-shadow: 0 0 0 0.5px rgba(242, 107, 79, 0.25);
   pointer-events: none;
@@ -261,41 +257,7 @@
 .skeletonMessage { height: 12px; width: 82%; animation-delay: 0.15s; }
 .skeletonTime    { height: 10px; width: 28%; animation-delay: 0.3s; }
 
-/* ── Empty state — tangerine tint for warmth ── */
-.empty {
-  padding: 80px 24px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.emptyIcon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--tangerine-50);
-  color: var(--tangerine-600);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.emptyTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-600, var(--ink-500));
-  margin: 0;
-}
-
-.emptyHint {
-  font-size: 13px;
-  color: var(--ink-400);
-  margin: 0;
-  text-align: center;
-  line-height: 1.55;
-}
+/* Empty state는 공통 컴포넌트 <EmptyState> 로 이전됨 (src/components/EmptyState.jsx) */
 
 @keyframes shimmer {
   0%   { opacity: 1; }

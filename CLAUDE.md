@@ -51,6 +51,23 @@ Claude(에이전트) 가 dev 브랜치에서 테스트용 회원·매니저·매
 - 모든 API 관련 작업(신규 연동, 필드 변경, 버그 수정 등)은 반드시 위 URL의 최신 스펙을 기준으로 진행할 것
 - 백엔드 API base URL: `https://love-soul-265481232089.asia-northeast3.run.app`
 
+## 공통 UI 컴포넌트 맵 (UI 수정 시 먼저 확인)
+
+UI 를 수정·추가할 때 페이지에서 직접 마크업/스타일을 짜기 전에 아래 공통
+프리미티브를 먼저 사용한다. (중복 제거 → 한곳만 고치면 전 페이지 반영)
+
+- **빈 상태**: `src/components/EmptyState.jsx` — `<EmptyState icon title hint />`
+- **카드 표면**: `src/components/Card.module.css` 가 카드 배경·모서리·그림자의 단일 출처.
+  - 페이지 내 콘텐츠 카드: `.card { composes: card from '.../components/Card.module.css'; }` 로 surface 만 가져오고 여백/테두리는 페이지에 둔다.
+  - 개별/리스트 카드: `<Card>` 컴포넌트 (`src/components/Card.jsx`).
+- **폼 입력**: `TextField` / `SelectField` / `RadioGroup` / `PhoneVerifyField` / `KeywordTagInput`
+- **상태 배지**: `StatusBadge`, **요약 카드**: `SummaryCard`, **페이지네이션**: `Pagination`
+- **확인 모달**: `ConfirmModal`, **토스트**: `store/toastStore` 의 `toast`
+- **색/모서리/그림자**: 생 hex 대신 `src/styles/global.css` 의 CSS 변수(`--ink-*`, `--tangerine-*`, `--r-*`, `--sh-*`) 사용.
+
+고유 디자인(Settings 글래스, ServiceIntro·EventIntro 애니메이션, ConnectManager 히어로)은
+공통화 대상이 아니므로 그대로 둔다.
+
 ## 프로젝트 구조
 
 - Vite + React, Zustand, CSS Modules

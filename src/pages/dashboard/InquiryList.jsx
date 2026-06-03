@@ -5,6 +5,7 @@ import * as clientService from '../../api/clientService';
 import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
 import { SkeletonLine } from '../../components/Skeleton';
+import EmptyState from '../../components/EmptyState';
 import styles from './InquiryList.module.css';
 
 const STATUS_TABS = [
@@ -205,10 +206,7 @@ export default function InquiryList() {
             {[...Array(5)].map((_, i) => <SkeletonLine key={i} />)}
           </div>
         ) : items.length === 0 ? (
-          <div className={styles.empty}>
-            <MessageSquare size={32} strokeWidth={1.2} />
-            <p>등록된 문의가 없습니다.</p>
-          </div>
+          <EmptyState icon={MessageSquare} title="등록된 문의가 없습니다." />
         ) : (
           <ul className={styles.list}>
             {items.map((item) => {

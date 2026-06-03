@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, ImagePlus, X as XIcon, ShieldCheck } from 'lucide-react';
-import useClientFormStore, { NAME_PATTERN } from '../../store/clientFormStore';
+import useClientFormStore, { NAME_PATTERN, AGE_BOUNDS, HEIGHT_BOUNDS } from '../../store/clientFormStore';
 import * as clientService from '../../api/clientService';
 import TextField from '../../components/TextField';
 import SelectField from '../../components/SelectField';
@@ -9,6 +9,7 @@ import PhoneVerifyField from '../../components/PhoneVerifyField';
 import RadioGroup from '../../components/RadioGroup';
 import StepTransition from '../../components/StepTransition';
 import KeywordTagInput from '../../components/KeywordTagInput';
+import RangeSlider from '../../components/RangeSlider';
 import {
   GENDER_OPTIONS,
   EDUCATION_OPTIONS,
@@ -48,8 +49,12 @@ function validateStep(step, form) {
     } else if (!NAME_PATTERN.test(form.name)) {
       errors.name = '한글 또는 영문만 입력 가능합니다. (공백 불가)';
     }
-    if (form.nickname && form.nickname.length > 50) {
-      errors.nickname = '별명은 50자 이하로 입력해주세요.';
+    if (form.nickname) {
+      if (form.nickname.length < 2) {
+        errors.nickname = '별명은 2자 이상 입력해주세요.';
+      } else if (form.nickname.length > 50) {
+        errors.nickname = '별명은 50자 이하로 입력해주세요.';
+      }
     }
     if (!form.gender) errors.gender = '성별을 선택해주세요.';
     if (!form.birthYear) {
@@ -172,6 +177,7 @@ export default function ClientForm() {
   const [touched, setTouched] = useState({});
   const [loadedPhotos, setLoadedPhotos] = useState({});
   const [verificationId, setVerificationId] = useState(null);
+  const [nicknameStatus, setNicknameStatus] = useState('idle'); // 'idle' | 'checking' | 'available' | 'taken' | 'error'
 
   useEffect(() => {
     setToken(token);
@@ -189,12 +195,39 @@ export default function ClientForm() {
     };
   }, [form.photos]);
 
+  const autoRerollAttemptsRef = useRef(0);
+
   const rerollNickname = () => {
+    autoRerollAttemptsRef.current = 0;
     setSuggestedNickname(generateNickname());
     setField('nickname', '');
   };
 
   const displayNickname = form.nickname || suggestedNickname;
+
+  useEffect(() => {
+    const value = (displayNickname || '').trim();
+    if (!value || value.length < 2 || value.length > 50) { setNicknameStatus('idle'); return; }
+    setNicknameStatus('checking');
+    const handle = setTimeout(async () => {
+      try {
+        const available = await clientService.checkNicknameAvailable(value);
+        if (available) {
+          autoRerollAttemptsRef.current = 0;
+          setNicknameStatus('available');
+        } else if (!form.nickname && autoRerollAttemptsRef.current < 5) {
+          // 사용자가 직접 입력하지 않은 추천 별명이 중복이면 조용히 재추첨
+          autoRerollAttemptsRef.current += 1;
+          setSuggestedNickname(generateNickname());
+        } else {
+          setNicknameStatus('taken');
+        }
+      } catch {
+        setNicknameStatus('error');
+      }
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [displayNickname, form.nickname, setSuggestedNickname]);
 
   const errors = validateStep(step, form);
   const hasErrors = Object.keys(errors).length > 0;
@@ -236,6 +269,11 @@ export default function ClientForm() {
 
     if (step === 0 && !verificationId) {
       setError('휴대폰 인증을 완료해주세요.');
+      return;
+    }
+
+    if (step === 0 && nicknameStatus === 'taken') {
+      setError('이미 사용 중인 별명이에요. 다른 별명으로 변경해주세요.');
       return;
     }
 
@@ -310,15 +348,30 @@ export default function ClientForm() {
                 <p className={styles.nicknameHint}>
                   매칭 상대에게 처음 보여지는 이름이에요. 마음에 드실 때까지 바꿔보세요.
                 </p>
-                <input
-                  className={`${styles.nicknameInput} ${getError('nickname') ? styles.nicknameInputError : ''}`}
-                  value={form.nickname}
-                  onChange={(e) => setField('nickname', e.target.value)}
-                  onBlur={() => markTouched('nickname')}
-                  placeholder={`추천: ${suggestedNickname}`}
-                  maxLength={50}
-                />
-                {getError('nickname') && <span className={styles.fieldError}>{getError('nickname')}</span>}
+                <div className={styles.fieldWrap}>
+                  <input
+                    className={`${styles.nicknameInput} ${getError('nickname') || nicknameStatus === 'taken' ? styles.nicknameInputError : ''}`}
+                    value={form.nickname}
+                    onChange={(e) => setField('nickname', e.target.value)}
+                    onBlur={() => markTouched('nickname')}
+                    placeholder={`추천: ${suggestedNickname}`}
+                    maxLength={50}
+                  />
+                  {getError('nickname') && (
+                    <span className={styles.fieldError}>{getError('nickname')}</span>
+                  )}
+                  {!getError('nickname') && nicknameStatus === 'taken' && (
+                    <span className={styles.fieldError}>
+                      이미 사용 중인 별명이에요. 다른 별명을 입력하거나 ‘다시’를 눌러주세요.
+                    </span>
+                  )}
+                  {!getError('nickname') && nicknameStatus === 'checking' && (
+                    <span className={styles.nicknameStatusChecking}>중복 확인 중…</span>
+                  )}
+                  {!getError('nickname') && nicknameStatus === 'available' && (
+                    <span className={styles.nicknameStatusOk}>사용 가능한 별명이에요.</span>
+                  )}
+                </div>
               </FieldCard>
 
               <SectionLabel n="03" required>기본 정보</SectionLabel>
@@ -560,6 +613,42 @@ export default function ClientForm() {
                 </p>
               </div>
               <FieldCard>
+                <div className={styles.rangeBlock}>
+                  <RangeSlider
+                    label="선호 나이"
+                    unit="세"
+                    min={AGE_BOUNDS.min}
+                    max={AGE_BOUNDS.max}
+                    valueMin={form.preferredAgeMin}
+                    valueMax={form.preferredAgeMax}
+                    onChange={({ min, max }) => {
+                      setField('preferredAgeMin', min);
+                      setField('preferredAgeMax', max);
+                    }}
+                    anyChecked={form.preferredAgeAny}
+                    onToggleAny={(v) => setField('preferredAgeAny', v)}
+                    hint="연상·연하·동갑 중 어느 폭이 편한지 알려주세요."
+                  />
+                </div>
+                <div className={styles.cardDivider} />
+                <div className={styles.rangeBlock}>
+                  <RangeSlider
+                    label="선호 키"
+                    unit="cm"
+                    min={HEIGHT_BOUNDS.min}
+                    max={HEIGHT_BOUNDS.max}
+                    valueMin={form.preferredHeightMin}
+                    valueMax={form.preferredHeightMax}
+                    onChange={({ min, max }) => {
+                      setField('preferredHeightMin', min);
+                      setField('preferredHeightMax', max);
+                    }}
+                    anyChecked={form.preferredHeightAny}
+                    onToggleAny={(v) => setField('preferredHeightAny', v)}
+                    hint="편안하게 마주할 수 있는 키의 범위를 골라주세요."
+                  />
+                </div>
+                <div className={styles.cardDivider} />
                 <KeywordTagInput
                   label="이상형 키워드"
                   hint="어떤 사람에게 마음이 끌리나요? 솔직하게 골라주세요!"
@@ -663,7 +752,7 @@ export default function ClientForm() {
               <button
                 className={styles.nextBtn}
                 onClick={handleNext}
-                disabled={(hasErrors && Object.keys(touched).length > 0) || (step === 0 && !verificationId)}
+                disabled={(hasErrors && Object.keys(touched).length > 0) || (step === 0 && !verificationId) || (step === 0 && nicknameStatus === 'taken')}
               >
                 다음
               </button>

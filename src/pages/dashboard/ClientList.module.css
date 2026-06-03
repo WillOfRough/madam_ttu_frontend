@@ -42,11 +42,7 @@
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  font-family: var(--font-sans);
-  color: var(--ink-900);
+  composes: pageTitle from '../../styles/typography.module.css';
   line-height: 1.15;
   margin: 0;
 }
@@ -257,6 +253,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 0 16px;
   margin-bottom: 10px;
 }
@@ -267,9 +264,16 @@
   background: var(--ink-50);
   border-radius: var(--r-pill);
   padding: 3px;
+  /* 정렬 5종 — 좁은 화면에선 가로 스크롤로 수용 */
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
 }
+.sortBtns::-webkit-scrollbar { display: none; }
 
 .sortBtn {
+  flex-shrink: 0;
+  white-space: nowrap;
   padding: 5px 10px;
   border-radius: var(--r-pill);
   font-size: 11.5px;
@@ -294,6 +298,7 @@
   padding: 3px;
   background: var(--ink-50);
   border-radius: var(--r-xs);
+  flex-shrink: 0;
 }
 
 .densityBtn {
@@ -365,7 +370,7 @@
 }
 
 .rowName {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--ink-900);
   letter-spacing: -0.02em;
@@ -374,9 +379,9 @@
 }
 
 .rowNickname {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-400);
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -392,22 +397,22 @@
 }
 
 .rowAge {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-700);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
 .rowDot {
-  font-size: 11px;
-  color: var(--ink-200);
+  font-size: 13px;
+  color: var(--ink-300);
   flex-shrink: 0;
 }
 
 .rowHeight {
-  font-size: 11.5px;
-  color: var(--ink-400);
+  font-size: 13px;
+  color: var(--ink-600);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
@@ -425,9 +430,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--ink-700);
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -440,66 +445,40 @@
 }
 
 .rowSep {
-  font-size: 10px;
-  color: var(--ink-200);
+  font-size: 13px;
+  color: var(--ink-300);
   flex-shrink: 0;
 }
 
 .rowCompany {
-  font-size: 11px;
-  color: var(--ink-400);
+  font-size: 13px;
+  color: var(--ink-500);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Line 3 */
+/* Line 3 — 지역(근무/거주) 평문 */
 .rowLine3 {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
-.tagNeutral {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--ink-50);
-  color: var(--ink-500);
-}
-
-.infoChip {
+.rowRegion {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10.5px;
-  font-weight: 600;
-  padding: 2px 7px 2px 6px;
-  border-radius: 4px;
-  background: var(--ink-50);
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink-600);
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.infoChip svg {
-  color: var(--ink-400);
-  flex-shrink: 0;
-}
-
-.tagMbti {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--paper-warm);
-  color: var(--tangerine-700);
-  letter-spacing: 0.02em;
+  min-width: 0;
 }
 
 /* Right side */
@@ -533,6 +512,151 @@
 .statusInactive  { background: var(--ink-50);       color: var(--ink-400); }
 .statusMatching  { background: var(--tangerine-50); color: var(--tangerine-700); }
 .statusAvailable { background: var(--mint-100);     color: var(--mint-600); }
+
+/* ── 통계 배지 (방치일수 / 성사율) ── */
+.statBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.statBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2.5px 7px;
+  border-radius: var(--r-pill);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.statNeglect  { background: var(--rose-100);  color: var(--rose-600); }
+.statSuccess  { background: var(--amber-100); color: var(--amber-600); }
+.statUnviewed { background: var(--lilac-100); color: var(--lilac-600); }
+
+/* ── '오늘의 회원' 로테이션 섹션 ── */
+.spotlightSection {
+  margin: 0 16px 12px;
+}
+
+.spotlightHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0 2px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.spotlightHeaderIcon { color: var(--tangerine-600); flex-shrink: 0; }
+
+.spotlightTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-900);
+  letter-spacing: -0.02em;
+}
+
+.spotlightHint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
+.spotlightToggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: var(--ink-400);
+}
+
+.spotlightScroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  /* 카드 그림자가 잘리지 않게 좌우로 살짝 블리드 */
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.spotlightScroll::-webkit-scrollbar { display: none; }
+
+.spotlightCard {
+  flex-shrink: 0;
+  min-width: 148px;
+  max-width: 180px;
+  padding: 10px 12px;
+  background: var(--paper-card);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-sm);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.spotlightCard:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sh-md);
+}
+.spotlightCard:focus-visible {
+  outline: 2px solid var(--tangerine-600);
+  outline-offset: 2px;
+}
+
+.spotlightCardName {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.spotlightCardMeta {
+  font-size: 11.5px;
+  color: var(--ink-500);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotlightChip {
+  align-self: flex-start;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2.5px 7px;
+  border-radius: var(--r-pill);
+  background: var(--ink-50);
+  color: var(--ink-500);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+/* 매칭 데이터 도착 전 중립 자리표시자 — '매칭가능' 배지와 폭을 맞춰 레이아웃 시프트 방지 */
+.statusLoading {
+  min-width: 44px;
+  height: 18px;
+  background: var(--ink-50);
+  animation: statusPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
 
 /* ── Card (thumbnail grid) mode ── */
 .cardGrid {
@@ -595,18 +719,19 @@
 .cardName {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .cardJob {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--ink-700);
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -627,42 +752,7 @@
   .cardGrid { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* ── Empty state ── */
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 24px 40px;
-  text-align: center;
-  gap: 8px;
-}
-
-.emptyIcon {
-  width: 58px;
-  height: 58px;
-  border-radius: var(--r-md);
-  background: var(--tangerine-50);
-  color: var(--tangerine-600);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-.emptyTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-700);
-  margin: 0;
-}
-
-.emptyDesc {
-  font-size: 12px;
-  color: var(--ink-400);
-  margin: 0;
-  line-height: 1.6;
-}
+/* ── Empty state — EmptyState 컴포넌트로 대체됨 ── */
 
 /* ── Error ── */
 .errorMsg {
@@ -699,6 +789,16 @@
   .searchPanel {
     padding: 0;
     margin-bottom: 12px;
+  }
+
+  .spotlightSection {
+    margin: 0 0 16px;
+  }
+
+  .spotlightScroll {
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .sortRow {
@@ -784,6 +884,31 @@
 .selectCheckOn {
   background: var(--tangerine-600);
   border-color: var(--tangerine-600);
+}
+
+/* 같은 성별이 이미 선택된 상태 — 시각적으로 흐리게 처리하고 슬래시(/) 표시로 차단 의도를 명확히 한다. */
+.selectCheckDisabled {
+  opacity: 0.4;
+  background: var(--ink-50);
+  border-color: var(--ink-200);
+  border-style: dashed;
+  cursor: not-allowed;
+  position: relative;
+}
+.selectCheckDisabled::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 1.5px;
+  background: var(--ink-400);
+  border-radius: 1px;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.selectCheckDisabled:hover {
+  border-color: var(--ink-200);
+  transform: none;
 }
 
 /* ── Floating selection bar (portaled, position:fixed is safe from body) ── */

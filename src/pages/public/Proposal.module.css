@@ -376,12 +376,11 @@
 }
 
 /* ── Profile Card ── */
+/* surface(배경·모서리·그림자)는 공통 Card.module.css 에서 가져온다. 여백만 페이지 고유 */
 .card {
-  background: var(--paper-card);
-  border-radius: var(--r-lg);
+  composes: card from '../../components/Card.module.css';
   padding: 20px 20px 18px;
   margin-bottom: 10px;
-  box-shadow: var(--sh-sm);
 }
 
 .cardTitle {

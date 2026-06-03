@@ -3,6 +3,7 @@ import {
   Copy, Check, Pencil, RotateCcw, Save, X,
   Lightbulb, Search, ChevronDown,
 } from 'lucide-react';
+import EmptyState from '../../components/EmptyState';
 import styles from './ManagerGuide.module.css';
 
 /* ─────────────────────────────────────────────────────────
@@ -716,11 +717,11 @@ export default function ManagerGuide() {
 
           {/* ── Template list ── */}
           {filteredTemplates.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Search size={26} className={styles.emptyIcon} />
-              <p className={styles.emptyText}>검색 결과가 없습니다</p>
-              <p className={styles.emptyHint}>다른 검색어를 입력하거나 필터를 변경해 보세요</p>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="검색 결과가 없습니다"
+              hint="다른 검색어를 입력하거나 필터를 변경해 보세요"
+            />
           ) : (
             filteredTemplates.map(({ key, label, badge }) => {
               const isEditing = editing === key;

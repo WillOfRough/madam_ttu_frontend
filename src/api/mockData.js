@@ -178,9 +178,15 @@ const clients = [
     mbti: 'ENFP',
     hobbies: '필라테스, 와인 테이스팅, 전시회 관람',
     introduction:
-      '안녕하세요! 마케팅 일을 하고 있는 서연입니다. 새로운 사람 만나는 걸 좋아하고, 주말에는 전시회나 팝업스토어를 자주 가요. 대화할 때 서로의 생각을 편하게 나눌 수 있는 관계를 원해요.',
+      '[밝음, 호기심, 전시회, 대화 중시] 안녕하세요! 마케팅 일을 하고 있는 서연입니다. 새로운 사람 만나는 걸 좋아하고, 주말에는 전시회나 팝업스토어를 자주 가요. 대화할 때 서로의 생각을 편하게 나눌 수 있는 관계를 원해요.',
     idealType:
-      '유머감각이 있고, 자기 일에 열정적인 분이면 좋겠어요. 같이 맛집 투어 다니면서 소소한 일상을 즐길 수 있는 사람이 좋아요.',
+      '[유머감각, 열정적, 맛집 투어, 소소한 일상] 유머감각이 있고, 자기 일에 열정적인 분이면 좋겠어요. 같이 맛집 투어 다니면서 소소한 일상을 즐길 수 있는 사람이 좋아요.',
+    preferredAgeMin: 28,
+    preferredAgeMax: 38,
+    preferredAgeAny: false,
+    preferredHeightMin: null,
+    preferredHeightMax: null,
+    preferredHeightAny: true,
     approvalStatus: 'approved',
     status: 'active',
     managerNote: '밝고 활발한 성격. 대화 능력 좋음.',
@@ -210,6 +216,12 @@ const clients = [
       '개발자로 일하면서도 야외활동을 즐기는 편입니다. 주말에는 클라이밍장이나 한강에서 시간을 보내요. 깊은 대화를 좋아하고 진정성 있는 만남을 찾고 있습니다.',
     idealType:
       '서로의 공간을 존중하면서도 함께하는 시간을 소중히 여기는 분. 지적 호기심이 많고 자기만의 세계가 있는 분이면 좋겠습니다.',
+    preferredAgeAny: true,
+    preferredAgeMin: null,
+    preferredAgeMax: null,
+    preferredHeightMin: 160,
+    preferredHeightMax: 170,
+    preferredHeightAny: false,
     approvalStatus: 'approved',
     status: 'active',
     managerNote: '차분하고 진중한 인상. 연봉 높음.',
@@ -239,6 +251,12 @@ const clients = [
       '디자이너로 일하고 있는 지민입니다. 조용한 카페에서 그림 그리는 걸 좋아하고, 고양이 두 마리와 함께 살고 있어요. 감성적이지만 현실적인 사람이에요.',
     idealType:
       '따뜻하고 배려심이 있는 분. 동물을 좋아하시는 분이면 더 좋겠어요. 주말에 같이 카페 투어 다닐 수 있는 분!',
+    preferredAgeMin: 30,
+    preferredAgeMax: 42,
+    preferredAgeAny: false,
+    preferredHeightMin: 175,
+    preferredHeightMax: 188,
+    preferredHeightAny: false,
     approvalStatus: 'pending',
     managerNote: '',
     ownerManagerId: MANAGER_ID,
@@ -1663,6 +1681,14 @@ export async function mockFetch(path, options = {}) {
   const url = new URL(path, 'http://localhost');
   const pathname = url.pathname;
   const params = url.searchParams;
+
+  // GET /api/v1/clients/check-nickname?nickname=... (별명 중복 확인 — mock)
+  if (method === 'GET' && pathname === '/api/v1/clients/check-nickname') {
+    const nick = (params.get('nickname') || '').trim();
+    if (!nick) throw Object.assign(new Error('별명을 입력해주세요.'), { status: 400 });
+    const taken = clients.some((c) => (c.nickname || '').trim() === nick);
+    return { success: true, message: taken ? '이미 사용 중인 별명이에요.' : '사용 가능한 닉네임입니다.', data: !taken };
+  }
 
   // POST /api/v1/verification/send (인증번호 발송 — mock)
   if (method === 'POST' && pathname === '/api/v1/verification/send') {

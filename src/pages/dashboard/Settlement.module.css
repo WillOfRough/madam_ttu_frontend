@@ -62,7 +62,7 @@
   margin-top: 8px;
   padding: 18px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #0F1526 0%, #1F2B48 65%, #2C3A5E 100%);
+  background: linear-gradient(135deg, var(--ink-900) 0%, var(--ink-700) 65%, #2C3A5E 100%);
   color: #fff;
   position: relative;
   overflow: hidden;

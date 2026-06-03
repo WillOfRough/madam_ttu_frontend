@@ -1,0 +1,218 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px 2px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-500);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--ink-900);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.value strong {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.dash {
+  color: var(--ink-400);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 2px;
+}
+.unit {
+  font-size: 13px;
+  color: var(--ink-500);
+  font-weight: 600;
+  margin-left: 2px;
+}
+.valueAny {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tangerine-600);
+  background: var(--tangerine-50);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+}
+
+.container {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 4px 8px 0;
+}
+.container.disabled {
+  opacity: 0.45;
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--ink-100);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.trackActive {
+  position: absolute;
+  height: 6px;
+  background: linear-gradient(90deg, var(--tangerine-500), var(--tangerine-600));
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  left: -8px;
+  right: -8px;
+  width: calc(100% + 16px);
+  height: 36px;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+.range:focus {
+  outline: none;
+}
+
+/* WebKit thumb */
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--tangerine-600);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+.range::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+}
+.range:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(242, 107, 79, 0.18);
+}
+
+/* Firefox thumb */
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--tangerine-600);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.range::-moz-range-track {
+  background: transparent;
+}
+
+.range:disabled {
+  cursor: not-allowed;
+}
+.range:disabled::-webkit-slider-thumb {
+  border-color: var(--ink-300);
+  cursor: not-allowed;
+}
+.range:disabled::-moz-range-thumb {
+  border-color: var(--ink-300);
+  cursor: not-allowed;
+}
+
+.bounds {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--ink-400);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  margin: 0 4px;
+}
+
+.anyToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 0 2px;
+  align-self: flex-start;
+}
+.anyToggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.anyBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--ink-200);
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  position: relative;
+}
+.anyBox::after {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.anyToggle input:checked + .anyBox {
+  background: var(--tangerine-600);
+  border-color: var(--tangerine-600);
+}
+.anyToggle input:checked + .anyBox::after {
+  opacity: 1;
+}
+.anyToggle:hover .anyBox {
+  border-color: var(--tangerine-500);
+}
+.anyText {
+  font-size: 13px;
+  color: var(--ink-700);
+  font-weight: 600;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--ink-400);
+  line-height: 1.55;
+  margin: 0;
+}

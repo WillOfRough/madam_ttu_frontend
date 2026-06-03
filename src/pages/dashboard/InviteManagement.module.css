@@ -71,6 +71,129 @@
 }
 
 /* ════════════════════════════════════════════
+   서비스 소개 페이지 공유 카드
+   ════════════════════════════════════════════ */
+.aboutCard {
+  background: linear-gradient(135deg, var(--ink-900) 0%, #1a2140 100%);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 10px;
+  box-shadow: var(--sh-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.aboutCard::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 90% 0%, rgba(242,107,79,.22) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.aboutHead {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.aboutIcon {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  background: var(--tangerine-600);
+  color: #fff;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 14px rgba(242,107,79,.30);
+}
+
+.aboutHeadText { flex: 1; min-width: 0; }
+
+.aboutTitle {
+  font-size: 13px; font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.aboutDesc {
+  font-size: 11px; color: rgba(255,255,255,.62);
+  letter-spacing: -0.01em;
+}
+
+.aboutUrlBox {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.aboutUrlIcon {
+  color: rgba(255,255,255,.5);
+  flex-shrink: 0;
+}
+
+.aboutUrlText {
+  font-size: 11.5px;
+  color: rgba(255,255,255,.86);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
+  flex: 1;
+  min-width: 0;
+}
+
+.aboutActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  position: relative;
+}
+
+.aboutBtn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 5px;
+  font-size: 12px; font-weight: 800;
+  letter-spacing: -0.01em;
+  padding: 11px 12px;
+  border-radius: 10px; border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+
+.aboutBtnCopy {
+  background: rgba(255,255,255,.10);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.18);
+}
+.aboutBtnCopy:hover {
+  background: rgba(255,255,255,.16);
+}
+
+.aboutBtnCopied {
+  background: var(--mint-100);
+  color: var(--mint-600);
+  border: 1px solid transparent;
+}
+
+.aboutBtnShare {
+  background: linear-gradient(180deg, var(--tangerine-600) 0%, var(--tangerine-700) 100%);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(242,107,79,.32);
+}
+.aboutBtnShare:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(242,107,79,.38);
+}
+
+/* ════════════════════════════════════════════
    KPI 3칸
    ════════════════════════════════════════════ */
 .kpiRow {
@@ -273,25 +396,7 @@
   margin-top: 12px;
 }
 
-/* ── 빈 상태 ── */
-.empty {
-  background: var(--paper-card);
-  border: 1px solid var(--ink-100);
-  border-radius: var(--r-md);
-  padding: 28px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  box-shadow: var(--sh-sm);
-}
-
-.emptyText {
-  font-size: 12.5px;
-  color: var(--ink-400);
-  margin: 0;
-}
+/* ── 빈 상태 — EmptyState 컴포넌트로 대체됨 ── */
 
 /* ════════════════════════════════════════════
    링크 카드 (Table-Row Style)
@@ -300,12 +405,11 @@
   /* 기존 list 정의 유지 — 카드 간 간격은 row spacing */
 }
 
+/* surface는 공통 Card.module.css 에서 가져온다. 테두리·여백·transition 은 페이지 고유 */
 .card {
-  background: var(--paper-card);
+  composes: card from '../../components/Card.module.css';
   border: 1px solid var(--ink-100);
-  border-radius: var(--r-lg);
   padding: 14px 16px;
-  box-shadow: var(--sh-sm);
   transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 

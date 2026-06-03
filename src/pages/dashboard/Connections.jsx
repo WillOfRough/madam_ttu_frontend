@@ -14,6 +14,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
+import EmptyState from '../../components/EmptyState';
 import styles from './Connections.module.css';
 
 /* ── Avatar color hash ── */
@@ -43,6 +44,12 @@ function relativeTime(dateStr) {
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}일 전`;
   return new Date(dateStr).toLocaleDateString('ko-KR');
+}
+
+function formatConnectedDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export default function Connections() {
@@ -416,17 +423,11 @@ export default function Connections() {
                 {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
               </div>
             ) : sortedConnections.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIconWrap}>
-                  <Users size={24} strokeWidth={1.3} />
-                </div>
-                <p className={styles.emptyTitle}>
-                  {nameFilter ? '검색 결과가 없습니다' : '네트워크 매니저가 없습니다'}
-                </p>
-                {!nameFilter && (
-                  <p className={styles.emptyHint}>초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.</p>
-                )}
-              </div>
+              <EmptyState
+                icon={Users}
+                title={nameFilter ? '검색 결과가 없습니다' : '네트워크 매니저가 없습니다'}
+                hint={!nameFilter ? '초대 링크를 생성하거나 이메일로 검색하여 네트워크를 만드세요.' : undefined}
+              />
             ) : (
               <div className={styles.list}>
                 {sortedConnections.map((conn) => (
@@ -441,10 +442,14 @@ export default function Connections() {
                           <span className={styles.successBadge}>성사 {conn.sharedMatchCount}</span>
                         )}
                       </div>
+                      {conn.email && conn.name && conn.name !== conn.email && (
+                        <span className={styles.connEmail}>{conn.email}</span>
+                      )}
                       <span className={styles.connMeta}>
                         공유회원 {conn.clientCount ?? 0}
                         {(conn.sharedMatchCount ?? 0) > 0 && ` · 함께 매칭 ${conn.sharedMatchCount}`}
                         {conn.lastActivityAt && ` · 활동 ${relativeTime(conn.lastActivityAt)}`}
+                        {conn.connectedAt && ` · 연결 ${formatConnectedDate(conn.connectedAt)}`}
                       </span>
                     </div>
                     <div className={styles.connectionItemRight}>
@@ -713,12 +718,7 @@ export default function Connections() {
                 {[1, 2, 3].map((i) => <SkeletonListItem key={i} />)}
               </div>
             ) : managerInvites.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIconWrap}>
-                  <UserPlus size={24} strokeWidth={1.3} />
-                </div>
-                <p className={styles.emptyTitle}>매니저 초대 내역이 없습니다</p>
-              </div>
+              <EmptyState icon={UserPlus} title="매니저 초대 내역이 없습니다" />
             ) : (
               <>
                 <div className={styles.list}>
