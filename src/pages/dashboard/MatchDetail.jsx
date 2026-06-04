@@ -705,6 +705,30 @@ export default function MatchDetail() {
           </div>
         )}
 
+        {/* ── 거절 사유 피드백 (취소 매칭) ── */}
+        {isCancelled && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
+          <div className={styles.afterCard}>
+            <div className={styles.feedbackSectionTitle}><MessageSquare size={14} /> 거절 사유 피드백</div>
+            {[
+              { side: 'A', participant: match.clientA },
+              { side: 'B', participant: match.clientB },
+            ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
+              <div key={side} className={styles.feedbackItem}>
+                <div className={styles.feedbackItemHeader}>
+                  <span className={styles.responseSideBadge}>{side}</span>
+                  <span className={styles.feedbackItemName}>{participant.clientName}</span>
+                </div>
+                {participant.feedbackComment ? (
+                  <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
+                ) : (
+                  <p className={styles.feedbackDateText}>코멘트 없이 거절했습니다.</p>
+                )}
+                <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ── Participants Section ── */}
         <div className={styles.participantsCard}>
           {/* Tab header */}

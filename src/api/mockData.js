@@ -1363,6 +1363,9 @@ availableTimes['PrTk17gQt1E5'] = [
 // match011: A쪽 피드백 작성 완료
 feedbacks['PrTk21kLm5I9'] = { rating: 6, comment: '대화는 좋았지만 취미가 너무 달랐어요.', feedbackAt: '2026-03-12T10:00:00Z' };
 
+// match005: B(최민수)가 프로필 확인 후 거절하며 남긴 사유 피드백 (취소 매칭)
+feedbacks['PrTk06uV8wX6'] = { rating: null, comment: '프로필 사진의 스타일이 제 이상형과 거리가 있어요.', feedbackAt: '2026-03-06T12:00:00Z' };
+
 // match007: completed — 양쪽 가용시간 + 선택 완료
 availableTimes['PrTk13cMp7A1'] = [
   { timeId: 'time-d01', date: '2026-03-01', startTime: '18:00:00', clientName: '송하은', selected: true },
@@ -2652,6 +2655,15 @@ export async function mockFetch(path, options = {}) {
     if (body.response === 'rejected') {
       m.status = 'cancelled';
       m.cancelReason = `${proposal.participant.role === 'receiver' ? 'B' : 'A'}가 프로필 확인 후 거절`;
+      // 거절 사유 피드백(선택) — 만남 후 피드백과 동일 저장소(feedbacks)에 보관.
+      // 매칭 상세 핸들러가 feedbacks[token] 을 읽어 clientA/clientB.feedbackComment 로 노출한다.
+      if (body.feedbackRating != null || (body.feedbackComment != null && body.feedbackComment !== '')) {
+        feedbacks[token] = {
+          rating: body.feedbackRating ?? null,
+          comment: body.feedbackComment ?? null,
+          feedbackAt: new Date().toISOString(),
+        };
+      }
       return { success: true, message: '응답이 등록되었습니다.' };
     }
 
