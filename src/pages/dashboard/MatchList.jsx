@@ -2,22 +2,19 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Heart, Search, X, ChevronDown, ChevronUp,
+  Heart, Search, X, ChevronDown,
   AlertTriangle, UserRound, Info, ArrowRight, ChevronRight,
-  Sparkles, SlidersHorizontal, ArrowUpRight, ChevronLeft,
+  SlidersHorizontal, ArrowUpRight, ChevronLeft,
 } from 'lucide-react';
 import useMatchStore from '../../store/matchStore';
 import useAuthStore from '../../store/authStore';
-import useClientListStore from '../../store/clientListStore';
 import * as matchService from '../../api/matchService';
 import * as clientService from '../../api/clientService';
 import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
-import { scorePair, topPairs, topChips, pairKey } from './matchScore';
-
-const REC_MIN_SCORE = 60;
+import { scorePair, topChips } from './matchScore';
 import EmptyState from '../../components/EmptyState';
 import styles from './MatchList.module.css';
 
@@ -169,125 +166,6 @@ function MatchCard({ match, onClick }) {
   );
 }
 
-/* ─── RecommendedPairsCompact ─── */
-function SignalBar({ score, max }) {
-  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
-  const color = pct >= 70 ? 'var(--mint-600)' : pct >= 40 ? 'var(--tangerine-600)' : 'var(--ink-200)';
-  return (
-    <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'var(--ink-100)', overflow: 'hidden' }}>
-      <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2, transition: 'width 0.4s ease' }} />
-    </div>
-  );
-}
-
-function PairCard({ pair, onCreateMatch }) {
-  const [expanded, setExpanded] = useState(false);
-  const { a, b, total, signals } = pair;
-  const chips = topChips(signals, 3);
-  const nameA = a.name || a.nickname || '?';
-  const nameB = b.name || b.nickname || '?';
-  const genderA = (a.gender || 'male').toLowerCase();
-  const genderB = (b.gender || 'female').toLowerCase();
-
-  return (
-    <div className={styles.pairCard}>
-      <div className={styles.pairCardRow} onClick={() => setExpanded((v) => !v)}>
-        {/* Avatars */}
-        <div style={{ display: 'flex', flexShrink: 0 }}>
-          <MiniAvatar name={nameA} gender={genderA} size={30} />
-          <div style={{ marginLeft: -8, borderRadius: '50%', border: '1.5px solid var(--paper-card)' }}>
-            <MiniAvatar name={nameB} gender={genderB} size={30} />
-          </div>
-        </div>
-        {/* Names + chips */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className={styles.pairNames}>
-            {nameA}
-            <span className={styles.pairArrow}>↔</span>
-            {nameB}
-          </div>
-          {chips.length > 0 && (
-            <div className={styles.pairChips}>
-              {chips.map((c, i) => (
-                <span key={i} className={styles.pairChip}>{c}</span>
-              ))}
-            </div>
-          )}
-        </div>
-        {/* Score */}
-        <div className={styles.pairScore}>
-          <span className={styles.pairScoreNum}>{total}</span>
-          <span className={styles.pairScoreMax}>/100</span>
-        </div>
-        <ChevronDown
-          size={14}
-          strokeWidth={2}
-          color="var(--ink-300)"
-          style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
-        />
-      </div>
-
-      {/* Expanded signals */}
-      {expanded && (
-        <div className={styles.pairSignals}>
-          {signals.filter((s) => s.max > 0).map((s) => (
-            <div key={s.key} className={styles.pairSignalRow}>
-              <span className={styles.pairSignalLabel}>{s.label}</span>
-              <SignalBar score={s.score} max={s.max} />
-              <span className={styles.pairSignalScore}>{s.score}<span style={{ color: 'var(--ink-300)' }}>/{s.max}</span></span>
-              {s.detail && <span className={styles.pairSignalDetail}>{s.detail}</span>}
-            </div>
-          ))}
-          <button
-            className={styles.pairMatchBtn}
-            onClick={(e) => { e.stopPropagation(); onCreateMatch(a.id, b.id); }}
-            type="button"
-          >
-            <Heart size={12} strokeWidth={2} />
-            이 두 분 매칭하기
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RecommendedPairsCompact({ clients, excludePairKeys, onCreateMatch }) {
-  const [open, setOpen] = useState(false);
-  const pairs = useMemo(
-    () => topPairs(clients, 3, { excludePairKeys, minScore: REC_MIN_SCORE }),
-    [clients, excludePairKeys],
-  );
-
-  if (pairs.length === 0) return null;
-
-  return (
-    <div className={styles.recSection}>
-      <button
-        className={styles.recToggle}
-        onClick={() => setOpen((v) => !v)}
-        type="button"
-        aria-expanded={open}
-      >
-        <Sparkles size={13} strokeWidth={2} color="var(--tangerine-600)" />
-        <span className={styles.recToggleLabel}>오늘의 추천 매칭</span>
-        <span className={styles.recCount}>{pairs.length}쌍</span>
-        <div style={{ flex: 1 }} />
-        {open
-          ? <ChevronUp size={14} strokeWidth={2} color="var(--ink-400)" />
-          : <ChevronDown size={14} strokeWidth={2} color="var(--ink-400)" />}
-      </button>
-      {open && (
-        <div className={styles.recContent}>
-          {pairs.map((pair, i) => (
-            <PairCard key={i} pair={pair} onCreateMatch={onCreateMatch} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* ─── TodoGroups ─── */
 /* ─── Tab bar ─── 매칭 상태의 단일 축. 전체/대기/진행중/완료/취소 5구분. */
 const TABS = [
@@ -425,13 +303,10 @@ export default function MatchList() {
           setFilter, setFilters, setPage, fetchMatches } = useMatchStore();
   const navigate      = useNavigate();
   const myManagerId   = useAuthStore((s) => s.managerId);
-  const { clients: storeClients } = useClientListStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate,   setShowCreate]   = useState(false);
   const [searchInput,  setSearchInput]  = useState(filters.clientName || '');
   const [onlyMine,     setOnlyMine]     = useState(Boolean(myManagerId));
-  const [allClients,   setAllClients]   = useState([]);
-  const [recExcludePairs, setRecExcludePairs] = useState(null);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [filterOpen,   setFilterOpen]   = useState(false);
   const searchInputRef = useRef(null);
@@ -473,44 +348,6 @@ export default function MatchList() {
       setSearchParams(next, { replace: true });
     }
   };
-
-  /* Load clients for recommended-pairs scoring */
-  useEffect(() => {
-    if (storeClients.length > 0) {
-      setAllClients(storeClients);
-    } else {
-      clientService.listClients({ limit: 200, approval: 'approved', status: 'active' })
-        .then((res) => {
-          const list = res.data || res.clients || res;
-          if (Array.isArray(list)) setAllClients(list);
-        })
-        .catch(() => {});
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeClients.length]);
-
-  /* Build exclusion set for recommended pairs: 제안발송(proposal_sent) 이상 이력 보유 페어는 제외.
-     draft 단계는 아직 제안 발송 전이므로 이력으로 보지 않는다. */
-  useEffect(() => {
-    let cancelled = false;
-    matchService.listMatches({ size: 200 })
-      .then((res) => {
-        if (cancelled) return;
-        const list = res.data || res.matches || [];
-        const keys = new Set();
-        for (const m of list) {
-          if (!m || m.status === 'draft') continue;
-          const aId = m.clientA?.clientId;
-          const bId = m.clientB?.clientId;
-          if (aId && bId) keys.add(pairKey(aId, bId));
-        }
-        setRecExcludePairs(keys);
-      })
-      .catch(() => {
-        if (!cancelled) setRecExcludePairs(new Set());
-      });
-    return () => { cancelled = true; };
-  }, []);
 
   /* Debounce search → clientName filter (+ URL ?name= 동기화) */
   useEffect(() => {
@@ -675,16 +512,6 @@ export default function MatchList() {
           );
         })}
       </div>
-
-      {/* ── Recommended pairs (below tab strip, always visible) ── */}
-      <RecommendedPairsCompact
-        clients={allClients}
-        excludePairKeys={recExcludePairs}
-        onCreateMatch={(aId, bId) => {
-          setSearchParams({ create: '1', clientA: aId, clientB: bId });
-          setShowCreate(true);
-        }}
-      />
 
       {/* ── Error ── */}
       {error && (
