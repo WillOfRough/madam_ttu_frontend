@@ -8,6 +8,7 @@ import useManagerStore from '../../store/managerStore';
 import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useNotificationStore from '../../store/notificationStore';
+import { isImportantNotification } from '../../api/notificationTypes';
 import useClientListStore from '../../store/clientListStore';
 import * as matchService from '../../api/matchService';
 import * as settlementService from '../../api/settlementService';
@@ -231,7 +232,11 @@ function NotificationsColumn() {
     if (notifications.length === 0) fetchNotifications();
   }, []);
 
-  const recent = useMemo(() => (notifications || []).slice(0, 12), [notifications]);
+  // 알림탭과 동일하게 routine 알림은 숨기고 중요 알림만 노출
+  const recent = useMemo(
+    () => (notifications || []).filter((n) => isImportantNotification(n.type)).slice(0, 12),
+    [notifications]
+  );
 
   return (
     <div className={styles.dashCol}>
