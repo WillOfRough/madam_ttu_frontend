@@ -320,13 +320,15 @@ export default function DashboardHome() {
 
   /* Scheduled matches (오늘의 일정) */
   useEffect(() => {
-    matchService.listMatches({ status: 'scheduled', size: 3 })
+    const params = { status: 'scheduled', size: 3 };
+    if (myManagerId) params.managerId = myManagerId;
+    matchService.listMatches(params)
       .then((res) => {
         const all = res.data || res.matches || [];
         setScheduledMatches(all.slice(0, 3));
       })
       .catch(() => setScheduledMatches([]));
-  }, []);
+  }, [myManagerId]);
 
   /* Monthly settlement */
   useEffect(() => {
