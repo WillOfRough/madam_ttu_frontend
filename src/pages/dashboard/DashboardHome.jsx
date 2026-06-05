@@ -42,6 +42,21 @@ const TODO_STATUSES = new Set([
   'draft', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled', 'completed',
 ]);
 
+/* 매칭의 확정 만남 일시를 Date 로 반환 (없으면 null).
+   - 실제 백엔드: confirmedSchedule.{date,startTime} (top-level 날짜 필드는 null)
+   - mock/구필드 호환: meetingDate | confirmedAt | scheduledAt */
+function getMeetingAt(match) {
+  const cs = match.confirmedSchedule;
+  if (cs?.date) {
+    const dt = new Date(`${cs.date}T${cs.startTime || '00:00:00'}`);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  }
+  const raw = match.meetingDate || match.confirmedAt || match.scheduledAt;
+  if (!raw) return null;
+  const dt = new Date(raw);
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
 const TONE_STYLES = {
   ink:       { actionBg: 'var(--ink-50)',        fg: 'var(--ink-700)',        dot: 'var(--ink-500)'        },
   lilac:     { actionBg: 'var(--lilac-100)',     fg: '#4F3DA0',               dot: 'var(--lilac-600)'      },
@@ -162,16 +177,16 @@ function TodoRow({ match, onClick }) {
 }
 
 /* ── Today Card ── */
-function TodayCard({ match }) {
+function TodayCard({ match, onClick }) {
   const nameA = match.clientA?.clientName || 'A';
   const nameB = match.clientB?.clientName || 'B';
-  const location = match.location || '장소 미정';
-  const confirmedAt = match.confirmedAt || match.scheduledAt;
+  const location = match.confirmedSchedule?.location || match.location || '장소 미정';
+  const meetingAt = getMeetingAt(match);
 
   let dateLabel = '';
   let daysLabel = '';
-  if (confirmedAt) {
-    const d = new Date(confirmedAt);
+  if (meetingAt) {
+    const d = meetingAt;
     const now = new Date();
     const month = d.getMonth() + 1;
     const day   = d.getDate();
@@ -180,15 +195,29 @@ function TodayCard({ match }) {
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     dateLabel = `${month}월 ${day}일 (${dow}) ${hours}:${minutes}`;
-    const diffMs = d - now;
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    // D-day 는 시각이 아닌 '날짜' 경계 기준으로 센다 (오늘=D-Day, 내일=D-1).
+    const meetingDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((meetingDay - today) / (1000 * 60 * 60 * 24));
     if (diffDays === 0) daysLabel = 'D-Day';
     else if (diffDays > 0) daysLabel = `D-${diffDays}`;
     else daysLabel = `D+${Math.abs(diffDays)}`;
   }
 
   return (
-    <div className={styles.todayCard}>
+    <div
+      className={styles.todayCard}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      style={{ cursor: 'pointer' }}
+    >
       <div className={styles.todayIconBox}>
         <Calendar size={20} strokeWidth={1.8} />
       </div>
@@ -319,13 +348,21 @@ export default function DashboardHome() {
       .catch(() => setTodoMatches([]));
   }, []);
 
-  /* Scheduled matches (오늘의 일정) — 내가 관여한 매칭만 (위와 동일 기준) */
+  /* 다가오는 일정 — 내가 관여한 + 일정 확정(scheduled) 매칭을 만남일 임박순으로.
+     오늘 이전(지난) 일정은 제외하고, 가장 가까운 순으로 3건만 노출. */
   useEffect(() => {
     matchService.listMatches({ status: 'scheduled', size: 50 })
       .then((res) => {
         const all = res.data || res.matches || [];
-        const mine = all.filter((m) => m.accessible !== false);
-        setScheduledMatches(mine.slice(0, 3));
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const upcoming = all
+          .filter((m) => m.accessible !== false)
+          .map((m) => ({ m, at: getMeetingAt(m) }))
+          .filter(({ at }) => at && at >= startOfToday)
+          .sort((a, b) => a.at - b.at)
+          .map(({ m }) => m);
+        setScheduledMatches(upcoming.slice(0, 3));
       })
       .catch(() => setScheduledMatches([]));
   }, []);
@@ -382,7 +419,7 @@ export default function DashboardHome() {
         </h1>
         <p className={styles.greetingStats}>
           오늘 처리할 일이 <b style={{ color: 'var(--rose-600)' }}>{todoCount}건</b>,
-          이번 주 일정이 <b style={{ color: 'var(--ink-900)' }}>{scheduledMatches?.length || 0}건</b> 예정되어 있어요.
+          다가오는 일정이 <b style={{ color: 'var(--ink-900)' }}>{scheduledMatches?.length || 0}건</b> 있어요.
         </p>
       </section>
 
@@ -476,11 +513,11 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Col 2: 오늘의 일정 */}
+        {/* Col 2: 다가오는 일정 */}
         <div className={styles.dashCol}>
           <SectionHeader
-            title="오늘의 일정"
-            sub={`예정된 일정 ${scheduledMatches?.length || 0}건`}
+            title="다가오는 일정"
+            sub={`다가오는 일정 ${scheduledMatches?.length || 0}건`}
           />
           <div className={styles.dashCard}>
             <div className={styles.dashCardBody}>
@@ -493,7 +530,7 @@ export default function DashboardHome() {
                   <div className={styles.dashEmptyIcon}>
                     <Calendar size={22} strokeWidth={1.6} />
                   </div>
-                  <div className={styles.dashEmptyTitle}>오늘 예정된 일정이 없어요</div>
+                  <div className={styles.dashEmptyTitle}>다가오는 일정이 없어요</div>
                   <div className={styles.dashEmptyDesc}>
                     새 일정이 잡히면 이곳에 표시돼요
                   </div>
@@ -501,7 +538,11 @@ export default function DashboardHome() {
               ) : (
                 <div className={styles.todayCardWrapper}>
                   {scheduledMatches.map((m) => (
-                    <TodayCard key={m.matchId} match={m} />
+                    <TodayCard
+                      key={m.matchId}
+                      match={m}
+                      onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
+                    />
                   ))}
                 </div>
               )}
