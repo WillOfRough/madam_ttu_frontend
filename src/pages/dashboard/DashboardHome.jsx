@@ -293,7 +293,6 @@ export default function DashboardHome() {
   const isLoading    = useManagerStore((s) => s.isLoading);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
   const myName       = useAuthStore((s) => s.name);
-  const myManagerId  = useAuthStore((s) => s.managerId);
   const connections  = useConnectionStore((s) => s.connections);
   const navigate     = useNavigate();
 
@@ -305,30 +304,31 @@ export default function DashboardHome() {
     fetchSummary();
   }, [fetchSummary]);
 
-  /* Todo list */
+  /* Todo list — 내가 관여한(직접 생성 OR 내 회원이 포함된) 매칭 중 처리 대기 항목.
+     managerId 로 좁히면 '내가 만든 것'만 남아 내 회원이 받는 쪽으로 들어간 매칭을
+     놓치므로, 관여 여부(accessible)를 기준으로 거른다. (MatchList 기본 동작과 동일) */
   useEffect(() => {
-    const params = { size: 5 };
-    if (myManagerId) params.managerId = myManagerId;
-    matchService.listMatches(params)
+    matchService.listMatches({ size: 50 })
       .then((res) => {
         const all = res.data || res.matches || [];
-        const todos = all.filter((m) => TODO_STATUSES.has(m.status));
+        const todos = all
+          .filter((m) => m.accessible !== false)
+          .filter((m) => TODO_STATUSES.has(m.status));
         setTodoMatches(todos.slice(0, 5));
       })
       .catch(() => setTodoMatches([]));
-  }, [myManagerId]);
+  }, []);
 
-  /* Scheduled matches (오늘의 일정) */
+  /* Scheduled matches (오늘의 일정) — 내가 관여한 매칭만 (위와 동일 기준) */
   useEffect(() => {
-    const params = { status: 'scheduled', size: 3 };
-    if (myManagerId) params.managerId = myManagerId;
-    matchService.listMatches(params)
+    matchService.listMatches({ status: 'scheduled', size: 50 })
       .then((res) => {
         const all = res.data || res.matches || [];
-        setScheduledMatches(all.slice(0, 3));
+        const mine = all.filter((m) => m.accessible !== false);
+        setScheduledMatches(mine.slice(0, 3));
       })
       .catch(() => setScheduledMatches([]));
-  }, [myManagerId]);
+  }, []);
 
   /* Monthly settlement */
   useEffect(() => {
