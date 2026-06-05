@@ -6,7 +6,7 @@ import {
   ChevronLeft,
   Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
   Link2, RefreshCw, Trash2,
-  Heart, MessageSquare, FileText, Send,
+  Heart, FileText, Send,
   ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2, Mail,
 } from 'lucide-react';
 import * as matchService from '../../api/matchService';
@@ -18,7 +18,7 @@ import { SkeletonLine } from '../../components/Skeleton';
 import styles from './MatchDetail.module.css';
 import {
   generateAfterSuccessMessage,
-  generateMeetingMessage, RESPONSE_MAP, STEPS, getStepIndex, getStageHero,
+  generateMeetingMessage, STEPS, getStepIndex, getStageHero,
   getHeroGradient, getHeroIconColor, getHeroKickerColor, formatDate, formatSlotDisplay,
   formatTimeOnly, formatDateHeader, formatCreatedAt, addHour, generateTimeOptions,
   REMIND_STATUS_LABEL, REMIND_ACTION_LABEL, getRemindPreview, formatAutoSendTime,
@@ -107,8 +107,9 @@ export default function MatchDetail() {
     return () => { cancelled = true; };
   }, [matchId, match?.status]);
 
-  // 프로필 제안 거절로 취소된 매칭은 진입 시 '응답' 탭을 먼저 띄운다.
-  // (취소 매칭의 feedbackAt 은 곧 프로필 거절 피드백 — 에프터 피드백은 completed 상태라 겹치지 않음)
+  // 진입 시 '응답' 탭을 먼저 띄우는 경우:
+  //  - 프로필 제안 거절로 취소된 매칭 (취소 매칭의 feedbackAt = 프로필 거절 피드백)
+  //  - 미팅 완료(completed) 매칭 — 에프터 현황을 응답 탭으로 통합했으므로 바로 보여준다
   // 최초 1회만 적용해, reload() 후 사용자가 고른 탭으로 다시 튕기지 않게 한다.
   const didAutoSelectTab = useRef(false);
   useEffect(() => {
@@ -116,7 +117,7 @@ export default function MatchDetail() {
     const rejectedOnProposal =
       match.status === 'cancelled' &&
       (match.clientA?.response === 'rejected' || match.clientB?.response === 'rejected');
-    if (rejectedOnProposal) setParticipantTab('response');
+    if (rejectedOnProposal || match.status === 'completed') setParticipantTab('response');
     didAutoSelectTab.current = true;
   }, [match]);
 
@@ -759,6 +760,13 @@ export default function MatchDetail() {
 
             {participantTab === 'response' && (
               <div className={styles.responsePanel}>
+                {/* 에프터 종합 상태 (미팅 완료 + 에프터 응답 도착) */}
+                {match.status === 'completed' && match.afterStatus && (
+                  <div className={styles.responseAfterStatus}>
+                    <span className={styles.afterStatusLabel}><Heart size={13} /> 에프터 상태</span>
+                    <StatusBadge status={`after_${match.afterStatus}`} />
+                  </div>
+                )}
                 {[
                   { client: match.clientA, side: 'A' },
                   { client: match.clientB, side: 'B' },
@@ -767,6 +775,8 @@ export default function MatchDetail() {
                   const after = client.afterResponse;
                   // 프로필 제안 거절 피드백: 취소된 매칭에서 거절한 회원의 코멘트를 응답 바로 아래에 노출.
                   const showRejectFeedback = isCancelled && resp === 'rejected' && client.feedbackAt;
+                  // 만남(에프터) 미성사 피드백: 완료 매칭에서 에프터 거절 회원의 코멘트를 응답 바로 아래에 노출.
+                  const showAfterFeedback = match.status === 'completed' && match.afterStatus === 'rejected' && client.feedbackAt;
                   return (
                     <div key={side} className={styles.responseGroup}>
                       <div className={styles.responseRow}>
@@ -791,9 +801,23 @@ export default function MatchDetail() {
                           <p className={styles.feedbackDateText}>{formatDate(client.feedbackAt)}</p>
                         </div>
                       )}
+                      {showAfterFeedback && (
+                        <div className={styles.responseFeedback}>
+                          {client.feedbackComment ? (
+                            <p className={styles.feedbackCommentText}>&ldquo;{client.feedbackComment}&rdquo;</p>
+                          ) : (
+                            <p className={styles.feedbackDateText}>코멘트 없이 마무리했습니다.</p>
+                          )}
+                          <p className={styles.feedbackDateText}>{formatDate(client.feedbackAt)}</p>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
+                {/* 완료됐지만 에프터 응답이 아직 없을 때 */}
+                {match.status === 'completed' && !match.afterStatus && (
+                  <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
+                )}
               </div>
             )}
 
@@ -1053,60 +1077,6 @@ export default function MatchDetail() {
               </span>
               <span className={styles.refundHours}>약속까지 {refundStatus.hours}시간 남음</span>
             </div>
-          </div>
-        )}
-
-        {/* ── After Status (completed) ── */}
-        {match.status === 'completed' && (
-          <div className={styles.afterCard}>
-            <div className={styles.afterCardTitle}><Heart size={14} /> 에프터 현황</div>
-            {match.afterStatus ? (
-              <>
-                <div className={styles.afterStatusRow}>
-                  <span className={styles.afterStatusLabel}>에프터 상태</span>
-                  <StatusBadge status={`after_${match.afterStatus}`} />
-                </div>
-                <div className={styles.afterResponses}>
-                  {[
-                    { side: 'A', participant: match.clientA },
-                    { side: 'B', participant: match.clientB },
-                  ].map(({ side, participant }) => (
-                    <div key={side} className={styles.afterResponseItem}>
-                      <span className={styles.responseSideBadge}>{side}</span>
-                      <span className={styles.afterName}>{participant.clientName}</span>
-                      <span className={styles[RESPONSE_MAP[participant.response]?.className || 'responseWaiting']}>
-                        {RESPONSE_MAP[participant.response]?.label || '대기'}
-                      </span>
-                      <span className={styles[`afterResp_${participant.afterResponse || 'pending'}`]}>
-                        {participant.afterResponse === 'accepted' ? '만나볼래요' : participant.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                {match.afterStatus === 'rejected' && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
-                  <div className={styles.feedbackSection}>
-                    <div className={styles.feedbackSectionTitle}><MessageSquare size={14} /> 만남 피드백</div>
-                    {[
-                      { side: 'A', participant: match.clientA },
-                      { side: 'B', participant: match.clientB },
-                    ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
-                      <div key={side} className={styles.feedbackItem}>
-                        <div className={styles.feedbackItemHeader}>
-                          <span className={styles.responseSideBadge}>{side}</span>
-                          <span className={styles.feedbackItemName}>{participant.clientName}</span>
-                        </div>
-                        {participant.feedbackComment && (
-                          <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
-                        )}
-                        <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
-            )}
           </div>
         )}
 
