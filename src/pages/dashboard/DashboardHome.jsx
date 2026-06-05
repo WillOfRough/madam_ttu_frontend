@@ -419,7 +419,7 @@ export default function DashboardHome() {
         </h1>
         <p className={styles.greetingStats}>
           오늘 처리할 일이 <b style={{ color: 'var(--rose-600)' }}>{todoCount}건</b>,
-          다가오는 일정이 <b style={{ color: 'var(--ink-900)' }}>{scheduledMatches?.length || 0}건</b> 있어요.
+          예정된 만남이 <b style={{ color: 'var(--ink-900)' }}>{scheduledMatches?.length || 0}건</b> 있어요.
         </p>
       </section>
 
@@ -513,11 +513,11 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Col 2: 다가오는 일정 */}
+        {/* Col 2: 예정된 만남 */}
         <div className={styles.dashCol}>
           <SectionHeader
-            title="다가오는 일정"
-            sub={`다가오는 일정 ${scheduledMatches?.length || 0}건`}
+            title="예정된 만남"
+            sub={`예정된 만남 ${scheduledMatches?.length || 0}건`}
           />
           <div className={styles.dashCard}>
             <div className={styles.dashCardBody}>
@@ -530,7 +530,7 @@ export default function DashboardHome() {
                   <div className={styles.dashEmptyIcon}>
                     <Calendar size={22} strokeWidth={1.6} />
                   </div>
-                  <div className={styles.dashEmptyTitle}>다가오는 일정이 없어요</div>
+                  <div className={styles.dashEmptyTitle}>예정된 만남이 없어요</div>
                   <div className={styles.dashEmptyDesc}>
                     새 일정이 잡히면 이곳에 표시돼요
                   </div>
