@@ -766,27 +766,47 @@ export default function MatchDetail() {
                   </div>
                 )}
                 {[
-                  { client: match.clientA, side: 'A' },
-                  { client: match.clientB, side: 'B' },
-                ].map(({ client, side }) => {
+                  { client: match.clientA, side: 'A', times: timesA },
+                  { client: match.clientB, side: 'B', times: timesB },
+                ].map(({ client, side, times }) => {
                   const resp = client.response;
                   const after = client.afterResponse;
-                  // 프로필 제안 거절 피드백: 취소된 매칭에서 거절한 회원의 코멘트를 응답 바로 아래에 노출.
+                  const respClass = resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending;
+                  const afterClass = after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending;
+                  // 일정(가용시간) 응답: 조율 단계부터 회원별 제출 현황을 노출.
+                  const showScheduling = ['scheduling', 'arranging', 'scheduled'].includes(match.status);
+                  const submittedCount = times.length;
+                  // 프로필 제안 거절 피드백(취소 매칭) / 에프터 미성사 피드백(완료 매칭) — 개인별 응답 기준.
                   const showRejectFeedback = isCancelled && resp === 'rejected' && client.feedbackAt;
-                  // 만남(에프터) 미성사 피드백: 완료 매칭에서 에프터 거절 회원의 코멘트를 응답 바로 아래에 노출.
-                  const showAfterFeedback = match.status === 'completed' && match.afterStatus === 'rejected' && client.feedbackAt;
+                  const showAfterFeedback = match.status === 'completed' && after === 'rejected' && client.feedbackAt;
                   return (
                     <div key={side} className={styles.responseGroup}>
                       <div className={styles.responseRow}>
                         <span className={styles.responseSideBadge}>{side}</span>
                         <span className={styles.responseClientName}>{client.clientName}</span>
-                        <span className={`${styles.responseBadge} ${resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
-                          {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
-                        </span>
-                        {match.status === 'completed' && (
-                          <span className={`${styles.responseBadge} ${after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
-                            에프터 {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
+                      </div>
+                      <div className={styles.responseItems}>
+                        <div className={styles.responseItem}>
+                          <span className={styles.responseItemLabel}>제안</span>
+                          <span className={`${styles.responseBadge} ${respClass}`}>
+                            {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
                           </span>
+                        </div>
+                        {showScheduling && (
+                          <div className={styles.responseItem}>
+                            <span className={styles.responseItemLabel}>일정</span>
+                            <span className={`${styles.responseBadge} ${submittedCount > 0 ? styles.responseBadgeAccepted : styles.responseBadgePending}`}>
+                              {submittedCount > 0 ? `가용시간 ${submittedCount}개 제출` : '미제출'}
+                            </span>
+                          </div>
+                        )}
+                        {match.status === 'completed' && (
+                          <div className={styles.responseItem}>
+                            <span className={styles.responseItemLabel}>에프터</span>
+                            <span className={`${styles.responseBadge} ${afterClass}`}>
+                              {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
+                            </span>
+                          </div>
                         )}
                       </div>
                       {showRejectFeedback && (
@@ -800,7 +820,7 @@ export default function MatchDetail() {
                         </div>
                       )}
                       {showAfterFeedback && (
-                        <div className={styles.responseFeedback}>
+                        <div className={`${styles.responseFeedback} ${styles.responseFeedbackAfter}`}>
                           {client.feedbackComment ? (
                             <p className={styles.feedbackCommentText}>&ldquo;{client.feedbackComment}&rdquo;</p>
                           ) : (
