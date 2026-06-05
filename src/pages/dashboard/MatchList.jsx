@@ -305,7 +305,7 @@ export default function MatchList() {
   const myManagerId   = useAuthStore((s) => s.managerId);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreate,   setShowCreate]   = useState(false);
-  const [searchInput,  setSearchInput]  = useState(filters.clientName || '');
+  const [searchInput,  setSearchInput]  = useState('');
   const [onlyMine,     setOnlyMine]     = useState(Boolean(myManagerId));
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [filterOpen,   setFilterOpen]   = useState(false);
@@ -315,13 +315,11 @@ export default function MatchList() {
   useEffect(() => {
     const statusParam = searchParams.get('status');
     const createParam = searchParams.get('create');
-    // 검색어는 URL(?name=) 기준: 상세 복귀(뒤로가기)면 쿼리가 살아있어 복원되고,
-    // 다른 탭에서 새로 들어오면 쿼리가 없어 store 에 남아있던 검색어를 비운다.
-    const nameParam = searchParams.get('name') || '';
+    // 검색어는 세션에 남기지 않는다 — 매칭탭 재진입/새로고침 시 항상 빈 검색으로 시작.
     const patch = {};
     if (statusParam) patch.status = statusParam;
     if (myManagerId) patch.managerId = myManagerId;
-    if ((filters.clientName || '') !== nameParam) patch.clientName = nameParam;
+    if (filters.clientName) patch.clientName = '';
     if (Object.keys(patch).length > 0) {
       setFilters(patch);
       if (statusParam) {
@@ -330,8 +328,7 @@ export default function MatchList() {
         setSearchParams(next, { replace: true });
       }
     }
-    setSearchInput(nameParam);
-    if (nameParam) setSearchOpen(true);
+    setSearchInput('');
     if (createParam === '1') {
       setShowCreate(true);
     }
@@ -349,23 +346,24 @@ export default function MatchList() {
     }
   };
 
-  /* Debounce search → clientName filter (+ URL ?name= 동기화) */
+  /* Debounce search → clientName filter (URL 동기화 안 함: 검색은 세션 내에서만 유지) */
   useEffect(() => {
     const h = setTimeout(() => {
       if (filters.clientName !== searchInput) setFilter('clientName', searchInput);
-      // 검색어를 URL 에 반영 → 상세 복귀(뒤로가기)·새로고침·링크공유에서 검색 유지
-      if ((searchParams.get('name') || '') !== searchInput) {
-        const next = new URLSearchParams(searchParams);
-        if (searchInput) next.set('name', searchInput); else next.delete('name');
-        setSearchParams(next, { replace: true });
-      }
     }, 300);
     return () => clearTimeout(h);
-  }, [searchInput, filters.clientName, setFilter, searchParams, setSearchParams]);
+  }, [searchInput, filters.clientName, setFilter]);
 
   useEffect(() => {
     fetchMatches();
   }, [page, filters, fetchMatches]);
+
+  /* 매칭탭을 벗어나면 검색어 초기화 — 다른 메뉴 진입/복귀 시 검색이 리셋되도록 */
+  useEffect(() => () => {
+    if (useMatchStore.getState().filters.clientName) {
+      useMatchStore.getState().setFilter('clientName', '');
+    }
+  }, []);
 
   /* Auto-focus search input when panel opens */
   useEffect(() => {
