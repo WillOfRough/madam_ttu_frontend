@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { backOr } from '../../utils/navBack';
 import {
   ChevronLeft,
-  Copy, Check, Calendar, MapPin, Clock, AlertTriangle,
+  Check, Calendar, MapPin, Clock, AlertTriangle,
   Link2, RefreshCw, Trash2,
   Heart, FileText, Send,
   ArrowRight, Bell, Info, X, Wallet, Pencil, CheckCircle2, Mail,
@@ -19,13 +19,13 @@ import styles from './MatchDetail.module.css';
 import {
   generateAfterSuccessMessage,
   generateMeetingMessage, STEPS, getStepIndex, getStageHero,
-  getHeroGradient, getHeroIconColor, getHeroKickerColor, formatDate, formatSlotDisplay,
+  getHeroGradient, getHeroIconColor, formatDate, formatSlotDisplay,
   formatTimeOnly, formatDateHeader, formatCreatedAt, addHour, generateTimeOptions,
   REMIND_STATUS_LABEL, REMIND_ACTION_LABEL, getRemindPreview, formatAutoSendTime,
   buildAutoSendHistory, getRefundStatus,
 } from './matchDetail/helpers';
 import {
-  AfterLinkCard, AfterResultLinkCard, SchedulingLinkCard, ParticipantCard,
+  AfterResultLinkCard, ParticipantCard,
   GuideMessageCard, AutoSendHistoryCard, MapLinks,
 } from './matchDetail/cards';
 
@@ -63,7 +63,6 @@ export default function MatchDetail() {
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showRemindConfirm, setShowRemindConfirm] = useState(false);
-  const [participantTab, setParticipantTab] = useState('profile');
   // 단계 봉투 아이콘: 모바일(터치)에서 hover 가 없어 탭으로 열고 닫는다.
   const [openEnvelope, setOpenEnvelope] = useState(null);
 
@@ -106,18 +105,6 @@ export default function MatchDetail() {
       .catch(() => { if (!cancelled) setPayments([]); });
     return () => { cancelled = true; };
   }, [matchId, match?.status]);
-
-  // 진입 시 '응답' 탭을 먼저 띄운다 — A·B 중 한 명이라도 응답한 매칭이면,
-  // 프로필보다 응답 현황(수락/거절·에프터·피드백)을 보는 게 직관적이기 때문.
-  // (거절로 취소·미팅 완료 매칭도 response 가 채워져 있어 자연히 포함된다)
-  // 최초 1회만 적용해, reload() 후 사용자가 고른 탭으로 다시 튕기지 않게 한다.
-  const didAutoSelectTab = useRef(false);
-  useEffect(() => {
-    if (didAutoSelectTab.current || !match) return;
-    const anyResponseMade = !!(match.clientA?.response || match.clientB?.response);
-    if (anyResponseMade || match.status === 'completed') setParticipantTab('response');
-    didAutoSelectTab.current = true;
-  }, [match]);
 
   if (loading)
     return (
@@ -563,12 +550,6 @@ export default function MatchDetail() {
             >
               <HeroIcon />
             </div>
-            <div
-              className={styles.heroKicker}
-              style={{ color: getHeroKickerColor(heroConfig.color) }}
-            >
-              지금 할 일
-            </div>
           </div>
           <div className={styles.heroTitle}>{heroConfig.title}</div>
           <div className={styles.heroSub}>{heroConfig.sub}</div>
@@ -719,170 +700,43 @@ export default function MatchDetail() {
 
         {/* ── Participants Section ── */}
         <div className={styles.participantsCard}>
-          {/* Tab header */}
-          <div className={styles.participantsTabs}>
-            {[
-              { k: 'profile',  label: '프로필' },
-              { k: 'response', label: '응답' },
-              { k: 'links',    label: '링크' },
-            ].map((t) => (
-              <button
-                key={t.k}
-                className={`${styles.participantsTab} ${participantTab === t.k ? styles.participantsTabActive : ''}`}
-                onClick={() => setParticipantTab(t.k)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           <div className={styles.participantsBody}>
-            {participantTab === 'profile' && (
-              <div className={styles.participantsList}>
-                <ParticipantCard
-                  participant={match.clientA}
-                  partner={match.clientB}
-                  label="회원 A"
-                  matchStatus={match.status}
-                  side="A"
-                />
-                <ParticipantCard
-                  participant={match.clientB}
-                  partner={match.clientA}
-                  label="회원 B"
-                  matchStatus={match.status}
-                  side="B"
-                />
-              </div>
-            )}
-
-            {participantTab === 'response' && (
-              <div className={styles.responsePanel}>
-                {/* 에프터 종합 상태 (미팅 완료 + 에프터 응답 도착) */}
-                {match.status === 'completed' && match.afterStatus && (
-                  <div className={styles.responseAfterStatus}>
-                    <span className={styles.afterStatusLabel}><Heart size={13} /> 에프터 상태</span>
-                    <StatusBadge status={`after_${match.afterStatus}`} />
-                  </div>
-                )}
-                {[
-                  { client: match.clientA, side: 'A', times: timesA },
-                  { client: match.clientB, side: 'B', times: timesB },
-                ].map(({ client, side, times }) => {
-                  const resp = client.response;
-                  const after = client.afterResponse;
-                  const respClass = resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending;
-                  const afterClass = after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending;
-                  // 일정(가용시간) 응답: 조율 단계부터 회원별 제출 현황을 노출.
-                  const showScheduling = ['scheduling', 'arranging', 'scheduled'].includes(match.status);
-                  const submittedCount = times.length;
-                  // 프로필 제안 거절 피드백(취소 매칭) / 에프터 미성사 피드백(완료 매칭) — 개인별 응답 기준.
-                  const showRejectFeedback = isCancelled && resp === 'rejected' && client.feedbackAt;
-                  const showAfterFeedback = match.status === 'completed' && after === 'rejected' && client.feedbackAt;
-                  return (
-                    <div key={side} className={styles.responseGroup}>
-                      <div className={styles.responseRow}>
-                        <span className={styles.responseSideBadge}>{side}</span>
-                        <span className={styles.responseClientName}>{client.clientName}</span>
-                      </div>
-                      <div className={styles.responseItems}>
-                        <div className={styles.responseItem}>
-                          <span className={styles.responseItemLabel}>제안</span>
-                          <span className={`${styles.responseBadge} ${respClass}`}>
-                            {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
-                          </span>
-                        </div>
-                        {showScheduling && (
-                          <div className={styles.responseItem}>
-                            <span className={styles.responseItemLabel}>일정</span>
-                            <span className={`${styles.responseBadge} ${submittedCount > 0 ? styles.responseBadgeAccepted : styles.responseBadgePending}`}>
-                              {submittedCount > 0 ? `가용시간 ${submittedCount}개 제출` : '미제출'}
-                            </span>
-                          </div>
-                        )}
-                        {match.status === 'completed' && (
-                          <div className={styles.responseItem}>
-                            <span className={styles.responseItemLabel}>에프터</span>
-                            <span className={`${styles.responseBadge} ${afterClass}`}>
-                              {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {showRejectFeedback && (
-                        <div className={styles.responseFeedback}>
-                          {client.feedbackComment ? (
-                            <p className={styles.feedbackCommentText}>&ldquo;{client.feedbackComment}&rdquo;</p>
-                          ) : (
-                            <p className={styles.feedbackDateText}>코멘트 없이 거절했습니다.</p>
-                          )}
-                          <p className={styles.feedbackDateText}>{formatDate(client.feedbackAt)}</p>
-                        </div>
-                      )}
-                      {showAfterFeedback && (
-                        <div className={`${styles.responseFeedback} ${styles.responseFeedbackAfter}`}>
-                          {client.feedbackComment ? (
-                            <p className={styles.feedbackCommentText}>&ldquo;{client.feedbackComment}&rdquo;</p>
-                          ) : (
-                            <p className={styles.feedbackDateText}>코멘트 없이 마무리했습니다.</p>
-                          )}
-                          <p className={styles.feedbackDateText}>{formatDate(client.feedbackAt)}</p>
-                        </div>
-                      )}
+            {/* 완료 매칭: A·B 에프터 응답 한눈 요약 (회원 카드의 단계 상태와 별개로 동시 대조용) */}
+            {match.status === 'completed' && (
+              <div className={styles.afterSummary}>
+                <div className={styles.afterSummaryHead}>
+                  <span className={styles.afterSummaryTitle}><Heart size={13} /> 에프터 결과</span>
+                  {match.afterStatus
+                    ? <StatusBadge status={`after_${match.afterStatus}`} />
+                    : <span className={styles.responseWaiting}>응답 대기</span>}
+                </div>
+                <div className={styles.afterSummaryRows}>
+                  {[
+                    { side: 'A', c: match.clientA },
+                    { side: 'B', c: match.clientB },
+                  ].map(({ side, c }) => (
+                    <div key={side} className={styles.afterSummaryRow}>
+                      <span className={styles.responseSideBadge}>{side}</span>
+                      <span className={styles.afterSummaryName}>{c.clientName}</span>
+                      <span className={styles[`afterResp_${c.afterResponse || 'pending'}`]}>
+                        {c.afterResponse === 'accepted' ? '만나볼래요' : c.afterResponse === 'rejected' ? '괜찮아요' : '대기 중'}
+                      </span>
                     </div>
-                  );
-                })}
-                {/* 완료됐지만 에프터 응답이 아직 없을 때 */}
-                {match.status === 'completed' && !match.afterStatus && (
-                  <p className={styles.waitingText}>에프터 응답 대기 중입니다.</p>
-                )}
+                  ))}
+                </div>
               </div>
             )}
-
-            {participantTab === 'links' && (
-              <div className={styles.linksPanel}>
-                {/* proposal sent — show proposal links */}
-                {['proposal_sent', 'proposal_accepted'].includes(match.status) && (
-                  <div className={styles.linksPanelSection}>
-                    <div className={styles.linksPanelLabel}>프로포절 링크</div>
-                    {[
-                      { side: 'A', client: match.clientA },
-                      { side: 'B', client: match.clientB },
-                    ].map(({ side, client }) => {
-                      const url = `${window.location.origin}/proposal/${client.proposalToken}`;
-                      return (
-                        <div key={side} className={styles.linkRow}>
-                          <span className={styles.responseSideBadge}>{side}</span>
-                          <span className={styles.linkValue}>{url}</span>
-                          <button className={styles.linkCopyBtn} onClick={async () => {
-                            try {
-                              await navigator.clipboard.writeText(url);
-                              toast.success('링크가 복사되었습니다.');
-                            } catch { toast.error('복사에 실패했습니다.'); }
-                          }}>
-                            <Copy size={12} /> 복사
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {/* scheduling */}
-                {match.status === 'scheduling' && (
-                  <SchedulingLinkCard match={match} />
-                )}
-                {/* after */}
-                {match.status === 'completed' && (
-                  <AfterLinkCard match={match} />
-                )}
-                {/* after result — 정책: 애프터 성사(accepted) 시에만 결과 링크를 회원에게 공유 */}
-                {match.status === 'completed' && match.afterStatus === 'accepted' && (
-                  <AfterResultLinkCard match={match} />
-                )}
-              </div>
-            )}
+            <div className={styles.participantsList}>
+              <ParticipantCard match={match} side="A" label="회원 A" />
+              <ParticipantCard match={match} side="B" label="회원 B" />
+            </div>
           </div>
         </div>
+
+        {/* ── 성사 결과 링크 — 정책: 애프터 성사(accepted) 시에만 결과 링크 공유 ── */}
+        {match.status === 'completed' && match.afterStatus === 'accepted' && (
+          <AfterResultLinkCard match={match} />
+        )}
 
         {/* ── Guide Message (awaiting_payment) ── */}
         {match.status === 'awaiting_payment' && (

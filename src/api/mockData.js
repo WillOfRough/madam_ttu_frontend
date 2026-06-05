@@ -705,7 +705,7 @@ const matches = [
     createdByManagerId: 'mgr001',
     createdByManagerName: '김성중',
   },
-  // 2) proposal_accepted — B수락, A(proposer) 확인 대기
+  // 2) proposal_accepted — A(proposer) 수락 완료, B(receiver) 확인 대기
   {
     matchId: 'match002',
     type: '1:1 소개팅',
@@ -714,13 +714,13 @@ const matches = [
     clientA: {
       clientId: 's005', clientName: '한소희', clientNickname: '제주도 소희', clientGender: 'female',
       managerName: '박소영', role: 'proposer',
-      response: null, respondedAt: null,
+      response: 'accepted', respondedAt: '2026-03-08T14:00:00Z',
       proposalToken: 'PrTk03iJ5kL3',
     },
     clientB: {
       clientId: 's010', clientName: '오태양', clientNickname: 'AI 태양', clientGender: 'male',
       managerName: '김성중', role: 'receiver',
-      response: 'accepted', respondedAt: '2026-03-08T14:00:00Z',
+      response: null, respondedAt: null,
       proposalToken: 'PrTk04mN6oP4',
     },
     createdAt: '2026-03-07T11:00:00Z',
@@ -1005,7 +1005,7 @@ const matches = [
     clientA: {
       clientId: 's003', clientName: '박지민', clientNickname: null, clientGender: 'female',
       managerName: '김성중', role: 'proposer',
-      response: null, respondedAt: null,
+      response: 'accepted', respondedAt: '2026-03-06T10:00:00Z',
       proposalToken: 'PrTk05qR7sT5',
     },
     clientB: {
@@ -1034,7 +1034,7 @@ const matches = [
     clientB: {
       clientId: 's002', clientName: '이준혁', clientNickname: null, clientGender: 'male',
       managerName: '김성중', role: 'receiver',
-      response: 'accepted', respondedAt: '2026-03-21T14:00:00Z',
+      response: null, respondedAt: null,
       proposalToken: 'PrTkDeleted02',
       deleted: false,
     },
@@ -1333,7 +1333,7 @@ const matches = [
       response: 'accepted', respondedAt: '2026-04-21T16:00:00Z',
       proposalToken: 'PrTkPay02B',
     },
-    payments: { A: 'confirmed', B: 'pending' },
+    payments: { A: 'paid', B: 'pending' },
     createdAt: '2026-04-20T09:00:00Z',
     createdByManagerId: MANAGER_ID,
     createdByManagerName: '김성중',
@@ -1390,6 +1390,36 @@ availableTimes['PrTk10kL2mN0'] = [
   { timeId: 'time-g03', date: '2026-03-19', startTime: '18:00:00', clientName: '강도윤', selected: false },
   { timeId: 'time-g04', date: '2026-03-20', startTime: '19:00:00', clientName: '강도윤', selected: false },
 ];
+
+// match-apr02: arranging — 양쪽 가용시간 제출 (공통 04/15 14:00)
+availableTimes['PrTkApr02A'] = [
+  { timeId: 'apr02-a1', date: '2026-04-15', startTime: '14:00:00', clientName: '한소희', selected: false },
+  { timeId: 'apr02-a2', date: '2026-04-16', startTime: '19:00:00', clientName: '한소희', selected: false },
+];
+availableTimes['PrTkApr02B'] = [
+  { timeId: 'apr02-b1', date: '2026-04-15', startTime: '14:00:00', clientName: '오태양', selected: false },
+  { timeId: 'apr02-b2', date: '2026-04-17', startTime: '18:00:00', clientName: '오태양', selected: false },
+];
+
+// match-apr03: scheduled — 확정 슬롯(04/12 18:00) selected
+availableTimes['PrTkApr03A'] = [
+  { timeId: 'apr03-a1', date: '2026-04-12', startTime: '18:00:00', clientName: '윤예은', selected: true },
+  { timeId: 'apr03-a2', date: '2026-04-13', startTime: '19:00:00', clientName: '윤예은', selected: false },
+];
+availableTimes['PrTkApr03B'] = [
+  { timeId: 'apr03-b1', date: '2026-04-12', startTime: '18:00:00', clientName: '정우진', selected: false },
+];
+
+// match-apr07: scheduled — 확정 슬롯(04/15 19:00) selected
+availableTimes['PrTkApr07A'] = [
+  { timeId: 'apr07-a1', date: '2026-04-15', startTime: '19:00:00', clientName: '한소희', selected: true },
+];
+availableTimes['PrTkApr07B'] = [
+  { timeId: 'apr07-b1', date: '2026-04-15', startTime: '19:00:00', clientName: '정우진', selected: false },
+];
+
+// match-apr09: B(최민수)가 프로필 확인 후 거절하며 남긴 사유 피드백
+feedbacks['PrTkApr09B'] = { rating: null, comment: '직업·가치관이 제가 찾는 분과 결이 달라요.', feedbackAt: '2026-04-06T12:00:00Z' };
 
 // Build proposal lookup from matches
 function getProposalByToken(token) {
