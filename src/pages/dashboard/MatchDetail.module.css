@@ -817,12 +817,39 @@
   gap: 10px;
 }
 
+.responseItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-left: 30px;
+}
+
+.responseItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.responseItemLabel {
+  flex-shrink: 0;
+  width: 38px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-400);
+}
+
 .responseFeedback {
   margin-top: 8px;
   padding: 8px 10px;
   margin-left: 30px;
   background: var(--rose-100);
   border-radius: var(--r-sm);
+}
+
+/* 에프터 미성사 피드백: 매칭 취소(거절)와 달리 서비스는 완료된 상태라 중립색으로 구분. */
+.responseFeedbackAfter {
+  background: var(--ink-50);
 }
 
 .responseAfterStatus {
