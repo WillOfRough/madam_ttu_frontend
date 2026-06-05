@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { backOr } from '../../utils/navBack';
@@ -106,6 +106,19 @@ export default function MatchDetail() {
       .catch(() => { if (!cancelled) setPayments([]); });
     return () => { cancelled = true; };
   }, [matchId, match?.status]);
+
+  // 프로필 제안 거절로 취소된 매칭은 진입 시 '응답' 탭을 먼저 띄운다.
+  // (취소 매칭의 feedbackAt 은 곧 프로필 거절 피드백 — 에프터 피드백은 completed 상태라 겹치지 않음)
+  // 최초 1회만 적용해, reload() 후 사용자가 고른 탭으로 다시 튕기지 않게 한다.
+  const didAutoSelectTab = useRef(false);
+  useEffect(() => {
+    if (didAutoSelectTab.current || !match) return;
+    const rejectedOnProposal =
+      match.status === 'cancelled' &&
+      (match.clientA?.response === 'rejected' || match.clientB?.response === 'rejected');
+    if (rejectedOnProposal) setParticipantTab('response');
+    didAutoSelectTab.current = true;
+  }, [match]);
 
   if (loading)
     return (
@@ -705,30 +718,6 @@ export default function MatchDetail() {
           </div>
         )}
 
-        {/* ── 거절 사유 피드백 (취소 매칭) ── */}
-        {isCancelled && (match.clientA.feedbackAt || match.clientB.feedbackAt) && (
-          <div className={styles.afterCard}>
-            <div className={styles.feedbackSectionTitle}><MessageSquare size={14} /> 거절 사유 피드백</div>
-            {[
-              { side: 'A', participant: match.clientA },
-              { side: 'B', participant: match.clientB },
-            ].filter((p) => p.participant.feedbackAt).map(({ side, participant }) => (
-              <div key={side} className={styles.feedbackItem}>
-                <div className={styles.feedbackItemHeader}>
-                  <span className={styles.responseSideBadge}>{side}</span>
-                  <span className={styles.feedbackItemName}>{participant.clientName}</span>
-                </div>
-                {participant.feedbackComment ? (
-                  <p className={styles.feedbackCommentText}>&ldquo;{participant.feedbackComment}&rdquo;</p>
-                ) : (
-                  <p className={styles.feedbackDateText}>코멘트 없이 거절했습니다.</p>
-                )}
-                <p className={styles.feedbackDateText}>{formatDate(participant.feedbackAt)}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* ── Participants Section ── */}
         <div className={styles.participantsCard}>
           {/* Tab header */}
@@ -776,17 +765,31 @@ export default function MatchDetail() {
                 ].map(({ client, side }) => {
                   const resp = client.response;
                   const after = client.afterResponse;
+                  // 프로필 제안 거절 피드백: 취소된 매칭에서 거절한 회원의 코멘트를 응답 바로 아래에 노출.
+                  const showRejectFeedback = isCancelled && resp === 'rejected' && client.feedbackAt;
                   return (
-                    <div key={side} className={styles.responseRow}>
-                      <span className={styles.responseSideBadge}>{side}</span>
-                      <span className={styles.responseClientName}>{client.clientName}</span>
-                      <span className={`${styles.responseBadge} ${resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
-                        {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
-                      </span>
-                      {match.status === 'completed' && (
-                        <span className={`${styles.responseBadge} ${after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
-                          에프터 {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
+                    <div key={side} className={styles.responseGroup}>
+                      <div className={styles.responseRow}>
+                        <span className={styles.responseSideBadge}>{side}</span>
+                        <span className={styles.responseClientName}>{client.clientName}</span>
+                        <span className={`${styles.responseBadge} ${resp === 'accepted' ? styles.responseBadgeAccepted : resp === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
+                          {resp === 'accepted' ? '수락' : resp === 'rejected' ? '거절' : '대기'}
                         </span>
+                        {match.status === 'completed' && (
+                          <span className={`${styles.responseBadge} ${after === 'accepted' ? styles.responseBadgeAccepted : after === 'rejected' ? styles.responseBadgeRejected : styles.responseBadgePending}`}>
+                            에프터 {after === 'accepted' ? '수락' : after === 'rejected' ? '거절' : '대기'}
+                          </span>
+                        )}
+                      </div>
+                      {showRejectFeedback && (
+                        <div className={styles.responseFeedback}>
+                          {client.feedbackComment ? (
+                            <p className={styles.feedbackCommentText}>&ldquo;{client.feedbackComment}&rdquo;</p>
+                          ) : (
+                            <p className={styles.feedbackDateText}>코멘트 없이 거절했습니다.</p>
+                          )}
+                          <p className={styles.feedbackDateText}>{formatDate(client.feedbackAt)}</p>
+                        </div>
                       )}
                     </div>
                   );
