@@ -825,6 +825,15 @@
   border-radius: var(--r-sm);
 }
 
+.responseAfterStatus {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--ink-100);
+}
+
 .responseSideBadge {
   display: inline-flex;
   align-items: center;
@@ -1536,6 +1545,9 @@
 }
 
 .afterStatusLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-400);
