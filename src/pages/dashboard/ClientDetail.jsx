@@ -353,27 +353,50 @@ export default function ClientDetail() {
     || null;
   const inviteLabel = client?.inviteToken?.label || client?.inviteToken?.name || '링크 가입';
 
-  // ── timeline dot class ──
-  const timelineDotClass = (status) => {
-    if (!status) return styles.dotInk;
-    const s = status.toLowerCase();
-    if (s.includes('completed') || s.includes('success') || s.includes('accepted')) return styles.dotMint;
-    if (s.includes('progress') || s.includes('pending') || s.includes('payment') || s.includes('proposal')) return styles.dotAmber;
-    return styles.dotInk;
-  };
-
-  const timelineLabel = (m) => {
+  // 매칭 1건 → 타임라인 표시 메타. 아이콘·컬러 배지 없이 텍스트 구조만으로 전달한다.
+  //  - 제목: "{상대이름} • {상태}" — 누구와의 매칭인지 앞세우고 상태/주체를 점(•)으로 구분
+  //  - 거절/취소 주체는 본인 · 상대 · 관리자 로 명확히 구분
+  //  - 부제: "{날짜} | {담당 매니저}" — 반복 문구("매칭 생성") 제거, 구분선(|)으로 간결화
+  //  - 성사(약속확정·완료) 상태에만 작은 포인트 컬러 점(done) 하나만 허용
+  const timelineMeta = (m) => {
     const isA = m.clientA?.clientId === clientId;
-    const partnerName = isA ? (m.clientB?.clientName || '상대') : (m.clientA?.clientName || '상대');
+    const me = isA ? m.clientA : m.clientB;
+    const partner = isA ? m.clientB : m.clientA;
+    const partnerName = partner?.clientName || '상대';
+    const d = new Date(m.createdAt);
+    const dateLabel = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    // 부제: 날짜 | 담당 매니저(생성자)
+    const sub = m.createdByManagerName ? `${dateLabel} (${m.createdByManagerName})` : dateLabel;
+    const after = m.afterStatus === 'rejected'; // 만남 후(애프터) 거절
+    const myAfter = isA ? m.afterResponses?.A : m.afterResponses?.B;
+    const partnerAfter = isA ? m.afterResponses?.B : m.afterResponses?.A;
+    const meRejected = me?.response === 'rejected' || (after && myAfter === 'rejected');
+    const partnerRejected = partner?.response === 'rejected' || (after && partnerAfter === 'rejected');
+    const suffix = after ? ' (만남 후)' : '';
+
+    // 상대 이름(누구와의 매칭)을 항상 앞세우고, 거절 주체(본인/상대)를 뒤에 붙인다.
+    if (meRejected)
+      return { title: `${partnerName} • 본인 거절${suffix}`, sub, reason: m.cancelReason };
+    if (partnerRejected || after)
+      return { title: `${partnerName} • 상대 거절${suffix}`, sub, reason: m.cancelReason };
+    if (m.status === 'scheduled')
+      return { title: `${partnerName} • 약속 확정`, sub, done: true };
+    if (m.status === 'completed')
+      return { title: `${partnerName} • 완료`, sub, done: true };
+    if (m.status === 'cancelled') {
+      // 취소 주체 판별: 본인 · 상대 · 관리자
+      const by = m.cancelledByName;
+      let actor = '취소';
+      if (by === me?.clientName) actor = '본인 취소';
+      else if (by === partner?.clientName) actor = '상대 취소';
+      else if (by) actor = '관리자 취소';
+      return { title: `${partnerName} • ${actor}`, sub, reason: m.cancelReason };
+    }
     const statusMap = {
       draft: '대기', proposal_sent: '제안 발송', proposal_accepted: '상대 수락',
       awaiting_payment: '입금 대기', scheduling: '일정 조율', arranging: '조율 확정',
-      scheduled: '약속 확정', completed: '완료', cancelled: '취소',
     };
-    const statusLabel = statusMap[m.status] || m.status || '';
-    const dateLabel = new Date(m.createdAt).toLocaleDateString('ko-KR');
-    const sub = m.createdByManagerName ? `${dateLabel} · 매칭 생성 ${m.createdByManagerName}` : dateLabel;
-    return { title: `${partnerName}님과 매칭 · ${statusLabel}`, sub };
+    return { title: `${partnerName} • ${statusMap[m.status] || m.status || '진행 중'}`, sub };
   };
 
   // ── LOADING ──
@@ -823,7 +846,7 @@ export default function ClientDetail() {
                 <div className={styles.timeline}>
                   <div className={styles.timelineTrack} />
                   {matchHistory.map((m) => {
-                    const { title, sub } = timelineLabel(m);
+                    const meta = timelineMeta(m);
                     const accessible = m.accessible !== false;
                     const handleOpen = () => {
                       if (!accessible) {
@@ -842,15 +865,18 @@ export default function ClientDetail() {
                         aria-disabled={!accessible}
                         onKeyDown={(e) => e.key === 'Enter' && handleOpen()}
                       >
-                        <div className={`${styles.timelineDot} ${timelineDotClass(m.status)}`} />
+                        <div className={`${styles.timelineDot} ${meta.done ? styles.dotPoint : ''}`} />
                         <div className={styles.timelineContent}>
                           <div className={styles.timelineTitleRow}>
-                            <div className={styles.timelineTitle}>{title}</div>
+                            <span className={styles.timelineTitle}>{meta.title}</span>
                             {!accessible && (
                               <span className={styles.timelineReadOnlyBadge}>열람 불가</span>
                             )}
                           </div>
-                          <div className={styles.timelineSub}>{sub}</div>
+                          <div className={styles.timelineSub}>{meta.sub}</div>
+                          {meta.reason && (
+                            <div className={styles.timelineReason}>사유 · {meta.reason}</div>
+                          )}
                         </div>
                       </div>
                     );

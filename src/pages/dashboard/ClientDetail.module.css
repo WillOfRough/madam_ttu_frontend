@@ -648,30 +648,32 @@
 .memoSaveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* ── 11. Match History Timeline ── */
+/* 미니멀 세로 타임라인 — 아이콘 없이 점·세로선·타이포 계층만 사용 */
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 18px; /* 여백을 넉넉히 — 텍스트만으로도 답답하지 않게 */
   position: relative;
 }
 
 .timelineTrack {
   position: absolute;
-  left: 7px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
+  left: 3px;
+  top: 9px;
+  bottom: 9px;
+  width: 1px;
   background: var(--ink-100);
 }
 
 .timelineItem {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   position: relative;
   cursor: pointer;
-  border-radius: 8px;
-  padding: 4px 4px 4px 0;
+  border-radius: 10px;
+  padding: 4px 6px 4px 2px;
+  margin: -4px -6px -4px -2px; /* 여백은 늘리되 hover 영역은 텍스트에 맞춤 */
   transition: background 0.12s;
 }
 
@@ -679,26 +681,26 @@
 
 .timelineItemDisabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .timelineItemDisabled:hover { background: transparent; }
 
+/* 축 위의 작은 회색 점 (기본). 성사 상태만 단일 포인트 컬러 */
 .timelineDot {
-  width: 16px;
-  height: 16px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--ink-300);
   flex-shrink: 0;
   z-index: 1;
-  margin-top: 1px;
+  margin-top: 6px;
+  box-shadow: 0 0 0 3px #fff; /* 세로선 위로 분리 */
 }
 
-.dotMint   { border: 2.5px solid var(--mint-600); }
-.dotAmber  { border: 2.5px solid var(--amber-600); }
-.dotInk    { border: 2.5px solid var(--ink-300); }
+.dotPoint { background: var(--tangerine-600); }
 
-.timelineContent { flex: 1; }
+.timelineContent { flex: 1; min-width: 0; }
 
 .timelineTitleRow {
   display: flex;
@@ -707,10 +709,12 @@
   flex-wrap: wrap;
 }
 
+/* 핵심 정보 — 두껍게 (누가 거절/성사 여부가 한눈에) */
 .timelineTitle {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink-900);
+  letter-spacing: -0.2px;
 }
 
 .timelineReadOnlyBadge {
@@ -725,10 +729,20 @@
   border: 1px solid var(--ink-100);
 }
 
+/* 날짜 — 가볍고 차분하게 */
 .timelineSub {
-  font-size: 11px;
+  font-size: 11.5px;
+  font-weight: 400;
   color: var(--ink-400);
-  margin-top: 2px;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 사유 — 가장 낮은 계층 */
+.timelineReason {
+  font-size: 11px;
+  color: var(--ink-500);
+  margin-top: 4px;
 }
 
 /* Empty timeline */
