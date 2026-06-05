@@ -803,15 +803,26 @@
   flex-direction: column;
 }
 
+.responseGroup {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-50);
+}
+.responseGroup:last-child {
+  border-bottom: none;
+}
+
 .responseRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--ink-50);
 }
-.responseRow:last-child {
-  border-bottom: none;
+
+.responseFeedback {
+  margin-top: 8px;
+  padding: 8px 10px;
+  margin-left: 30px;
+  background: var(--rose-100);
+  border-radius: var(--r-sm);
 }
 
 .responseSideBadge {
