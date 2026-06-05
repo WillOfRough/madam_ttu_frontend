@@ -107,17 +107,15 @@ export default function MatchDetail() {
     return () => { cancelled = true; };
   }, [matchId, match?.status]);
 
-  // 진입 시 '응답' 탭을 먼저 띄우는 경우:
-  //  - 프로필 제안 거절로 취소된 매칭 (취소 매칭의 feedbackAt = 프로필 거절 피드백)
-  //  - 미팅 완료(completed) 매칭 — 에프터 현황을 응답 탭으로 통합했으므로 바로 보여준다
+  // 진입 시 '응답' 탭을 먼저 띄운다 — A·B 중 한 명이라도 응답한 매칭이면,
+  // 프로필보다 응답 현황(수락/거절·에프터·피드백)을 보는 게 직관적이기 때문.
+  // (거절로 취소·미팅 완료 매칭도 response 가 채워져 있어 자연히 포함된다)
   // 최초 1회만 적용해, reload() 후 사용자가 고른 탭으로 다시 튕기지 않게 한다.
   const didAutoSelectTab = useRef(false);
   useEffect(() => {
     if (didAutoSelectTab.current || !match) return;
-    const rejectedOnProposal =
-      match.status === 'cancelled' &&
-      (match.clientA?.response === 'rejected' || match.clientB?.response === 'rejected');
-    if (rejectedOnProposal || match.status === 'completed') setParticipantTab('response');
+    const anyResponseMade = !!(match.clientA?.response || match.clientB?.response);
+    if (anyResponseMade || match.status === 'completed') setParticipantTab('response');
     didAutoSelectTab.current = true;
   }, [match]);
 
