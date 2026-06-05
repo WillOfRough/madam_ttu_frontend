@@ -351,7 +351,7 @@ export default function MyProfile() {
             <SectionCard icon={Camera} title="사진">
               <PhotoGallery
                 photoUrls={profile.photoUrls || []}
-                canEdit={true}
+                canEdit={editMode}
                 onAdd={handlePhotoAdd}
                 onDelete={handlePhotoDelete}
                 uploading={photoUploading}
