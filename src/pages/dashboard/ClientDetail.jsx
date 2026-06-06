@@ -927,7 +927,7 @@ export default function ClientDetail() {
       )}
 
       {/* ── Photo Lightbox ── */}
-      {lightboxUrl && (
+      {lightboxUrl && createPortal(
         <div
           className={styles.lightboxOverlay}
           onClick={() => setLightboxUrl(null)}
@@ -952,7 +952,8 @@ export default function ClientDetail() {
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Deletion Certificate Overlay ── */}
