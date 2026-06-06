@@ -1910,6 +1910,36 @@ export async function mockFetch(path, options = {}) {
     return { success: true, message: '탈퇴가 완료되었습니다.' };
   }
 
+  // POST /api/v1/clients/me/photos (본인 사진 추가 — id+verificationId, verificationId 미소모)
+  // 매니저용 /clients/:id/photos 정규식보다 먼저 처리되도록 me 섹션에 둔다.
+  if (method === 'POST' && pathname === '/api/v1/clients/me/photos') {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if ((found.photoIds || []).length >= 5) {
+      throw Object.assign(new Error('사진은 최대 5장까지 등록할 수 있습니다.'), { status: 400, body: { error: '8.003' } });
+    }
+    return { success: true, message: '사진이 추가되었습니다.' };
+  }
+
+  // DELETE /api/v1/clients/me/photos/:photoId (본인 사진 삭제 — id+verificationId, verificationId 미소모)
+  if (method === 'DELETE' && /^\/api\/v1\/clients\/me\/photos\/[^/]+$/.test(pathname)) {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    const photoId = pathname.split('/').pop();
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if (Array.isArray(found.photoIds)) {
+      found.photoIds = found.photoIds.filter((pid) => pid !== photoId);
+    }
+    return { success: true, message: '사진이 삭제되었습니다.' };
+  }
+
   // POST /api/v1/inquiries/:id/answer (답변 등록)
   if (method === 'POST' && /^\/api\/v1\/inquiries\/[^/]+\/answer$/.test(pathname)) {
     const inquiryId = pathname.split('/').slice(-2)[0];
