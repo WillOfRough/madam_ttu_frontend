@@ -46,6 +46,11 @@ function getTypeStyle(type) {
     return { tone: 'mint', Icon: Calendar };
   }
 
+  // 일정 조율 관련(예: scheduling_no_overlap — 가용시간 겹침 없어 재조율 필요)
+  if (type.startsWith('scheduling')) {
+    return { tone: 'tangerine', Icon: Calendar };
+  }
+
   if (type === 'after_responded' || type.startsWith('after_')) {
     return { tone: 'lilac', Icon: MessageSquare };
   }
