@@ -30,6 +30,15 @@ import {
 } from './matchDetail/cards';
 
 
+/** 오늘 날짜를 로컬 타임존 기준 YYYY-MM-DD 로 반환 (date input min/검증용) */
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 /* ═══════════════════════════════════════════════════
    Main Component
 ═══════════════════════════════════════════════════ */
@@ -314,6 +323,10 @@ export default function MatchDetail() {
   const handleUpdateScheduleClick = () => {
     if (!editDate || !editStartTime || !editVenue.trim()) {
       toast.error('날짜 / 시작 시간 / 장소는 필수입니다.');
+      return;
+    }
+    if (editDate < todayISO()) {
+      toast.error('오늘 이전 날짜는 선택할 수 없습니다.');
       return;
     }
     setShowEditConfirm(true);
@@ -1199,7 +1212,7 @@ export default function MatchDetail() {
                 <div className={styles.editScheduleLeft}>
                   <div className={styles.modalField}>
                     <label className={styles.modalLabel}>날짜</label>
-                    <input type="date" className={styles.modalInput} value={editDate} onChange={(e) => setEditDate(e.target.value)} />
+                    <input type="date" className={styles.modalInput} min={todayISO()} value={editDate} onChange={(e) => setEditDate(e.target.value)} />
                   </div>
                   <div className={styles.editTimeRow}>
                     <div className={styles.modalField}>
