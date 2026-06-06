@@ -381,10 +381,20 @@ export default function MyProfile() {
                   editMode={false}
                 />
                 <FieldRow
-                  label="생년월일"
-                  value={profile.birthDate ? `${profile.birthDate}${age ? ` (${age}세)` : ''}` : null}
+                  label="출생연도"
+                  value={profile.birthDate ? `${profile.birthDate.slice(0, 4)}년${age ? ` (${age}세)` : ''}` : null}
                   editMode={editMode}
-                  inputProps={{ ...field('birthDate'), type: 'date', placeholder: 'YYYY-MM-DD' }}
+                  inputProps={{
+                    value: editForm.birthDate ? editForm.birthDate.slice(0, 4) : '',
+                    onChange: (e) => {
+                      const year = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setEditForm((f) => ({ ...f, birthDate: year ? `${year}-01-01` : '' }));
+                    },
+                    type: 'text',
+                    inputMode: 'numeric',
+                    maxLength: 4,
+                    placeholder: 'YYYY (예: 1990)',
+                  }}
                 />
                 <FieldRow
                   label="전화번호"
