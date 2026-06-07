@@ -7,18 +7,14 @@ import {
   Check,
   X,
   ChevronDown,
+  Coffee,
+  HeartHandshake,
   Heart,
   Users,
   UserCheck,
-  Coffee,
-  Lock,
-  Clock,
-  Wallet,
-  Image as ImageIcon,
-  Send,
-  ShieldCheck,
   Network,
   BookOpen,
+  ShieldCheck,
 } from 'lucide-react';
 import styles from './About.module.css';
 
@@ -28,13 +24,6 @@ import styles from './About.module.css';
 
 const HERO_PILLS = ['가입비 0원', '1시간 만남', '익명 매칭'];
 
-const STATS = [
-  { value: '0원', label: '가입비', sub: '월정액도 없어요' },
-  { value: '19,900', unit: '원', label: '매칭 성사 시', sub: '커피 두 잔 값' },
-  { value: '1시간', label: '골든타임', sub: '첫 만남은 딱 1시간' },
-  { value: '100%', label: '익명 진행', sub: '동의 전까지 비공개' },
-];
-
 const AUDIENCES = [
   { icon: Heart,     color: 'tangerine', title: '회원',  desc: '부담 없이 좋은 인연을 만나고 싶은 분' },
   { icon: UserCheck, color: 'lilac',     title: '매니저', desc: '진심으로 인연을 잇는 일을 하고 싶은 분' },
@@ -42,20 +31,11 @@ const AUDIENCES = [
 ];
 
 const COMPARISONS = [
-  { topic: '비용 구조',  bad: '월정액 / 가입비',         good: '매칭 성사 시에만 19,900원' },
+  { topic: '비용 구조',  bad: '월정액 / 가입비',         good: '매칭 성사 시에만 비용 지불' },
   { topic: '연락 방식',  bad: '낯선 상대와 직접 카톡',   good: '매니저가 모든 연락 대행' },
   { topic: '개인정보',   bad: '프로필 즉시 공개',         good: '동의 전까지 100% 익명' },
   { topic: '첫 만남',    bad: '저녁 식사로 부담',         good: '카페에서 딱 1시간' },
   { topic: '사진 노출',  bad: '원본 그대로 공유',         good: '워터마크 보안 적용' },
-];
-
-const PROMISES = [
-  { icon: Wallet,    key: '0원',     title: '가입비 없음',     desc: '매칭이 성사될 때만 19,900원' },
-  { icon: Clock,     key: '1시간',   title: '골든타임',         desc: '서로 부담 없는 첫 만남 시간' },
-  { icon: Send,      key: '대행',    title: '연락 0건',         desc: '일정·장소 조율을 매니저가 진행' },
-  { icon: Coffee,    key: '카페',    title: '아늑한 자리',       desc: '동선을 고려해 매니저가 선정' },
-  { icon: Lock,      key: '비밀',    title: '익명 보호',         desc: '동의 없이는 정보 비공개' },
-  { icon: ImageIcon, key: 'WM',      title: '사진 보안',         desc: '모든 사진에 워터마크' },
 ];
 
 const FLOW_STEPS = [
@@ -67,9 +47,9 @@ const FLOW_STEPS = [
 ];
 
 const SETTLEMENTS = [
-  { role: '매칭 매니저',     pct: 25,   note: '매칭을 만든 사람' },
-  { role: '회원 A 매니저',   pct: 12.5, note: '회원 A를 등록한 사람' },
-  { role: '회원 B 매니저',   pct: 12.5, note: '회원 B를 등록한 사람' },
+  { role: '매칭 매니저',   note: '매칭을 만든 사람' },
+  { role: '회원 A 매니저', note: '회원 A를 등록한 사람' },
+  { role: '회원 B 매니저', note: '회원 B를 등록한 사람' },
 ];
 
 const MANAGER_VALUES = [
@@ -164,27 +144,24 @@ export default function About() {
           </div>
         </div>
 
-        {/* ════════ Stats Strip ════════ */}
-        <div className={styles.statsStrip}>
-          {STATS.map((s, i) => {
-            const myIdx = next();
-            return (
-              <div
-                key={i}
-                ref={register(myIdx)}
-                className={`${styles.statTile} ${visible.has(myIdx) ? styles.revealed : ''}`}
-                style={{ transitionDelay: `${i * 0.06}s` }}
-              >
-                <div className={styles.statValue}>
-                  {s.value}
-                  {s.unit && <span className={styles.statUnit}>{s.unit}</span>}
-                </div>
-                <div className={styles.statLabel}>{s.label}</div>
-                <div className={styles.statSub}>{s.sub}</div>
+        {/* ════════ Hero 하이라이트 배너 ════════ */}
+        {(() => {
+          const myIdx = next();
+          return (
+            <div
+              ref={register(myIdx)}
+              className={`${styles.highlightBand} ${styles.highlightBandHero} ${visible.has(myIdx) ? styles.revealed : ''}`}
+            >
+              <div className={styles.highlightIcon}>
+                <Coffee size={20} strokeWidth={2.2} />
               </div>
-            );
-          })}
-        </div>
+              <div className={styles.highlightText}>
+                <span className={styles.highlightTitle}>커피 한 잔의 시간, 딱 1시간</span>
+                <span className={styles.highlightDesc}>부담 없이 서로의 느낌을 확인하는 가벼운 첫 만남이에요.</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ════════ Audience ════════ */}
         <section className={styles.section}>
@@ -240,7 +217,7 @@ export default function About() {
             <div className={styles.compareHead}>
               <div className={`${styles.compareCol} ${styles.compareCol_bad}`}>
                 <X size={14} strokeWidth={2.6} />
-                <span>일반 매칭</span>
+                <span>다른 매칭 서비스</span>
               </div>
               <div className={`${styles.compareCol} ${styles.compareCol_good}`}>
                 <Check size={14} strokeWidth={2.6} />
@@ -267,42 +244,24 @@ export default function About() {
           </div>
         </section>
 
-        {/* ════════ Promises (key+desc cards) ════════ */}
-        <section className={styles.section}>
-          {(() => {
-            const myIdx = next();
-            return (
-              <h2
-                ref={register(myIdx)}
-                className={`${styles.sectionHeader} ${visible.has(myIdx) ? styles.revealed : ''}`}
-              >
-                <span className={styles.sectionNum}>03</span>
-                회원에게 약속드리는 것
-              </h2>
-            );
-          })()}
-          <div className={styles.promiseGrid}>
-            {PROMISES.map((p, i) => {
-              const Icon = p.icon;
-              const myIdx = next();
-              return (
-                <div
-                  key={i}
-                  ref={register(myIdx)}
-                  className={`${styles.promiseCard} ${visible.has(myIdx) ? styles.revealed : ''}`}
-                  style={{ transitionDelay: `${i * 0.05}s` }}
-                >
-                  <div className={styles.promiseKey}>
-                    <Icon size={14} strokeWidth={2.4} className={styles.promiseKeyIcon} />
-                    <span className={styles.promiseKeyText}>{p.key}</span>
-                  </div>
-                  <h3 className={styles.promiseTitle}>{p.title}</h3>
-                  <p className={styles.promiseDesc}>{p.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        {/* ════════ Editorial 하이라이트 배너 ════════ */}
+        {(() => {
+          const myIdx = next();
+          return (
+            <div
+              ref={register(myIdx)}
+              className={`${styles.highlightBand} ${styles.highlightBandLilac} ${styles.highlightBandEditorial} ${visible.has(myIdx) ? styles.revealed : ''}`}
+            >
+              <div className={`${styles.highlightIcon} ${styles.highlightIconLilac}`}>
+                <HeartHandshake size={20} strokeWidth={2.2} />
+              </div>
+              <div className={styles.highlightText}>
+                <span className={styles.highlightTitle}>매니저가 잇는 인연</span>
+                <span className={styles.highlightDesc}>두 분의 첫 만남을 일정부터 장소까지 섬세하게 조율합니다.</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ════════ Flow ════════ */}
         <section className={styles.section}>
@@ -313,7 +272,7 @@ export default function About() {
                 ref={register(myIdx)}
                 className={`${styles.sectionHeader} ${visible.has(myIdx) ? styles.revealed : ''}`}
               >
-                <span className={styles.sectionNum}>04</span>
+                <span className={styles.sectionNum}>03</span>
                 매칭 5단계
               </h2>
             );
@@ -362,6 +321,19 @@ export default function About() {
                   한 건 한 건 정성껏 잇는<br />
                   프라이빗 매칭 매니저를 모십니다.
                 </p>
+                {/* 매니저 네트워크 한 줄 */}
+                {(() => {
+                  const innerIdx = next();
+                  return (
+                    <div
+                      ref={register(innerIdx)}
+                      className={`${styles.managerNetBand} ${visible.has(innerIdx) ? styles.revealed : ''}`}
+                    >
+                      <Network size={15} strokeWidth={2.2} className={styles.managerNetBandIcon} />
+                      <span className={styles.managerNetBandText}>믿는 매니저끼리 잇는 따뜻한 인연의 네트워크</span>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })()}
@@ -370,28 +342,25 @@ export default function About() {
           <div className={styles.settlementCard}>
             <div className={styles.settlementHead}>
               <h3 className={styles.settlementTitle}>매칭 1건 정산 분배</h3>
-              <span className={styles.settlementSub}>50% 매니저 + 50% 운영</span>
+              <span className={styles.settlementSub}>역할별 분배</span>
             </div>
-            <div className={styles.settlementBars}>
+            <p className={styles.settlementLead}>
+              매칭 한 건이 성사되면, 참여한 역할에 따라 정해진 비율로 정산이 분배됩니다.
+            </p>
+            <div className={styles.settlementRoles}>
               {SETTLEMENTS.map((s, i) => {
                 const myIdx = next();
                 return (
                   <div
                     key={i}
                     ref={register(myIdx)}
-                    className={`${styles.settlementBarRow} ${visible.has(myIdx) ? styles.revealed : ''}`}
+                    className={`${styles.settlementRoleRow} ${visible.has(myIdx) ? styles.revealed : ''}`}
                     style={{ transitionDelay: `${i * 0.08}s` }}
                   >
-                    <div className={styles.settlementBarLabel}>
+                    <span className={styles.settlementRoleDot} />
+                    <div className={styles.settlementRoleText}>
                       <span className={styles.settlementRole}>{s.role}</span>
                       <span className={styles.settlementNote}>{s.note}</span>
-                    </div>
-                    <div className={styles.settlementBarTrack}>
-                      <div
-                        className={styles.settlementBarFill}
-                        style={{ width: visible.has(myIdx) ? `${s.pct * 2}%` : '0%' }}
-                      />
-                      <span className={styles.settlementPct}>{s.pct}%</span>
                     </div>
                   </div>
                 );
@@ -436,7 +405,7 @@ export default function About() {
                 ref={register(myIdx)}
                 className={`${styles.sectionHeader} ${visible.has(myIdx) ? styles.revealed : ''}`}
               >
-                <span className={styles.sectionNum}>05</span>
+                <span className={styles.sectionNum}>04</span>
                 자주 묻는 질문
               </h2>
             );
@@ -475,7 +444,7 @@ export default function About() {
           <div>
             <p className={styles.numberBannerLabel}>매칭 알림 공식 발신번호</p>
             <p className={styles.numberBannerNumber}>070-8095-3662</p>
-            <p className={styles.numberBannerNote}>스팸 번호가 아니에요. ‘Knots &amp; Links’로 저장해 주세요.</p>
+            <p className={styles.numberBannerNote}>스팸 번호가 아니에요. 'Knots &amp; Links'로 저장해 주세요.</p>
           </div>
         </div>
 

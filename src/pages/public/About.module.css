@@ -1,5 +1,5 @@
 /* About — Knots & Links representative intro page
-   Visual-first redesign: stats, comparison, infographic flow, settlement bars, FAQ */
+   Visual-first redesign: comparison, infographic flow, settlement bars, FAQ, image slots */
 
 .page {
   min-height: 100vh; min-height: 100dvh;
@@ -20,9 +20,7 @@
   .hero { padding: 56px 40px 44px; }
   .heroBrand { font-size: 34px; }
   .heroTagline { font-size: 17px; }
-  .statsStrip { grid-template-columns: repeat(4, 1fr); }
   .audienceGrid { grid-template-columns: repeat(3, 1fr); }
-  .promiseGrid { grid-template-columns: repeat(3, 1fr); }
   .managerValueGrid { grid-template-columns: repeat(3, 1fr); }
 }
 
@@ -38,7 +36,7 @@
   background: linear-gradient(160deg, var(--ink-900) 0%, #1a2140 100%);
   border-radius: 24px;
   box-shadow: var(--sh-lg);
-  margin-bottom: 18px;
+  margin-bottom: 0;
   animation: heroIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   position: relative; overflow: hidden;
   color: #fff;
@@ -95,52 +93,88 @@
   padding: 6px 12px; border-radius: var(--r-pill);
 }
 
-/* ════════════════ Stats Strip ════════════════ */
-.statsStrip {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-bottom: 36px;
-}
-
-.statTile {
-  background: var(--paper-card);
-  border: 1px solid var(--ink-50);
-  border-radius: 14px;
-  padding: 16px 14px;
-  text-align: center;
+/* ════════════════ Highlight bands (icon + copy) ════════════════ */
+.highlightBand {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, var(--paper-warm) 0%, var(--paper-card) 100%);
+  border: 1px solid var(--tangerine-100);
+  border-radius: var(--r-lg);
+  padding: 15px 18px;
   box-shadow: var(--sh-sm);
   opacity: 0; transform: translateY(16px);
-  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.statTile.revealed { opacity: 1; transform: translateY(0); }
-.statTile:hover { box-shadow: var(--sh-md); }
+.highlightBand.revealed { opacity: 1; transform: translateY(0); }
 
-.statValue {
-  font-size: 22px; font-weight: 800;
+.highlightBandHero { margin-top: 32px; margin-bottom: 24px; }
+.highlightBandEditorial { margin: 4px 0 24px; }
+
+.highlightBandLilac {
+  background: linear-gradient(135deg, var(--lilac-100) 0%, var(--paper-card) 100%);
+  border-color: #d8ccf2;
+}
+
+.highlightIcon {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--tangerine-50);
+  border: 1px solid var(--tangerine-100);
   color: var(--tangerine-700);
-  letter-spacing: -0.03em;
-  line-height: 1; margin-bottom: 6px;
-  font-family: var(--font-sans);
+  border-radius: 12px;
 }
 
-.statUnit {
-  font-size: 13px; font-weight: 700;
-  color: var(--tangerine-700);
-  margin-left: 2px;
+.highlightIconLilac {
+  background: var(--lilac-100);
+  border-color: #d8ccf2;
+  color: var(--lilac-600);
 }
 
-.statLabel {
-  font-size: 11px; font-weight: 800;
+.highlightText {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
+}
+
+.highlightTitle {
+  font-size: 13px; font-weight: 800;
   color: var(--ink-700);
-  letter-spacing: -0.01em;
-  margin-bottom: 2px;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
 }
 
-.statSub {
-  font-size: 10px; color: var(--ink-400);
-  font-weight: 500; letter-spacing: -0.01em;
+.highlightDesc {
+  font-size: 11.5px; color: var(--ink-500);
+  line-height: 1.55; word-break: keep-all;
+  letter-spacing: -0.01em;
+}
+
+/* Manager network one-liner (sits on the dark banner) */
+.managerNetBand {
+  display: inline-flex; align-items: center; gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 9px 16px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--r-pill);
+  position: relative;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
+}
+
+.managerNetBand.revealed { opacity: 1; transform: translateY(0); }
+
+.managerNetBandIcon {
+  flex-shrink: 0;
+  color: var(--lilac-100);
+}
+
+.managerNetBandText {
+  font-size: 11.5px; font-weight: 600;
+  color: rgba(255,255,255,.86);
+  letter-spacing: -0.01em;
+  word-break: keep-all;
 }
 
 /* ════════════════ Section ════════════════ */
@@ -287,64 +321,6 @@
   color: var(--ink-800, var(--ink-700));
   font-weight: 700;
   background: var(--tangerine-50);
-}
-
-/* ════════════════ Promises (key+desc cards) ════════════════ */
-.promiseGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.promiseCard {
-  background: var(--paper-card);
-  border: 1px solid var(--ink-50);
-  border-radius: 14px;
-  padding: 14px 14px 16px;
-  box-shadow: var(--sh-sm);
-  opacity: 0; transform: translateY(16px);
-  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s ease;
-  position: relative; overflow: hidden;
-}
-
-.promiseCard.revealed { opacity: 1; transform: translateY(0); }
-.promiseCard:hover { box-shadow: var(--sh-md); }
-
-.promiseCard::before {
-  content: ''; position: absolute; top: 0; left: 0;
-  width: 36px; height: 2px;
-  background: linear-gradient(90deg, var(--tangerine-600), var(--tangerine-400));
-  border-radius: 0 0 2px 0;
-}
-
-.promiseKey {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--tangerine-50);
-  border: 1px solid var(--tangerine-100);
-  border-radius: var(--r-pill);
-  padding: 4px 10px;
-  margin-bottom: 10px;
-}
-
-.promiseKeyIcon { color: var(--tangerine-700); }
-
-.promiseKeyText {
-  font-size: 11px; font-weight: 800;
-  color: var(--tangerine-700);
-  letter-spacing: -0.01em;
-}
-
-.promiseTitle {
-  font-size: 13px; font-weight: 800;
-  color: var(--ink-800, var(--ink-700));
-  letter-spacing: -0.02em;
-  margin-bottom: 4px; line-height: 1.35;
-}
-
-.promiseDesc {
-  font-size: 11px; color: var(--ink-500);
-  line-height: 1.6; word-break: keep-all;
-  letter-spacing: -0.01em;
 }
 
 /* ════════════════ Flow (vertical timeline) ════════════════ */
@@ -495,23 +471,42 @@
   letter-spacing: -0.01em;
 }
 
-.settlementBars {
-  display: flex; flex-direction: column;
-  gap: 12px;
-  margin-bottom: 12px;
+.settlementLead {
+  font-size: 12px; color: var(--ink-500);
+  line-height: 1.6; word-break: keep-all;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
 }
 
-.settlementBarRow {
+.settlementRoles {
+  display: flex; flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.settlementRoleRow {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--paper);
+  border: 1px solid var(--ink-50);
+  border-radius: 12px;
+  padding: 11px 13px;
   opacity: 0; transform: translateY(8px);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.settlementBarRow.revealed { opacity: 1; transform: translateY(0); }
+.settlementRoleRow.revealed { opacity: 1; transform: translateY(0); }
 
-.settlementBarLabel {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 5px;
+.settlementRoleDot {
+  flex-shrink: 0;
+  width: 8px; height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--tangerine-500);
+}
+
+.settlementRoleText {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
 }
 
 .settlementRole {
@@ -523,30 +518,6 @@
 .settlementNote {
   font-size: 10px; color: var(--ink-400);
   font-weight: 500;
-}
-
-.settlementBarTrack {
-  position: relative;
-  height: 24px;
-  background: var(--ink-50);
-  border-radius: var(--r-pill);
-  overflow: hidden;
-}
-
-.settlementBarFill {
-  position: absolute; left: 0; top: 0; bottom: 0;
-  background: linear-gradient(90deg, var(--tangerine-600), var(--tangerine-500));
-  border-radius: var(--r-pill);
-  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
-}
-
-.settlementPct {
-  position: absolute; right: 10px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 11px; font-weight: 800;
-  color: var(--ink-700);
-  letter-spacing: -0.01em;
-  z-index: 2;
 }
 
 .settlementFoot {
