@@ -971,7 +971,10 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
           const ids = [m.clientA.clientId, m.clientB.clientId];
           return ids.includes(clientA.id) && ids.includes(clientB.id);
         });
-        const dup = pairMatches.find((m) => m.status !== 'cancelled');
+        // 진행 중·완료 매칭은 기존대로 차단. cancelled 는 '거절로 인한 취소'만 차단하고
+        // (한쪽이라도 프로포절을 거절한 이력) 매니저 수동 취소는 차단하지 않는다(아래 경고만).
+        const isRejected = (m) => m.clientA.response === 'rejected' || m.clientB.response === 'rejected';
+        const dup = pairMatches.find((m) => m.status !== 'cancelled' || isRejected(m));
         setDuplicateMatch(dup || null);
 
         const warnings = [];
@@ -1292,7 +1295,9 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 <div className={styles.duplicateWarn}>
                   <AlertTriangle size={14} strokeWidth={2} />
                   <span>
-                    이미 매칭된 적이 있는 회원입니다 (상태: {STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})
+                    {duplicateMatch.status === 'cancelled'
+                      ? '이전에 거절된 매칭 이력이 있어 다시 매칭할 수 없습니다'
+                      : `이미 매칭된 적이 있는 회원입니다 (상태: ${STATUS_STEP_LABELS[duplicateMatch.status] || duplicateMatch.status})`}
                   </span>
                 </div>
               )}
