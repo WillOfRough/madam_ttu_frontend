@@ -4,8 +4,16 @@ import * as matchService from '../api/matchService';
 
 const ACTIVE_MATCH_STATUSES = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
 
-// 서버가 모르는 통계 기반 정렬 — 크게 받아 클라이언트에서 정렬·페이지네이션한다.
-// (matches 200건 캡 기반이라 회원이 많아지면 백엔드 집계 필드로 옮기는 게 정석)
+// '오늘의 회원' 제안 횟수·방치일수·성사율 통계는 매칭 전체를 회원별로 집계해 만든다.
+// 한 페이지(STATS_PAGE_SIZE)를 넘으면 나머지 페이지를 병렬로 받아 전수 집계한다 —
+// 과거엔 200건 단발 조회라 매니저 누적 매칭이 200건을 넘으면 오래된 매칭이 윈도우 밖으로
+// 밀려 '제안 N회'가 과소 집계(심하면 0='첫 제안 대기')되던 문제가 있었다.
+// STATS_MAX_PAGES 는 폭주 방지 상한 — 이 이상은 백엔드 집계 필드로 옮기는 게 정석.
+// 참고: matches 엔드포인트의 page 는 0-기반이다(clients 의 1-기반과 다름).
+const STATS_PAGE_SIZE = 200;
+const STATS_MAX_PAGES = 10;
+
+// 서버가 모르는 통계 기반 정렬 — 매칭 전체를 받아(필요 시 여러 페이지) 클라에서 정렬·페이지네이션한다.
 const STAT_SORTS = ['neglect:desc', 'success:desc'];
 
 // 클라이언트에서 전역 정렬해야 하는 sort 모음.
@@ -93,11 +101,27 @@ const useClientListStore = create((set, get) => {
   // '제안이 필요한 회원' 큐레이션용 활성 회원 풀 (현재 페이지와 무관하게 전체에서 뽑는다)
   let poolCache = null;
 
-  // 매칭 목록 한 번 받아 matchMap + statsMap 재료를 만든다.
+  // 매칭 목록을 (필요 시 여러 페이지) 받아 matchMap + statsMap 재료를 만든다.
+  // 첫 페이지로 totalPages 를 파악한 뒤, 나머지는 한꺼번에 병렬로 받아 전수 집계한다
+  // (페이지 수에 비례해 느려지지 않도록 직렬이 아닌 Promise.all 로 받는다).
   // 캐시 할당은 호출부에서 reqId 가드 후에 한다 — 로그아웃(reset) 후 도착한
   // 인플라이트 응답이 이전 매니저의 데이터로 캐시를 되살리는 것을 막기 위함.
-  const fetchMatchStats = () => matchService.listMatches({ size: 200 }).then((matchRes) => {
-    const matchList = matchRes.data || matchRes.matches || [];
+  const fetchMatchStats = async () => {
+    const first = await matchService.listMatches({ page: 0, size: STATS_PAGE_SIZE });
+    const matchList = [...(first.data || first.matches || [])];
+
+    const totalPages = Math.min(first.pagination?.totalPages ?? 1, STATS_MAX_PAGES);
+    if (totalPages > 1) {
+      const rest = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, i) =>
+          matchService.listMatches({ page: i + 1, size: STATS_PAGE_SIZE })
+            .then((r) => r.data || r.matches || [])
+            .catch(() => []) // 일부 페이지 실패해도 받은 만큼은 집계 (전부 실패해야 빈 통계)
+        )
+      );
+      for (const part of rest) matchList.push(...part);
+    }
+
     const freshMap = {};
     for (const m of matchList) {
       if (!ACTIVE_MATCH_STATUSES.includes(m.status)) continue;
@@ -107,7 +131,7 @@ const useClientListStore = create((set, get) => {
       if (bId) freshMap[bId] = (freshMap[bId] || 0) + 1;
     }
     return { freshMap, freshStats: buildStats(matchList) };
-  });
+  };
 
   return {
   clients: [],
