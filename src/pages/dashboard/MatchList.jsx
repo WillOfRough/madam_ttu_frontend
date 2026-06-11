@@ -928,7 +928,14 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
     return () => clearTimeout(t);
   }, [step]);
 
-  /* ── Duplicate / history / active-match checks ── */
+  /* ── Duplicate / history / active-match checks ──
+     전체 매칭을 한 페이지(size 200)만 받아 검사하면, 운영처럼 매칭이 200건을 넘게
+     쌓인 순간 그 윈도우 밖의 과거 매칭이 누락돼 중복/이력 경고가 안 뜬다(게다가
+     clientId 없이 호출하면 본인이 만든 매칭으로만 스코프돼 타 매니저 매칭은 못 봄).
+     → 선택한 회원이 낀 매칭만 clientId 필터로 "전 페이지 끝까지" 조회한다. size
+        상한에 기대지 않고 pagination.totalPages 만큼 순회하므로 한 회원의 매칭이
+        아무리 많아도 누락이 없고(=200 cap 재발 방지), clientId 필터는 매니저
+        스코프도 무시해 어떤 매니저가 만든 매칭이든 중복으로 잡힌다. */
   useEffect(() => {
     if (!clientA && !clientB) {
       setDuplicateMatch(null);
@@ -937,27 +944,36 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
       return;
     }
     let cancelled = false;
-    matchService.listMatches({ size: 200 }).then((res) => {
-      if (cancelled) return;
-      const list = res.data || res.matches || [];
-      const activeStatuses = ['draft', 'proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
-
-      if (clientA && clientB) {
-        const dup = list.find((m) => {
-          if (m.status === 'cancelled') return false;
-          const ids = [m.clientA.clientId, m.clientB.clientId];
-          return ids.includes(clientA.id) && ids.includes(clientB.id);
-        });
-        setDuplicateMatch(dup || null);
-      } else {
-        setDuplicateMatch(null);
+    const activeStatuses = ['draft', 'proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
+    // clientId로 좁힌 매칭을 전 페이지 끝까지 모은다(silent cap 없음).
+    const fetchSide = async (id) => {
+      if (!id) return [];
+      const PAGE_SIZE = 200;
+      const acc = [];
+      for (let page = 0; !cancelled; page += 1) {
+        const res = await matchService.listMatches({ clientId: id, size: PAGE_SIZE, page });
+        const chunk = res.data || res.matches || [];
+        acc.push(...chunk);
+        const totalPages = res.pagination?.totalPages;
+        // pagination 메타가 있으면 그걸로, 없으면 "가득 찬 페이지였는지"로 다음 페이지 유무 판단.
+        const hasMore = totalPages != null ? page + 1 < totalPages : chunk.length === PAGE_SIZE;
+        if (!hasMore) break;
       }
+      return acc;
+    };
+
+    Promise.all([fetchSide(clientA?.id), fetchSide(clientB?.id)]).then(([aMatches, bMatches]) => {
+      if (cancelled) return;
 
       if (clientA && clientB) {
-        const pairMatches = list.filter((m) => {
+        // A의 매칭 전체를 받았으므로 그 안에서 A·B 둘 다 낀 건이 이 쌍의 과거 이력 전부.
+        const pairMatches = aMatches.filter((m) => {
           const ids = [m.clientA.clientId, m.clientB.clientId];
           return ids.includes(clientA.id) && ids.includes(clientB.id);
         });
+        const dup = pairMatches.find((m) => m.status !== 'cancelled');
+        setDuplicateMatch(dup || null);
+
         const warnings = [];
         for (const m of pairMatches) {
           if (m.status === 'cancelled') {
@@ -975,12 +991,13 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
         }
         setPairHistory(warnings);
       } else {
+        setDuplicateMatch(null);
         setPairHistory([]);
       }
 
-      const findActive = (clientId) => {
+      const findActive = (matches, clientId) => {
         if (!clientId) return { normal: [], deleted: [] };
-        const all = list.filter((m) =>
+        const all = matches.filter((m) =>
           activeStatuses.includes(m.status) &&
           (m.clientA.clientId === clientId || m.clientB.clientId === clientId)
         );
@@ -988,8 +1005,8 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
         const deleted = all.filter((m) => m.clientA.deleted || m.clientB.deleted);
         return { normal, deleted };
       };
-      const activeA = findActive(clientA?.id);
-      const activeB = findActive(clientB?.id);
+      const activeA = findActive(aMatches, clientA?.id);
+      const activeB = findActive(bMatches, clientB?.id);
       setActiveMatches({ A: activeA.normal, B: activeB.normal, deletedA: activeA.deleted, deletedB: activeB.deleted });
     }).catch(() => {
       if (!cancelled) {
