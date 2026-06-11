@@ -1868,6 +1868,10 @@ export async function mockFetch(path, options = {}) {
       education: found.education, location: found.location, religion: found.religion,
       mbti: found.mbti, hobbies: found.hobbies, introduction: found.introduction,
       idealType: found.idealType, status: found.status || 'active',
+      preferredAgeMin: found.preferredAgeMin, preferredAgeMax: found.preferredAgeMax,
+      preferredAgeAny: found.preferredAgeAny,
+      preferredHeightMin: found.preferredHeightMin, preferredHeightMax: found.preferredHeightMax,
+      preferredHeightAny: found.preferredHeightAny,
       photoUrls: (found.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
       approvalStatus: found.approvalStatus, createdAt: found.createdAt,
     };
@@ -1890,6 +1894,10 @@ export async function mockFetch(path, options = {}) {
       if (body[key] !== undefined && body[key] !== null) {
         found[key] = key === 'height' ? Number(body[key]) : body[key];
       }
+    }
+    // 선호 나이/키 범위 — '상관없음'이면 min/max가 null 로 오므로 null 도 그대로 반영
+    for (const key of ['preferredAgeAny','preferredAgeMin','preferredAgeMax','preferredHeightAny','preferredHeightMin','preferredHeightMax']) {
+      if (key in body) found[key] = body[key];
     }
     return { success: true, message: '프로필이 수정되었습니다.' };
   }

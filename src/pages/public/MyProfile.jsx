@@ -2,20 +2,16 @@ import { useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   User, Phone, Edit3, Save, X, CheckCircle2,
-  MapPin, Briefcase, GraduationCap, Heart, Camera,
+  MapPin, Briefcase, GraduationCap, Heart, Camera, SlidersHorizontal,
 } from 'lucide-react';
 import { getMyProfile, updateMyProfile, addMyPhotos, deleteMyPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
+import RangeSlider from '../../components/RangeSlider';
+import { AGE_BOUNDS, HEIGHT_BOUNDS } from '../../store/clientFormStore';
 import { toast } from '../../store/toastStore';
 import styles from './MyProfile.module.css';
 
-/* ─── helpers ─── */
-function calcAge(birthDate) {
-  if (!birthDate) return null;
-  const y = new Date(birthDate).getFullYear();
-  return new Date().getFullYear() - y;
-}
 
 function formatPhone(raw = '') {
   const digits = raw.replace(/\D/g, '');
@@ -25,6 +21,12 @@ function formatPhone(raw = '') {
 }
 
 const GENDER_LABEL = { male: '남성', female: '여성' };
+
+/* 선호 나이/키 범위 키 — handleSave 의 generic 루프에서 제외하고 별도 처리 */
+const PREFERRED_KEYS = new Set([
+  'preferredAgeMin', 'preferredAgeMax', 'preferredAgeAny',
+  'preferredHeightMin', 'preferredHeightMax', 'preferredHeightAny',
+]);
 
 /* ─── Skeleton ─── */
 function ProfileSkeleton() {
@@ -190,6 +192,14 @@ export default function MyProfile() {
       hobbies: profile.hobbies || '',
       introduction: profile.introduction || '',
       idealType: profile.idealType || '',
+      preferredAgeMin: profile.preferredAgeMin ?? 25,
+      preferredAgeMax: profile.preferredAgeMax ?? 40,
+      // 신규 필드 — 기존 회원은 범위가 비어 있을 수 있다. 범위가 없으면 '상관없음'으로
+      // 시작해, 손대지 않고 저장 시 임의 기본값이 선호값으로 기록되는 것을 막는다.
+      preferredAgeAny: profile.preferredAgeMin == null || profile.preferredAgeMax == null,
+      preferredHeightMin: profile.preferredHeightMin ?? 160,
+      preferredHeightMax: profile.preferredHeightMax ?? 185,
+      preferredHeightAny: profile.preferredHeightMin == null || profile.preferredHeightMax == null,
     });
     setEditMode(true);
   }, [profile]);
@@ -207,10 +217,18 @@ export default function MyProfile() {
   const handleSave = async () => {
     const payload = {};
     for (const [key, val] of Object.entries(editForm)) {
+      if (PREFERRED_KEYS.has(key)) continue; // 선호 범위는 아래에서 별도 처리
       if (val !== '' && val != null) {
         payload[key] = key === 'height' ? Number(val) : val;
       }
     }
+    // 선호 나이/키 범위 — '상관없음'이면 min/max는 null (clientFormStore 규칙과 동일)
+    payload.preferredAgeAny = !!editForm.preferredAgeAny;
+    payload.preferredAgeMin = editForm.preferredAgeAny ? null : editForm.preferredAgeMin;
+    payload.preferredAgeMax = editForm.preferredAgeAny ? null : editForm.preferredAgeMax;
+    payload.preferredHeightAny = !!editForm.preferredHeightAny;
+    payload.preferredHeightMin = editForm.preferredHeightAny ? null : editForm.preferredHeightMin;
+    payload.preferredHeightMax = editForm.preferredHeightAny ? null : editForm.preferredHeightMax;
     setSaving(true);
     try {
       await updateMyProfile(clientId, verifiedPhone, verificationId, payload);
@@ -302,7 +320,18 @@ export default function MyProfile() {
   }
 
   /* ══ STATE 2: profile view / edit ══ */
-  const age = calcAge(profile.birthDate);
+
+  /* 선호 조건 표시 텍스트 (ClientDetail 과 동일 규칙) */
+  const prefAgeText = profile.preferredAgeAny
+    ? '상관없음'
+    : (profile.preferredAgeMin != null && profile.preferredAgeMax != null
+        ? `${profile.preferredAgeMin}~${profile.preferredAgeMax}세`
+        : null);
+  const prefHeightText = profile.preferredHeightAny
+    ? '상관없음'
+    : (profile.preferredHeightMin != null && profile.preferredHeightMax != null
+        ? `${profile.preferredHeightMin}~${profile.preferredHeightMax}cm`
+        : null);
 
   return (
     <div className={styles.page}>
@@ -382,7 +411,7 @@ export default function MyProfile() {
                 />
                 <FieldRow
                   label="출생연도"
-                  value={profile.birthDate ? `${profile.birthDate.slice(0, 4)}년${age ? ` (${age}세)` : ''}` : null}
+                  value={profile.birthDate ? `${profile.birthDate.slice(2, 4)}년생` : null}
                   editMode={editMode}
                   inputProps={{
                     value: editForm.birthDate ? editForm.birthDate.slice(0, 4) : '',
@@ -499,6 +528,45 @@ export default function MyProfile() {
                 <p className={styles.bioText}>
                   {profile.idealType || <span className={styles.emptyText}>작성된 내용이 없습니다.</span>}
                 </p>
+              )}
+            </SectionCard>
+
+            {/* ── 선호 조건 (선호 나이·키 범위) ── */}
+            <SectionCard icon={SlidersHorizontal} title="선호 조건">
+              {editMode ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <RangeSlider
+                    label="선호 나이"
+                    unit="세"
+                    min={AGE_BOUNDS.min}
+                    max={AGE_BOUNDS.max}
+                    valueMin={editForm.preferredAgeMin}
+                    valueMax={editForm.preferredAgeMax}
+                    onChange={({ min, max }) =>
+                      setEditForm((f) => ({ ...f, preferredAgeMin: min, preferredAgeMax: max }))}
+                    anyChecked={editForm.preferredAgeAny}
+                    onToggleAny={(v) => setEditForm((f) => ({ ...f, preferredAgeAny: v }))}
+                    hint="연상·연하·동갑 중 어느 폭이 편한지 알려주세요."
+                  />
+                  <RangeSlider
+                    label="선호 키"
+                    unit="cm"
+                    min={HEIGHT_BOUNDS.min}
+                    max={HEIGHT_BOUNDS.max}
+                    valueMin={editForm.preferredHeightMin}
+                    valueMax={editForm.preferredHeightMax}
+                    onChange={({ min, max }) =>
+                      setEditForm((f) => ({ ...f, preferredHeightMin: min, preferredHeightMax: max }))}
+                    anyChecked={editForm.preferredHeightAny}
+                    onToggleAny={(v) => setEditForm((f) => ({ ...f, preferredHeightAny: v }))}
+                    hint="편안하게 마주할 수 있는 키의 범위를 골라주세요."
+                  />
+                </div>
+              ) : (
+                <div className={styles.fields}>
+                  <FieldRow label="선호 나이" value={prefAgeText || '미설정'} editMode={false} />
+                  <FieldRow label="선호 키" value={prefHeightText || '미설정'} editMode={false} />
+                </div>
               )}
             </SectionCard>
 
