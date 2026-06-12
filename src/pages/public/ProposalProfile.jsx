@@ -24,6 +24,8 @@ export default function ProposalProfile() {
 
   // Confirm modal
   const [confirmModal, setConfirmModal] = useState(null); // 'accept' | 'reject' | null
+  const [rejectComment, setRejectComment] = useState(''); // 거절 사유 피드백(선택)
+  const [rejectResult, setRejectResult] = useState(null); // 거절 완료 시 { hasComment } — 완료 화면 표시
 
   // Oath
   const [oathAgreed, setOathAgreed] = useState(false);
@@ -57,11 +59,14 @@ export default function ProposalProfile() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const handleRespond = async (response) => {
+  const handleRespond = async (response, feedbackComment) => {
     setSubmitting(true);
     try {
-      const result = await matchService.respondProposal(token, response);
+      const result = await matchService.respondProposal(token, response, { feedbackComment });
       setResponseMessage(result.message || '응답이 완료되었습니다.');
+      if (response === 'rejected') {
+        setRejectResult({ hasComment: !!(feedbackComment && feedbackComment.trim()) });
+      }
       const updated = await matchService.getProposal(token).catch(() => null);
       if (updated) setData(updated);
       else setData((d) => ({ ...d, myResponse: response }));
@@ -92,6 +97,33 @@ export default function ProposalProfile() {
 
   const { myName, myRole, myResponse, matchStatus, counterpart: cp } = data;
   const responded = myResponse !== 'pending';
+
+  // 거절 응답 직후 — 만료 화면 대신 따뜻한 완료 화면 (애프터 피드백 흐름과 동일 톤)
+  if (rejectResult) {
+    return (
+      <div className={styles.page}>
+        <PageHeader />
+        <div className={styles.container}>
+          <div className={styles.respondedBanner}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>🌱</div>
+            <p className={styles.respondedLabel}>
+              {rejectResult.hasComment ? '피드백 감사합니다' : '응답이 완료되었습니다'}
+            </p>
+            <p className={styles.respondedStatus}>
+              {rejectResult.hasComment
+                ? '솔직한 의견 감사합니다. 보내주신 피드백을 꼼꼼히 살펴 다음엔 더 잘 맞는 분을 소개해 드릴게요.'
+                : '응답해 주셔서 감사합니다. 다음엔 더 잘 맞는 분을 소개해 드릴게요.'}
+            </p>
+            {myName && (
+              <p className={styles.respondedStatus} style={{ marginTop: 12 }}>
+                저희가 {myName} 님의 진가를 알아볼 분을 꼭 찾아낼게요.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 만료 체크: 취소됨 또는 에프터 확정(성사/미성사)
   if (matchStatus === 'cancelled' || afterFinalized) {
@@ -320,11 +352,29 @@ export default function ProposalProfile() {
       <ConfirmModal
         open={confirmModal === 'reject'}
         variant="reject"
-        title="정말 거절하시겠어요?"
-        message="거절하시면 이번 매칭은 성사되지 않습니다."
+        title="이번 매칭 제안을 거절하시겠어요?"
+        message="거절하시면 이번 매칭은 취소되며, 다시 연결되지 않습니다."
         confirmLabel="네, 거절할게요"
-        onConfirm={() => { setConfirmModal(null); handleRespond('rejected'); }}
-        onCancel={() => setConfirmModal(null)}
+        warningText="확인 후에는 거절을 취소할 수 없습니다"
+        commentValue={rejectComment}
+        onCommentChange={setRejectComment}
+        commentLabel={(
+          <>
+            <span className={styles.confirmCommentOptional}>선택</span>
+            솔직한 거절 이유를 알려주세요. 자세히 적어주실수록 매니저가 꼼꼼히 분석해{' '}
+            <span className={styles.confirmCommentHighlight}>다음번엔 마음에 쏙 드는 분</span>을 찾아드릴게요. 📝
+          </>
+        )}
+        commentPlaceholder="예) 취미나 가치관이 저와 조금 맞지 않는 것 같아요. / 프로필 사진의 스타일이 제 이상형과 거리가 있어요."
+        commentNote={(
+          <>
+            <span aria-hidden="true">🔒</span>
+            <span>피드백은 담당 매니저만 확인하며, 상대방에게는 공개되지 않아요.</span>
+          </>
+        )}
+        commentMaxLength={1000}
+        onConfirm={() => { setConfirmModal(null); handleRespond('rejected', rejectComment); }}
+        onCancel={() => { setConfirmModal(null); setRejectComment(''); }}
       />
     </div>
   );

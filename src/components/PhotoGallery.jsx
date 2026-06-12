@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Trash2 } from 'lucide-react';
 import styles from './PhotoGallery.module.css';
 
@@ -106,11 +107,12 @@ export default function PhotoGallery({
         </div>
       )}
 
-      {lightboxUrl && (
+      {lightboxUrl && createPortal(
         <div className={styles.lightbox} onClick={closeLightbox}>
           <img src={lightboxUrl} alt="확대 보기" onClick={(e) => e.stopPropagation()} />
           <button className={styles.lightboxClose} onClick={closeLightbox}>×</button>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

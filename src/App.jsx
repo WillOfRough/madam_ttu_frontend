@@ -61,7 +61,9 @@ function AuthListener() {
       checking = true;
       try {
         const valid = await checkSession();
-        if (!valid) {
+        // valid === false 는 서버가 401 로 세션 만료를 확정한 경우만 해당.
+        // null(네트워크 실패 등 판정 불가)은 멀쩡한 세션을 끊지 않도록 로그아웃하지 않는다.
+        if (valid === false) {
           logout();
           navigate('/login', { state: { from: locationRef.current } });
         }

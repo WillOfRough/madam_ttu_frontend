@@ -236,7 +236,7 @@ export default function ClientDetail() {
     setEditForm({
       name:         client.name || '',
       nickname:     client.nickname || '',
-      birthDate:    client.birthDate || '',
+      birthYear:    client.birthDate ? client.birthDate.slice(0, 4) : '',
       phone:        client.phone || '',
       height:       client.height || '',
       occupation:   client.occupation || '',
@@ -262,6 +262,11 @@ export default function ClientDetail() {
           payload[key] = key === 'height' ? Number(value) : value;
         }
       }
+      // 출생연도만 입력받고 백엔드에는 YYYY-01-01 형태의 birthDate 로 저장한다.
+      if (payload.birthYear) {
+        payload.birthDate = `${payload.birthYear}-01-01`;
+      }
+      delete payload.birthYear;
       await clientService.updateClient(clientId, payload);
       toast.success('프로필이 수정되었습니다.');
       const updated = await clientService.getClientDetail(clientId);
@@ -559,7 +564,7 @@ export default function ClientDetail() {
                 {[
                   { key: 'name',         label: '이름' },
                   { key: 'nickname',     label: '닉네임' },
-                  { key: 'birthDate',    label: '생년월일', placeholder: 'yyyy-MM-dd' },
+                  { key: 'birthYear',    label: '출생연도', placeholder: 'YYYY (예: 1990)', maxLength: 4 },
                   { key: 'phone',        label: '연락처', placeholder: '010-XXXX-XXXX' },
                   { key: 'height',       label: '키', type: 'number' },
                   { key: 'occupation',   label: '직업' },
@@ -570,14 +575,21 @@ export default function ClientDetail() {
                   { key: 'religion',     label: '종교' },
                   { key: 'mbti',         label: 'MBTI', placeholder: 'INTJ' },
                   { key: 'hobbies',      label: '취미 (쉼표 구분)' },
-                ].map(({ key, label, type, placeholder }) => (
+                ].map(({ key, label, type, placeholder, maxLength }) => (
                   <div key={key} className={styles.editFieldItem}>
                     <span className={styles.editFieldLabel}>{label}</span>
                     <input
                       className={styles.editInput}
                       type={type || 'text'}
+                      inputMode={key === 'birthYear' ? 'numeric' : undefined}
+                      maxLength={maxLength}
                       value={editForm[key] || ''}
-                      onChange={(e) => setEditForm((f) => ({ ...f, [key]: e.target.value }))}
+                      onChange={(e) => {
+                        const v = key === 'birthYear'
+                          ? e.target.value.replace(/\D/g, '').slice(0, 4)
+                          : e.target.value;
+                        setEditForm((f) => ({ ...f, [key]: v }));
+                      }}
                       placeholder={placeholder}
                     />
                   </div>
@@ -927,7 +939,7 @@ export default function ClientDetail() {
       )}
 
       {/* ── Photo Lightbox ── */}
-      {lightboxUrl && (
+      {lightboxUrl && createPortal(
         <div
           className={styles.lightboxOverlay}
           onClick={() => setLightboxUrl(null)}
@@ -952,7 +964,8 @@ export default function ClientDetail() {
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Deletion Certificate Overlay ── */}

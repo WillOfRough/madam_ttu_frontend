@@ -156,6 +156,26 @@ export async function deleteMyProfile(id, verificationId) {
   return apiFetch(`/api/v1/clients/me?${query}`, { method: 'DELETE' });
 }
 
+/* 회원 본인 사진 추가/삭제 (전화 인증) — id + verificationId 로 인증.
+   verificationId 를 소모하지 않아 60분 인증 세션 내 여러 번 호출 가능. */
+export async function addMyPhotos(id, verificationId, photos = []) {
+  const compressed = await Promise.all(photos.map(compressImage));
+  const formData = new FormData();
+  compressed.forEach((file) => formData.append('photos', file));
+  const query = new URLSearchParams({ id, verificationId });
+  return apiFetch(`/api/v1/clients/me/photos?${query}`, {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+export async function deleteMyPhoto(id, verificationId, photoId) {
+  const query = new URLSearchParams({ id, verificationId });
+  return apiFetch(`/api/v1/clients/me/photos/${photoId}?${query}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function updateClientStatus(clientId, status) {
   return apiFetch(`/api/v1/clients/${clientId}/status`, {
     method: 'PATCH',

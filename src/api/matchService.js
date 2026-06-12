@@ -35,10 +35,16 @@ export async function getProposal(token) {
   return apiFetch(`/api/v1/proposals/${token}`, { method: 'GET' });
 }
 
-export async function respondProposal(token, response) {
+export async function respondProposal(token, response, { feedbackRating, feedbackComment } = {}) {
+  const body = { response };
+  // 피드백(평점·코멘트)은 거절 시에만 저장된다(수락 시 보내도 백엔드가 무시). 둘 다 선택.
+  if (response === 'rejected') {
+    if (feedbackRating != null) body.feedbackRating = feedbackRating;
+    if (feedbackComment != null && feedbackComment !== '') body.feedbackComment = feedbackComment;
+  }
   return apiFetch(`/api/v1/proposals/${token}/respond`, {
     method: 'POST',
-    body: { response },
+    body,
   });
 }
 

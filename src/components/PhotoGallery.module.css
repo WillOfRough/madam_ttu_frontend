@@ -73,9 +73,9 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--danger, #EB5757);
   color: #fff;
-  border: none;
+  border: 2px solid #fff;
   border-radius: 50%;
   width: 26px;
   height: 26px;
@@ -84,17 +84,15 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  opacity: 0;
-  transition: opacity var(--duration-fast) var(--ease-out),
+  opacity: 1;
+  box-shadow: var(--shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.25));
+  transition: transform var(--duration-fast) var(--ease-out),
               background var(--duration-fast) var(--ease-out);
 }
 
-div:hover > .deleteBtn {
-  opacity: 1;
-}
-
 .deleteBtn:hover {
-  background: var(--danger, #EB5757);
+  transform: scale(1.1);
+  background: #d63d3d;
 }
 
 .deleteBtn:disabled {

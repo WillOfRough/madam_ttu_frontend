@@ -134,16 +134,22 @@ const useAuthStore = create(
             managerInviteQuota: data.managerInviteQuota || null,
           });
           return true;
-        } catch {
-          set({
-            isLoggedIn: false,
-            managerId: null,
-            email: null,
-            name: null,
-            role: null,
-            managerInviteQuota: null,
-          });
-          return false;
+        } catch (err) {
+          // 서버가 명시적으로 401(인증 만료)을 응답한 경우에만 로그아웃 처리한다.
+          // 네트워크 실패(모바일 백그라운드 복귀 직후 라디오 미가동 등)나 5xx 서버 오류는
+          // 세션 만료가 아니므로 기존 로그인 상태를 유지한다. (return null = 판정 불가)
+          if (err?.status === 401) {
+            set({
+              isLoggedIn: false,
+              managerId: null,
+              email: null,
+              name: null,
+              role: null,
+              managerInviteQuota: null,
+            });
+            return false;
+          }
+          return null;
         }
       },
 

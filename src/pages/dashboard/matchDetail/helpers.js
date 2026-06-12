@@ -136,17 +136,6 @@ export function getHeroIconColor(color) {
   return m[color] || 'var(--ink-500)';
 }
 
-export function getHeroKickerColor(color) {
-  const m = {
-    amber:     '#9A5E0E',
-    mint:      '#1A7A50',
-    tangerine: 'var(--tangerine-700)',
-    lilac:     '#4F3DA0',
-    rose:      '#B13149',
-  };
-  return m[color] || 'var(--ink-500)';
-}
-
 /* ─── format helpers ────────────────────────────── */
 export function formatDate(iso) {
   if (!iso) return '-';

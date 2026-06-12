@@ -705,7 +705,7 @@ const matches = [
     createdByManagerId: 'mgr001',
     createdByManagerName: '김성중',
   },
-  // 2) proposal_accepted — B수락, A(proposer) 확인 대기
+  // 2) proposal_accepted — A(proposer) 수락 완료, B(receiver) 확인 대기
   {
     matchId: 'match002',
     type: '1:1 소개팅',
@@ -714,13 +714,13 @@ const matches = [
     clientA: {
       clientId: 's005', clientName: '한소희', clientNickname: '제주도 소희', clientGender: 'female',
       managerName: '박소영', role: 'proposer',
-      response: null, respondedAt: null,
+      response: 'accepted', respondedAt: '2026-03-08T14:00:00Z',
       proposalToken: 'PrTk03iJ5kL3',
     },
     clientB: {
       clientId: 's010', clientName: '오태양', clientNickname: 'AI 태양', clientGender: 'male',
       managerName: '김성중', role: 'receiver',
-      response: 'accepted', respondedAt: '2026-03-08T14:00:00Z',
+      response: null, respondedAt: null,
       proposalToken: 'PrTk04mN6oP4',
     },
     createdAt: '2026-03-07T11:00:00Z',
@@ -1005,7 +1005,7 @@ const matches = [
     clientA: {
       clientId: 's003', clientName: '박지민', clientNickname: null, clientGender: 'female',
       managerName: '김성중', role: 'proposer',
-      response: null, respondedAt: null,
+      response: 'accepted', respondedAt: '2026-03-06T10:00:00Z',
       proposalToken: 'PrTk05qR7sT5',
     },
     clientB: {
@@ -1034,7 +1034,7 @@ const matches = [
     clientB: {
       clientId: 's002', clientName: '이준혁', clientNickname: null, clientGender: 'male',
       managerName: '김성중', role: 'receiver',
-      response: 'accepted', respondedAt: '2026-03-21T14:00:00Z',
+      response: null, respondedAt: null,
       proposalToken: 'PrTkDeleted02',
       deleted: false,
     },
@@ -1333,7 +1333,7 @@ const matches = [
       response: 'accepted', respondedAt: '2026-04-21T16:00:00Z',
       proposalToken: 'PrTkPay02B',
     },
-    payments: { A: 'confirmed', B: 'pending' },
+    payments: { A: 'paid', B: 'pending' },
     createdAt: '2026-04-20T09:00:00Z',
     createdByManagerId: MANAGER_ID,
     createdByManagerName: '김성중',
@@ -1363,6 +1363,9 @@ availableTimes['PrTk17gQt1E5'] = [
 // match011: A쪽 피드백 작성 완료
 feedbacks['PrTk21kLm5I9'] = { rating: 6, comment: '대화는 좋았지만 취미가 너무 달랐어요.', feedbackAt: '2026-03-12T10:00:00Z' };
 
+// match005: B(최민수)가 프로필 확인 후 거절하며 남긴 사유 피드백 (취소 매칭)
+feedbacks['PrTk06uV8wX6'] = { rating: null, comment: '프로필 사진의 스타일이 제 이상형과 거리가 있어요.', feedbackAt: '2026-03-06T12:00:00Z' };
+
 // match007: completed — 양쪽 가용시간 + 선택 완료
 availableTimes['PrTk13cMp7A1'] = [
   { timeId: 'time-d01', date: '2026-03-01', startTime: '18:00:00', clientName: '송하은', selected: true },
@@ -1387,6 +1390,36 @@ availableTimes['PrTk10kL2mN0'] = [
   { timeId: 'time-g03', date: '2026-03-19', startTime: '18:00:00', clientName: '강도윤', selected: false },
   { timeId: 'time-g04', date: '2026-03-20', startTime: '19:00:00', clientName: '강도윤', selected: false },
 ];
+
+// match-apr02: arranging — 양쪽 가용시간 제출 (공통 04/15 14:00)
+availableTimes['PrTkApr02A'] = [
+  { timeId: 'apr02-a1', date: '2026-04-15', startTime: '14:00:00', clientName: '한소희', selected: false },
+  { timeId: 'apr02-a2', date: '2026-04-16', startTime: '19:00:00', clientName: '한소희', selected: false },
+];
+availableTimes['PrTkApr02B'] = [
+  { timeId: 'apr02-b1', date: '2026-04-15', startTime: '14:00:00', clientName: '오태양', selected: false },
+  { timeId: 'apr02-b2', date: '2026-04-17', startTime: '18:00:00', clientName: '오태양', selected: false },
+];
+
+// match-apr03: scheduled — 확정 슬롯(04/12 18:00) selected
+availableTimes['PrTkApr03A'] = [
+  { timeId: 'apr03-a1', date: '2026-04-12', startTime: '18:00:00', clientName: '윤예은', selected: true },
+  { timeId: 'apr03-a2', date: '2026-04-13', startTime: '19:00:00', clientName: '윤예은', selected: false },
+];
+availableTimes['PrTkApr03B'] = [
+  { timeId: 'apr03-b1', date: '2026-04-12', startTime: '18:00:00', clientName: '정우진', selected: false },
+];
+
+// match-apr07: scheduled — 확정 슬롯(04/15 19:00) selected
+availableTimes['PrTkApr07A'] = [
+  { timeId: 'apr07-a1', date: '2026-04-15', startTime: '19:00:00', clientName: '한소희', selected: true },
+];
+availableTimes['PrTkApr07B'] = [
+  { timeId: 'apr07-b1', date: '2026-04-15', startTime: '19:00:00', clientName: '정우진', selected: false },
+];
+
+// match-apr09: B(최민수)가 프로필 확인 후 거절하며 남긴 사유 피드백
+feedbacks['PrTkApr09B'] = { rating: null, comment: '직업·가치관이 제가 찾는 분과 결이 달라요.', feedbackAt: '2026-04-06T12:00:00Z' };
 
 // Build proposal lookup from matches
 function getProposalByToken(token) {
@@ -1883,6 +1916,36 @@ export async function mockFetch(path, options = {}) {
     }
     clients.splice(idx, 1);
     return { success: true, message: '탈퇴가 완료되었습니다.' };
+  }
+
+  // POST /api/v1/clients/me/photos (본인 사진 추가 — id+verificationId, verificationId 미소모)
+  // 매니저용 /clients/:id/photos 정규식보다 먼저 처리되도록 me 섹션에 둔다.
+  if (method === 'POST' && pathname === '/api/v1/clients/me/photos') {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if ((found.photoIds || []).length >= 5) {
+      throw Object.assign(new Error('사진은 최대 5장까지 등록할 수 있습니다.'), { status: 400, body: { error: '8.003' } });
+    }
+    return { success: true, message: '사진이 추가되었습니다.' };
+  }
+
+  // DELETE /api/v1/clients/me/photos/:photoId (본인 사진 삭제 — id+verificationId, verificationId 미소모)
+  if (method === 'DELETE' && /^\/api\/v1\/clients\/me\/photos\/[^/]+$/.test(pathname)) {
+    const id = params.get('id');
+    const verificationId = params.get('verificationId');
+    const photoId = pathname.split('/').pop();
+    if (!id) throw Object.assign(new Error('id는 필수입니다.'), { status: 400, body: { error: '4.002' } });
+    if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
+    const found = clients.find((c) => c.id === id);
+    if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
+    if (Array.isArray(found.photoIds)) {
+      found.photoIds = found.photoIds.filter((pid) => pid !== photoId);
+    }
+    return { success: true, message: '사진이 삭제되었습니다.' };
   }
 
   // POST /api/v1/inquiries/:id/answer (답변 등록)
@@ -2660,6 +2723,15 @@ export async function mockFetch(path, options = {}) {
     if (body.response === 'rejected') {
       m.status = 'cancelled';
       m.cancelReason = `${proposal.participant.role === 'receiver' ? 'B' : 'A'}가 프로필 확인 후 거절`;
+      // 거절 사유 피드백(선택) — 만남 후 피드백과 동일 저장소(feedbacks)에 보관.
+      // 매칭 상세 핸들러가 feedbacks[token] 을 읽어 clientA/clientB.feedbackComment 로 노출한다.
+      if (body.feedbackRating != null || (body.feedbackComment != null && body.feedbackComment !== '')) {
+        feedbacks[token] = {
+          rating: body.feedbackRating ?? null,
+          comment: body.feedbackComment ?? null,
+          feedbackAt: new Date().toISOString(),
+        };
+      }
       return { success: true, message: '응답이 등록되었습니다.' };
     }
 

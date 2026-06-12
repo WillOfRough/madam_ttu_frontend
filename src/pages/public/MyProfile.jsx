@@ -4,7 +4,7 @@ import {
   User, Phone, Edit3, Save, X, CheckCircle2,
   MapPin, Briefcase, GraduationCap, Heart, Camera, SlidersHorizontal,
 } from 'lucide-react';
-import { getMyProfile, updateMyProfile, addClientPhotos, deleteClientPhoto } from '../../api/clientService';
+import { getMyProfile, updateMyProfile, addMyPhotos, deleteMyPhoto } from '../../api/clientService';
 import PhotoGallery from '../../components/PhotoGallery';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
 import RangeSlider from '../../components/RangeSlider';
@@ -12,12 +12,6 @@ import { AGE_BOUNDS, HEIGHT_BOUNDS } from '../../store/clientFormStore';
 import { toast } from '../../store/toastStore';
 import styles from './MyProfile.module.css';
 
-/* ─── helpers ─── */
-function calcAge(birthDate) {
-  if (!birthDate) return null;
-  const y = new Date(birthDate).getFullYear();
-  return new Date().getFullYear() - y;
-}
 
 function formatPhone(raw = '') {
   const digits = raw.replace(/\D/g, '');
@@ -126,7 +120,7 @@ export default function MyProfile() {
     if (files.length === 0 || !profile?.id) return;
     setPhotoUploading(true);
     try {
-      await addClientPhotos(profile.id, files);
+      await addMyPhotos(profile.id, verificationId, files);
       await refreshProfile();
       toast.success('사진이 추가되었습니다.');
     } catch (err) {
@@ -138,11 +132,12 @@ export default function MyProfile() {
 
   const handlePhotoDelete = async (photoUrl) => {
     if (!profile?.id) return;
-    const segments = photoUrl.split('/');
-    const photoId = segments[segments.length - 1];
+    // photoUrl 예: /api/v1/clients/me/photos/{photoId}?clientId=...&verificationId=...
+    // 쿼리스트링을 먼저 떼고 마지막 경로 세그먼트(photoId)를 추출한다.
+    const photoId = photoUrl.split('?')[0].split('/').pop();
     setDeletingPhotoId(photoId);
     try {
-      await deleteClientPhoto(profile.id, photoId);
+      await deleteMyPhoto(profile.id, verificationId, photoId);
       await refreshProfile();
       toast.success('사진이 삭제되었습니다.');
     } catch (err) {
@@ -325,7 +320,18 @@ export default function MyProfile() {
   }
 
   /* ══ STATE 2: profile view / edit ══ */
-  const age = calcAge(profile.birthDate);
+
+  /* 선호 조건 표시 텍스트 (ClientDetail 과 동일 규칙) */
+  const prefAgeText = profile.preferredAgeAny
+    ? '상관없음'
+    : (profile.preferredAgeMin != null && profile.preferredAgeMax != null
+        ? `${profile.preferredAgeMin}~${profile.preferredAgeMax}세`
+        : null);
+  const prefHeightText = profile.preferredHeightAny
+    ? '상관없음'
+    : (profile.preferredHeightMin != null && profile.preferredHeightMax != null
+        ? `${profile.preferredHeightMin}~${profile.preferredHeightMax}cm`
+        : null);
 
   /* 선호 조건 표시 텍스트 (ClientDetail 과 동일 규칙) */
   const prefAgeText = profile.preferredAgeAny
@@ -416,10 +422,20 @@ export default function MyProfile() {
                   editMode={false}
                 />
                 <FieldRow
-                  label="생년월일"
-                  value={profile.birthDate ? `${profile.birthDate}${age ? ` (${age}세)` : ''}` : null}
+                  label="출생연도"
+                  value={profile.birthDate ? `${profile.birthDate.slice(2, 4)}년생` : null}
                   editMode={editMode}
-                  inputProps={{ ...field('birthDate'), type: 'date', placeholder: 'YYYY-MM-DD' }}
+                  inputProps={{
+                    value: editForm.birthDate ? editForm.birthDate.slice(0, 4) : '',
+                    onChange: (e) => {
+                      const year = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setEditForm((f) => ({ ...f, birthDate: year ? `${year}-01-01` : '' }));
+                    },
+                    type: 'text',
+                    inputMode: 'numeric',
+                    maxLength: 4,
+                    placeholder: 'YYYY (예: 1990)',
+                  }}
                 />
                 <FieldRow
                   label="전화번호"
