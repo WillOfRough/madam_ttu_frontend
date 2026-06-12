@@ -333,18 +333,6 @@ export default function MyProfile() {
         ? `${profile.preferredHeightMin}~${profile.preferredHeightMax}cm`
         : null);
 
-  /* 선호 조건 표시 텍스트 (ClientDetail 과 동일 규칙) */
-  const prefAgeText = profile.preferredAgeAny
-    ? '상관없음'
-    : (profile.preferredAgeMin != null && profile.preferredAgeMax != null
-        ? `${profile.preferredAgeMin}~${profile.preferredAgeMax}세`
-        : null);
-  const prefHeightText = profile.preferredHeightAny
-    ? '상관없음'
-    : (profile.preferredHeightMin != null && profile.preferredHeightMax != null
-        ? `${profile.preferredHeightMin}~${profile.preferredHeightMax}cm`
-        : null);
-
   return (
     <div className={styles.page}>
       <div className={styles.profileWrap}>
