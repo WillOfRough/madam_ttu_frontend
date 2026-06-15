@@ -30,7 +30,6 @@ const STATUS_OPTIONS = [
   { value: 'active',    label: '활동' },
   { value: 'inactive',  label: '휴면' },
   { value: 'suspended', label: '일시중지' },
-  { value: 'withdrawn', label: '탈퇴' },
 ];
 
 // ── KeyChip ──────────────────────────────────────────────
