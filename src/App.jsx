@@ -8,6 +8,7 @@ import RequireAuth from './components/RequireAuth';
 
 // Public pages
 import Login from './pages/public/Login';
+import ForgotPassword from './pages/public/ForgotPassword';
 import RegisterManager from './pages/public/RegisterManager';
 import ConnectManager from './pages/public/ConnectManager';
 import InviteValidation from './pages/public/InviteValidation';
@@ -110,6 +111,7 @@ export default function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/signup/oath" element={<Navigate to="/login" replace />} />
         <Route path="/signup" element={<Navigate to="/login" replace />} />
         <Route path="/register/:token" element={<RegisterManager />} />
