@@ -50,3 +50,13 @@ export async function changePassword({ currentPassword, newPassword, confirmPass
     body: { currentPassword, newPassword, confirmPassword },
   });
 }
+
+// 이메일 OTP 인증(verificationId) 기반 비밀번호 재설정 (공개 API / 세션 불필요).
+// 성공 시 비밀번호 변경 + 로그인 실패 잠금 자동 해제. verificationId 는 1회 소모형.
+export async function resetPassword({ email, verificationId, newPassword, confirmPassword }) {
+  return apiFetch('/api/v1/auth/password-reset', {
+    method: 'POST',
+    body: { email, verificationId, newPassword, confirmPassword },
+    skipUnauthorizedEvent: true,
+  });
+}

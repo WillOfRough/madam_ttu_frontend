@@ -161,6 +161,13 @@ export default function Login() {
               </div>
               <span className={styles.rememberText}>이메일 기억하기</span>
             </label>
+            <button
+              type="button"
+              className={styles.forgotBtn}
+              onClick={() => navigate('/forgot-password')}
+            >
+              비밀번호를 잊으셨나요?
+            </button>
           </div>
 
           {error && <p className={styles.error}>{error}</p>}

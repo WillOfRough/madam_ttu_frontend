@@ -1738,6 +1738,33 @@ export async function mockFetch(path, options = {}) {
     return { verificationId: crypto.randomUUID ? crypto.randomUUID() : `mock-${Date.now()}-${Math.random().toString(36).slice(2)}` };
   }
 
+  // POST /api/v1/verification/email/send (이메일 OTP 발송 — mock: 등록된 매니저만)
+  if (method === 'POST' && pathname === '/api/v1/verification/email/send') {
+    const body = options.body || {};
+    if (!body.email) throw Object.assign(new Error('이메일을 입력해주세요.'), { status: 400, body: { error: 'VALIDATION_ERROR', details: { email: '이메일을 입력해주세요.' } } });
+    if (!accounts[body.email]) throw Object.assign(new Error('가입되지 않은 이메일입니다.'), { status: 404, body: { error: '4.001' } });
+    return { success: true, message: '인증번호가 발송되었습니다.' };
+  }
+
+  // POST /api/v1/verification/email/verify (이메일 OTP 확인 — mock: 6자리 수락, '000000' 은 불일치)
+  if (method === 'POST' && pathname === '/api/v1/verification/email/verify') {
+    const body = options.body || {};
+    if (!/^\d{6}$/.test(body.code || '')) throw Object.assign(new Error('입력값을 확인해주세요.'), { status: 400, body: { error: 'VALIDATION_ERROR', details: { code: '인증번호는 6자리 숫자입니다.' } } });
+    if (body.code === '000000') throw Object.assign(new Error('인증번호가 일치하지 않습니다.'), { status: 400, body: { error: '7.003' } });
+    return { verificationId: crypto.randomUUID ? crypto.randomUUID() : `mock-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+  }
+
+  // POST /api/v1/auth/password-reset (이메일 OTP 기반 비밀번호 재설정 — mock)
+  if (method === 'POST' && pathname === '/api/v1/auth/password-reset') {
+    const body = options.body || {};
+    if (!body.verificationId) throw Object.assign(new Error('인증을 다시 진행해주세요.'), { status: 400, body: { error: '7.004' } });
+    if (!body.newPassword || body.newPassword.length < 8) throw Object.assign(new Error('입력값을 확인해주세요.'), { status: 400, body: { error: 'VALIDATION_ERROR', details: { newPassword: '비밀번호는 8자 이상이어야 합니다.' } } });
+    if (body.newPassword !== body.confirmPassword) throw Object.assign(new Error('비밀번호가 일치하지 않습니다.'), { status: 400, body: { error: '3.001' } });
+    if (!accounts[body.email]) throw Object.assign(new Error('가입되지 않은 이메일입니다.'), { status: 404, body: { error: '4.001' } });
+    accounts[body.email].password = body.newPassword;
+    return { success: true, message: '비밀번호가 재설정되었습니다. 로그인해주세요.' };
+  }
+
   // POST /api/v1/auth/login
   if (method === 'POST' && pathname === '/api/v1/auth/login') {
     const body = options.body || {};
