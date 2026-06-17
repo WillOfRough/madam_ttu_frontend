@@ -18,10 +18,21 @@ import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
 import useManagerInviteStore from '../../store/managerInviteStore';
 import { changePassword } from '../../api/authService';
+import { getApiErrorMessage } from '../../api/config';
 import { toast } from '../../store/toastStore';
 import { BANK_OPTIONS } from '../../data/constants';
 import PhoneVerifyField from '../../components/PhoneVerifyField';
 import styles from './Settings.module.css';
+
+// change-password 에러 매핑 (API 스펙 기준)
+//  401(1.001) 현재 비밀번호 틀림 / 400 3.001 새 비번 불일치 / 400 3.002 최근 비번 재사용
+function resolvePasswordChangeError(err) {
+  if (err?.status === 401) return '현재 비밀번호가 올바르지 않습니다.';
+  const code = err?.body?.error;
+  if (code === '3.001') return '새 비밀번호가 일치하지 않습니다.';
+  if (code === '3.002') return '최근에 사용한 비밀번호는 다시 사용할 수 없어요.';
+  return getApiErrorMessage(err, '비밀번호 변경에 실패했습니다.');
+}
 
 export default function Settings() {
   const email = useAuthStore((s) => s.email);
@@ -97,7 +108,7 @@ export default function Settings() {
 
   const handlePasswordChange = async () => {
     if (!pwForm.current) { toast.error('현재 비밀번호를 입력해주세요.'); return; }
-    if (pwForm.newPw.length < 6) { toast.error('새 비밀번호는 6자 이상이어야 합니다.'); return; }
+    if (pwForm.newPw.length < 8) { toast.error('새 비밀번호는 8자 이상이어야 합니다.'); return; }
     if (pwForm.newPw !== pwForm.confirm) { toast.error('새 비밀번호가 일치하지 않습니다.'); return; }
     setPwSaving(true);
     try {
@@ -110,7 +121,7 @@ export default function Settings() {
       setPwOpen(false);
       setPwForm({ current: '', newPw: '', confirm: '' });
     } catch (err) {
-      toast.error(err.message || '비밀번호 변경에 실패했습니다.');
+      toast.error(resolvePasswordChangeError(err));
     }
     setPwSaving(false);
   };
@@ -360,7 +371,7 @@ export default function Settings() {
                     type={showNew ? 'text' : 'password'}
                     value={pwForm.newPw}
                     onChange={(e) => setPwForm((f) => ({ ...f, newPw: e.target.value }))}
-                    placeholder="6자 이상"
+                    placeholder="8자 이상"
                   />
                   <button type="button" className={styles.pwToggle} onClick={() => setShowNew((v) => !v)}>
                     {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -401,7 +412,7 @@ export default function Settings() {
                 <span className={styles.rowBtnIcon}><Lock size={16} /></span>
                 <span className={styles.rowBtnText}>
                   <span className={styles.rowBtnLabel}>비밀번호 변경</span>
-                  <span className={styles.rowBtnHint}>최소 6자 · 영문·숫자 권장</span>
+                  <span className={styles.rowBtnHint}>최소 8자 · 영문·숫자 권장</span>
                 </span>
                 <ChevronRight size={16} className={styles.rowBtnChevron} />
               </button>

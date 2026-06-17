@@ -48,6 +48,9 @@ export async function changePassword({ currentPassword, newPassword, confirmPass
   return apiFetch('/api/v1/auth/change-password', {
     method: 'POST',
     body: { currentPassword, newPassword, confirmPassword },
+    // 현재 비밀번호 오류 시 401(1.001)이 오는데, 전역 auth:unauthorized(세션 재검증/로그아웃)
+    // 흐름을 건드리면 안 되므로 로컬에서 직접 처리한다.
+    skipUnauthorizedEvent: true,
   });
 }
 
