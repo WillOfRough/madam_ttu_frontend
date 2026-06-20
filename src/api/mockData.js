@@ -1705,6 +1705,43 @@ function buildMySettlements() {
   return buildAllSettlements().filter((s) => s.managerId === currentUser.id);
 }
 
+// ── Admin helpers ──
+// admin 게이트: 미인증 401, 비-admin 403 { error: '2.001' } (adminService.getAdminErrorMessage 대응)
+function assertAdmin() {
+  if (!isLoggedIn) throw Object.assign(new Error('Unauthorized'), { status: 401 });
+  if (currentUser?.role !== 'admin') {
+    throw Object.assign(new Error('Forbidden'), { status: 403, body: { error: '2.001' } });
+  }
+}
+
+// 전체 매니저 + 매니저별 정산 요약(미지급=ready_to_settle, 누적지급=settled) 집계.
+function buildAdminManagerList() {
+  const settle = buildAllSettlements();
+  const agg = {};
+  for (const s of settle) {
+    const e = agg[s.managerId] || (agg[s.managerId] = { unsettledAmount: 0, settledAmount: 0 });
+    if (!s.excluded && s.status === 'ready_to_settle') e.unsettledAmount += s.amount || 0;
+    if (s.status === 'settled') e.settledAmount += s.amount || 0;
+  }
+  return Object.values(managerMap).map((m) => {
+    const acct = Object.values(accounts).find((a) => a.id === m.id);
+    const a = agg[m.id] || { unsettledAmount: 0, settledAmount: 0 };
+    return {
+      id: m.id,
+      name: m.name,
+      nickname: acct?.nickname || null,
+      email: m.email || acct?.email || null,
+      phone: acct?.phone || null,
+      role: acct?.role || 'manager',
+      status: 'active',
+      lastLoginAt: null,
+      createdAt: acct ? '2026-01-01T00:00:00Z' : '2026-02-01T00:00:00Z',
+      unsettledAmount: a.unsettledAmount,
+      settledAmount: a.settledAmount,
+    };
+  });
+}
+
 export async function mockFetch(path, options = {}) {
   await delay(150 + Math.random() * 200);
 
@@ -3179,6 +3216,191 @@ export async function mockFetch(path, options = {}) {
     target.settledById = currentUser.id;
     if (memo) target.memo = memo;
     return { success: true, message: '정산이 완료 처리되었습니다.' };
+  }
+
+  // ── Admin APIs ──
+
+  // GET /api/v1/admin/managers — 전체 매니저 목록(정산 요약 포함)
+  if (method === 'GET' && pathname === '/api/v1/admin/managers') {
+    assertAdmin();
+    const statusParam = params.get('status');
+    const roleParam = params.get('role');
+    const searchParam = (params.get('search') || '').trim().toLowerCase();
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    let list = buildAdminManagerList();
+    if (statusParam) list = list.filter((m) => m.status === statusParam);
+    if (roleParam) list = list.filter((m) => m.role === roleParam);
+    if (searchParam) {
+      list = list.filter((m) =>
+        (m.name || '').toLowerCase().includes(searchParam) ||
+        (m.nickname || '').toLowerCase().includes(searchParam) ||
+        (m.email || '').toLowerCase() === searchParam ||
+        (m.phone || '') === params.get('search').trim()
+      );
+    }
+    list.sort((a, b) => (b.unsettledAmount || 0) - (a.unsettledAmount || 0));
+    const start = page * size;
+    return {
+      data: list.slice(start, start + size),
+      pagination: { page, size, total: list.length, totalElements: list.length, totalPages: Math.ceil(list.length / size) || 1 },
+    };
+  }
+
+  // GET /api/v1/admin/settlements — 특정 매니저 정산 목록(managerId 필수)
+  if (method === 'GET' && pathname === '/api/v1/admin/settlements') {
+    assertAdmin();
+    const managerId = params.get('managerId');
+    if (!managerId) throw Object.assign(new Error('managerId는 필수입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    let filtered = buildAllSettlements().filter((s) => s.managerId === managerId);
+    const statusParam = params.get('status');
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    const page = parseInt(params.get('page') || '0', 10);
+    const size = parseInt(params.get('size') || '20', 10);
+    if (statusParam) filtered = filtered.filter((s) => s.status === statusParam);
+    if (fromParam) {
+      const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() >= fromTs);
+    }
+    if (toParam) {
+      const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+      filtered = filtered.filter((s) => new Date(s.createdAt).getTime() <= toTs);
+    }
+    const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const start = page * size;
+    return {
+      data: sorted.slice(start, start + size),
+      pagination: { page, size, totalElements: sorted.length, totalPages: Math.ceil(sorted.length / size) || 1 },
+    };
+  }
+
+  // GET /api/v1/admin/settlements/daily — 매니저 일별 요약(managerId 필수)
+  if (method === 'GET' && pathname === '/api/v1/admin/settlements/daily') {
+    assertAdmin();
+    const managerId = params.get('managerId');
+    const fromParam = params.get('from');
+    const toParam = params.get('to');
+    if (!managerId || !fromParam || !toParam) {
+      throw Object.assign(new Error('managerId, from, to는 필수입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
+    const all = buildAllSettlements().filter((s) => s.managerId === managerId);
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
+    const fromTs = new Date(`${fromParam}T00:00:00+09:00`).getTime();
+    const toTs = new Date(`${toParam}T23:59:59+09:00`).getTime();
+    const byDate = {};
+    for (const s of all) {
+      if (s.excluded || s.status !== 'ready_to_settle' || !s.matchEndedAt) continue;
+      const t = new Date(s.matchEndedAt).getTime();
+      if (t < fromTs || t > toTs) continue;
+      const date = new Date(s.matchEndedAt).toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+      if (!byDate[date]) byDate[date] = { date, count: 0, amount: 0 };
+      byDate[date].count += 1;
+      byDate[date].amount += s.amount || 0;
+    }
+    return { expectedTotal, items: Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date)) };
+  }
+
+  // GET /api/v1/admin/settlements/monthly — 매니저 월별 요약(managerId 필수)
+  if (method === 'GET' && pathname === '/api/v1/admin/settlements/monthly') {
+    assertAdmin();
+    const managerId = params.get('managerId');
+    if (!managerId) throw Object.assign(new Error('managerId는 필수입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    const year = parseInt(params.get('year') || String(new Date().getFullYear()), 10);
+    const all = buildAllSettlements().filter((s) => s.managerId === managerId);
+    const expectedTotal = all
+      .filter((s) => !s.excluded && ['confirmed', 'partial_refunded', 'ready_to_settle'].includes(s.status))
+      .reduce((a, s) => a + (s.amount || 0), 0);
+    const byMonth = {};
+    for (const s of all) {
+      if (!s.matchEndedAt) continue;
+      const d = new Date(s.matchEndedAt);
+      if (d.getFullYear() !== year) continue;
+      const month = d.getMonth() + 1;
+      if (!byMonth[month]) byMonth[month] = { month, count: 0, amount: 0, settledCount: 0, settledAmount: 0 };
+      if (!s.excluded && s.status === 'ready_to_settle') {
+        byMonth[month].count += 1;
+        byMonth[month].amount += s.amount || 0;
+      } else if (s.status === 'settled') {
+        byMonth[month].settledCount += 1;
+        byMonth[month].settledAmount += s.amount || 0;
+      }
+    }
+    return { year, expectedTotal, items: Object.values(byMonth).sort((a, b) => a.month - b.month) };
+  }
+
+  // GET /api/v1/admin/settlements/overview — 전 매니저 월 정산 요약(year, month 필수)
+  if (method === 'GET' && pathname === '/api/v1/admin/settlements/overview') {
+    assertAdmin();
+    const year = parseInt(params.get('year') || String(new Date().getFullYear()), 10);
+    const month = parseInt(params.get('month') || String(new Date().getMonth() + 1), 10);
+    const all = buildAllSettlements();
+    let expectedTotal = 0, expectedCount = 0, settledTotal = 0, settledCount = 0, potentialTotal = 0, potentialCount = 0;
+    const inMonth = (iso) => {
+      if (!iso) return false;
+      const d = new Date(iso);
+      return d.getFullYear() === year && d.getMonth() + 1 === month;
+    };
+    for (const s of all) {
+      if (!s.excluded && s.status === 'ready_to_settle' && inMonth(s.matchEndedAt)) {
+        expectedTotal += s.amount || 0; expectedCount += 1;
+      } else if (s.status === 'settled' && inMonth(s.matchEndedAt)) {
+        settledTotal += s.amount || 0; settledCount += 1;
+      } else if (!s.excluded && ['pending', 'confirmed', 'partial_refunded'].includes(s.status) && inMonth(s.createdAt)) {
+        // 만남 전 잠재(파이프라인): 종료일이 없어 생성일 기준으로 집계
+        potentialTotal += s.amount || 0; potentialCount += 1;
+      }
+    }
+    return { year, month, expectedTotal, expectedCount, settledTotal, settledCount, potentialTotal, potentialCount };
+  }
+
+  // GET /api/v1/admin/settlements/match/:matchId — 매칭별 정산(managerId 필수)
+  if (method === 'GET' && /^\/api\/v1\/admin\/settlements\/match\/[^/]+$/.test(pathname)) {
+    assertAdmin();
+    const managerId = params.get('managerId');
+    const matchId = pathname.split('/').pop();
+    let rows = buildAllSettlements().filter((s) => s.matchId === matchId);
+    if (managerId) rows = rows.filter((s) => s.managerId === managerId);
+    return rows;
+  }
+
+  // POST /api/v1/admin/settlements/settle-month — 매니저 월단위 일괄 지급
+  if (method === 'POST' && pathname === '/api/v1/admin/settlements/settle-month') {
+    assertAdmin();
+    const managerId = params.get('managerId');
+    const year = parseInt(params.get('year'), 10);
+    const month = parseInt(params.get('month'), 10);
+    const memo = params.get('memo') || null;
+    if (!managerId || Number.isNaN(year) || Number.isNaN(month)) {
+      throw Object.assign(new Error('managerId, year, month는 필수입니다.'), { status: 400, body: { error: 'VALIDATION_ERROR' } });
+    }
+    const targets = buildAllSettlements().filter((s) =>
+      s.managerId === managerId && !s.excluded && s.status === 'ready_to_settle' &&
+      s.matchEndedAt && new Date(s.matchEndedAt).getFullYear() === year && new Date(s.matchEndedAt).getMonth() + 1 === month
+    );
+    let settledAmount = 0;
+    for (const t of targets) {
+      t.status = 'settled';
+      t.settledAt = new Date().toISOString();
+      t.settledById = currentUser.id;
+      if (memo) t.memo = memo;
+      settledAmount += t.amount || 0;
+    }
+    return { success: true, message: `${targets.length}건 지급 완료`, data: { year, month, settledCount: targets.length, settledAmount } };
+  }
+
+  // PATCH /api/v1/admin/settlements/:id/exclude — 정산 제외/복구 토글
+  if (method === 'PATCH' && /^\/api\/v1\/admin\/settlements\/[^/]+\/exclude$/.test(pathname)) {
+    assertAdmin();
+    const id = pathname.split('/').slice(-2, -1)[0];
+    const body = options.body || {};
+    const target = buildAllSettlements().find((s) => s.id === id);
+    if (!target) throw Object.assign(new Error('정산 내역을 찾을 수 없습니다.'), { status: 404, body: { error: 'SETTLEMENT_NOT_FOUND' } });
+    target.excluded = body.excluded === true;
+    target.exclusionReason = target.excluded ? (body.reason || 'manual_confirm') : null;
+    return { success: true, message: target.excluded ? '정산에서 제외했습니다.' : '정산에 다시 포함했습니다.', data: target };
   }
 
   // fallback
