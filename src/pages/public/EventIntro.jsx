@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import styles from './EventIntro.module.css';
 
 const SERVICE_HIGHLIGHTS = [
-  { emoji: '💳', title: '가입비 0원, 매칭될 때만!', desc: '실제로 매칭이 성사되었을 때만 딱 19,900원. 가입비·월정액 부담 없이 시작하세요.' },
+  { emoji: '💳', title: '가입비 0원, 매칭될 때만!', desc: '실제로 매칭이 성사되었을 때만 딱 29,900원. 가입비·월정액 부담 없이 시작하세요.' },
   { emoji: '🔒', title: '만나기 전까지 당신은 익명', desc: '동의 없이는 어떠한 개인정보도 상대방에게 노출되지 않도록 철저히 익명을 유지합니다.' },
   { emoji: '📅', title: '번거로운 연락은 저희가 할게요', desc: '매니저가 약속 일정부터 장소까지 모두 세심하게 조율해 드립니다.' },
 ];
@@ -64,7 +64,7 @@ export default function EventIntro() {
             <strong>첫 1회 매칭 무료!</strong>
           </p>
           <p className={styles.specialBannerDesc}>
-            가입비 0원은 물론, 첫 매칭 성사 시 매칭비(19,900원)도<br />무료로 진행됩니다.
+            가입비 0원은 물론, 첫 매칭 성사 시 매칭비(29,900원)도<br />무료로 진행됩니다.
           </p>
         </div>
 
