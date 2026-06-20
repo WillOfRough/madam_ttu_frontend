@@ -1446,8 +1446,7 @@ const managerMap = {
 
 function enrichClient(c) {
   const owner = managerMap[c.ownerManagerId] || { id: c.ownerManagerId, name: '알 수 없음' };
-  const birthYear = c.birthDate ? new Date(c.birthDate).getFullYear() : null;
-  const age = birthYear ? new Date().getFullYear() - birthYear : null;
+  // age(만 나이)는 서버 응답에서 제거됨. birthDate 는 원본 c 에서 스프레드로 유지된다.
   const activeStatuses = ['proposal_sent', 'proposal_accepted', 'awaiting_payment', 'scheduling', 'arranging', 'scheduled'];
   const activeMatchCount = matches.filter((m) =>
     activeStatuses.includes(m.status) &&
@@ -1456,7 +1455,6 @@ function enrichClient(c) {
   const invite = c.inviteToken ? invites.find((inv) => inv.id === c.inviteToken.id) : null;
   return {
     nickname: c.nickname || null,
-    age,
     status: c.status || 'active',
     activeMatchCount,
     photoUrls: (c.photoIds || []).map((id) => `/api/v1/clients/photos/${id}`),
@@ -1469,11 +1467,9 @@ function enrichClient(c) {
 function enrichParticipant(participant) {
   const client = clients.find((c) => c.id === participant.clientId);
   if (!client) return participant;
-  const birthYear = client.birthDate ? new Date(client.birthDate).getFullYear() : null;
-  const age = birthYear ? new Date().getFullYear() - birthYear : null;
   return {
     ...participant,
-    clientAge: age,
+    clientBirthDate: client.birthDate || null, // age(만 나이) 제거 → 출생일로 대체
     clientHeight: client.height,
     clientOccupation: client.occupation,
     clientCompany: client.company,
@@ -1859,11 +1855,9 @@ export async function mockFetch(path, options = {}) {
     if (!verificationId) throw Object.assign(new Error('verificationId가 없거나 미인증 상태입니다.'), { status: 400, body: { error: '7.004' } });
     const found = clients.find((c) => c.id === id);
     if (!found) throw Object.assign(new Error('해당 회원을 찾을 수 없습니다.'), { status: 404, body: { error: '4.002' } });
-    const birthYear = found.birthDate ? new Date(found.birthDate).getFullYear() : null;
-    const age = birthYear ? new Date().getFullYear() - birthYear : null;
     return {
       id: found.id, name: found.name, nickname: found.nickname, gender: found.gender,
-      birthDate: found.birthDate, age, phone: found.phone, height: found.height,
+      birthDate: found.birthDate, phone: found.phone, height: found.height,
       occupation: found.occupation, company: found.company, workLocation: found.workLocation,
       education: found.education, location: found.location, religion: found.religion,
       mbti: found.mbti, hobbies: found.hobbies, introduction: found.introduction,
@@ -2681,9 +2675,6 @@ export async function mockFetch(path, options = {}) {
       throw Object.assign(new Error('종료된 매칭입니다.'), { status: 410, body: { error: '9.014' } });
     }
 
-    const birthYear = cp?.birthDate ? new Date(cp.birthDate).getFullYear() : null;
-    const age = birthYear ? new Date().getFullYear() - birthYear : null;
-
     return {
       myName: participant.clientName || (side === 'A' ? m.clientA.clientName : m.clientB.clientName),
       myRole,
@@ -2692,7 +2683,7 @@ export async function mockFetch(path, options = {}) {
       counterpart: cp ? {
         nickname: cp.nickname || cp.name,
         gender: cp.gender,
-        age,
+        birthDate: cp.birthDate || null, // age(만 나이) 제거 → 출생일 노출 (FE 가 'OO년생'으로 표기)
         height: cp.height,
         occupation: cp.occupation,
         company: cp.company,
@@ -2851,7 +2842,7 @@ export async function mockFetch(path, options = {}) {
       phone: cp.phone,
       nickname: cp.nickname,
       gender: cp.gender,
-      age: cp.birthDate ? new Date().getFullYear() - new Date(cp.birthDate).getFullYear() : null,
+      birthDate: cp.birthDate || null, // age(만 나이) 제거 → 출생일 노출
       height: cp.height,
       occupation: cp.occupation,
       company: cp.company,
@@ -2885,7 +2876,7 @@ export async function mockFetch(path, options = {}) {
         phone: cp.phone,
         nickname: cp.nickname,
         gender: cp.gender,
-        age: cp.birthDate ? new Date().getFullYear() - new Date(cp.birthDate).getFullYear() : null,
+        birthDate: cp.birthDate || null, // age(만 나이) 제거 → 출생일 노출
         height: cp.height,
         occupation: cp.occupation,
         company: cp.company,

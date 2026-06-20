@@ -99,13 +99,14 @@ export function scorePair(a, b) {
   }
   signals.push({ key: 'region', label: '지역', score: regionScore, max: W.region, detail: regionDetail });
 
-  /* 3. Age (15pt) */
-  const ageA = a.age || 0;
-  const ageB = b.age || 0;
+  /* 3. Age (15pt) — 서버가 만 나이(age)를 더 이상 주지 않으므로 birthDate 연도로 나이차를 계산한다. */
+  const birthYearOf = (c) => (c.birthDate ? Number(String(c.birthDate).slice(0, 4)) : 0);
+  const yearA = birthYearOf(a);
+  const yearB = birthYearOf(b);
   let ageScore = 0;
   let ageDetail = null;
-  if (ageA && ageB) {
-    const diff = Math.abs(ageA - ageB);
+  if (yearA && yearB) {
+    const diff = Math.abs(yearA - yearB);
     if (diff === 0) { ageScore = W.age; ageDetail = '동갑'; }
     else if (diff <= 2) { ageScore = W.age; ageDetail = `나이차 ${diff}세`; }
     else if (diff <= 4) { ageScore = Math.round(W.age * 0.75); ageDetail = `나이차 ${diff}세`; }

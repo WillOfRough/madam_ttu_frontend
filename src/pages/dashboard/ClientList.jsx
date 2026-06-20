@@ -12,6 +12,7 @@ import { toast } from '../../store/toastStore';
 import Pagination from '../../components/Pagination';
 import { SkeletonTable } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './ClientList.module.css';
 
 // ── 매칭 통계 헬퍼 ─────────────────────────────────────────
@@ -184,8 +185,8 @@ function SpotlightSection({ pool, stats, views, genderFilter, matchesLoaded, onC
                 </span>
               </div>
               <div className={styles.spotlightCardMeta}>
-                {client.age ? `${client.age}세` : ''}
-                {client.age && client.occupation ? ' · ' : ''}
+                {birthYearLabelFromDate(client.birthDate) || ''}
+                {client.birthDate && client.occupation ? ' · ' : ''}
                 {client.occupation || ''}
               </div>
               <span className={styles.spotlightChip}>
@@ -244,8 +245,8 @@ function ClientRow({ client, stat, onClick, isLast, selected, disabled, onToggle
           >
             {client.gender === 'male' ? '남' : '여'}
           </span>
-          {client.age && (
-            <span className={styles.rowAge}>{client.age}세</span>
+          {client.birthDate && (
+            <span className={styles.rowAge}>{birthYearLabelFromDate(client.birthDate)}</span>
           )}
           {client.height && (
             <>
@@ -344,7 +345,7 @@ function ClientCard({ client, stat, onClick, selected, disabled, onToggleSelect,
           >
             {client.gender === 'male' ? '남' : '여'}
           </span>
-          {client.age && <span className={styles.rowAge}>{client.age}세</span>}
+          {client.birthDate && <span className={styles.rowAge}>{birthYearLabelFromDate(client.birthDate)}</span>}
           {client.height && (
             <>
               <span className={styles.rowDot}>·</span>
@@ -457,9 +458,9 @@ function SelectionBar({ selectedClients, onClear, onCreateMatch }) {
           </span>
           {a && b && (
             <span className={styles.selectionMeta}>
-              {a.age ? `${a.age}세` : ''}{a.occupation ? ` · ${a.occupation}` : ''}
+              {birthYearLabelFromDate(a.birthDate) || ''}{a.occupation ? ` · ${a.occupation}` : ''}
               {' ↔ '}
-              {b.age ? `${b.age}세` : ''}{b.occupation ? ` · ${b.occupation}` : ''}
+              {birthYearLabelFromDate(b.birthDate) || ''}{b.occupation ? ` · ${b.occupation}` : ''}
             </span>
           )}
         </div>

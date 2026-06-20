@@ -132,7 +132,7 @@ export default function MatchDetail() {
 
   const safeClient = {
     clientId: null, clientName: '삭제된 회원', clientNickname: null, clientPhone: null,
-    clientGender: null, clientAge: 0, clientLocation: null, clientCompany: null,
+    clientGender: null, clientBirthDate: null, clientLocation: null, clientCompany: null,
     clientWorkLocation: null, clientOccupation: null, clientEducation: null,
     clientPhotoUrls: [], proposalToken: null, response: null, afterResponse: null,
     deleted: true, availableTimesSubmitted: false, managerName: null,
@@ -576,7 +576,7 @@ export default function MatchDetail() {
                   const paymentDetail = (payments || []).find((p) => p.clientId === client.clientId);
                   const paymentSummary = match.paymentSummary?.[`client${side}`];
                   const status = paymentDetail?.status || paymentSummary?.status || 'pending';
-                  const amount = paymentDetail?.amount ?? paymentSummary?.amount ?? 19900;
+                  const amount = paymentDetail?.amount ?? paymentSummary?.amount ?? 29900;
                   const amountLabel = `${(amount || 0).toLocaleString('ko-KR')}원`;
                   const isFree = amount === 0;
                   const isPaid = status === 'paid';
@@ -649,10 +649,10 @@ export default function MatchDetail() {
                 {(() => {
                   const amtA = (payments || []).find((p) => p.clientId === match.clientA?.clientId)?.amount
                     ?? match.paymentSummary?.clientA?.amount
-                    ?? 19900;
+                    ?? 29900;
                   const amtB = (payments || []).find((p) => p.clientId === match.clientB?.clientId)?.amount
                     ?? match.paymentSummary?.clientB?.amount
-                    ?? 19900;
+                    ?? 29900;
                   if (amtA === 0 && amtB === 0) return '양쪽 모두 무료 매칭이에요. 입금 확인 없이 바로 진행됩니다.';
                   return '입금이 확인되면 일정조율 단계로 자동으로 넘어가 각 회원에게 일정 조율 메시지가 전송됩니다.';
                 })()}

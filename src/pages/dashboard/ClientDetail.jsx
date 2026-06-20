@@ -13,6 +13,7 @@ import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
 import { SkeletonLine } from '../../components/Skeleton';
 import html2pdf from 'html2pdf.js';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './ClientDetail.module.css';
 
 // ── helpers ──────────────────────────────────────────────
@@ -144,7 +145,7 @@ export default function ClientDetail() {
   // ── derived ──
   const isMale     = client?.gender === 'male';
   const birthYear  = client?.birthDate ? parseInt(client.birthDate.slice(0, 4)) : null;
-  const age        = birthYear ? new Date().getFullYear() - birthYear : client?.age;
+  const birthLabel = birthYearLabelFromDate(client?.birthDate); // 'OO년생' (없으면 null)
   const introData  = parseKeywordsText(client?.introduction);
   const idealData  = parseKeywordsText(client?.idealType);
   const hobbiesList = (() => {
@@ -451,10 +452,10 @@ export default function ClientDetail() {
                   <span className={`${styles.genderBadge} ${isMale ? styles.genderBadgeMale : styles.genderBadgeFemale}`}>
                     {isMale ? '남' : '여'}
                   </span>
-                  {age && (
-                    <span className={styles.heroAge}>{age}세</span>
+                  {birthLabel && (
+                    <span className={styles.heroAge}>{birthLabel}</span>
                   )}
-                  {age && client.height && <span className={styles.heroDot}>·</span>}
+                  {birthLabel && client.height && <span className={styles.heroDot}>·</span>}
                   {client.height && (
                     <span className={styles.heroHeight}>{client.height}cm</span>
                   )}
@@ -640,7 +641,7 @@ export default function ClientDetail() {
                 {[
                   [AtSign,         '별명',     client.nickname || '-'],
                   [User,           '성별',     isMale ? '남성' : '여성'],
-                  [Cake,           '출생연도', birthYear ? `${birthYear}년 (${age}세)` : (age ? `${age}세` : '-')],
+                  [Cake,           '출생연도', birthYear ? `${birthYear}년생` : '-'],
                   [Phone,          '연락처',   client.phone || '-'],
                   [MapPin,         '거주지역', client.location || '-'],
                   [Ruler,          '키',       client.height ? `${client.height}cm` : '-'],

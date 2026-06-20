@@ -25,17 +25,18 @@ const CLIENT_SORTS = [...STAT_SORTS, 'birthDate:asc'];
 // 매칭불가(미승인·비활성) 회원은 항상 뒤로 보내는 공통 기준
 const isBlocked = (c) => (c.approvalStatus !== 'approved' || (c.status || 'active') !== 'active') ? 1 : 0;
 
-// 나이순 — birthDate 오름차순(= 나이 많은 순). 나이 정보가 없으면(또는 매칭불가면) 뒤로.
+// 나이순 — birthDate(출생연도) 오름차순(= 나이 많은 순). 출생연도가 없으면(또는 매칭불가면) 뒤로.
+// 서버가 만 나이(age)를 더 이상 내려주지 않으므로 birthDate 연도로 직접 비교한다.
 const sortByAge = (list) => {
-  const ageOf = (c) => (c.age != null && c.age !== '' ? Number(c.age) : null);
+  const yearOf = (c) => (c.birthDate ? Number(String(c.birthDate).slice(0, 4)) : null);
   return [...list].sort((a, b) => {
     if (isBlocked(a) !== isBlocked(b)) return isBlocked(a) - isBlocked(b);
-    const aa = ageOf(a);
-    const ba = ageOf(b);
-    if (aa == null && ba == null) return 0;
-    if (aa == null) return 1;
-    if (ba == null) return -1;
-    return ba - aa; // 나이 많은 순
+    const ya = yearOf(a);
+    const yb = yearOf(b);
+    if (ya == null && yb == null) return 0;
+    if (ya == null) return 1;
+    if (yb == null) return -1;
+    return ya - yb; // 출생연도 빠른 순 = 나이 많은 순
   });
 };
 

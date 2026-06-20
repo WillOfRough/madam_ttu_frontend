@@ -6,6 +6,7 @@ import {
   Copy, Check, Link2, ChevronDown, ChevronUp, User, RefreshCw, Heart, FileText, Phone, Mail,
 } from 'lucide-react';
 import { toast } from '../../../store/toastStore';
+import { birthYearLabelFromDate } from '../../../utils/age';
 import styles from '../MatchDetail.module.css';
 import {
   generateProposalMessage, generateReminderMessage, generateAfterCompleteMessage,
@@ -234,7 +235,7 @@ export function ParticipantCard({ match, side, label }) {
     );
   }
 
-  const hasProfile = participant.clientAge || participant.clientOccupation || participant.clientLocation;
+  const hasProfile = participant.clientBirthDate || participant.clientOccupation || participant.clientLocation;
   const photos = participant.clientPhotoUrls || [];
 
   return (
@@ -318,10 +319,10 @@ export function ParticipantCard({ match, side, label }) {
                 </div>
               )}
               <div className={styles.profileFields}>
-                {participant.clientAge && (
+                {participant.clientBirthDate && (
                   <div className={styles.profileFieldItem}>
-                    <span className={styles.profileFieldLabel}>나이</span>
-                    <span className={styles.profileFieldValue}>{participant.clientAge}세</span>
+                    <span className={styles.profileFieldLabel}>출생연도</span>
+                    <span className={styles.profileFieldValue}>{birthYearLabelFromDate(participant.clientBirthDate)}</span>
                   </div>
                 )}
                 {participant.clientHeight && (
