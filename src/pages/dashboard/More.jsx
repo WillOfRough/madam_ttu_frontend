@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Link2, Sparkles, Inbox, BookOpen, Wallet, ChevronRight } from 'lucide-react';
+import { Link2, Sparkles, Inbox, BookOpen, Wallet, ChevronRight, ShieldCheck } from 'lucide-react';
 import useConnectionStore from '../../store/connectionStore';
+import useAuthStore from '../../store/authStore';
 import styles from './More.module.css';
 
 const ROWS = [
@@ -11,11 +12,16 @@ const ROWS = [
   { key: 'settlement',  to: '/dashboard/settlement',  icon: Wallet,      label: '정산',       sub: '이번달 정산 · 매칭별 내역' },
 ];
 
+const ADMIN_ROW = { key: 'admin', to: '/dashboard/admin', icon: ShieldCheck, label: '관리자', sub: '전 매니저 정산 · 지급 관리' };
+
 export default function More() {
   const navigate = useNavigate();
+  const isAdmin = useAuthStore((s) => s.role === 'admin');
   const pendingConnections = useConnectionStore((s) =>
     (s.requests || []).filter((r) => r.status === 'pending').length
   );
+
+  const rows = isAdmin ? [...ROWS, ADMIN_ROW] : ROWS;
 
   const badges = {
     pendingConnections: pendingConnections || 0,
@@ -27,7 +33,7 @@ export default function More() {
       <h1 className={styles.title}>더보기</h1>
 
       <div className={styles.list}>
-        {ROWS.map(({ key, to, icon: Icon, label, sub, badgeKey, state }) => {
+        {rows.map(({ key, to, icon: Icon, label, sub, badgeKey, state }) => {
           const badge = badgeKey ? badges[badgeKey] : 0;
           return (
             <button

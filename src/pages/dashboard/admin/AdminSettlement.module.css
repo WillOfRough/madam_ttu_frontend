@@ -1,0 +1,213 @@
+.page {
+  position: relative;
+}
+
+.backBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 14px 0 0 16px;
+  padding: 6px 10px 6px 6px;
+  background: none;
+  border: none;
+  border-radius: var(--r-md);
+  color: var(--ink-500);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backBar:hover {
+  background: var(--ink-50);
+  color: var(--ink-700);
+}
+
+/* === 월별 정산 현황 패널 (SettlementView 상단) === */
+.panelWrap {
+  padding: 12px 16px 0; /* SettlementView .content(16px 사이드)와 정렬 */
+}
+
+.panel {
+  composes: card from '../../../components/Card.module.css';
+  padding: 16px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.yearStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.yearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-600);
+  cursor: pointer;
+}
+
+.yearBtn:hover:not(:disabled) {
+  background: var(--ink-50);
+}
+
+.yearBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.yearLabel {
+  min-width: 56px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.balanceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.balanceLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-400);
+}
+
+.balanceValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--tangerine-700);
+}
+
+.balanceUnit {
+  margin-left: 2px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.panelCaption {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
+.monthList {
+  margin-top: 8px;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--ink-100);
+}
+
+.monthLabel {
+  flex-shrink: 0;
+  width: 44px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.monthMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaUnpaid {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tangerine-700);
+}
+
+.metaPaid {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mint-600);
+}
+
+.payBtn {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--tangerine-500, #ff7a30);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.payBtn:hover {
+  filter: brightness(1.05);
+}
+
+.doneChip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mint-600);
+}
+
+.panelState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 0 8px;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--ink-100);
+  border-top-color: var(--tangerine-400);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.linkBtn {
+  margin-top: 4px;
+  padding: 10px 18px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkBtn:hover {
+  background: var(--ink-50);
+}

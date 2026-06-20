@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen, Bell, MessageSquare, Wallet } from 'lucide-react';
+import { Home, Users, Link2, Mail, Heart, Settings, LogOut, BookOpen, Bell, MessageSquare, Wallet, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useNotificationStore from '../store/notificationStore';
 import styles from './Sidebar.module.css';
@@ -24,6 +24,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const name = useAuthStore((s) => s.name);
+  const isAdmin = useAuthStore((s) => s.role === 'admin');
   const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   const handleLogout = async () => {
@@ -65,6 +66,12 @@ export default function Sidebar() {
         {NAV_ITEMS.map(renderNavItem)}
         <div className={styles.navDivider} />
         {FOOTER_ITEMS.map(renderNavItem)}
+        {isAdmin && (
+          <>
+            <div className={styles.navDivider} />
+            {renderNavItem({ to: '/dashboard/admin', icon: ShieldCheck, label: '관리자' })}
+          </>
+        )}
       </nav>
 
       {name && (
@@ -72,7 +79,7 @@ export default function Sidebar() {
           <div className={styles.profileAvatar}>{initial}</div>
           <div className={styles.profileMeta}>
             <div className={styles.profileName}>{firstName || name}</div>
-            <div className={styles.profileSub}>매니저</div>
+            <div className={styles.profileSub}>{isAdmin ? '운영자' : '매니저'}</div>
           </div>
           <button className={styles.profileLogout} onClick={handleLogout} aria-label="로그아웃">
             <LogOut size={15} strokeWidth={1.8} />

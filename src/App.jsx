@@ -5,6 +5,7 @@ import useAuthStore from './store/authStore';
 // Layout
 import DashboardLayout from './components/DashboardLayout';
 import RequireAuth from './components/RequireAuth';
+import RequireAdmin from './components/RequireAdmin';
 
 // Public pages
 import Login from './pages/public/Login';
@@ -40,6 +41,11 @@ import ManagerGuide from './pages/dashboard/ManagerGuide';
 import Notifications from './pages/dashboard/Notifications';
 import InquiryList from './pages/dashboard/InquiryList';
 import More from './pages/dashboard/More';
+
+// Admin pages
+import AdminDashboard from './pages/dashboard/admin/AdminDashboard';
+import AdminManagers from './pages/dashboard/admin/AdminManagers';
+import AdminSettlement from './pages/dashboard/admin/AdminSettlement';
 
 function AuthListener() {
   const navigate = useNavigate();
@@ -147,6 +153,13 @@ export default function App() {
             <Route path="/dashboard/guide" element={<ManagerGuide />} />
             <Route path="/dashboard/inquiries" element={<InquiryList />} />
             <Route path="/dashboard/more" element={<More />} />
+
+            {/* 관리자(운영자) 전용 — role === 'admin' 게이트 */}
+            <Route element={<RequireAdmin />}>
+              <Route path="/dashboard/admin" element={<AdminDashboard />} />
+              <Route path="/dashboard/admin/managers" element={<AdminManagers />} />
+              <Route path="/dashboard/admin/settlements" element={<AdminSettlement />} />
+            </Route>
           </Route>
         </Route>
 
