@@ -1553,7 +1553,7 @@ function derivePaymentStatus(m, side) {
   return 'pending';
 }
 
-const DEFAULT_PAYMENT_AMOUNT = 19900;
+const DEFAULT_PAYMENT_AMOUNT = 29900;
 
 function buildPaymentResponse(m, side) {
   const client = side === 'A' ? m.clientA : m.clientB;
@@ -1600,7 +1600,9 @@ function buildPaymentSummary(m) {
 // ── Settlement helpers ──
 // completed 매칭마다 매니저 share 집계해서 Settlement row 생성.
 // 분배: clientA 매물=3, clientB 매물=3, 매칭 생성자=4 (겸직 시 합산 → 'both')
-// baseAmount: 결제 건수 × 10,000 (양쪽 paid 가정 → 20,000)
+//   → 매니저 분배 풀(결제총액의 50%) 기준 비율과 일치:
+//      매칭 생성자 40%(=결제건당 20%×2건), 각 회원 매니저 30%(=결제건당 30%×1건)
+// baseAmount: 회원 1건 결제 29,900 × 2건 = 59,800 의 50%(매니저 풀) = 29,900
 let _settlementsCache = null;
 
 function computeSettlementsForMatch(m) {
@@ -1615,7 +1617,7 @@ function computeSettlementsForMatch(m) {
   if (ownerBId) shares.set(ownerBId, (shares.get(ownerBId) || 0) + 3);
   if (creatorId) shares.set(creatorId, (shares.get(creatorId) || 0) + 4);
 
-  const baseAmount = 20000;
+  const baseAmount = 29900;
   const createdAt = m.completedAt || m.meetingDate || m.createdAt;
   const rows = [];
   let idx = 0;

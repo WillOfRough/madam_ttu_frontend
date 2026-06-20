@@ -689,7 +689,7 @@ function CompareRow({ label, valA, valB }) {
   );
 }
 
-const DEFAULT_PAYMENT_AMOUNT = 19900;
+const DEFAULT_PAYMENT_AMOUNT = 29900;
 
 const normalizeAmountInput = (raw) => {
   const digits = String(raw ?? '').replace(/\D/g, '');
