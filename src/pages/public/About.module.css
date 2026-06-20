@@ -723,3 +723,112 @@
   color: var(--ink-700);
   font-weight: 700;
 }
+
+/* ════════════════ Split-page additions (회원 / 매니저) ════════════════ */
+
+/* 첫 섹션은 hero 와 간격을 둔다 */
+.sectionTop { margin-top: 28px; }
+
+/* Hero 큰 이모지 */
+.heroEmoji {
+  width: 64px; height: 64px;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; line-height: 1;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 20px;
+  position: relative;
+}
+
+.heroEmojiLilac {
+  background: rgba(122,95,214,.20);
+  border-color: rgba(195,178,244,.40);
+}
+
+/* Hero lilac 변형 (매니저 페이지) */
+.heroEyebrowLilac { color: var(--lilac-100); }
+
+.heroPillLilac {
+  background: rgba(122,95,214,.22);
+  color: var(--lilac-100);
+  border-color: rgba(195,178,244,.38);
+}
+
+/* Section 번호 lilac 변형 */
+.sectionNumLilac {
+  background: var(--lilac-100);
+  color: var(--lilac-600);
+  border-color: #d8ccf2;
+}
+
+/* ── 큰 이모지 가치 카드 (회원 핵심가치 / 매니저 하는일·혜택) ── */
+.valueGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.valueCard {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--paper-card);
+  border: 1px solid var(--ink-50);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--sh-sm);
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.2s ease;
+}
+
+.valueCard.revealed { opacity: 1; transform: translateY(0); }
+.valueCard:hover { box-shadow: var(--sh-md); }
+
+.valueEmoji {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; line-height: 1;
+  background: var(--tangerine-50);
+  border: 1px solid var(--tangerine-100);
+  border-radius: 16px;
+}
+
+.valueEmojiLilac {
+  background: var(--lilac-100);
+  border-color: #d8ccf2;
+}
+
+.valueText { flex: 1; min-width: 0; }
+
+.valueTitle {
+  font-size: 14px; font-weight: 800;
+  color: var(--ink-800, var(--ink-700));
+  letter-spacing: -0.02em; margin-bottom: 3px; line-height: 1.35;
+}
+
+.valueDesc {
+  font-size: 12px; color: var(--ink-500);
+  line-height: 1.6; word-break: keep-all; letter-spacing: -0.01em;
+}
+
+/* ── 페이지 간 이동 링크 ── */
+.crossLink {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px;
+  margin: 10px auto 0;
+  font-size: 12px; font-weight: 700;
+  color: var(--ink-400);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  padding: 8px;
+  transition: color 0.2s ease;
+}
+
+.crossLink:hover { color: var(--tangerine-700); }
+
+/* Desktop: 가치 카드 3열 */
+@media (min-width: 769px) {
+  .valueGrid { grid-template-columns: repeat(3, 1fr); }
+  .valueCard { flex-direction: column; text-align: center; align-items: center; gap: 10px; }
+}

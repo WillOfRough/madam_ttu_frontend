@@ -14,6 +14,7 @@ import InviteValidation from './pages/public/InviteValidation';
 import ServiceIntro from './pages/public/ServiceIntro';
 import EventIntro from './pages/public/EventIntro';
 import About from './pages/public/About';
+import AboutManager from './pages/public/AboutManager';
 import ClientOath from './pages/public/ClientOath';
 import ClientForm from './pages/public/ClientForm';
 import ApplyComplete from './pages/public/ApplyComplete';
@@ -118,6 +119,7 @@ export default function App() {
         <Route path="/apply/intro/:token" element={<ServiceIntro />} />
         <Route path="/event/:token" element={<EventIntro />} />
         <Route path="/about" element={<About />} />
+        <Route path="/about/manager" element={<AboutManager />} />
         <Route path="/apply/oath/:token" element={<ClientOath />} />
         <Route path="/apply/:token" element={<ClientForm />} />
         <Route path="/apply/complete" element={<ApplyComplete />} />
