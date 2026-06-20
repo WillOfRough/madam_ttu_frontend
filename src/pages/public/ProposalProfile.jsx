@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import ConfirmModal from './ConfirmModal';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './Proposal.module.css';
 
 const OATH_ITEMS = [
@@ -234,7 +235,7 @@ export default function ProposalProfile() {
   // ── 프로필 필드 ──
   const fields = [
     { label: '닉네임', value: cp.nickname },
-    { label: '나이', value: cp.age ? `${cp.age}세` : null },
+    { label: '출생연도', value: birthYearLabelFromDate(cp.birthDate) },
     { label: '키', value: cp.height ? `${cp.height}cm` : null },
     { label: '직업', value: cp.occupation },
     { label: '회사', value: cp.company },

@@ -132,7 +132,7 @@ export default function MatchDetail() {
 
   const safeClient = {
     clientId: null, clientName: '삭제된 회원', clientNickname: null, clientPhone: null,
-    clientGender: null, clientAge: 0, clientLocation: null, clientCompany: null,
+    clientGender: null, clientBirthDate: null, clientLocation: null, clientCompany: null,
     clientWorkLocation: null, clientOccupation: null, clientEducation: null,
     clientPhotoUrls: [], proposalToken: null, response: null, afterResponse: null,
     deleted: true, availableTimesSubmitted: false, managerName: null,

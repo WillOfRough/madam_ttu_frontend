@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { Lock, Phone, User } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import { toast } from '../../store/toastStore';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './Proposal.module.css';
 
 const AFTER_ERROR_MESSAGES = {
@@ -647,7 +648,7 @@ export default function Proposal() {
       const profileFields = [
         { label: '이름', value: afterProfile.name },
         { label: '전화번호', value: afterProfile.phone },
-        { label: '나이', value: afterProfile.age ? `${afterProfile.age}세` : null },
+        { label: '출생연도', value: birthYearLabelFromDate(afterProfile.birthDate) },
         { label: '키', value: afterProfile.height ? `${afterProfile.height}cm` : null },
         { label: '회사', value: afterProfile.company },
         { label: '거주지', value: afterProfile.location },
@@ -1003,7 +1004,7 @@ export default function Proposal() {
   // ── Profile View + Response ──
   const fields = [
     { label: '닉네임', value: cp.nickname },
-    { label: '나이', value: cp.age ? `${cp.age}세` : null },
+    { label: '출생연도', value: birthYearLabelFromDate(cp.birthDate) },
     { label: '키', value: cp.height ? `${cp.height}cm` : null },
     { label: '회사', value: cp.company },
     { label: '거주지', value: cp.location },

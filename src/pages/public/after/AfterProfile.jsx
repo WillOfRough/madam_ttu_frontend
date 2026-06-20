@@ -1,4 +1,5 @@
 import { Phone, User } from 'lucide-react';
+import { birthYearLabelFromDate } from '../../../utils/age';
 import styles from '../Proposal.module.css';
 
 function PageHeader() {
@@ -16,7 +17,7 @@ export default function AfterProfile({ profile }) {
   const profileFields = [
     { label: '이름', value: profile.name },
     { label: '전화번호', value: profile.phone },
-    { label: '나이', value: profile.age ? `${profile.age}세` : null },
+    { label: '출생연도', value: birthYearLabelFromDate(profile.birthDate) },
     { label: '키', value: profile.height ? `${profile.height}cm` : null },
     { label: '회사', value: profile.company },
     { label: '거주지', value: profile.location },

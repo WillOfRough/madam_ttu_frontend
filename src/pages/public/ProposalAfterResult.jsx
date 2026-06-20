@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Phone, User } from 'lucide-react';
 import * as matchService from '../../api/matchService';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './Proposal.module.css';
 
 const ERROR_MESSAGES = {
@@ -106,7 +107,7 @@ export default function ProposalAfterResult() {
   // ── 성사 + 프로필 ──
   if (afterStatus === 'accepted' && profile) {
     const profileFields = [
-      { label: '나이', value: profile.age ? `${profile.age}세` : null },
+      { label: '출생연도', value: birthYearLabelFromDate(profile.birthDate) },
       { label: '키', value: profile.height ? `${profile.height}cm` : null },
       { label: '직업', value: profile.occupation },
       { label: '회사', value: profile.company },

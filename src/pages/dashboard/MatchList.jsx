@@ -16,6 +16,7 @@ import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
 import { scorePair, topChips } from './matchScore';
 import EmptyState from '../../components/EmptyState';
+import { birthYearLabelFromDate } from '../../utils/age';
 import styles from './MatchList.module.css';
 
 /* ─── Stage config ─── */
@@ -623,8 +624,8 @@ function ClientResultRow({ client, score, chips, onClick }) {
           <GenderChip gender={client.gender} />
         </div>
         <div className={styles.wizResultMeta}>
-          {client.age && <span>{client.age}세</span>}
-          {client.age && client.occupation && <span className={styles.wizMetaDot}>·</span>}
+          {client.birthDate && <span>{birthYearLabelFromDate(client.birthDate)}</span>}
+          {client.birthDate && client.occupation && <span className={styles.wizMetaDot}>·</span>}
           {client.occupation && <span>{client.occupation}</span>}
         </div>
         {chips && chips.length > 0 && (
@@ -660,8 +661,8 @@ function SelectedClientCard({ client, label, onClear }) {
           <GenderChip gender={client.gender} />
         </div>
         <div className={styles.wizSelectedMeta}>
-          {client.age && <span>{client.age}세</span>}
-          {client.age && client.occupation && <span className={styles.wizMetaDot}>·</span>}
+          {client.birthDate && <span>{birthYearLabelFromDate(client.birthDate)}</span>}
+          {client.birthDate && client.occupation && <span className={styles.wizMetaDot}>·</span>}
           {client.occupation && <span>{client.occupation}</span>}
         </div>
       </div>
@@ -882,7 +883,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
             name: c.name || c.clientName,
             nickname: c.nickname || c.clientNickname,
             gender: c.gender || c.clientGender,
-            age: c.age || c.clientAge,
+            birthDate: c.birthDate || c.clientBirthDate,
             occupation: c.occupation,
             status: c.status || 'active',
           };
@@ -1278,7 +1279,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 <div className={styles.wizPairPerson}>
                   <MiniAvatar name={nameA} gender={clientA.gender} size={48} />
                   <span className={styles.wizPairName}>{nameA}</span>
-                  {clientA.age && <span className={styles.wizPairAge}>{clientA.age}세</span>}
+                  {clientA.birthDate && <span className={styles.wizPairAge}>{birthYearLabelFromDate(clientA.birthDate)}</span>}
                 </div>
                 <span className={styles.wizPairHeart}>
                   <Heart size={18} strokeWidth={2} color="var(--tangerine-600)" />
@@ -1286,7 +1287,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 <div className={styles.wizPairPerson}>
                   <MiniAvatar name={nameB} gender={clientB.gender} size={48} />
                   <span className={styles.wizPairName}>{nameB}</span>
-                  {clientB.age && <span className={styles.wizPairAge}>{clientB.age}세</span>}
+                  {clientB.birthDate && <span className={styles.wizPairAge}>{birthYearLabelFromDate(clientB.birthDate)}</span>}
                 </div>
               </div>
 
@@ -1387,9 +1388,9 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                   <span className={styles.compareHeadB}>B · {nameB}</span>
                 </div>
                 <CompareRow
-                  label="나이"
-                  valA={clientA.age ? `${clientA.age}세` : null}
-                  valB={clientB.age ? `${clientB.age}세` : null}
+                  label="출생연도"
+                  valA={birthYearLabelFromDate(clientA.birthDate)}
+                  valB={birthYearLabelFromDate(clientB.birthDate)}
                 />
                 <CompareRow
                   label="성별"
