@@ -15,6 +15,7 @@ import StatusBadge from '../../components/StatusBadge';
 import Pagination from '../../components/Pagination';
 import { SkeletonListItem } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
+import ShareCard from '../../components/ShareCard';
 import styles from './Connections.module.css';
 
 /* ── Avatar color hash ── */
@@ -80,6 +81,9 @@ export default function Connections() {
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [copiedInviteId, setCopiedInviteId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
+  const [aboutCopied, setAboutCopied] = useState(false);
+
+  const managerAboutUrl = `${window.location.origin}/about/manager`;
 
   /* Search state */
   const [searchEmail, setSearchEmail] = useState('');
@@ -128,6 +132,34 @@ export default function Connections() {
       setCopied(true);
       toast.success('링크가 복사되었습니다.');
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleAboutCopy = () => {
+    navigator.clipboard.writeText(managerAboutUrl);
+    setAboutCopied(true);
+    toast.success('소개 페이지 링크가 복사되었습니다.');
+    setTimeout(() => setAboutCopied(false), 2000);
+  };
+
+  const handleAboutShare = async () => {
+    const shareData = {
+      title: 'Knots & Links',
+      text: '한 건 한 건 정성껏 잇는 매칭 매니저를 모십니다. Knots & Links 매니저 소개 페이지를 확인해 보세요.',
+      url: managerAboutUrl,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          navigator.clipboard.writeText(managerAboutUrl);
+          toast.success('링크가 복사되었습니다.');
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(managerAboutUrl);
+      toast.success('링크가 복사되었습니다.');
     }
   };
 
@@ -544,6 +576,17 @@ export default function Connections() {
               </p>
             </div>
           )}
+
+          {/* 매니저 소개 페이지 공유 */}
+          <ShareCard
+            icon={<Users size={16} strokeWidth={2.2} />}
+            title="매니저 소개 페이지"
+            desc="매니저로 함께할 분께 먼저 보내 소개해 주세요"
+            url={managerAboutUrl}
+            copied={aboutCopied}
+            onCopy={handleAboutCopy}
+            onShare={handleAboutShare}
+          />
 
           {/* Dark hero invite card */}
           <div className={styles.heroInviteCard}>
