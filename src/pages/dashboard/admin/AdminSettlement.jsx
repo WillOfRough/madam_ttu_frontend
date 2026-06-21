@@ -157,18 +157,20 @@ export default function AdminSettlement() {
       />
 
       {/* 하단 정산 뷰: 선택 월 기반, 달력 접기, 체크박스 선택 */}
-      <SettlementView
-        key={`${managerId}-${refreshKey}`}
-        service={service}
-        title={managerName ? `${managerName} 정산` : '매니저 정산'}
-        showHelp={false}
-        onToggleExclude={handleToggleExclude}
-        selectedYear={CURRENT_YEAR}
-        selectedMonth={selectedMonth}
-        collapsibleCalendar
-        selectionEnabled
-        onBulkExclude={handleBulkExclude}
-      />
+      <div className={styles.detailWrap}>
+        <SettlementView
+          key={`${managerId}-${refreshKey}`}
+          service={service}
+          title={managerName ? `${managerName} 정산` : '매니저 정산'}
+          showHelp={false}
+          onToggleExclude={handleToggleExclude}
+          selectedYear={CURRENT_YEAR}
+          selectedMonth={selectedMonth}
+          collapsibleCalendar
+          selectionEnabled
+          onBulkExclude={handleBulkExclude}
+        />
+      </div>
 
       {confirm && (
         <ConfirmModal
@@ -186,13 +188,15 @@ export default function AdminSettlement() {
 
 /* === 올해 월별 정산 현황 스트립 === */
 function MonthStrip({ monthItems, loading, selectedMonth, expectedTotal, onSelectMonth, onSettle }) {
+  const sel = monthItems.find((m) => m.month === selectedMonth) || null;
+  const selUnpaid = (sel?.count || 0) > 0;
+  const selSettled = (sel?.settledCount || 0) > 0;
+
   return (
     <div className={styles.panelWrap}>
       <div className={styles.panel}>
         <div className={styles.panelHead}>
-          <div className={styles.panelHeadTitle}>
-            {CURRENT_YEAR}년 올해 월별 정산 현황
-          </div>
+          <div className={styles.panelHeadTitle}>{CURRENT_YEAR}년 월별 정산</div>
           <div className={styles.balanceBlock}>
             <span className={styles.balanceLabel}>받을 정산 잔고</span>
             <span className={styles.balanceValue}>
@@ -200,88 +204,63 @@ function MonthStrip({ monthItems, loading, selectedMonth, expectedTotal, onSelec
             </span>
           </div>
         </div>
-        <div className={styles.panelCaption}>매칭 종료월 기준 · 월을 선택하면 하단 내역이 바뀝니다</div>
 
         {loading ? (
           <div className={styles.panelState}><div className={styles.spinner} /></div>
         ) : (
-          <div className={styles.monthChipList}>
-            {monthItems.map((it) => {
-              const payableCount  = it.count        || 0;
-              const settledCount  = it.settledCount  || 0;
-              const isSelected    = it.month === selectedMonth;
-              const hasUnpaid     = payableCount > 0;
-              const hasActivity   = payableCount > 0 || settledCount > 0;
+          <>
+            {/* 가로형 월 탭 */}
+            <div className={styles.monthTabs} role="tablist" aria-label="월 선택">
+              {monthItems.map((it) => {
+                const hasUnpaid = (it.count || 0) > 0;
+                const hasSettled = (it.settledCount || 0) > 0;
+                const isSelected = it.month === selectedMonth;
+                return (
+                  <button
+                    key={it.month}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={[
+                      styles.monthTab,
+                      isSelected ? styles.monthTabActive : '',
+                      (!hasUnpaid && !hasSettled) ? styles.monthTabInactive : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => onSelectMonth(it.month)}
+                    aria-label={`${it.month}월${hasUnpaid ? ` 미지급 ${it.count}건` : hasSettled ? ' 지급완료' : ''}`}
+                  >
+                    {it.month}월
+                    {hasUnpaid ? (
+                      <span className={styles.monthTabDot} aria-hidden="true" />
+                    ) : hasSettled ? (
+                      <Check size={11} className={styles.monthTabCheck} aria-hidden="true" />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
 
-              return (
-                <div
-                  key={it.month}
-                  className={[
-                    styles.monthChip,
-                    isSelected    ? styles.monthChipSelected  : '',
-                    hasUnpaid     ? styles.monthChipUnpaid    : '',
-                    !hasActivity  ? styles.monthChipInactive  : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => onSelectMonth(it.month)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectMonth(it.month); }}
-                  aria-pressed={isSelected}
-                  aria-label={`${it.month}월${hasUnpaid ? ` 미지급 ${payableCount}건` : ''}${settledCount > 0 ? ` 지급완료 ${settledCount}건` : ''}`}
-                >
-                  <span className={styles.monthChipLabel}>{it.month}월</span>
-
-                  {hasUnpaid && (
-                    <span className={styles.monthChipUnpaidBadge}>
-                      미지급 {payableCount}건
-                    </span>
-                  )}
-                  {settledCount > 0 && (
-                    <span className={styles.monthChipDoneBadge}>
-                      <Check size={9} /> 완료 {settledCount}건
-                    </span>
-                  )}
-
-                  {/* 금액 요약 (선택 시만 상세 표시) */}
-                  {isSelected && hasActivity && (
-                    <div className={styles.monthChipDetail}>
-                      {hasUnpaid && (
-                        <span className={styles.monthChipDetailUnpaid}>
-                          미지급 {won(it.amount)}원
-                        </span>
-                      )}
-                      {settledCount > 0 && (
-                        <span className={styles.monthChipDetailDone}>
-                          지급완료 {won(it.settledAmount)}원
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* 이 달 지급 버튼 — 미지급 있을 때 */}
-                  {hasUnpaid && (
-                    <button
-                      className={styles.payBtn}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSettle(it.month, it);
-                      }}
-                      aria-label={`${it.month}월 일괄 지급`}
-                    >
-                      이 달 지급
-                    </button>
-                  )}
-
-                  {/* 완료만 있는 달 */}
-                  {!hasUnpaid && settledCount > 0 && (
-                    <span className={styles.doneChip}>
-                      <Check size={11} /> 완료
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+            {/* 선택 월 요약 라인 */}
+            <div className={styles.monthSummaryLine}>
+              <div className={styles.monthSummaryMeta}>
+                <span className={styles.monthSummaryMonth}>{selectedMonth}월</span>
+                {selUnpaid && (
+                  <span className={styles.metaUnpaid}>미지급 {sel.count}건 · {won(sel.amount)}원</span>
+                )}
+                {selSettled && (
+                  <span className={styles.metaPaid}>지급완료 {sel.settledCount}건 · {won(sel.settledAmount)}원</span>
+                )}
+                {!selUnpaid && !selSettled && (
+                  <span className={styles.monthSummaryEmpty}>정산 내역이 없는 달이에요</span>
+                )}
+              </div>
+              {selUnpaid && (
+                <button className={styles.payBtn} onClick={() => onSettle(selectedMonth, sel)}>
+                  이 달 지급
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
