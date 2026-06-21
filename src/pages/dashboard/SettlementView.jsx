@@ -876,7 +876,7 @@ function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byR
   const mm = byRole?.matchmaker  || { expectedAmount: 0, settledAmount: 0 };
 
   return (
-    <div className={styles.heroCard}>
+    <div className={`${styles.heroCard} ${sv.heroCardAdmin}`}>
       <div className={styles.heroGlow} />
 
       <div className={styles.heroTopRow}>
@@ -1064,7 +1064,7 @@ function TxRow({ s, onClick, selected }) {
 
   return (
     <button
-      className={`${styles.txRow}${selected ? ` ${sv.txRowSelected}` : ''}`}
+      className={`${styles.txRow} ${sv.txRowFlat}${selected ? ` ${sv.txRowSelected}` : ''}`}
       onClick={onClick}
       style={muted ? { opacity: 0.55 } : undefined}
     >
