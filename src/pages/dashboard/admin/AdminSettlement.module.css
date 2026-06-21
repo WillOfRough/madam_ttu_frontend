@@ -99,6 +99,12 @@
   font-weight: 700;
 }
 
+.panelHeadTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
 .panelCaption {
   margin-top: 4px;
   font-size: 11.5px;
@@ -210,4 +216,120 @@
 
 .linkBtn:hover {
   background: var(--ink-50);
+}
+
+/* === 월별 칩 스트립 (연도 스텝퍼 대체) === */
+.monthChipList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.monthChip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--ink-50);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+  user-select: none;
+}
+
+.monthChip:hover {
+  background: var(--ink-100);
+}
+
+.monthChipSelected {
+  background: var(--tangerine-50);
+  border-color: var(--tangerine-300);
+}
+
+.monthChipSelected:hover {
+  background: var(--tangerine-100);
+}
+
+.monthChipUnpaid {
+  background: var(--tangerine-50);
+}
+
+.monthChipInactive {
+  opacity: 0.5;
+}
+
+.monthChipLabel {
+  flex-shrink: 0;
+  min-width: 36px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.monthChipUnpaidBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tangerine-700);
+  background: var(--tangerine-100);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.monthChipDoneBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mint-600);
+  background: var(--mint-100);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* 선택 시 금액 상세 */
+.monthChipDetail {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--tangerine-200);
+}
+
+.monthChipDetailUnpaid {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tangerine-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.monthChipDetailDone {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mint-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 이 달 지급 버튼은 기존 .payBtn 재사용 */
+
+/* 완료 칩 (지급 완료만 있는 달) */
+.doneChip {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mint-600);
+}
+
+/* payBtn 은 기존 클래스 재사용 — 칩 안에서 margin-left:auto 로 우측 정렬 */
+.monthChip .payBtn {
+  margin-left: auto;
 }

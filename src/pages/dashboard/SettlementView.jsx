@@ -2,9 +2,10 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   HelpCircle, Inbox,
-  AlertCircle, ArrowRight, Heart, X,
+  AlertCircle, ArrowRight, Heart, X, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import styles from './Settlement.module.css';
+import sv from './SettlementView.module.css';
 
 /* === 유틸 === */
 const won = (n) => {
@@ -158,7 +159,7 @@ const EXCLUSION_REASON_LABEL = {
   coupon: '쿠폰 결제',
 };
 
-// 기간 필터: 날짜 경계 계산
+// 기간 필터: 날짜 경계 계산 (period 기반, 레거시 매니저 모드용)
 function getPeriodRange(period) {
   const now = new Date();
   const y = now.getFullYear();
@@ -187,6 +188,15 @@ function getPeriodRange(period) {
   return { from, to };
 }
 
+// 선택된 연/월 기준 from/to 계산
+function getMonthRange(year, month) {
+  const lastDay = new Date(year, month, 0).getDate();
+  return {
+    from: `${year}-${String(month).padStart(2, '0')}-01`,
+    to:   `${year}-${String(month).padStart(2, '0')}-${lastDay}`,
+  };
+}
+
 function getCurrentMonthLabel() {
   const now = new Date();
   return `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
@@ -195,83 +205,157 @@ function getCurrentMonthLabel() {
 /**
  * 정산 화면 공통 컴포넌트. 본인 정산(Settlement)과 admin 매니저별 정산(AdminSettlement)이 공유한다.
  *
- * @param {object}   service           데이터 소스. getMonthlySummary({year}), getDailySummary({from,to}),
- *                                     listSettlements({from,to,page,size,status}) 필수.
- *                                     getByRoleSummary() 가 있으면 역할별 패널을 표시한다.
- * @param {string}   [title='정산']     상단 헤더 타이틀
- * @param {boolean}  [showHelp=true]   상단 정책 도움말 버튼 표시 여부
- * @param {function} [renderMonthlyAction]  ({year, month, summary, reload}) => ReactNode.
- *                                     Hero 하단에 렌더링 (admin 월단위 일괄지급 버튼 등).
+ * @param {object}   service               데이터 소스. getMonthlySummary({year}), getDailySummary({from,to}),
+ *                                         listSettlements({from,to,page,size,status}) 필수.
+ *                                         getByRoleSummary() 가 있으면 역할별 패널을 표시한다.
+ * @param {string}   [title='정산']         상단 헤더 타이틀
+ * @param {boolean}  [showHelp=true]       상단 정책 도움말 버튼 표시 여부
+ * @param {function} [renderMonthlyAction] ({year, month, summary, reload}) => ReactNode.
+ *                                         Hero 하단에 렌더링 (레거시 admin 월단위 일괄지급 등).
+ * @param {function} [onToggleExclude]     (settlementObj) => Promise<bool>. 단건 제외/복구 (영수증 시트용).
+ * @param {number}   [selectedYear]        admin 제어 연도. 없으면 내부 this/last/3m period 사용.
+ * @param {number}   [selectedMonth]       admin 제어 월. 없으면 내부 period 사용.
+ * @param {boolean}  [collapsibleCalendar] true 이면 달력을 접기/펼치기 버튼으로 토글 (기본 collapsed).
+ * @param {boolean}  [selectionEnabled]    true 이면 체크박스 + 일괄 액션 바 표시.
+ * @param {function} [onBulkExclude]       (idsArray, excluded) => Promise<void>. bulk exclude/restore.
  */
-export default function SettlementView({ service, title = '정산', showHelp = true, renderMonthlyAction, onToggleExclude }) {
-  const showByRole = typeof service?.getByRoleSummary === 'function';
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
+export default function SettlementView({
+  service,
+  title = '정산',
+  showHelp = true,
+  renderMonthlyAction,
+  onToggleExclude,
+  selectedYear,
+  selectedMonth,
+  collapsibleCalendar = false,
+  selectionEnabled = false,
+  onBulkExclude,
+}) {
+  // month-driven 모드 여부: selectedYear + selectedMonth 가 모두 전달되면 admin 모드
+  const isAdminMode = selectedYear != null && selectedMonth != null;
 
-  // 기간·필터 상태
+  const now = new Date();
+  const nowYear = now.getFullYear();
+  const nowMonth = now.getMonth() + 1;
+  const nowDay = now.getDate();
+
+  // admin 모드가 아닐 때 사용하는 기간 세그먼트
   const [period, setPeriod] = useState('this');
+
+  // 필터 상태 (공통)
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('ready_to_settle');
-  const [selectedDay, setSelectedDay] = useState(null); // 달력에서 선택한 일자 (1~말일)
-  const [showSheet, setShowSheet] = useState(null); // null | 'policy' | 'refund' | settlement-object
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [showSheet, setShowSheet] = useState(null);
+
+  // 달력 접기 상태 (collapsibleCalendar=true 이면 기본 접혀있음)
+  const [calendarExpanded, setCalendarExpanded] = useState(!collapsibleCalendar);
+
+  // 선택된 행 ids (selectionEnabled=true 일 때)
+  const [selectedIds, setSelectedIds] = useState(new Set());
 
   // 데이터 상태
   const [monthly, setMonthly] = useState(null);
+  const [dailySeries, setDailySeries] = useState([]);
+  // admin 모드: 해당 월의 전체 데이터셋 (ready_to_settle + settled 합산)
+  const [monthDataset, setMonthDataset] = useState([]);
+  // 비admin 모드: 기존 settlements + pagination
   const [settlements, setSettlements] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, totalPages: 1, totalElements: 0 });
-  const [dailySeries, setDailySeries] = useState([]);
-  const [byRole, setByRole] = useState({
-    clientOwner: { expectedAmount: 0, settledAmount: 0 },
-    matchmaker: { expectedAmount: 0, settledAmount: 0 },
-  });
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // 외부(일괄지급 등)에서 데이터 재조회를 트리거하기 위한 키
   const [reloadKey, setReloadKey] = useState(0);
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
+  // byRole 은 admin 모드에서 monthDataset 으로 직접 계산하므로 서버 의존 없음
+  // 비admin 모드에서는 getByRoleSummary 가 있으면 그것을 사용
+  const showByRole = isAdminMode || typeof service?.getByRoleSummary === 'function';
+  const [byRoleFromServer, setByRoleFromServer] = useState({
+    clientOwner: { expectedAmount: 0, settledAmount: 0 },
+    matchmaker:  { expectedAmount: 0, settledAmount: 0 },
+  });
+
+  // 실제 사용할 연/월
+  const activeYear  = isAdminMode ? selectedYear  : nowYear;
+  const activeMonth = isAdminMode ? selectedMonth : nowMonth;
+
   // 기간에 맞는 from/to
-  const periodRange = useMemo(() => getPeriodRange(period), [period]);
+  const periodRange = useMemo(() => {
+    if (isAdminMode) return getMonthRange(selectedYear, selectedMonth);
+    return getPeriodRange(period);
+  }, [isAdminMode, selectedYear, selectedMonth, period]);
 
-  // 이번달 KPI용 from/to
-  const thisMonthFrom = `${year}-${String(month).padStart(2, '0')}-01`;
-  const thisMonthTo = `${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`;
 
-  // 초기 로드: 월별 요약 + 일별 차트 + 역할별 누적 (allSettled — 한쪽 실패해도 나머지 표시)
+  // 초기 로드: 월별 요약 + 일별 차트 + (비admin 모드) 역할별 누적
   useEffect(() => {
     let cancelled = false;
     const tasks = [
-      service.getMonthlySummary({ year }),
-      service.getDailySummary({ from: thisMonthFrom, to: thisMonthTo }),
+      service.getMonthlySummary({ year: activeYear }),
+      service.getDailySummary({ from: periodRange.from, to: periodRange.to }),
     ];
-    if (showByRole) tasks.push(service.getByRoleSummary());
+    if (!isAdminMode && typeof service?.getByRoleSummary === 'function') {
+      tasks.push(service.getByRoleSummary());
+    }
     Promise.allSettled(tasks).then(([monthlyR, dailyR, byRoleR]) => {
       if (cancelled) return;
       if (monthlyR.status === 'fulfilled') setMonthly(monthlyR.value);
       if (dailyR.status === 'fulfilled') setDailySeries(dailyR.value?.items || []);
       if (byRoleR && byRoleR.status === 'fulfilled' && byRoleR.value) {
-        setByRole({
+        setByRoleFromServer({
           clientOwner: {
             expectedAmount: byRoleR.value?.clientOwner?.expectedAmount ?? 0,
-            settledAmount: byRoleR.value?.clientOwner?.settledAmount ?? 0,
+            settledAmount:  byRoleR.value?.clientOwner?.settledAmount  ?? 0,
           },
           matchmaker: {
             expectedAmount: byRoleR.value?.matchmaker?.expectedAmount ?? 0,
-            settledAmount: byRoleR.value?.matchmaker?.settledAmount ?? 0,
+            settledAmount:  byRoleR.value?.matchmaker?.settledAmount  ?? 0,
           },
         });
       }
     });
     return () => { cancelled = true; };
-  }, [service, showByRole, year, thisMonthFrom, thisMonthTo, reloadKey]);
+  }, [service, isAdminMode, activeYear, periodRange, reloadKey]);
 
-  // 기간/필터 변경 시 목록 재조회.
-  // '전체' 탭은 status=ready_to_settle / status=settled 두 번 호출 후 병합·클라이언트 페이지네이션.
-  // (백엔드 status 파라미터가 단일 값만 받기 때문에 status 미전송 시 cancelled/refunded 등이 섞여 들어와
-  //  첫 20건이 전부 표시 제외 대상이 되어 결과가 비어 보이는 문제를 회피)
+  // admin 모드: 선택 월의 전체 데이터셋 로드 (ready_to_settle + settled, size 100 각각)
+  // 이 데이터셋은 summary 계산 + 목록 클라이언트 필터링에 함께 사용됨
   useEffect(() => {
+    if (!isAdminMode) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const dateKeyOf = (s) => s?.matchEndedAt || s?.createdAt || '';
+    const sortByDateDesc = (list) => [...list].sort((a, b) => dateKeyOf(b).localeCompare(dateKeyOf(a)));
+
+    Promise.all([
+      service.listSettlements({
+        from: periodRange.from, to: periodRange.to,
+        page: 0, size: 100, status: 'ready_to_settle',
+      }),
+      service.listSettlements({
+        from: periodRange.from, to: periodRange.to,
+        page: 0, size: 100, status: 'settled',
+      }),
+    ])
+      .then(([r1, r2]) => {
+        if (cancelled) return;
+        const merged = sortByDateDesc([...(r1?.data || []), ...(r2?.data || [])]);
+        setMonthDataset(merged);
+        setSelectedIds(new Set()); // 월 변경 시 선택 초기화
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err?.message || '정산 정보를 불러오지 못했습니다.');
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [isAdminMode, service, periodRange, reloadKey]);
+
+  // 비admin 모드: 기간/필터 변경 시 목록 재조회
+  useEffect(() => {
+    if (isAdminMode) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -320,34 +404,74 @@ export default function SettlementView({ service, title = '정산', showHelp = t
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
-  }, [service, periodRange, statusFilter, page, reloadKey]);
+  }, [isAdminMode, service, periodRange, statusFilter, page, reloadKey]);
 
   // 기간/필터 변경 시 페이지 리셋
   useEffect(() => { setPage(0); }, [period, roleFilter, statusFilter]);
 
-  // 이번달 요약 계산 — 매칭 종료일 기준 ready_to_settle 합계
+  // 이번달 요약 계산 (월별 summary 에서 해당 월 row)
   const thisMonthSummary = useMemo(() => {
     const items = monthly?.items || [];
-    const item = items.find((i) => i.month === month);
-    return item || { month, count: 0, amount: 0, settledCount: 0, settledAmount: 0 };
-  }, [monthly, month]);
+    const item = items.find((i) => i.month === activeMonth);
+    return item || { month: activeMonth, count: 0, amount: 0, settledCount: 0, settledAmount: 0 };
+  }, [monthly, activeMonth]);
 
-  // 역할 + 선택 일자 필터 적용 (서버가 statusFilter만 반환하지만 안전망 + 정산제외 컷)
+  // admin 모드: monthDataset 으로부터 byRole 계산
+  const byRole = useMemo(() => {
+    if (!isAdminMode) return byRoleFromServer;
+    const co = { expectedAmount: 0, settledAmount: 0 };
+    const mm = { expectedAmount: 0, settledAmount: 0 };
+    monthDataset.forEach((s) => {
+      if (s.excluded) return;
+      const amt = s.amount || 0;
+      if (s.role === 'client_owner') {
+        if (s.status === 'ready_to_settle') co.expectedAmount += amt;
+        else if (s.status === 'settled')    co.settledAmount  += amt;
+      } else if (s.role === 'matchmaker') {
+        if (s.status === 'ready_to_settle') mm.expectedAmount += amt;
+        else if (s.status === 'settled')    mm.settledAmount  += amt;
+      }
+    });
+    return { clientOwner: co, matchmaker: mm };
+  }, [isAdminMode, monthDataset, byRoleFromServer]);
+
+  // admin 모드: monthDataset 에서 hero 표시용 count/amount (ready_to_settle)
+  const adminHeroSummary = useMemo(() => {
+    if (!isAdminMode) return null;
+    let count = 0; let amount = 0; let settledCount = 0; let settledAmount = 0;
+    monthDataset.forEach((s) => {
+      if (s.excluded) return;
+      if (s.status === 'ready_to_settle') { count++; amount += (s.amount || 0); }
+      else if (s.status === 'settled')    { settledCount++; settledAmount += (s.amount || 0); }
+    });
+    return { count, amount, settledCount, settledAmount };
+  }, [isAdminMode, monthDataset]);
+
+  // 실제 hero 에 표시할 값
+  const heroCount         = isAdminMode ? (adminHeroSummary?.count        ?? 0) : (thisMonthSummary.count        || 0);
+  const heroAmount        = isAdminMode ? (adminHeroSummary?.amount       ?? 0) : (thisMonthSummary.amount       || 0);
+  const heroSettledCount  = isAdminMode ? (adminHeroSummary?.settledCount  ?? 0) : (thisMonthSummary.settledCount  || 0);
+  const heroSettledAmount = isAdminMode ? (adminHeroSummary?.settledAmount ?? 0) : (thisMonthSummary.settledAmount || 0);
+
+  // 목록용 데이터 소스
+  const rawList = isAdminMode ? monthDataset : settlements;
+
+  // 역할 + 선택 일자 + statusFilter 필터
   const filteredSettlements = useMemo(() => {
-    let list = settlements.filter((s) => isCountedFor(s, statusFilter));
-    if (roleFilter === 'match') list = list.filter(s => s.role === 'matchmaker');
-    else if (roleFilter === 'member') list = list.filter(s => s.role === 'client_owner');
+    let list = rawList.filter((s) => isCountedFor(s, statusFilter));
+    if (roleFilter === 'match')  list = list.filter((s) => s.role === 'matchmaker');
+    else if (roleFilter === 'member') list = list.filter((s) => s.role === 'client_owner');
     if (selectedDay != null) {
-      const dayKey = `${year}-${String(month).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+      const dayKey = `${activeYear}-${String(activeMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
       list = list.filter((s) => {
         const k = getEndDateKey(s.matchEndedAt) || getEndDateKey(s.createdAt);
         return k === dayKey;
       });
     }
     return list;
-  }, [settlements, statusFilter, roleFilter, selectedDay, year, month]);
+  }, [rawList, statusFilter, roleFilter, selectedDay, activeYear, activeMonth]);
 
-  // 매칭 매니저 레코드 병합 (같은 매칭 → 1건, A ↔ B 페어 표시)
+  // 매칭 매니저 레코드 병합
   const displaySettlements = useMemo(
     () => mergeMatchmaker(filteredSettlements),
     [filteredSettlements],
@@ -365,10 +489,9 @@ export default function SettlementView({ service, title = '정산', showHelp = t
     return Object.entries(g).sort((a, b) => b[0].localeCompare(a[0]));
   }, [displaySettlements]);
 
-  // 달력용 일별 데이터 (1~말일 빈 날짜 채우기)
+  // 달력용 일별 데이터
   const dailyChartData = useMemo(() => {
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const today = now.getDate();
+    const daysInMonth = new Date(activeYear, activeMonth, 0).getDate();
     const map = {};
     dailySeries.forEach((d) => {
       if (typeof d.date === 'string' && d.date.includes('-')) {
@@ -379,15 +502,58 @@ export default function SettlementView({ service, title = '정산', showHelp = t
     return Array.from({ length: daysInMonth }, (_, i) => {
       const d = i + 1;
       const item = map[d] || {};
+      const isCurrent = activeYear === nowYear && activeMonth === nowMonth;
       return {
         d,
         amount: item.amount || 0,
         count: item.count || 0,
-        isFuture: d > today,
-        isToday: d === today,
+        isFuture: isCurrent ? d > nowDay : false,
+        isToday:  isCurrent ? d === nowDay : false,
       };
     });
-  }, [dailySeries, year, month]);
+  }, [dailySeries, activeYear, activeMonth, nowYear, nowMonth, nowDay]);
+
+  // 선택 관련 헬퍼
+  // 행이 선택됐는지 확인 (merged row 의 경우 _ids[0] 으로 대표)
+  const rowKey = (s) => (s._ids && s._ids.length) ? s._ids[0] : s.id;
+  const isRowSelected = (s) => selectedIds.has(rowKey(s));
+
+  const toggleRow = useCallback((s) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const k = rowKey(s);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  }, []);
+
+  const allSelected = displaySettlements.length > 0 && displaySettlements.every((s) => isRowSelected(s));
+  const toggleAll = useCallback(() => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(displaySettlements.map(rowKey)));
+    }
+  }, [allSelected, displaySettlements]);
+
+  // 선택된 모든 ids (merged row 는 _ids 전체 포함)
+  const selectedAllIds = useMemo(() => {
+    const ids = [];
+    displaySettlements.forEach((s) => {
+      const k = (s._ids && s._ids.length) ? s._ids[0] : s.id;
+      if (selectedIds.has(k)) {
+        ids.push(...((s._ids && s._ids.length) ? s._ids : (s.id ? [s.id] : [])));
+      }
+    });
+    return ids;
+  }, [displaySettlements, selectedIds]);
+
+  const handleBulkAction = useCallback(async (excluded) => {
+    if (!onBulkExclude || selectedAllIds.length === 0) return;
+    await onBulkExclude(selectedAllIds, excluded);
+    setSelectedIds(new Set());
+  }, [onBulkExclude, selectedAllIds]);
 
   const handlePeriodChange = useCallback((p) => {
     setPeriod(p);
@@ -396,8 +562,12 @@ export default function SettlementView({ service, title = '정산', showHelp = t
   }, []);
 
   const monthlyAction = renderMonthlyAction
-    ? renderMonthlyAction({ year, month, summary: thisMonthSummary, reload })
+    ? renderMonthlyAction({ year: activeYear, month: activeMonth, summary: thisMonthSummary, reload })
     : null;
+
+  const monthLabelDisplay = isAdminMode
+    ? `${selectedYear}년 ${selectedMonth}월`
+    : getCurrentMonthLabel();
 
   return (
     <div className={styles.page}>
@@ -418,11 +588,11 @@ export default function SettlementView({ service, title = '정산', showHelp = t
       <div className={styles.content}>
         {/* === Hero 카드 === */}
         <HeroCard
-          monthLabel={getCurrentMonthLabel()}
-          accrued={thisMonthSummary.amount || 0}
-          count={thisMonthSummary.count || 0}
-          settledAmount={thisMonthSummary.settledAmount || 0}
-          settledCount={thisMonthSummary.settledCount || 0}
+          monthLabel={monthLabelDisplay}
+          accrued={heroAmount}
+          count={heroCount}
+          settledAmount={heroSettledAmount}
+          settledCount={heroSettledCount}
           byRole={byRole}
           showByRole={showByRole}
           expectedTotal={monthly?.expectedTotal ?? 0}
@@ -431,17 +601,42 @@ export default function SettlementView({ service, title = '정산', showHelp = t
         />
 
         {/* === 매칭 종료 달력 === */}
-        <CalendarCard
-          data={dailyChartData}
-          monthLabel={`${month}월`}
-          year={year}
-          month={month}
-          selectedDay={period === 'this' ? selectedDay : null}
-          onSelectDay={(d) => {
-            if (period !== 'this') setPeriod('this');
-            setSelectedDay(d);
-          }}
-        />
+        {collapsibleCalendar ? (
+          <>
+            <div className={sv.calendarToggleRow}>
+              <button
+                className={sv.calendarToggleBtn}
+                onClick={() => setCalendarExpanded((v) => !v)}
+                aria-expanded={calendarExpanded}
+              >
+                {calendarExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                매칭 달력 {calendarExpanded ? '접기' : '펼치기'}
+              </button>
+            </div>
+            {calendarExpanded && (
+              <CalendarCard
+                data={dailyChartData}
+                monthLabel={`${activeMonth}월`}
+                year={activeYear}
+                month={activeMonth}
+                selectedDay={selectedDay}
+                onSelectDay={(d) => setSelectedDay(d)}
+              />
+            )}
+          </>
+        ) : (
+          <CalendarCard
+            data={dailyChartData}
+            monthLabel={`${activeMonth}월`}
+            year={activeYear}
+            month={activeMonth}
+            selectedDay={isAdminMode ? selectedDay : (period === 'this' ? selectedDay : null)}
+            onSelectDay={(d) => {
+              if (!isAdminMode && period !== 'this') setPeriod('this');
+              setSelectedDay(d);
+            }}
+          />
+        )}
 
         {/* === 정산 내역 === */}
         <div className={styles.listSection}>
@@ -457,28 +652,30 @@ export default function SettlementView({ service, title = '정산', showHelp = t
                 className={styles.selectedDayChip}
                 onClick={() => setSelectedDay(null)}
               >
-                {month}월 {selectedDay}일
+                {activeMonth}월 {selectedDay}일
                 <X size={12} />
               </button>
             )}
           </div>
 
-          {/* 기간 세그먼트 */}
-          <div className={styles.segmentControl}>
-            {[
-              { k: 'this', l: '이번 달' },
-              { k: 'last', l: '지난 달' },
-              { k: '3m', l: '3개월' },
-            ].map((p) => (
-              <button
-                key={p.k}
-                className={`${styles.segmentBtn} ${period === p.k ? styles.segmentBtnActive : ''}`}
-                onClick={() => handlePeriodChange(p.k)}
-              >
-                {p.l}
-              </button>
-            ))}
-          </div>
+          {/* 기간 세그먼트 — 비admin 모드에서만 표시 */}
+          {!isAdminMode && (
+            <div className={styles.segmentControl}>
+              {[
+                { k: 'this', l: '이번 달' },
+                { k: 'last', l: '지난 달' },
+                { k: '3m',   l: '3개월' },
+              ].map((p) => (
+                <button
+                  key={p.k}
+                  className={`${styles.segmentBtn} ${period === p.k ? styles.segmentBtnActive : ''}`}
+                  onClick={() => handlePeriodChange(p.k)}
+                >
+                  {p.l}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* 필터 툴바 — 상태(정산 대상/완료) + 유형(역할) */}
           <div className={styles.filterToolbar}>
@@ -519,6 +716,23 @@ export default function SettlementView({ service, title = '정산', showHelp = t
             </div>
           </div>
 
+          {/* 전체선택 행 — selectionEnabled 이고 목록이 있을 때 */}
+          {selectionEnabled && !loading && !error && displaySettlements.length > 0 && (
+            <div className={sv.selectAllRow}>
+              <input
+                type="checkbox"
+                className={sv.txCheckbox}
+                checked={allSelected}
+                onChange={toggleAll}
+                id="sv-select-all"
+                aria-label="전체 선택"
+              />
+              <label className={sv.selectAllLabel} htmlFor="sv-select-all">
+                전체 선택 ({displaySettlements.length}건)
+              </label>
+            </div>
+          )}
+
           {/* 거래 목록 */}
           {loading ? (
             <div className={styles.stateBox}>
@@ -555,11 +769,29 @@ export default function SettlementView({ service, title = '정산', showHelp = t
                     </div>
                     <div className={styles.txGroupItems}>
                       {items.map((s) => (
-                        <TxRow
-                          key={s.id}
-                          s={s}
-                          onClick={() => setShowSheet(s)}
-                        />
+                        selectionEnabled ? (
+                          <div key={rowKey(s)} className={sv.txRowWithCheck}>
+                            <input
+                              type="checkbox"
+                              className={sv.txCheckbox}
+                              checked={isRowSelected(s)}
+                              onChange={(e) => { e.stopPropagation(); toggleRow(s); }}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label="행 선택"
+                            />
+                            <TxRow
+                              s={s}
+                              onClick={() => setShowSheet(s)}
+                              selected={isRowSelected(s)}
+                            />
+                          </div>
+                        ) : (
+                          <TxRow
+                            key={s.id}
+                            s={s}
+                            onClick={() => setShowSheet(s)}
+                          />
+                        )
                       ))}
                     </div>
                   </div>
@@ -568,8 +800,8 @@ export default function SettlementView({ service, title = '정산', showHelp = t
             </div>
           )}
 
-          {/* 페이지네이션 */}
-          {!loading && !error && pagination.totalPages > 1 && (
+          {/* 페이지네이션 — 비admin 모드에서만 */}
+          {!isAdminMode && !loading && !error && pagination.totalPages > 1 && (
             <div className={styles.pager}>
               <button
                 className={styles.pagerBtn}
@@ -594,6 +826,31 @@ export default function SettlementView({ service, title = '정산', showHelp = t
         {showHelp && <RefundPolicyCard onClick={() => setShowSheet('refund')} />}
       </div>
 
+      {/* === 일괄 액션 바 === */}
+      {selectionEnabled && selectedIds.size > 0 && (
+        <div className={sv.bulkBar}>
+          <span className={sv.bulkBarCount}>선택 {selectedIds.size}건</span>
+          <button
+            className={sv.bulkExcludeBtn}
+            onClick={() => handleBulkAction(true)}
+          >
+            정산 제외
+          </button>
+          <button
+            className={sv.bulkRestoreBtn}
+            onClick={() => handleBulkAction(false)}
+          >
+            정산 복구
+          </button>
+          <button
+            className={sv.bulkCancelBtn}
+            onClick={() => setSelectedIds(new Set())}
+          >
+            취소
+          </button>
+        </div>
+      )}
+
       {/* === 시트 === */}
       {showSheet === 'policy' && (
         <PolicySheet onClose={() => setShowSheet(null)} />
@@ -616,10 +873,7 @@ export default function SettlementView({ service, title = '정산', showHelp = t
 /* === Hero 카드 === */
 function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byRole, showByRole, expectedTotal, onPolicy, actionSlot }) {
   const co = byRole?.clientOwner || { expectedAmount: 0, settledAmount: 0 };
-  const mm = byRole?.matchmaker || { expectedAmount: 0, settledAmount: 0 };
-  const totalExpected = showByRole
-    ? (co.expectedAmount || 0) + (mm.expectedAmount || 0)
-    : (expectedTotal || 0);
+  const mm = byRole?.matchmaker  || { expectedAmount: 0, settledAmount: 0 };
 
   return (
     <div className={styles.heroCard}>
@@ -690,7 +944,7 @@ function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byR
 
       <div className={styles.heroCumulativeRow}>
         <span className={styles.heroCumulativeLabel}>받을 정산 잔고</span>
-        <span className={styles.heroCumulativeValue}>{won(totalExpected)}원</span>
+        <span className={styles.heroCumulativeValue}>{won(expectedTotal)}원</span>
       </div>
 
       {actionSlot && <div style={{ marginTop: 14 }}>{actionSlot}</div>}
@@ -775,7 +1029,7 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
 }
 
 /* === 거래 행 === */
-function TxRow({ s, onClick }) {
+function TxRow({ s, onClick, selected }) {
   const refund = isRefund(s.status);
   const paid = isPaid(s.status);
   const cancelled = isCancelled(s.status);
@@ -810,7 +1064,7 @@ function TxRow({ s, onClick }) {
 
   return (
     <button
-      className={styles.txRow}
+      className={`${styles.txRow}${selected ? ` ${sv.txRowSelected}` : ''}`}
       onClick={onClick}
       style={muted ? { opacity: 0.55 } : undefined}
     >
