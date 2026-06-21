@@ -126,23 +126,6 @@
   color: var(--ink-400);
 }
 
-.roleBadge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--r-full, 999px);
-}
-
-.roleAdmin {
-  background: var(--tangerine-100);
-  color: var(--tangerine-700);
-}
-
-.roleManager {
-  background: var(--ink-100);
-  color: var(--ink-500);
-}
-
 .statusBadge {
   font-size: 11px;
   font-weight: 600;
@@ -170,7 +153,15 @@
 }
 
 .amtUnpaid {
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.amtUnpaid strong {
+  font-weight: 800;
+}
+
+.amtUnpaidOn {
   color: var(--tangerine-700);
 }
 
@@ -211,4 +202,93 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* === 요약 대시보드 === */
+.summarySection {
+  margin-bottom: 16px;
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.summaryTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+.monthToggle {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--ink-50);
+  border-radius: var(--r-pill, 999px);
+  padding: 3px;
+}
+
+.monthToggleBtn {
+  border: none;
+  background: none;
+  padding: 5px 12px;
+  border-radius: var(--r-pill, 999px);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-500);
+  cursor: pointer;
+}
+
+.monthToggleBtnActive {
+  background: #fff;
+  color: var(--ink-900);
+  box-shadow: var(--sh-sm);
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .summaryRow { grid-template-columns: 1fr; }
+}
+
+/* === 정산 대기 필터 토글 === */
+.unpaidFilterBtn {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-600);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.unpaidFilterBtnActive {
+  border-color: var(--tangerine-600);
+  background: var(--tangerine-50);
+  color: var(--tangerine-700);
+}
+
+/* === 미지급 행 강조 === */
+.rowUnpaid {
+  border-left: 3px solid var(--tangerine-600);
+  background: var(--tangerine-50);
+}
+
+.unpaidBadge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--r-pill, 999px);
+  background: var(--tangerine-600);
+  color: #fff;
 }
