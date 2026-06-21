@@ -29,23 +29,6 @@ const STATUS_LABELS = {
   closed: '종료',
 };
 
-// 5-tone pastel avatar palette — deterministic by name hash
-const AVATAR_TONES = ['rose', 'lilac', 'mint', 'amber', 'tangerine'];
-
-function avatarTone(name = '') {
-  let hash = 0;
-  for (let i = 0; i < name.length; i += 1) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-  return AVATAR_TONES[hash % AVATAR_TONES.length];
-}
-
-// Last 2 chars of full name → given-name initial. Fallback to last char.
-function avatarInitial(name = '') {
-  const trimmed = name.trim();
-  if (!trimmed) return '·';
-  if (trimmed.length >= 3) return trimmed.slice(-2);
-  return trimmed.slice(-1);
-}
-
 function formatAbsolute(iso) {
   if (!iso) return '-';
   return new Date(iso).toLocaleDateString('ko-KR', {
@@ -211,8 +194,6 @@ export default function InquiryList() {
           <ul className={styles.list}>
             {items.map((item) => {
               const isOpen = expandedId === item.id;
-              const tone = avatarTone(item.clientName);
-              const initial = avatarInitial(item.clientName);
 
               return (
                 <li
@@ -243,12 +224,6 @@ export default function InquiryList() {
                     </div>
 
                     <div className={styles.headerBody}>
-                      <div
-                        className={`${styles.avatar} ${styles[`avatar_${tone}`]}`}
-                        aria-hidden
-                      >
-                        {initial}
-                      </div>
                       <div className={styles.headerText}>
                         <span className={styles.clientName}>{item.clientName}</span>
                         <span className={styles.itemTitle}>{item.title}</span>
