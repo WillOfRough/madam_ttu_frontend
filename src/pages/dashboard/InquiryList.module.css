@@ -169,27 +169,6 @@
   gap: 12px;
 }
 
-/* ── Avatar circle ── */
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-family: var(--font-sans);
-}
-
-.avatar_rose      { background: #FFD7E1; color: #C03A66; }
-.avatar_lilac     { background: #E0DCFF; color: #5B4FB2; }
-.avatar_mint      { background: #CFEEDC; color: #1F8A56; }
-.avatar_amber     { background: #FFE8C2; color: #B26B16; }
-.avatar_tangerine { background: var(--tangerine-100); color: var(--tangerine-700); }
-
 .headerText {
   display: flex;
   flex-direction: column;
