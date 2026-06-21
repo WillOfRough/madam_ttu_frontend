@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar, Megaphone, Share2, Users } from 'lucide-react';
+import { Link2, Sparkles, Copy, Check, Trash2, X, Calendar, Megaphone } from 'lucide-react';
 import useInviteStore from '../../store/inviteStore';
 import { updateInviteLabel } from '../../api/inviteService';
 import { toast } from '../../store/toastStore';
 import ConfirmModal from '../../components/ConfirmModal';
 import { SkeletonListItem } from '../../components/Skeleton';
 import EmptyState from '../../components/EmptyState';
+import ShareCard from '../../components/ShareCard';
 import styles from './InviteManagement.module.css';
 
 // ── Type parser ──────────────────────────────────────────────────────────────
@@ -52,10 +53,9 @@ export default function InviteManagement() {
   const [filter, setFilter] = useState('all'); // all | general | event | revoked
   const [copiedId, setCopiedId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
-  const [aboutCopiedKey, setAboutCopiedKey] = useState(null); // 'member' | 'manager'
+  const [aboutCopied, setAboutCopied] = useState(false);
 
   const memberAboutUrl = `${window.location.origin}/about`;
-  const managerAboutUrl = `${window.location.origin}/about/manager`;
 
   // General sheet
   const [showGeneral, setShowGeneral] = useState(false);
@@ -107,29 +107,33 @@ export default function InviteManagement() {
     setTimeout(() => setCopiedId(null), 2000);
   }, []);
 
-  const handleAboutCopy = useCallback((key, url) => {
-    navigator.clipboard.writeText(url);
-    setAboutCopiedKey(key);
+  const handleAboutCopy = useCallback(() => {
+    navigator.clipboard.writeText(memberAboutUrl);
+    setAboutCopied(true);
     toast.success('소개 페이지 링크가 복사되었습니다.');
-    setTimeout(() => setAboutCopiedKey((prev) => (prev === key ? null : prev)), 2000);
-  }, []);
+    setTimeout(() => setAboutCopied(false), 2000);
+  }, [memberAboutUrl]);
 
-  const handleAboutShare = useCallback(async (url, text) => {
-    const shareData = { title: 'Knots & Links', text, url };
+  const handleAboutShare = useCallback(async () => {
+    const shareData = {
+      title: 'Knots & Links',
+      text: '진심이 닿는 만남을, 매니저와 함께. Knots & Links 회원 소개 페이지를 확인해 보세요.',
+      url: memberAboutUrl,
+    };
     if (navigator.share) {
       try {
         await navigator.share(shareData);
       } catch (err) {
         if (err.name !== 'AbortError') {
-          navigator.clipboard.writeText(url);
+          navigator.clipboard.writeText(memberAboutUrl);
           toast.success('링크가 복사되었습니다.');
         }
       }
     } else {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(memberAboutUrl);
       toast.success('링크가 복사되었습니다.');
     }
-  }, []);
+  }, [memberAboutUrl]);
 
   const handleEventCopy = useCallback((invite) => {
     const token = invite.token || invite.id;
@@ -217,24 +221,15 @@ export default function InviteManagement() {
           </div>
         </div>
 
-        {/* ── 서비스 소개 페이지 공유 카드 (회원 / 매니저) ── */}
+        {/* ── 회원 소개 페이지 공유 카드 ── */}
         <ShareCard
           icon={<Megaphone size={16} strokeWidth={2.2} />}
-          title="회원용 소개 페이지"
+          title="회원 소개 페이지"
           desc="회원으로 모실 분께 카톡으로 보내주세요"
           url={memberAboutUrl}
-          copied={aboutCopiedKey === 'member'}
-          onCopy={() => handleAboutCopy('member', memberAboutUrl)}
-          onShare={() => handleAboutShare(memberAboutUrl, '진심이 닿는 만남을, 매니저와 함께. Knots & Links 회원 소개 페이지를 확인해 보세요.')}
-        />
-        <ShareCard
-          icon={<Users size={16} strokeWidth={2.2} />}
-          title="매니저용 소개 페이지"
-          desc="매니저로 함께할 분께 보내주세요"
-          url={managerAboutUrl}
-          copied={aboutCopiedKey === 'manager'}
-          onCopy={() => handleAboutCopy('manager', managerAboutUrl)}
-          onShare={() => handleAboutShare(managerAboutUrl, '한 건 한 건 정성껏 잇는 매칭 매니저를 모십니다. Knots & Links 매니저 소개 페이지를 확인해 보세요.')}
+          copied={aboutCopied}
+          onCopy={handleAboutCopy}
+          onShare={handleAboutShare}
         />
 
         {/* ── KPI 3칸 ── */}
@@ -422,45 +417,6 @@ export default function InviteManagement() {
           onCancel={() => setRevokeTarget(null)}
         />
       )}
-    </div>
-  );
-}
-
-// ── ShareCard sub-component (소개 페이지 공유) ───────────────────────────────
-function ShareCard({ icon, title, desc, url, copied, onCopy, onShare }) {
-  return (
-    <div className={styles.aboutCard}>
-      <div className={styles.aboutHead}>
-        <div className={styles.aboutIcon}>
-          {icon}
-        </div>
-        <div className={styles.aboutHeadText}>
-          <div className={styles.aboutTitle}>{title}</div>
-          <div className={styles.aboutDesc}>{desc}</div>
-        </div>
-      </div>
-      <div className={styles.aboutUrlBox}>
-        <Link2 size={13} className={styles.aboutUrlIcon} />
-        <span className={styles.aboutUrlText}>{url}</span>
-      </div>
-      <div className={styles.aboutActions}>
-        <button
-          type="button"
-          className={`${styles.aboutBtn} ${copied ? styles.aboutBtnCopied : styles.aboutBtnCopy}`}
-          onClick={onCopy}
-        >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
-          {copied ? '복사됨' : '링크 복사'}
-        </button>
-        <button
-          type="button"
-          className={`${styles.aboutBtn} ${styles.aboutBtnShare}`}
-          onClick={onShare}
-        >
-          <Share2 size={13} />
-          공유하기
-        </button>
-      </div>
     </div>
   );
 }
