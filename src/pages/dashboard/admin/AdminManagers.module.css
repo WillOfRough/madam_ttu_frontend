@@ -5,7 +5,7 @@
 }
 
 .header {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .title {
@@ -21,17 +21,117 @@
   color: var(--ink-500);
 }
 
-/* 툴바 */
+/* === 월별 정산 현황 카드 (단일 강조: 이 달 지급 예정) === */
+.overviewCard {
+  composes: card from '../../../components/Card.module.css';
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.monthStepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.monthBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: var(--paper-card);
+  color: var(--ink-600);
+  cursor: pointer;
+}
+
+.monthBtn:hover:not(:disabled) {
+  background: var(--ink-50);
+}
+
+.monthBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.monthLabel {
+  min-width: 96px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.overviewMain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.overviewLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.overviewValue {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--tangerine-700);
+}
+
+.overviewUnit {
+  margin-left: 3px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.overviewCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.overviewPaid {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-100);
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.overviewPaid strong {
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+.overviewError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 0;
+  font-size: 13px;
+  color: var(--ink-400);
+}
+
+/* === 툴바: 검색 + 칩 필터 === */
 .toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
 }
 
 .searchWrap {
   position: relative;
-  flex: 1 1 240px;
   min-width: 0;
 }
 
@@ -50,7 +150,7 @@
   padding: 0 12px 0 36px;
   border: 1px solid var(--ink-200);
   border-radius: var(--r-md);
-  background: #fff;
+  background: var(--paper-card);
   font-size: 14px;
   color: var(--ink-900);
 }
@@ -60,32 +160,38 @@
   border-color: var(--tangerine-400);
 }
 
-.selects {
+.chips {
   display: flex;
   gap: 8px;
 }
 
-.select {
-  height: 42px;
-  padding: 0 32px 0 12px;
+.chip {
+  height: 34px;
+  padding: 0 16px;
   border: 1px solid var(--ink-200);
-  border-radius: var(--r-md);
-  background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%238A94AD' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
+  border-radius: var(--r-pill);
+  background: var(--paper-card);
   font-size: 13px;
-  color: var(--ink-700);
+  font-weight: 600;
+  color: var(--ink-600);
   cursor: pointer;
-  appearance: none;
 }
 
-.select:focus {
-  outline: none;
-  border-color: var(--tangerine-400);
+.chip:hover {
+  background: var(--ink-50);
 }
 
-/* 리스트 */
+.chipActive {
+  border-color: var(--ink-900);
+  background: var(--ink-900);
+  color: #fff;
+}
+
+.chipActive:hover {
+  background: var(--ink-900);
+}
+
+/* === 리스트 === */
 .list {
   display: flex;
   flex-direction: column;
@@ -109,15 +215,15 @@
 
 .rowTopLine {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 3px;
+  margin-bottom: 8px;
 }
 
 .rowName {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--ink-900);
 }
 
@@ -126,35 +232,45 @@
   color: var(--ink-400);
 }
 
-.statusBadge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--r-full, 999px);
-  background: var(--rose-100);
-  color: var(--rose-600);
+/* 연락처 나열 */
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
 }
 
-.rowSub {
-  font-size: 13px;
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
   color: var(--ink-500);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rowAmounts {
+.contactItem svg {
+  flex-shrink: 0;
+  color: var(--ink-400);
+}
+
+/* 금액: 미지급(주) + 누적지급(부, 분리) */
+.amountBlock {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 5px;
-  font-size: 13px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ink-100);
   flex-wrap: wrap;
 }
 
 .amtUnpaid {
+  font-size: 15px;
   font-weight: 600;
-  color: var(--ink-500);
+  color: var(--ink-400);
 }
 
 .amtUnpaid strong {
@@ -165,13 +281,10 @@
   color: var(--tangerine-700);
 }
 
-.amtDot {
-  color: var(--ink-300);
-}
-
 .amtPaid {
+  font-size: 12px;
   font-weight: 500;
-  color: var(--mint-600);
+  color: var(--ink-400);
 }
 
 .rowChevron {
@@ -179,7 +292,7 @@
   flex-shrink: 0;
 }
 
-/* 상태 박스 */
+/* === 상태 박스 === */
 .stateBox {
   display: flex;
   flex-direction: column;
@@ -202,93 +315,4 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* === 요약 대시보드 === */
-.summarySection {
-  margin-bottom: 16px;
-}
-
-.summaryHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.summaryTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-700);
-}
-
-.monthToggle {
-  display: inline-flex;
-  gap: 4px;
-  background: var(--ink-50);
-  border-radius: var(--r-pill, 999px);
-  padding: 3px;
-}
-
-.monthToggleBtn {
-  border: none;
-  background: none;
-  padding: 5px 12px;
-  border-radius: var(--r-pill, 999px);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-500);
-  cursor: pointer;
-}
-
-.monthToggleBtnActive {
-  background: #fff;
-  color: var(--ink-900);
-  box-shadow: var(--sh-sm);
-}
-
-.summaryRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-@media (max-width: 640px) {
-  .summaryRow { grid-template-columns: 1fr; }
-}
-
-/* === 정산 대기 필터 토글 === */
-.unpaidFilterBtn {
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid var(--ink-200);
-  border-radius: var(--r-md);
-  background: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-600);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.unpaidFilterBtnActive {
-  border-color: var(--tangerine-600);
-  background: var(--tangerine-50);
-  color: var(--tangerine-700);
-}
-
-/* === 미지급 행 강조 === */
-.rowUnpaid {
-  border-left: 3px solid var(--tangerine-600);
-  background: var(--tangerine-50);
-}
-
-.unpaidBadge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: var(--r-pill, 999px);
-  background: var(--tangerine-600);
-  color: #fff;
 }

@@ -1,43 +1,40 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users, ChevronRight, AlertCircle, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import {
+  Search, Users, ChevronRight, ChevronLeft, AlertCircle,
+  Mail, Phone, Landmark,
+} from 'lucide-react';
 import * as adminService from '../../../api/adminService';
 import Card from '../../../components/Card';
-import SummaryCard from '../../../components/SummaryCard';
 import EmptyState from '../../../components/EmptyState';
 import Pagination from '../../../components/Pagination';
 import styles from './AdminManagers.module.css';
 
-const STATUS_OPTIONS = [
-  { value: '', label: '상태 전체' },
-  { value: 'active', label: '활성' },
-  { value: 'deleted', label: '삭제' },
-];
-
-// 정렬 — 서버 정렬 파라미터가 없어 현재 로드된 페이지 내에서만 클라이언트 정렬.
-const SORT_OPTIONS = [
-  { value: 'unsettled', label: '미지급액 많은 순' },
-  { value: 'settled', label: '누적지급 많은 순' },
-  { value: 'name', label: '이름순' },
-];
-
 const PAGE_SIZE = 20;
 
-const won = (n) => (n == null ? '0' : Math.abs(n).toLocaleString('ko-KR'));
+const won = (n) => (n == null ? '0' : n.toLocaleString('ko-KR'));
+
+// 정산 대기 여부 필터 칩 (점5: 정렬 드롭다운 대신 칩 UI 로 필터 제공)
+const FILTER_CHIPS = [
+  { value: 'all', label: '전체' },
+  { value: 'unpaid', label: '정산 대기' },
+];
 
 export default function AdminManagers() {
   const navigate = useNavigate();
 
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [sort, setSort] = useState('unsettled');
-  const [onlyUnpaid, setOnlyUnpaid] = useState(false);
+  const [filter, setFilter] = useState('all'); // 'all' | 'unpaid'
   const [page, setPage] = useState(0); // 0-based
 
-  // 요약 대시보드 (전 매니저 월 정산 요약) — 이번 달/지난 달
-  const [overviewMonth, setOverviewMonth] = useState('this'); // 'this' | 'last'
+  // 월 선택 (점6: 이번달/지난달 토글 대신 월 스텝퍼로 임의의 달 조회)
+  // NOTE: now 는 마운트 시점에 캡처된다. 자정을 넘기면 isCurrentMonth 가
+  // 한 달 뒤처질 수 있지만, 관리자 세션 타임아웃(30분)으로 실사용 영향은 없다.
+  const now = useMemo(() => new Date(), []);
+  const [ym, setYm] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 });
   const [overview, setOverview] = useState(null);
+  const [overviewError, setOverviewError] = useState(false);
 
   const [managers, setManagers] = useState([]);
   const [pagination, setPagination] = useState({ page: 0, total: 0, totalPages: 1 });
@@ -52,34 +49,38 @@ export default function AdminManagers() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchInput]);
 
-  // 필터 변경 시 첫 페이지로
-  useEffect(() => { setPage(0); }, [search, status]);
+  // 검색 변경 시 첫 페이지로
+  useEffect(() => { setPage(0); }, [search]);
 
-  // 요약: 이번 달/지난 달의 연·월 계산
-  const overviewYM = useMemo(() => {
-    const base = new Date();
-    const d = new Date(base.getFullYear(), base.getMonth() - (overviewMonth === 'last' ? 1 : 0), 1);
-    return { year: d.getFullYear(), month: d.getMonth() + 1 };
-  }, [overviewMonth]);
+  const isCurrentMonth = ym.year === now.getFullYear() && ym.month === now.getMonth() + 1;
+  const stepMonth = (delta) => setYm((prev) => {
+    const d = new Date(prev.year, prev.month - 1 + delta, 1);
+    const next = { year: d.getFullYear(), month: d.getMonth() + 1 };
+    // 미래 달은 막기
+    if (next.year > now.getFullYear() || (next.year === now.getFullYear() && next.month > now.getMonth() + 1)) {
+      return prev;
+    }
+    return next;
+  });
 
-  const overviewLabel = `${overviewYM.year}년 ${overviewYM.month}월`;
-
+  // 선택 월의 전체 매니저 정산 요약
   useEffect(() => {
     let cancelled = false;
+    setOverviewError(false);
     adminService
-      .getSettlementOverview(overviewYM)
+      .getSettlementOverview(ym)
       .then((res) => { if (!cancelled) setOverview(res); })
-      .catch(() => { if (!cancelled) setOverview(null); });
+      .catch(() => { if (!cancelled) { setOverview(null); setOverviewError(true); } });
     return () => { cancelled = true; };
-  }, [overviewYM]);
+  }, [ym]);
 
-  // 매니저 목록 — 운영자는 다루지 않으므로 role=manager 고정 (역할 필터 제거)
+  // 매니저 목록 — 활성 매니저만 (점4: 활성/삭제 필터 불필요 → status=active 고정)
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     adminService
-      .listManagers({ search: search || undefined, role: 'manager', status: status || undefined, page, size: PAGE_SIZE })
+      .listManagers({ search: search || undefined, role: 'manager', status: 'active', page, size: PAGE_SIZE })
       .then((res) => {
         if (cancelled) return;
         setManagers(res?.data || []);
@@ -91,27 +92,20 @@ export default function AdminManagers() {
       })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [search, status, page]);
+  }, [search, page]);
 
   const totalPages = pagination.totalPages || 1;
 
-  // 현재 페이지 클라이언트 정렬 (서버 정렬 미지원)
-  const sortedManagers = useMemo(() => {
-    const list = [...managers];
-    if (sort === 'name') {
-      list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'ko'));
-    } else if (sort === 'settled') {
-      list.sort((a, b) => (b.settledAmount || 0) - (a.settledAmount || 0));
-    } else {
-      list.sort((a, b) => (b.unsettledAmount || 0) - (a.unsettledAmount || 0));
-    }
-    return list;
-  }, [managers, sort]);
+  // 미지급액 많은 순 정렬(현재 페이지 한정) — 줘야 할 매니저가 위로.
+  const sortedManagers = useMemo(
+    () => [...managers].sort((a, b) => (b.unsettledAmount || 0) - (a.unsettledAmount || 0)),
+    [managers],
+  );
 
-  // '정산 대기만' — 미지급액 있는 매니저만 (현재 페이지 한정 클라이언트 필터)
+  // '정산 대기' 칩 — 미지급액 있는 매니저만 (현재 페이지 한정 클라이언트 필터)
   const visibleManagers = useMemo(
-    () => (onlyUnpaid ? sortedManagers.filter((m) => (m.unsettledAmount || 0) > 0) : sortedManagers),
-    [sortedManagers, onlyUnpaid],
+    () => (filter === 'unpaid' ? sortedManagers.filter((m) => (m.unsettledAmount || 0) > 0) : sortedManagers),
+    [sortedManagers, filter],
   );
 
   const openSettlement = (m) => {
@@ -126,8 +120,8 @@ export default function AdminManagers() {
     if (error) {
       return (
         <div className={styles.stateBox}>
-          <AlertCircle size={20} color="var(--rose-600)" />
-          <span style={{ color: 'var(--rose-600)' }}>{error}</span>
+          <AlertCircle size={20} color="var(--ink-400)" />
+          <span>{error}</span>
         </div>
       );
     }
@@ -135,8 +129,8 @@ export default function AdminManagers() {
       return (
         <EmptyState
           icon={Users}
-          title={onlyUnpaid ? '정산 대기 중인 매니저가 없어요' : '매니저가 없어요'}
-          hint={onlyUnpaid ? '필터를 해제하면 전체 매니저를 볼 수 있어요.' : '검색·필터 조건을 바꿔보세요.'}
+          title={filter === 'unpaid' ? '정산 대기 중인 매니저가 없어요' : '매니저가 없어요'}
+          hint={filter === 'unpaid' ? '필터를 해제하면 전체 매니저를 볼 수 있어요.' : '검색 조건을 바꿔보세요.'}
         />
       );
     }
@@ -149,27 +143,36 @@ export default function AdminManagers() {
               key={m.id}
               as="button"
               interactive
-              className={`${styles.row} ${unpaid ? styles.rowUnpaid : ''}`}
+              className={styles.row}
               onClick={() => openSettlement(m)}
             >
               <div className={styles.rowMain}>
                 <div className={styles.rowTopLine}>
                   <span className={styles.rowName}>{m.name || '이름 없음'}</span>
                   {m.nickname && <span className={styles.rowNickname}>@{m.nickname}</span>}
-                  {unpaid && <span className={styles.unpaidBadge}>미지급</span>}
-                  {m.status && m.status !== 'active' && (
-                    <span className={styles.statusBadge}>{m.status === 'deleted' ? '삭제' : m.status}</span>
+                </div>
+
+                {/* 점2: 이메일·전화번호·계좌번호 나열 */}
+                <div className={styles.contact}>
+                  <span className={styles.contactItem}>
+                    <Mail size={13} /> {m.email || '-'}
+                  </span>
+                  <span className={styles.contactItem}>
+                    <Phone size={13} /> {m.phone || '-'}
+                  </span>
+                  {(m.bankName || m.bankNumber) && (
+                    <span className={styles.contactItem}>
+                      <Landmark size={13} /> {[m.bankName, m.bankNumber].filter(Boolean).join(' ')}
+                    </span>
                   )}
                 </div>
-                <div className={styles.rowSub}>
-                  {m.email || '-'}{m.phone ? ` · ${m.phone}` : ''}
-                </div>
-                <div className={styles.rowAmounts}>
+
+                {/* 점3: '줘야 할 돈(미지급)'이 주, 누적지급은 분리해 작게 */}
+                <div className={styles.amountBlock}>
                   <span className={`${styles.amtUnpaid} ${unpaid ? styles.amtUnpaidOn : ''}`}>
                     미지급 <strong>{won(m.unsettledAmount)}</strong>원
                   </span>
-                  <span className={styles.amtDot}>·</span>
-                  <span className={styles.amtPaid}>누적지급 {won(m.settledAmount)}원</span>
+                  <span className={styles.amtPaid}>누적 지급 {won(m.settledAmount)}원</span>
                 </div>
               </div>
               <ChevronRight size={18} className={styles.rowChevron} />
@@ -187,45 +190,46 @@ export default function AdminManagers() {
         <p className={styles.subtitle}>정산할 매니저를 선택하세요{pagination.total ? ` · 총 ${pagination.total}명` : ''}</p>
       </div>
 
-      {/* === 요약 대시보드 === */}
-      <div className={styles.summarySection}>
-        <div className={styles.summaryHead}>
-          <span className={styles.summaryTitle}>{overviewLabel} 정산 현황</span>
-          <div className={styles.monthToggle}>
-            {[{ k: 'this', l: '이번 달' }, { k: 'last', l: '지난 달' }].map((o) => (
-              <button
-                key={o.k}
-                type="button"
-                className={`${styles.monthToggleBtn} ${overviewMonth === o.k ? styles.monthToggleBtnActive : ''}`}
-                onClick={() => setOverviewMonth(o.k)}
-              >
-                {o.l}
-              </button>
-            ))}
+      {/* === 월별 정산 현황 (점6: 월 선택, 점3: 이 달 줘야 할 금액 강조, 점7: 색 단순화) === */}
+      <div className={styles.overviewCard}>
+        <div className={styles.monthStepper}>
+          <button className={styles.monthBtn} onClick={() => stepMonth(-1)} aria-label="이전 달">
+            <ChevronLeft size={18} />
+          </button>
+          <span className={styles.monthLabel}>{ym.year}년 {ym.month}월</span>
+          <button
+            className={styles.monthBtn}
+            onClick={() => stepMonth(1)}
+            disabled={isCurrentMonth}
+            aria-label="다음 달"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {overviewError ? (
+          <div className={styles.overviewError}>
+            <AlertCircle size={14} />
+            <span>정산 현황을 불러오지 못했습니다</span>
           </div>
-        </div>
-        <div className={styles.summaryRow}>
-          <SummaryCard
-            icon={Wallet}
-            color="coral"
-            value={`${won(overview?.expectedTotal)}원`}
-            label={`미지급(정산 예정) · ${overview?.expectedCount ?? 0}건`}
-          />
-          <SummaryCard
-            icon={CheckCircle2}
-            color="success"
-            value={`${won(overview?.settledTotal)}원`}
-            label={`지급 완료 · ${overview?.settledCount ?? 0}건`}
-          />
-          <SummaryCard
-            icon={Clock}
-            color="pending"
-            value={`${won(overview?.potentialTotal)}원`}
-            label={`만남 전 잠재 · ${overview?.potentialCount ?? 0}건`}
-          />
-        </div>
+        ) : (
+          <>
+            <div className={styles.overviewMain}>
+              <span className={styles.overviewLabel}>이 달 지급 예정</span>
+              <span className={styles.overviewValue}>
+                {won(overview?.expectedTotal)}<span className={styles.overviewUnit}>원</span>
+              </span>
+              <span className={styles.overviewCount}>미지급 {overview?.expectedCount ?? 0}건</span>
+            </div>
+
+            <div className={styles.overviewPaid}>
+              지급 완료 <strong>{won(overview?.settledTotal)}원</strong> · {overview?.settledCount ?? 0}건
+            </div>
+          </>
+        )}
       </div>
 
+      {/* === 검색 + 칩 필터 (점5) === */}
       <div className={styles.toolbar}>
         <div className={styles.searchWrap}>
           <Search size={16} className={styles.searchIcon} />
@@ -234,33 +238,34 @@ export default function AdminManagers() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="이름·닉네임 검색 / 이메일·전화 정확히 입력"
+            aria-label="매니저 검색"
           />
         </div>
-        <div className={styles.selects}>
-          <button
-            type="button"
-            className={`${styles.unpaidFilterBtn} ${onlyUnpaid ? styles.unpaidFilterBtnActive : ''}`}
-            onClick={() => setOnlyUnpaid((v) => !v)}
-            aria-pressed={onlyUnpaid}
-          >
-            정산 대기만
-          </button>
-          <select className={styles.select} value={status} onChange={(e) => setStatus(e.target.value)}>
-            {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          <select className={styles.select} value={sort} onChange={(e) => setSort(e.target.value)} aria-label="정렬">
-            {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+        <div className={styles.chips} role="group" aria-label="필터">
+          {FILTER_CHIPS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              className={`${styles.chip} ${filter === c.value ? styles.chipActive : ''}`}
+              onClick={() => setFilter(c.value)}
+              aria-pressed={filter === c.value}
+            >
+              {c.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {renderBody()}
 
-      <Pagination
-        page={page + 1}
-        totalPages={totalPages}
-        onPageChange={(p) => setPage(p - 1)}
-      />
+      {/* 칩 필터 활성 시 클라이언트 필터라 서버 페이징과 불일치 → 숨김 */}
+      {filter === 'all' && (
+        <Pagination
+          page={page + 1}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p - 1)}
+        />
+      )}
     </div>
   );
 }
