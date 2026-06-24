@@ -587,19 +587,29 @@ export default function SettlementView({
 
       <div className={styles.content}>
         {/* === Hero 카드 === */}
-        <HeroCard
-          monthLabel={monthLabelDisplay}
-          accrued={heroAmount}
-          count={heroCount}
-          settledAmount={heroSettledAmount}
-          settledCount={heroSettledCount}
-          byRole={byRole}
-          showByRole={showByRole}
-          compactRole={isAdminMode}
-          expectedTotal={monthly?.expectedTotal ?? 0}
-          onPolicy={showHelp ? () => setShowSheet('policy') : undefined}
-          actionSlot={monthlyAction}
-        />
+        {isAdminMode ? (
+          <AdminSummary
+            monthLabel={monthLabelDisplay}
+            amount={heroAmount}
+            count={heroCount}
+            settledAmount={heroSettledAmount}
+            settledCount={heroSettledCount}
+            byRole={byRole}
+          />
+        ) : (
+          <HeroCard
+            monthLabel={monthLabelDisplay}
+            accrued={heroAmount}
+            count={heroCount}
+            settledAmount={heroSettledAmount}
+            settledCount={heroSettledCount}
+            byRole={byRole}
+            showByRole={showByRole}
+            expectedTotal={monthly?.expectedTotal ?? 0}
+            onPolicy={showHelp ? () => setShowSheet('policy') : undefined}
+            actionSlot={monthlyAction}
+          />
+        )}
 
         {/* === 매칭 종료 달력 === */}
         {collapsibleCalendar ? (
@@ -825,32 +835,25 @@ export default function SettlementView({
 
         {/* === 환불 정책 푸터 카드 === */}
         {showHelp && <RefundPolicyCard onClick={() => setShowSheet('refund')} />}
-      </div>
 
-      {/* === 일괄 액션 바 === */}
-      {selectionEnabled && selectedIds.size > 0 && (
-        <div className={sv.bulkBar}>
-          <span className={sv.bulkBarCount}>선택 {selectedIds.size}건</span>
-          <button
-            className={sv.bulkExcludeBtn}
-            onClick={() => handleBulkAction(true)}
-          >
-            정산 제외
-          </button>
-          <button
-            className={sv.bulkRestoreBtn}
-            onClick={() => handleBulkAction(false)}
-          >
-            정산 복구
-          </button>
-          <button
-            className={sv.bulkCancelBtn}
-            onClick={() => setSelectedIds(new Set())}
-          >
-            취소
-          </button>
-        </div>
-      )}
+        {/* === 일괄 액션 바 (인라인, 목록 하단) === */}
+        {selectionEnabled && selectedIds.size > 0 && (
+          <div className={sv.bulkBar}>
+            <span className={sv.bulkBarCount}>선택 {selectedIds.size}건</span>
+            <div className={sv.bulkBarActions}>
+              <button className={sv.bulkExcludeBtn} onClick={() => handleBulkAction(true)}>
+                정산 제외
+              </button>
+              <button className={sv.bulkRestoreBtn} onClick={() => handleBulkAction(false)}>
+                정산 복구
+              </button>
+              <button className={sv.bulkCancelBtn} onClick={() => setSelectedIds(new Set())}>
+                취소
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* === 시트 === */}
       {showSheet === 'policy' && (
@@ -871,8 +874,43 @@ export default function SettlementView({
   );
 }
 
+/* === Admin 요약 카드 (밝고 컴팩트한 중립 버전 — 다크 HeroCard 대체) === */
+function AdminSummary({ monthLabel, amount, count, settledAmount, settledCount, byRole }) {
+  const co = byRole?.clientOwner || { expectedAmount: 0, settledAmount: 0 };
+  const mm = byRole?.matchmaker  || { expectedAmount: 0, settledAmount: 0 };
+  const hasSettled = settledCount > 0 || settledAmount > 0;
+
+  return (
+    <div className={sv.adminSummary}>
+      <div className={sv.adminSummaryLabel}>{monthLabel} 정산</div>
+      <div className={sv.adminSummaryAmountRow}>
+        <span className={amount > 0 ? sv.adminSummaryAmountOn : sv.adminSummaryAmount}>
+          {won(amount)}<span className={sv.adminSummaryUnit}>원</span>
+        </span>
+        <span className={sv.adminSummaryMeta}>
+          미정산 {count}건{hasSettled ? ` · 지급완료 ${settledCount}건 ${won(settledAmount)}원` : ''}
+        </span>
+      </div>
+      <div className={sv.adminRoleSplit}>
+        <div className={sv.adminRoleRow}>
+          <span className={sv.adminRoleName}>회원 매니저</span>
+          <span className={sv.adminRoleVal}>
+            미정산 {won(co.expectedAmount)}원<span className={sv.adminRoleSub}> · 지급 {won(co.settledAmount)}원</span>
+          </span>
+        </div>
+        <div className={sv.adminRoleRow}>
+          <span className={sv.adminRoleName}>매칭 매니저</span>
+          <span className={sv.adminRoleVal}>
+            미정산 {won(mm.expectedAmount)}원<span className={sv.adminRoleSub}> · 지급 {won(mm.settledAmount)}원</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* === Hero 카드 === */
-function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byRole, showByRole, compactRole, expectedTotal, onPolicy, actionSlot }) {
+function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byRole, showByRole, expectedTotal, onPolicy, actionSlot }) {
   const co = byRole?.clientOwner || { expectedAmount: 0, settledAmount: 0 };
   const mm = byRole?.matchmaker  || { expectedAmount: 0, settledAmount: 0 };
 
@@ -903,64 +941,44 @@ function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byR
       </div>
 
       {showByRole && (
-        compactRole ? (
-          /* admin: 컴팩트·중립 역할 분해 (글래스 패널 + 색 dot 제거) */
-          <div className={sv.roleMini}>
-            <div className={sv.roleMiniItem}>
-              <span className={sv.roleMiniName}>회원 매니저</span>
-              <span className={sv.roleMiniVals}>
-                <span className={sv.roleMiniUnpaid}>미정산 {won(co.expectedAmount)}원</span>
-                <span className={sv.roleMiniPaid}>지급 {won(co.settledAmount)}원</span>
+        <div className={styles.heroRoleRow}>
+          <div className={styles.heroRolePanel}>
+            <div className={styles.heroRoleLabel}>
+              <span className={styles.heroRoleDot} style={{ background: '#7AB2FF' }} />
+              회원 매니저
+            </div>
+            <div className={styles.heroRoleLine}>
+              <span className={styles.heroRoleLineKey}>미정산</span>
+              <span className={styles.heroRoleLineVal}>
+                {won(co.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
               </span>
             </div>
-            <div className={sv.roleMiniItem}>
-              <span className={sv.roleMiniName}>매칭 매니저</span>
-              <span className={sv.roleMiniVals}>
-                <span className={sv.roleMiniUnpaid}>미정산 {won(mm.expectedAmount)}원</span>
-                <span className={sv.roleMiniPaid}>지급 {won(mm.settledAmount)}원</span>
+            <div className={styles.heroRoleLine}>
+              <span className={styles.heroRoleLineKey}>지급완료</span>
+              <span className={styles.heroRoleLineVal}>
+                {won(co.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
               </span>
             </div>
           </div>
-        ) : (
-          <div className={styles.heroRoleRow}>
-            <div className={styles.heroRolePanel}>
-              <div className={styles.heroRoleLabel}>
-                <span className={styles.heroRoleDot} style={{ background: '#7AB2FF' }} />
-                회원 매니저
-              </div>
-              <div className={styles.heroRoleLine}>
-                <span className={styles.heroRoleLineKey}>미정산</span>
-                <span className={styles.heroRoleLineVal}>
-                  {won(co.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
-                </span>
-              </div>
-              <div className={styles.heroRoleLine}>
-                <span className={styles.heroRoleLineKey}>지급완료</span>
-                <span className={styles.heroRoleLineVal}>
-                  {won(co.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
-                </span>
-              </div>
+          <div className={styles.heroRolePanel}>
+            <div className={styles.heroRoleLabel}>
+              <span className={styles.heroRoleDot} style={{ background: 'var(--tangerine-400)' }} />
+              매칭 매니저
             </div>
-            <div className={styles.heroRolePanel}>
-              <div className={styles.heroRoleLabel}>
-                <span className={styles.heroRoleDot} style={{ background: 'var(--tangerine-400)' }} />
-                매칭 매니저
-              </div>
-              <div className={styles.heroRoleLine}>
-                <span className={styles.heroRoleLineKey}>미정산</span>
-                <span className={styles.heroRoleLineVal}>
-                  {won(mm.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
-                </span>
-              </div>
-              <div className={styles.heroRoleLine}>
-                <span className={styles.heroRoleLineKey}>지급완료</span>
-                <span className={styles.heroRoleLineVal}>
-                  {won(mm.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
-                </span>
-              </div>
+            <div className={styles.heroRoleLine}>
+              <span className={styles.heroRoleLineKey}>미정산</span>
+              <span className={styles.heroRoleLineVal}>
+                {won(mm.expectedAmount)}<span className={styles.heroRoleUnit}>원</span>
+              </span>
+            </div>
+            <div className={styles.heroRoleLine}>
+              <span className={styles.heroRoleLineKey}>지급완료</span>
+              <span className={styles.heroRoleLineVal}>
+                {won(mm.settledAmount)}<span className={styles.heroRoleUnit}>원</span>
+              </span>
             </div>
           </div>
-        )
+        </div>
       )}
 
       <div className={styles.heroCumulativeRow}>
