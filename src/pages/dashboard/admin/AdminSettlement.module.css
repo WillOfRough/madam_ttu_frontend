@@ -30,6 +30,7 @@
 .panel {
   composes: card from '../../../components/Card.module.css';
   padding: 16px;
+  position: relative;
 }
 
 .panelHead {
@@ -149,7 +150,7 @@
 .metaPaid {
   font-size: 12px;
   font-weight: 500;
-  color: var(--mint-600);
+  color: var(--ink-500);
 }
 
 .payBtn {
@@ -421,3 +422,141 @@
 .detailWrap {
   margin-top: 28px;
 }
+
+/* === 월 스텝퍼 (가로 월탭 대체) === */
+.monthNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-600);
+  cursor: pointer;
+}
+
+.navBtn:hover:not(:disabled) { background: var(--ink-50); }
+.navBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.navLabelBtn {
+  min-width: 104px;
+  height: 30px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--r-md);
+  background: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+  cursor: pointer;
+}
+
+.navLabelBtn:hover { background: var(--ink-50); }
+
+/* === 월 그리드 팝오버 === */
+.pickerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+.pickerPop {
+  position: absolute;
+  top: 52px;
+  left: 16px;
+  z-index: 21;
+  width: 248px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-lg, 14px);
+  box-shadow: var(--sh-md, 0 10px 30px rgba(0, 0, 0, 0.14));
+}
+
+.pickerYearRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pickerYearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-600);
+  cursor: pointer;
+}
+
+.pickerYearBtn:hover:not(:disabled) { background: var(--ink-50); }
+.pickerYearBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pickerYearLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.pickerGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.pickerCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 46px;
+  border: 1px solid var(--ink-100);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-700);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.13s ease, border-color 0.13s ease, color 0.13s ease;
+}
+
+.pickerCell:hover:not(:disabled) { background: var(--ink-50); }
+
+.pickerCellSelected,
+.pickerCellSelected:hover {
+  background: var(--ink-900);
+  border-color: var(--ink-900);
+  color: #fff;
+}
+
+.pickerCellFuture {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pickerCellMonth { font-weight: 700; }
+
+.pickerCellDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tangerine-500);
+}
+.pickerCellSelected .pickerCellDot { background: var(--tangerine-300); }
+
+.pickerCellDotEmpty { height: 6px; }
+
+.pickerCellCheck { color: var(--ink-400); }
+.pickerCellSelected .pickerCellCheck { color: rgba(255, 255, 255, 0.7); }
