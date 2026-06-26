@@ -22,9 +22,15 @@ export default function AdminSettlement() {
   const managerId   = searchParams.get('managerId') || '';
   const managerName = searchParams.get('name') || '';
 
-  // 선택된 연·월 (기본 = 이번 달)
-  const [selectedYear, setSelectedYear]   = useState(CURRENT_YEAR);
-  const [selectedMonth, setSelectedMonth] = useState(CURRENT_MONTH);
+  // 월별 보드 드릴다운에서 넘어온 year/month 쿼리(있고 유효하면)를 초기 선택 월로,
+  // 없으면 이번 달. useState 초기화는 마운트 1회만 → 이후 내부 스텝퍼로 자유 변경.
+  const qsYear  = parseInt(searchParams.get('year'), 10);
+  const qsMonth = parseInt(searchParams.get('month'), 10);
+  const hasQsYM = Number.isInteger(qsYear) && Number.isInteger(qsMonth)
+    && qsMonth >= 1 && qsMonth <= 12 && !isFutureYM(qsYear, qsMonth);
+
+  const [selectedYear, setSelectedYear]   = useState(hasQsYM ? qsYear : CURRENT_YEAR);
+  const [selectedMonth, setSelectedMonth] = useState(hasQsYM ? qsMonth : CURRENT_MONTH);
 
   // 일괄지급 확인 모달 상태
   const [confirm, setConfirm] = useState(null);

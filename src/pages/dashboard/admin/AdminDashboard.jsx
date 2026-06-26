@@ -278,7 +278,13 @@ function MonthManagerList({ year, month, onBack }) {
   }, [year, month]);
 
   const openManager = (m) => {
-    const qs = new URLSearchParams({ managerId: m.id, name: m.name || '' });
+    // 선택한 달(year/month)을 함께 넘겨 정산 상세가 그 달로 열리게 한다.
+    const qs = new URLSearchParams({
+      managerId: m.id,
+      name: m.name || '',
+      year: String(year),
+      month: String(month),
+    });
     navigate(`/dashboard/admin/settlements?${qs.toString()}`);
   };
 
