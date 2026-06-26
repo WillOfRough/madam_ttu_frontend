@@ -46,7 +46,6 @@ import More from './pages/dashboard/More';
 
 // Admin pages
 import AdminDashboard from './pages/dashboard/admin/AdminDashboard';
-import AdminManagers from './pages/dashboard/admin/AdminManagers';
 import AdminSettlement from './pages/dashboard/admin/AdminSettlement';
 
 function AuthListener() {
@@ -161,7 +160,7 @@ export default function App() {
             {/* 관리자(운영자) 전용 — role === 'admin' 게이트 */}
             <Route element={<RequireAdmin />}>
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
-              <Route path="/dashboard/admin/managers" element={<AdminManagers />} />
+              <Route path="/dashboard/admin/managers" element={<Navigate to="/dashboard/admin?tab=managers" replace />} />
               <Route path="/dashboard/admin/settlements" element={<AdminSettlement />} />
             </Route>
           </Route>

@@ -151,13 +151,13 @@ export default function AdminSettlement() {
   if (!managerId) {
     return (
       <div className={styles.page}>
-        <BackBar onBack={() => navigate('/dashboard/admin/managers')} />
+        <BackBar onBack={() => navigate('/dashboard/admin?tab=managers')} label="매니저 목록" />
         <EmptyState
           icon={Users}
           title="매니저를 선택하세요"
-          hint="매니저 관리에서 정산을 조회할 매니저를 선택할 수 있어요."
+          hint="매니저 정보 탭에서 정산을 조회할 매니저를 선택할 수 있어요."
         >
-          <button className={styles.linkBtn} onClick={() => navigate('/dashboard/admin/managers')}>
+          <button className={styles.linkBtn} onClick={() => navigate('/dashboard/admin?tab=managers')}>
             매니저 목록으로
           </button>
         </EmptyState>
@@ -167,7 +167,7 @@ export default function AdminSettlement() {
 
   return (
     <div className={styles.page}>
-      <BackBar onBack={() => navigate('/dashboard/admin/managers')} />
+      <BackBar onBack={() => navigate(-1)} label="뒤로" />
 
       {/* 월 선택 + 선택 월 정산 현황 */}
       <MonthStrip
@@ -345,11 +345,11 @@ function MonthStrip({ year, month, monthItems, loading, expectedTotal, onStepMon
   );
 }
 
-function BackBar({ onBack }) {
+function BackBar({ onBack, label = '뒤로' }) {
   return (
     <button className={styles.backBar} onClick={onBack}>
       <ChevronLeft size={18} />
-      매니저 목록
+      {label}
     </button>
   );
 }

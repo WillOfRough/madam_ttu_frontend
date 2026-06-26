@@ -25,6 +25,19 @@ export async function listManagers({ status, role, search, page = 0, size = 20 }
   return apiFetch(`/api/v1/admin/managers?${query.toString()}`, { method: 'GET' });
 }
 
+// 전체 매니저를 페이지네이션 끝까지 모아 단일 배열로 반환 (월별 드릴다운·정보 탭용).
+// 서버가 한 페이지(size 100)로 다 못 주면 totalPages 까지 순차 조회해 합친다.
+export async function listAllManagers({ role, status, search } = {}) {
+  const first = await listManagers({ role, status, search, page: 0, size: 100 });
+  const list = [...(first?.data || [])];
+  const totalPages = first?.pagination?.totalPages ?? 1;
+  for (let p = 1; p < totalPages; p += 1) {
+    const res = await listManagers({ role, status, search, page: p, size: 100 });
+    list.push(...(res?.data || []));
+  }
+  return list;
+}
+
 // GET /api/v1/admin/settlements — 특정 매니저 정산 목록(페이징). managerId 필수.
 export async function listManagerSettlements({ managerId, status, from, to, page = 0, size = 20 }) {
   const query = new URLSearchParams();

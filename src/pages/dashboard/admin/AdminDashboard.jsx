@@ -1,207 +1,329 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  Wallet, CheckCircle2, Clock, Users, ChevronRight, ArrowRight, AlertCircle, ShieldCheck,
+  ShieldCheck, Wallet, CheckCircle2, ChevronLeft, ChevronRight,
+  AlertCircle, ArrowLeft, Users,
 } from 'lucide-react';
 import * as adminService from '../../../api/adminService';
 import Card from '../../../components/Card';
+import EmptyState from '../../../components/EmptyState';
+import { ManagerInfoList } from './AdminManagers';
 import styles from './AdminDashboard.module.css';
 
 const won = (n) => (n == null ? '0' : Math.abs(n).toLocaleString('ko-KR'));
 
-// 이번 달 / 지난 달 → { year, month }
-function resolveMonth(sel) {
-  const now = new Date();
-  const base = sel === 'last'
-    ? new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    : now;
-  return { year: base.getFullYear(), month: base.getMonth() + 1 };
-}
-
-const TOP_MANAGERS = 5; // 대시보드에 노출할 상위 매니저 수
+const TABS = [
+  { k: 'settlement', l: '정산·지급' },
+  { k: 'managers', l: '매니저 정보' },
+];
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-
-  const [monthSel, setMonthSel] = useState('this');
-  const { year, month } = useMemo(() => resolveMonth(monthSel), [monthSel]);
-
-  const [overview, setOverview] = useState(null);
-  const [ovLoading, setOvLoading] = useState(true);
-  const [ovError, setOvError] = useState(null);
-
-  const [managers, setManagers] = useState([]);
-  const [mgrTotal, setMgrTotal] = useState(0);
-  const [mgrLoading, setMgrLoading] = useState(true);
-  const [mgrError, setMgrError] = useState(null);
-
-  // 전 매니저 월 요약(overview) — 월 토글에 따라 재조회
-  useEffect(() => {
-    let cancelled = false;
-    setOvLoading(true);
-    setOvError(null);
-    adminService
-      .getSettlementOverview({ year, month })
-      .then((res) => { if (!cancelled) setOverview(res); })
-      .catch((err) => {
-        if (!cancelled) setOvError(adminService.getAdminErrorMessage(err, '정산 요약을 불러오지 못했습니다.'));
-      })
-      .finally(() => { if (!cancelled) setOvLoading(false); });
-    return () => { cancelled = true; };
-  }, [year, month]);
-
-  // 매니저 목록 — 미지급액 많은 순(서버 정렬 미지원 → 로드분 클라이언트 정렬)
-  useEffect(() => {
-    let cancelled = false;
-    setMgrLoading(true);
-    setMgrError(null);
-    adminService
-      .listManagers({ page: 0, size: 20 })
-      .then((res) => {
-        if (cancelled) return;
-        const list = [...(res?.data || [])].sort(
-          (a, b) => (b.unsettledAmount || 0) - (a.unsettledAmount || 0),
-        );
-        setManagers(list);
-        setMgrTotal(res?.pagination?.total ?? res?.pagination?.totalElements ?? list.length);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setMgrError(adminService.getAdminErrorMessage(err, '매니저 목록을 불러오지 못했습니다.'));
-      })
-      .finally(() => { if (!cancelled) setMgrLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const openManager = (m) => {
-    const qs = new URLSearchParams({ managerId: m.id, name: m.name || '' });
-    navigate(`/dashboard/admin/settlements?${qs.toString()}`);
-  };
-
-  const kpis = [
-    {
-      key: 'expected',
-      tone: 'tangerine',
-      icon: Wallet,
-      label: '정산 예정',
-      amount: overview?.expectedTotal ?? 0,
-      count: overview?.expectedCount ?? 0,
-    },
-    {
-      key: 'settled',
-      tone: 'mint',
-      icon: CheckCircle2,
-      label: '지급 완료',
-      amount: overview?.settledTotal ?? 0,
-      count: overview?.settledCount ?? 0,
-    },
-    {
-      key: 'potential',
-      tone: 'lilac',
-      icon: Clock,
-      label: '만남 전 잠재',
-      amount: overview?.potentialTotal ?? 0,
-      count: overview?.potentialCount ?? 0,
-    },
-  ];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'managers' ? 'managers' : 'settlement';
+  const setTab = (k) => setSearchParams(k === 'managers' ? { tab: 'managers' } : {});
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div className={styles.titleRow}>
           <ShieldCheck size={20} className={styles.titleIcon} />
-          <h1 className={styles.title}>관리자 대시보드</h1>
+          <h1 className={styles.title}>관리자</h1>
         </div>
-        <p className={styles.subtitle}>전 매니저 정산 현황과 지급 우선순위를 한눈에 봅니다.</p>
+        <p className={styles.subtitle}>매니저 정보와 매칭 정산·지급을 관리합니다.</p>
       </div>
 
-      {/* 월 토글 */}
-      <div className={styles.monthToggle} role="tablist" aria-label="기준 월">
-        {[{ k: 'this', l: '이번 달' }, { k: 'last', l: '지난 달' }].map((o) => (
+      {/* 탭: 정산·지급 / 매니저 정보 */}
+      <div className={styles.tabBar} role="tablist" aria-label="관리자 메뉴">
+        {TABS.map((t) => (
           <button
-            key={o.k}
+            key={t.k}
             type="button"
             role="tab"
-            aria-selected={monthSel === o.k}
-            className={`${styles.monthBtn} ${monthSel === o.k ? styles.monthBtnActive : ''}`}
-            onClick={() => setMonthSel(o.k)}
+            aria-selected={tab === t.k}
+            className={`${styles.tabBtn} ${tab === t.k ? styles.tabBtnActive : ''}`}
+            onClick={() => setTab(t.k)}
           >
-            {o.l}
+            {t.l}
           </button>
         ))}
-        <span className={styles.monthLabel}>{year}년 {month}월 · 매칭 종료월 기준</span>
       </div>
 
-      {/* KPI 카드 */}
-      {ovError ? (
-        <div className={styles.errorBox}>
-          <AlertCircle size={18} color="var(--rose-600)" />
-          <span>{ovError}</span>
-        </div>
-      ) : (
-        <div className={styles.kpiGrid}>
-          {kpis.map((k) => (
-            <div key={k.key} className={`${styles.kpiCard} ${styles[k.tone]}`}>
-              <div className={styles.kpiIcon}><k.icon size={18} /></div>
-              <div className={styles.kpiLabel}>{k.label}</div>
-              <div className={styles.kpiAmount}>
-                {ovLoading ? <span className={styles.kpiSkeleton} /> : (
-                  <>{won(k.amount)}<span className={styles.kpiUnit}>원</span></>
-                )}
-              </div>
-              <div className={styles.kpiCount}>{ovLoading ? ' ' : `${k.count}건`}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      {tab === 'managers' ? <ManagerInfoList /> : <SettlementBoard />}
+    </div>
+  );
+}
 
-      {/* 매니저 정산 섹션 */}
-      <div className={styles.section}>
-        <div className={styles.sectionHead}>
-          <div>
-            <div className={styles.sectionTitle}>매니저 정산</div>
-            <div className={styles.sectionMeta}>미지급액 많은 순{mgrTotal ? ` · 총 ${mgrTotal}명` : ''}</div>
-          </div>
-          <button className={styles.linkBtn} onClick={() => navigate('/dashboard/admin/managers')}>
-            전체 보기 <ArrowRight size={14} />
+/* === 정산·지급 보드 (전 매니저 월별) === */
+// 매칭 종료월 기준으로, 현재월을 제외한 과거 달들을 월별로 보여준다.
+// (예: 6월이면 5월 종료 매칭이 정산 대상 → 1~5월 노출, 6월 제외)
+// expectedTotal/Count = 정산예정(ready_to_settle), settledTotal/Count = 지급완료.
+function SettlementBoard() {
+  const now = useMemo(() => new Date(), []);
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth() + 1;
+
+  const [year, setYear] = useState(curYear);
+  const [months, setMonths] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  // 표시 월 상한: 현재 연도는 (현재월-1)까지(현재월 제외), 과거 연도는 12월까지.
+  const lastMonth = year < curYear ? 12 : curMonth - 1;
+
+  // 연도 변경 시 드릴다운 해제
+  useEffect(() => { setSelectedMonth(null); }, [year]);
+
+  // 월별 overview 일괄 조회 (월 수만큼, allSettled 로 부분 실패 허용)
+  useEffect(() => {
+    let cancelled = false;
+    if (lastMonth < 1) {
+      setMonths([]);
+      setError(null);
+      setLoading(false);
+      return undefined;
+    }
+    setLoading(true);
+    setError(null);
+    const list = [];
+    for (let m = 1; m <= lastMonth; m += 1) list.push(m);
+    Promise.allSettled(list.map((m) => adminService.getSettlementOverview({ year, month: m })))
+      .then((results) => {
+        if (cancelled) return;
+        if (results.every((r) => r.status === 'rejected')) {
+          setError(adminService.getAdminErrorMessage(results[0]?.reason, '정산 현황을 불러오지 못했습니다.'));
+          setMonths([]);
+          return;
+        }
+        setMonths(results.map((r, i) => {
+          const month = list[i];
+          const o = r.status === 'fulfilled' ? (r.value || {}) : {};
+          return {
+            month,
+            expectedTotal: o.expectedTotal || 0,
+            expectedCount: o.expectedCount || 0,
+            settledTotal: o.settledTotal || 0,
+            settledCount: o.settledCount || 0,
+          };
+        }));
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [year, lastMonth]);
+
+  const totals = useMemo(() => months.reduce(
+    (acc, m) => ({
+      expectedTotal: acc.expectedTotal + (m.expectedTotal || 0),
+      expectedCount: acc.expectedCount + (m.expectedCount || 0),
+      settledTotal: acc.settledTotal + (m.settledTotal || 0),
+      settledCount: acc.settledCount + (m.settledCount || 0),
+    }),
+    { expectedTotal: 0, expectedCount: 0, settledTotal: 0, settledCount: 0 },
+  ), [months]);
+
+  const rowsDesc = useMemo(() => [...months].sort((a, b) => b.month - a.month), [months]);
+
+  if (selectedMonth != null) {
+    return <MonthManagerList year={year} month={selectedMonth} onBack={() => setSelectedMonth(null)} />;
+  }
+
+  return (
+    <div className={styles.board}>
+      {/* 연도 스텝퍼 */}
+      <div className={styles.boardHead}>
+        <div className={styles.yearStepper}>
+          <button className={styles.yearBtn} onClick={() => setYear((y) => y - 1)} aria-label="이전 연도">
+            <ChevronLeft size={16} />
+          </button>
+          <span className={styles.yearLabel}>{year}년</span>
+          <button
+            className={styles.yearBtn}
+            onClick={() => setYear((y) => Math.min(curYear, y + 1))}
+            disabled={year >= curYear}
+            aria-label="다음 연도"
+          >
+            <ChevronRight size={16} />
           </button>
         </div>
+        <span className={styles.boardCaption}>매칭 종료월 기준 · 현재월 제외</span>
+      </div>
 
-        {mgrLoading ? (
+      {/* 요약 2값: 정산예정 / 지급완료 */}
+      <div className={styles.summaryRow}>
+        <div className={`${styles.summaryCard} ${styles.summaryExpected}`}>
+          <div className={styles.summaryIcon}><Wallet size={16} /></div>
+          <div className={styles.summaryLabel}>정산 예정</div>
+          <div className={styles.summaryValue}>
+            {won(totals.expectedTotal)}<span className={styles.summaryUnit}>원</span>
+          </div>
+          <div className={styles.summaryCount}>{loading ? ' ' : `${totals.expectedCount}건`}</div>
+        </div>
+        <div className={`${styles.summaryCard} ${styles.summarySettled}`}>
+          <div className={styles.summaryIcon}><CheckCircle2 size={16} /></div>
+          <div className={styles.summaryLabel}>지급 완료</div>
+          <div className={styles.summaryValue}>
+            {won(totals.settledTotal)}<span className={styles.summaryUnit}>원</span>
+          </div>
+          <div className={styles.summaryCount}>{loading ? ' ' : `${totals.settledCount}건`}</div>
+        </div>
+      </div>
+
+      {/* 월별 리스트 */}
+      <div className={styles.monthCard}>
+        <div className={styles.monthCardTitle}>월별 정산 현황</div>
+        {loading ? (
           <div className={styles.stateBox}><div className={styles.spinner} /></div>
-        ) : mgrError ? (
+        ) : error ? (
           <div className={styles.stateBox}>
             <AlertCircle size={18} color="var(--rose-600)" />
-            <span style={{ color: 'var(--rose-600)' }}>{mgrError}</span>
+            <span style={{ color: 'var(--rose-600)' }}>{error}</span>
           </div>
-        ) : managers.length === 0 ? (
-          <div className={styles.stateBox}>
-            <Users size={20} color="var(--ink-300)" />
-            <span>매니저가 없어요</span>
-          </div>
+        ) : rowsDesc.length === 0 ? (
+          <div className={styles.stateBox}><span>{year}년은 아직 정산할 달이 없어요</span></div>
         ) : (
-          <div className={styles.mgrList}>
-            {managers.slice(0, TOP_MANAGERS).map((m) => (
-              <Card key={m.id} as="button" interactive className={styles.mgrRow} onClick={() => openManager(m)}>
-                <div className={styles.mgrMain}>
-                  <div className={styles.mgrNameLine}>
-                    <span className={styles.mgrName}>{m.name || '이름 없음'}</span>
-                    <span className={`${styles.roleBadge} ${m.role === 'admin' ? styles.roleAdmin : styles.roleManager}`}>
-                      {m.role === 'admin' ? '운영자' : '매니저'}
-                    </span>
+          <div className={styles.monthList}>
+            {rowsDesc.map((m) => {
+              const hasUnpaid = m.expectedCount > 0;
+              const hasSettled = m.settledCount > 0;
+              const active = hasUnpaid || hasSettled;
+              return (
+                <button
+                  key={m.month}
+                  type="button"
+                  className={`${styles.monthRow} ${active ? '' : styles.monthRowEmpty}`}
+                  onClick={() => active && setSelectedMonth(m.month)}
+                  disabled={!active}
+                >
+                  <span className={styles.monthRowLabel}>{m.month}월</span>
+                  <div className={styles.monthRowMeta}>
+                    {hasUnpaid ? (
+                      <span className={styles.monthRowUnpaid}>
+                        정산예정 {won(m.expectedTotal)}원 · {m.expectedCount}건
+                      </span>
+                    ) : (
+                      <span className={styles.monthRowNone}>정산예정 없음</span>
+                    )}
+                    {hasSettled && (
+                      <span className={styles.monthRowPaid}>
+                        지급완료 {won(m.settledTotal)}원 · {m.settledCount}건
+                      </span>
+                    )}
                   </div>
-                  <div className={styles.mgrAmounts}>
-                    <span className={styles.mgrUnpaid}>미지급 {won(m.unsettledAmount)}원</span>
-                    <span className={styles.mgrDot}>·</span>
-                    <span className={styles.mgrPaid}>누적지급 {won(m.settledAmount)}원</span>
-                  </div>
-                </div>
-                <ChevronRight size={18} className={styles.mgrChevron} />
-              </Card>
-            ))}
+                  {hasUnpaid && <span className={styles.unpaidBadge}>미지급</span>}
+                  {active && <ChevronRight size={16} className={styles.monthRowChevron} />}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* === 드릴다운: 특정 달의 정산 대상 매니저 목록 === */
+// 전체 매니저를 모아 각자의 월별 요약을 조회한 뒤, 해당 월에 활동(미지급 또는
+// 지급완료)이 있는 매니저만 미지급액 순으로 보여준다. (매니저 수만큼 호출, 8개씩 청크)
+function MonthManagerList({ year, month, onBack }) {
+  const navigate = useNavigate();
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    (async () => {
+      try {
+        // 필터 없이 전체 매니저 — 월별 보드 합계(overview, 전 매니저)와 모집단을 맞춰
+        // 정산 받을 사람이 드릴다운에서 누락되지 않게 한다.
+        const all = await adminService.listAllManagers();
+        const collected = [];
+        const CHUNK = 8;
+        for (let i = 0; i < all.length; i += CHUNK) {
+          if (cancelled) return;
+          const slice = all.slice(i, i + CHUNK);
+          const summaries = await Promise.allSettled(
+            slice.map((mgr) => adminService.getManagerMonthlySummary({ managerId: mgr.id, year })),
+          );
+          summaries.forEach((r, j) => {
+            if (r.status !== 'fulfilled') return;
+            const mgr = slice[j];
+            const item = (r.value?.items || []).find((it) => it.month === month);
+            if (!item) return;
+            const count = item.count || 0;
+            const settledCount = item.settledCount || 0;
+            if (count === 0 && settledCount === 0) return;
+            collected.push({
+              id: mgr.id,
+              name: mgr.name,
+              count,
+              amount: item.amount || 0,
+              settledCount,
+              settledAmount: item.settledAmount || 0,
+            });
+          });
+        }
+        if (cancelled) return;
+        collected.sort((a, b) => (b.amount || 0) - (a.amount || 0));
+        setRows(collected);
+      } catch (err) {
+        if (!cancelled) setError(adminService.getAdminErrorMessage(err, '월별 매니저 정산을 불러오지 못했습니다.'));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [year, month]);
+
+  const openManager = (m) => {
+    const qs = new URLSearchParams({ managerId: m.id, name: m.name || '' });
+    navigate(`/dashboard/admin/settlements?${qs.toString()}`);
+  };
+
+  return (
+    <div className={styles.board}>
+      <button type="button" className={styles.backBtn} onClick={onBack}>
+        <ArrowLeft size={16} /> 월별 현황
+      </button>
+      <div className={styles.drillHead}>
+        <span className={styles.drillTitle}>{year}년 {month}월 정산 대상</span>
+        <span className={styles.drillCaption}>매칭 종료월 기준 · 미지급액 순</span>
+      </div>
+
+      {loading ? (
+        <div className={styles.stateBox}><div className={styles.spinner} /></div>
+      ) : error ? (
+        <div className={styles.stateBox}>
+          <AlertCircle size={18} color="var(--rose-600)" />
+          <span style={{ color: 'var(--rose-600)' }}>{error}</span>
+        </div>
+      ) : rows.length === 0 ? (
+        <EmptyState icon={Users} title="해당 월 정산 내역이 없어요" hint="다른 달을 선택해 보세요." />
+      ) : (
+        <div className={styles.mgrList}>
+          {rows.map((m) => (
+            <Card key={m.id} as="button" interactive className={styles.mgrRow} onClick={() => openManager(m)}>
+              <div className={styles.mgrMain}>
+                <div className={styles.mgrName}>{m.name || '이름 없음'}</div>
+                <div className={styles.mgrAmounts}>
+                  {m.count > 0 && (
+                    <span className={styles.mgrUnpaid}>미지급 {won(m.amount)}원 · {m.count}건</span>
+                  )}
+                  {m.settledCount > 0 && (
+                    <>
+                      {m.count > 0 && <span className={styles.mgrDot}>·</span>}
+                      <span className={styles.mgrPaid}>지급완료 {won(m.settledAmount)}원 · {m.settledCount}건</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <ChevronRight size={18} className={styles.mgrChevron} />
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

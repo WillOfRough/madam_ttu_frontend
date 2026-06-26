@@ -6,7 +6,7 @@
 
 /* === 헤더 === */
 .header {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .titleRow {
@@ -32,56 +32,100 @@
   color: var(--ink-500);
 }
 
-/* === 월 토글 === */
-.monthToggle {
+/* === 탭 바 (정산·지급 / 매니저 정보) === */
+.tabBar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  background: var(--ink-50);
+  border-radius: var(--r-md);
+}
+
+.tabBtn {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: var(--r-sm, 8px);
+  background: transparent;
+  color: var(--ink-500);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tabBtn:hover {
+  color: var(--ink-700);
+}
+
+.tabBtnActive {
+  background: var(--white, #fff);
+  color: var(--ink-900);
+  box-shadow: var(--sh-sm);
+}
+
+/* === 정산·지급 보드 === */
+.boardHead {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.monthBtn {
-  height: 34px;
-  padding: 0 16px;
+.yearStepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.yearBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   border: 1px solid var(--ink-200);
-  border-radius: 999px;
-  background: var(--white);
-  color: var(--ink-500);
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-600);
   cursor: pointer;
-  transition: all 0.15s;
 }
 
-.monthBtn:hover {
+.yearBtn:hover:not(:disabled) {
   background: var(--ink-50);
 }
 
-.monthBtnActive {
-  background: var(--ink-900);
-  border-color: var(--ink-900);
-  color: var(--white);
+.yearBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.monthLabel {
-  margin-left: 4px;
+.yearLabel {
+  min-width: 64px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.boardCaption {
   font-size: 12px;
   font-weight: 500;
   color: var(--ink-400);
 }
 
-/* === KPI 카드 === */
-.kpiGrid {
+/* === 요약 2값 === */
+.summaryRow {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
-.kpiCard {
-  position: relative;
-  padding: 16px 14px;
+.summaryCard {
+  padding: 14px;
   border-radius: var(--r-lg);
   border: 1px solid var(--ink-100);
   background: var(--paper-card);
@@ -89,29 +133,35 @@
   min-width: 0;
 }
 
-.kpiIcon {
+.summaryIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--r-md);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-.tangerine .kpiIcon { background: var(--tangerine-100); color: var(--tangerine-700); }
-.mint .kpiIcon { background: var(--mint-100); color: var(--mint-600); }
-.lilac .kpiIcon { background: var(--lilac-100); color: var(--lilac-600); }
+.summaryExpected .summaryIcon {
+  background: var(--tangerine-100);
+  color: var(--tangerine-700);
+}
 
-.kpiLabel {
+.summarySettled .summaryIcon {
+  background: var(--mint-100);
+  color: var(--mint-600);
+}
+
+.summaryLabel {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-500);
   margin-bottom: 4px;
 }
 
-.kpiAmount {
-  font-size: 20px;
+.summaryValue {
+  font-size: 21px;
   font-weight: 800;
   color: var(--ink-900);
   line-height: 1.15;
@@ -120,15 +170,17 @@
   word-break: break-all;
 }
 
-.tangerine .kpiAmount { color: var(--tangerine-700); }
+.summaryExpected .summaryValue {
+  color: var(--tangerine-700);
+}
 
-.kpiUnit {
+.summaryUnit {
   margin-left: 2px;
   font-size: 12px;
   font-weight: 700;
 }
 
-.kpiCount {
+.summaryCount {
   margin-top: 3px;
   font-size: 12px;
   font-weight: 500;
@@ -136,68 +188,142 @@
   min-height: 16px;
 }
 
-.kpiSkeleton {
-  display: inline-block;
-  width: 60px;
-  height: 18px;
-  border-radius: 6px;
-  background: var(--ink-100);
-  animation: pulse 1.2s ease-in-out infinite;
+/* === 월별 리스트 카드 === */
+.monthCard {
+  composes: card from '../../../components/Card.module.css';
+  padding: 8px 16px 6px;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+.monthCardTitle {
+  padding: 8px 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-700);
 }
 
-@media (max-width: 560px) {
-  .kpiGrid { gap: 8px; }
-  .kpiCard { padding: 14px 12px; }
-  .kpiAmount { font-size: 17px; }
-}
-
-/* === 매니저 섹션 === */
-.section {
-  margin-top: 4px;
-}
-
-.sectionHead {
+.monthList {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--ink-100);
+  cursor: pointer;
+}
+
+.monthRow:first-child {
+  border-top: none;
+}
+
+.monthRow:hover:not(:disabled) {
+  background: var(--ink-50);
+}
+
+.monthRowEmpty {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.monthRowLabel {
+  flex-shrink: 0;
+  width: 44px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink-900);
+}
+
+.monthRowMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.monthRowUnpaid {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tangerine-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.monthRowNone {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
+.monthRowPaid {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.unpaidBadge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tangerine-700);
+  background: var(--tangerine-100);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.monthRowChevron {
+  flex-shrink: 0;
+  color: var(--ink-300);
+}
+
+/* === 드릴다운: 월 → 매니저 === */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 6px 10px 6px 6px;
+  background: none;
+  border: none;
+  border-radius: var(--r-md);
+  color: var(--ink-500);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.backBtn:hover {
+  background: var(--ink-50);
+  color: var(--ink-700);
+}
+
+.drillHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin-bottom: 12px;
 }
 
-.sectionTitle {
-  font-size: 16px;
+.drillTitle {
+  font-size: 17px;
   font-weight: 700;
   color: var(--ink-900);
 }
 
-.sectionMeta {
-  margin-top: 2px;
+.drillCaption {
   font-size: 12px;
+  font-weight: 500;
   color: var(--ink-400);
 }
 
-.linkBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  color: var(--tangerine-700);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.linkBtn:hover {
-  text-decoration: underline;
-}
-
+/* === 매니저 리스트 (드릴다운) === */
 .mgrList {
   display: flex;
   flex-direction: column;
@@ -219,34 +345,11 @@
   min-width: 0;
 }
 
-.mgrNameLine {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-}
-
 .mgrName {
   font-size: 15px;
   font-weight: 600;
   color: var(--ink-900);
-}
-
-.roleBadge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: 999px;
-}
-
-.roleAdmin {
-  background: var(--tangerine-100);
-  color: var(--tangerine-700);
-}
-
-.roleManager {
-  background: var(--ink-100);
-  color: var(--ink-500);
+  margin-bottom: 4px;
 }
 
 .mgrAmounts {
@@ -288,19 +391,6 @@
   font-size: 14px;
 }
 
-.errorBox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  border-radius: var(--r-lg);
-  background: var(--rose-100);
-  color: var(--rose-600);
-  font-size: 13px;
-  font-weight: 500;
-}
-
 .spinner {
   width: 26px;
   height: 26px;
@@ -312,4 +402,8 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@media (max-width: 560px) {
+  .summaryValue { font-size: 18px; }
 }

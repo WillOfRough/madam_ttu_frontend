@@ -21,6 +21,14 @@
   color: var(--ink-500);
 }
 
+/* 탭 안에서 쓰는 가벼운 메타 라인 (총 N명 등) */
+.infoMeta {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-400);
+}
+
 /* === 월별 정산 현황 카드 (단일 강조: 이 달 지급 예정) === */
 .overviewCard {
   composes: card from '../../../components/Card.module.css';
