@@ -36,6 +36,20 @@ const CONSENT_SECTIONS = [
     ],
   },
   {
+    id: 'service',
+    title: '서비스 이용 및 회사 책임 범위 동의',
+    required: true,
+    content: [
+      { label: '서비스 성격', value: '회사는 회원에게 매칭 기회를 제공하는 중개 서비스 제공자이며, 매칭 성사·교제·결혼 등 특정 결과나 상대방과의 관계 성공을 보증하지 않습니다.' },
+      { label: '상대방 정보', value: '회사는 기본적인 본인 확인 외에 상대 회원이 제공한 정보(직업·혼인 여부·재산·경력 등)의 진실성을 보증하지 않으며, 회원에 대한 범죄경력 조회를 수행하지 않습니다. 상대방을 신뢰할지 여부는 회원이 스스로 판단합니다.' },
+      { label: '연락·만남 및 분쟁', value: '회원 간의 연락·만남 및 그 과정·이후에 발생한 분쟁·손해·사고(금전·정신적·신체적 피해 등)는 당사자 간의 문제이며, 회사의 고의 또는 중대한 과실이 없는 한 회사는 이에 대해 책임지지 않습니다. 회원은 만남 시 스스로 안전과 주의를 기울일 책임이 있습니다.' },
+      { label: '서비스 운영', value: '회사는 운영·기술상 필요에 따라 서비스의 전부 또는 일부를 변경·중단할 수 있으며, 천재지변·통신장애·시스템 장애 등 불가항력으로 인한 손해에 대해서는 회사의 고의·중과실이 없는 한 책임지지 않습니다.' },
+      { label: '책임의 범위', value: '회사의 배상책임은 관련 법령이 허용하는 범위에서 통상의 손해로 한정되며, 회사의 고의·중과실이 없는 한 간접·특별·결과적 손해에 대해서는 책임지지 않습니다.' },
+      { label: '준거법', value: '본 서비스 이용에 관한 분쟁은 대한민국 법을 준거법으로 하며, 회사와 회원은 신의성실의 원칙에 따라 원만한 해결을 위해 노력합니다.' },
+      { label: '관련 법령', value: '약관의 규제에 관한 법률 제7조(면책조항의 금지), 민법 제393조(손해배상의 범위)·제390조' },
+    ],
+  },
+  {
     id: 'rights',
     title: '정보주체의 권리 및 동의 거부 안내',
     required: false,
@@ -106,19 +120,19 @@ function ConsentSection({ section, checked, onToggle, expanded, onExpand }) {
 export default function ClientOath() {
   const { token } = useParams();
   const navigate = useNavigate();
-  const [consents, setConsents] = useState({ collect: false, thirdParty: false });
+  const [consents, setConsents] = useState({ collect: false, thirdParty: false, service: false });
   const [oathAgreed, setOathAgreed] = useState(false);
-  const [expanded, setExpanded] = useState({ collect: false, thirdParty: false, rights: false });
+  const [expanded, setExpanded] = useState({ collect: false, thirdParty: false, service: false, rights: false });
 
-  const allRequired = consents.collect && consents.thirdParty && oathAgreed;
-  const checkedCount = [consents.collect, consents.thirdParty, oathAgreed].filter(Boolean).length;
+  const allRequired = consents.collect && consents.thirdParty && consents.service && oathAgreed;
+  const checkedCount = [consents.collect, consents.thirdParty, consents.service, oathAgreed].filter(Boolean).length;
 
   const toggleConsent = (id, val) => setConsents((prev) => ({ ...prev, [id]: val }));
   const toggleExpand = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const handleAgreeAll = () => {
     const next = !allRequired;
-    setConsents({ collect: next, thirdParty: next });
+    setConsents({ collect: next, thirdParty: next, service: next });
     setOathAgreed(next);
   };
 
@@ -200,7 +214,7 @@ export default function ClientOath() {
           </div>
           <span className={styles.agreeAllText}>전체 동의</span>
           <span className={styles.agreeCount} style={{ color: allRequired ? 'var(--mint-600)' : 'var(--ink-400)' }}>
-            {checkedCount}/3
+            {checkedCount}/4
           </span>
         </label>
 
