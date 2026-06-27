@@ -6,6 +6,7 @@ import * as matchService from '../api/matchService';
 import { toast } from '../store/toastStore';
 import StatusBadge from './StatusBadge';
 import ConfirmModal from './ConfirmModal';
+import TextField from './TextField';
 import styles from './MatchFloatingBar.module.css';
 
 export default function MatchFloatingBar() {
@@ -13,6 +14,7 @@ export default function MatchFloatingBar() {
   const { selectedForMatch: selected, toggleSelectForMatch, clearSelectedForMatch } =
     useClientListStore();
   const [showConfirm, setShowConfirm] = useState(false);
+  const [proposerMessage, setProposerMessage] = useState('');
   const [creating, setCreating] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState(null);
   const [pairHistory, setPairHistory] = useState([]);
@@ -107,9 +109,10 @@ export default function MatchFloatingBar() {
     setCreating(true);
     try {
       const [a, b] = selected;
-      const created = await matchService.createMatch({ clientAId: a.id, clientBId: b.id });
+      const created = await matchService.createMatch({ clientAId: a.id, clientBId: b.id, proposerMessage });
       toast.success(`${a.nickname || a.name} ↔ ${b.nickname || b.name} 매칭이 생성되었습니다.`);
       clearSelectedForMatch();
+      setProposerMessage('');
       setShowConfirm(false);
       navigate(created?.matchId ? `/dashboard/matches/${created.matchId}` : '/dashboard/matches');
     } catch (err) {
@@ -226,8 +229,19 @@ export default function MatchFloatingBar() {
           confirmLabel="매칭 생성"
           cancelLabel="돌아가기"
           onConfirm={handleCreateMatch}
-          onCancel={() => setShowConfirm(false)}
-        />
+          onCancel={() => { setShowConfirm(false); setProposerMessage(''); }}
+        >
+          <TextField
+            label={`${selected[0].nickname || selected[0].name}님께 보낼 한마디`}
+            required={false}
+            hint="제안받는 회원에게 발송되는 제안 문자와 프로필 확인 화면 상단에 표시됩니다. (상대방에게는 안 보입니다)"
+            multiline
+            maxLength={100}
+            value={proposerMessage}
+            onChange={setProposerMessage}
+            placeholder="예) 오래 기다리셨죠? 꼭 맞을 분을 찾았어요. 한번 확인해보세요!"
+          />
+        </ConfirmModal>
       )}
     </>
   );

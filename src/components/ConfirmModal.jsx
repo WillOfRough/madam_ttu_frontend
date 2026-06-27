@@ -1,12 +1,13 @@
 import { createPortal } from 'react-dom';
 import styles from './ConfirmModal.module.css';
 
-export default function ConfirmModal({ title, message, confirmLabel = '확인', cancelLabel = '취소', onConfirm, onCancel, danger = false }) {
+export default function ConfirmModal({ title, message, confirmLabel = '확인', cancelLabel = '취소', onConfirm, onCancel, danger = false, children }) {
   return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
+        {children}
         <div className={styles.actions}>
           <button className={styles.cancelBtn} onClick={onCancel}>
             {cancelLabel}
