@@ -2337,6 +2337,7 @@ export async function mockFetch(path, options = {}) {
     const tokenB = randomToken();
     const newMatch = {
       matchId: `match${Date.now()}`, type: body.type || null, status: 'draft', note: body.note || '',
+      proposerMessage: (body.proposerMessage && body.proposerMessage.trim()) || null,
       clientA: { clientId: foundA.id, clientName: foundA.name, clientGender: foundA.gender, managerName: (managerMap[foundA.ownerManagerId] || {}).name || '알 수 없음', role: 'proposer', response: null, respondedAt: null, proposalToken: tokenA },
       clientB: { clientId: foundB.id, clientName: foundB.name, clientGender: foundB.gender, managerName: (managerMap[foundB.ownerManagerId] || {}).name || '알 수 없음', role: 'receiver', response: null, respondedAt: null, proposalToken: tokenB },
       paymentAmounts: { A: paymentAmountA, B: paymentAmountB },
@@ -2746,6 +2747,7 @@ export async function mockFetch(path, options = {}) {
       myRole,
       myResponse,
       matchStatus: m.status,
+      managerMessage: myRole === 'proposer' ? (m.proposerMessage || null) : null,
       counterpart: cp ? {
         nickname: cp.nickname || cp.name,
         gender: cp.gender,

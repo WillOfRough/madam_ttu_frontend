@@ -96,7 +96,7 @@ export default function ProposalProfile() {
   }
   if (!data) return <div className={styles.errorPage}><p>프로필 정보를 찾을 수 없습니다.</p></div>;
 
-  const { myName, myRole, myResponse, matchStatus, counterpart: cp } = data;
+  const { myName, myRole, myResponse, matchStatus, managerMessage, counterpart: cp } = data;
   const responded = myResponse !== 'pending';
 
   // 거절 응답 직후 — 만료 화면 대신 따뜻한 완료 화면 (애프터 피드백 흐름과 동일 톤)
@@ -273,6 +273,14 @@ export default function ProposalProfile() {
         </div>
 
         {respondedBanner}
+
+        {/* 담당 매니저가 전하는 말 (proposer 에게만 노출 — 백엔드가 receiver 엔 null) */}
+        {managerMessage && (
+          <div className={styles.managerMessageBanner}>
+            <span className={styles.managerMessageLabel}>담당 매니저가 전하는 말</span>
+            <p className={styles.managerMessageText}>{managerMessage}</p>
+          </div>
+        )}
 
         {/* Photos */}
         {cp.photoUrls?.length > 0 && (
