@@ -22,33 +22,13 @@
   color: var(--ink-700);
 }
 
-/* === 지급 안내 카드 (계좌 + 복사 + 받을 잔고/누적 지급) === */
-.payoutCard {
-  composes: card from '../../../components/Card.module.css';
-  margin: 12px 16px 0;
-  padding: 14px 16px;
-}
-
-.payoutHead {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.payoutHeadIcon { color: var(--tangerine-600); }
-
-.payoutTitle {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink-900);
-}
-
+/* === 지급 카드: 계좌 + 복사 (MonthStrip 패널 내부) === */
 .payoutAccount {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 12px;
   padding: 10px 12px;
   border-radius: var(--r-md);
   background: var(--ink-50);
@@ -97,6 +77,7 @@
 .copyBtn:hover { background: var(--ink-50); }
 
 .payoutNoAccount {
+  margin-bottom: 12px;
   padding: 10px 12px;
   border-radius: var(--r-md);
   background: var(--ink-50);
@@ -104,36 +85,15 @@
   color: var(--ink-400);
 }
 
-.payoutAmounts {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
+/* 누적 지급완료 푸터 */
+.cumPaidRow {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink-100);
+  font-size: 12.5px;
+  color: var(--ink-500);
 }
-
-.payoutAmtBlock {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.payoutAmtLabel {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--ink-400);
-}
-
-.payoutAmtValue {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--tangerine-700);
-  font-variant-numeric: tabular-nums;
-}
-
-.payoutAmtUnit { margin-left: 2px; font-size: 11px; font-weight: 700; }
-
-.payoutAmtPaid { color: var(--mint-600); }
+.cumPaidRow strong { font-weight: 700; color: var(--mint-600); }
 
 /* === 월별 정산 현황 패널 (SettlementView 상단) === */
 .panelWrap {

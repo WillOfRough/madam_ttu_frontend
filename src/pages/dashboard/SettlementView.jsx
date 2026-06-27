@@ -447,6 +447,17 @@ export default function SettlementView({
     return { count, amount, settledCount, settledAmount };
   }, [isAdminMode, monthDataset]);
 
+  // admin 모드: 선택월 distinct 매칭 수(정산 레코드 수와 구분 — 매칭 1건이 레코드 여러 개)
+  const adminMatchCount = useMemo(() => {
+    if (!isAdminMode) return 0;
+    const ids = new Set();
+    monthDataset.forEach((s) => {
+      if (s.excluded) return;
+      if ((s.status === 'ready_to_settle' || s.status === 'settled') && s.matchId) ids.add(s.matchId);
+    });
+    return ids.size;
+  }, [isAdminMode, monthDataset]);
+
   // 실제 hero 에 표시할 값
   const heroCount         = isAdminMode ? (adminHeroSummary?.count        ?? 0) : (thisMonthSummary.count        || 0);
   const heroAmount        = isAdminMode ? (adminHeroSummary?.amount       ?? 0) : (thisMonthSummary.amount       || 0);
@@ -594,6 +605,7 @@ export default function SettlementView({
             count={heroCount}
             settledAmount={heroSettledAmount}
             settledCount={heroSettledCount}
+            matchCount={adminMatchCount}
             byRole={byRole}
           />
         ) : (
@@ -875,14 +887,16 @@ export default function SettlementView({
 }
 
 /* === Admin 요약 카드 (밝고 컴팩트한 중립 버전 — 다크 HeroCard 대체) === */
-function AdminSummary({ monthLabel, amount, count, settledAmount, settledCount, byRole }) {
+function AdminSummary({ monthLabel, amount, count, settledAmount, settledCount, matchCount, byRole }) {
   const co = byRole?.clientOwner || { expectedAmount: 0, settledAmount: 0 };
   const mm = byRole?.matchmaker  || { expectedAmount: 0, settledAmount: 0 };
   const hasSettled = settledCount > 0 || settledAmount > 0;
 
   return (
     <div className={sv.adminSummary}>
-      <div className={sv.adminSummaryLabel}>{monthLabel} 정산</div>
+      <div className={sv.adminSummaryLabel}>
+        {monthLabel} 정산{matchCount != null ? ` · 매칭 ${matchCount}건` : ''}
+      </div>
       <div className={sv.adminSummaryAmountRow}>
         <span className={amount > 0 ? sv.adminSummaryAmountOn : sv.adminSummaryAmount}>
           {won(amount)}<span className={sv.adminSummaryUnit}>원</span>

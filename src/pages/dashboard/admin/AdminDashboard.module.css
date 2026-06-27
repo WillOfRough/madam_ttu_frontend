@@ -306,10 +306,35 @@
 
 .drillHead {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
 }
+
+.drillHeadText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bulkPayBtn {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--tangerine-500, #ff7a30);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.bulkPayBtn:hover { filter: brightness(1.05); }
+.bulkPayBtn:disabled { opacity: 0.5; cursor: default; }
 
 .drillTitle {
   font-size: 17px;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, Users, Copy, Landmark, Wallet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Users, Copy, Landmark } from 'lucide-react';
 import * as adminService from '../../../api/adminService';
 import { toast } from '../../../store/toastStore';
 import ConfirmModal from '../../../components/ConfirmModal';
@@ -231,23 +231,17 @@ export default function AdminSettlement() {
     <div className={styles.page}>
       <BackBar onBack={() => navigate(-1)} label="뒤로" />
 
-      {/* 지급 안내: 계좌 + 복사 + 받을 잔고/누적 지급 */}
-      <PayoutSummaryCard
-        managerName={managerName}
-        bankName={bankInfo.bankName}
-        bankNumber={bankInfo.bankNumber}
-        unsettled={bankInfo.unsettledAmount ?? expectedTotal}
-        settled={bankInfo.settledAmount}
-        onCopy={handleCopyAccount}
-      />
-
-      {/* 월 선택 + 선택 월 정산 현황 */}
+      {/* 지급 처리 카드: 계좌+복사 · 월 선택 · 선택월 지급예정+[이 달 지급] · 지급할 금액/누적 지급 */}
       <MonthStrip
         year={selectedYear}
         month={selectedMonth}
         monthItems={monthItems}
         loading={monthlyLoading}
-        expectedTotal={expectedTotal}
+        bankName={bankInfo.bankName}
+        bankNumber={bankInfo.bankNumber}
+        unsettled={bankInfo.unsettledAmount ?? expectedTotal}
+        settled={bankInfo.settledAmount}
+        onCopy={handleCopyAccount}
         onStepMonth={stepMonth}
         onStepYear={stepYear}
         onPickMonth={pickMonth}
@@ -287,7 +281,7 @@ export default function AdminSettlement() {
 }
 
 /* === 월 선택 스트립 (스텝퍼 + 달력 팝오버) === */
-function MonthStrip({ year, month, monthItems, loading, expectedTotal, onStepMonth, onStepYear, onPickMonth, onSettle }) {
+function MonthStrip({ year, month, monthItems, loading, unsettled, settled, bankName, bankNumber, onCopy, onStepMonth, onStepYear, onPickMonth, onSettle }) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const sel = monthItems.find((m) => m.month === month) || null;
@@ -302,6 +296,22 @@ function MonthStrip({ year, month, monthItems, loading, expectedTotal, onStepMon
   return (
     <div className={styles.panelWrap}>
       <div className={styles.panel}>
+        {/* 계좌 + 복사 */}
+        {(bankName || bankNumber) ? (
+          <div className={styles.payoutAccount}>
+            <div className={styles.payoutAccountInfo}>
+              <Landmark size={14} className={styles.payoutAccountIcon} />
+              {bankName && <span className={styles.payoutBankName}>{bankName}</span>}
+              <span className={styles.payoutBankNumber}>{bankNumber}</span>
+            </div>
+            <button type="button" className={styles.copyBtn} onClick={onCopy} aria-label="계좌번호 복사">
+              <Copy size={13} /> 복사
+            </button>
+          </div>
+        ) : (
+          <div className={styles.payoutNoAccount}>등록된 계좌 정보가 없어요.</div>
+        )}
+
         <div className={styles.panelHead}>
           {/* 월 스텝퍼 */}
           <div className={styles.monthNav}>
@@ -328,9 +338,9 @@ function MonthStrip({ year, month, monthItems, loading, expectedTotal, onStepMon
           </div>
 
           <div className={styles.balanceBlock}>
-            <span className={styles.balanceLabel}>받을 정산 잔고</span>
+            <span className={styles.balanceLabel}>지급할 금액</span>
             <span className={styles.balanceValue}>
-              {won(expectedTotal)}<span className={styles.balanceUnit}>원</span>
+              {won(unsettled)}<span className={styles.balanceUnit}>원</span>
             </span>
           </div>
 
@@ -412,6 +422,12 @@ function MonthStrip({ year, month, monthItems, loading, expectedTotal, onStepMon
             )}
           </div>
         )}
+
+        {settled != null && (
+          <div className={styles.cumPaidRow}>
+            누적 지급완료 <strong>{won(settled)}원</strong>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -423,50 +439,5 @@ function BackBar({ onBack, label = '뒤로' }) {
       <ChevronLeft size={18} />
       {label}
     </button>
-  );
-}
-
-/* === 지급 안내 카드 (계좌 + 복사 + 받을 잔고/누적 지급) === */
-function PayoutSummaryCard({ managerName, bankName, bankNumber, unsettled, settled, onCopy }) {
-  const hasAccount = !!(bankName || bankNumber);
-  return (
-    <div className={styles.payoutCard}>
-      <div className={styles.payoutHead}>
-        <Wallet size={15} className={styles.payoutHeadIcon} />
-        <span className={styles.payoutTitle}>{managerName || '매니저'} 지급 안내</span>
-      </div>
-
-      {hasAccount ? (
-        <div className={styles.payoutAccount}>
-          <div className={styles.payoutAccountInfo}>
-            <Landmark size={14} className={styles.payoutAccountIcon} />
-            {bankName && <span className={styles.payoutBankName}>{bankName}</span>}
-            <span className={styles.payoutBankNumber}>{bankNumber}</span>
-          </div>
-          <button type="button" className={styles.copyBtn} onClick={onCopy} aria-label="계좌번호 복사">
-            <Copy size={13} /> 복사
-          </button>
-        </div>
-      ) : (
-        <div className={styles.payoutNoAccount}>등록된 계좌 정보가 없어요.</div>
-      )}
-
-      <div className={styles.payoutAmounts}>
-        <div className={styles.payoutAmtBlock}>
-          <span className={styles.payoutAmtLabel}>받을 잔고 · 전체 미지급</span>
-          <span className={styles.payoutAmtValue}>
-            {won(unsettled)}<span className={styles.payoutAmtUnit}>원</span>
-          </span>
-        </div>
-        {settled != null && (
-          <div className={styles.payoutAmtBlock}>
-            <span className={styles.payoutAmtLabel}>누적 지급완료</span>
-            <span className={`${styles.payoutAmtValue} ${styles.payoutAmtPaid}`}>
-              {won(settled)}<span className={styles.payoutAmtUnit}>원</span>
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
   );
 }

@@ -7,6 +7,8 @@ import {
 import * as adminService from '../../../api/adminService';
 import Card from '../../../components/Card';
 import EmptyState from '../../../components/EmptyState';
+import ConfirmModal from '../../../components/ConfirmModal';
+import { toast } from '../../../store/toastStore';
 import { ManagerInfoList } from './AdminManagers';
 import styles from './AdminDashboard.module.css';
 
@@ -198,14 +200,14 @@ function SettlementBoard() {
                   <div className={styles.monthRowMeta}>
                     {hasUnpaid ? (
                       <span className={styles.monthRowUnpaid}>
-                        정산예정 {won(m.expectedTotal)}원 · {m.expectedCount}건
+                        정산예정 {won(m.expectedTotal)}원 · 정산 {m.expectedCount}건
                       </span>
                     ) : (
                       <span className={styles.monthRowNone}>정산예정 없음</span>
                     )}
                     {hasSettled && (
                       <span className={styles.monthRowPaid}>
-                        지급완료 {won(m.settledTotal)}원 · {m.settledCount}건
+                        지급완료 {won(m.settledTotal)}원 · 정산 {m.settledCount}건
                       </span>
                     )}
                   </div>
@@ -229,6 +231,9 @@ function MonthManagerList({ year, month, onBack }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [confirm, setConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -280,7 +285,39 @@ function MonthManagerList({ year, month, onBack }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [year, month]);
+  }, [year, month, refreshKey]);
+
+  const unpaid = useMemo(() => rows.filter((m) => (m.count || 0) > 0), [rows]);
+  const unpaidTotal = useMemo(() => unpaid.reduce((a, m) => a + (m.amount || 0), 0), [unpaid]);
+
+  // 이 달 미지급 매니저 전체에 settle-month 반복 호출(FE 일괄지급, 5개씩). 부분 실패 허용.
+  const handleBulkSettle = async () => {
+    setSubmitting(true);
+    let okCount = 0; let okSettled = 0; let okAmount = 0; let fail = 0;
+    const CHUNK = 5;
+    for (let i = 0; i < unpaid.length; i += CHUNK) {
+      const slice = unpaid.slice(i, i + CHUNK);
+      const results = await Promise.allSettled(
+        slice.map((m) => adminService.settleMonth({ managerId: m.id, year, month })),
+      );
+      results.forEach((r) => {
+        if (r.status === 'fulfilled') {
+          const d = r.value?.data || {};
+          okCount += 1; okSettled += d.settledCount || 0; okAmount += d.settledAmount || 0;
+        } else { fail += 1; }
+      });
+    }
+    setSubmitting(false);
+    setConfirm(false);
+    if (okCount > 0) {
+      toast.success(`${okCount}명 지급 완료 (${okSettled}건 · ${won(okAmount)}원)${fail ? ` · ${fail}명 실패` : ''}`);
+    } else if (fail > 0) {
+      toast.error(`지급 처리에 실패했어요 (${fail}명)`);
+    } else {
+      toast.info('지급할 대상이 없습니다.');
+    }
+    setRefreshKey((k) => k + 1);
+  };
 
   const openManager = (m) => {
     // 선택한 달(year/month)은 쿼리로, 계좌·누적 금액(계좌=PII)은 state 로 전달.
@@ -306,8 +343,20 @@ function MonthManagerList({ year, month, onBack }) {
         <ArrowLeft size={16} /> 월별 현황
       </button>
       <div className={styles.drillHead}>
-        <span className={styles.drillTitle}>{year}년 {month}월 정산 대상</span>
-        <span className={styles.drillCaption}>매칭 종료월 기준 · 미지급액 순</span>
+        <div className={styles.drillHeadText}>
+          <span className={styles.drillTitle}>{year}년 {month}월 정산 대상</span>
+          <span className={styles.drillCaption}>매칭 종료월 기준 · 미지급액 순</span>
+        </div>
+        {!loading && unpaid.length > 0 && (
+          <button
+            type="button"
+            className={styles.bulkPayBtn}
+            onClick={() => setConfirm(true)}
+            disabled={submitting}
+          >
+            이 달 전체 지급 · {unpaid.length}명
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -327,12 +376,12 @@ function MonthManagerList({ year, month, onBack }) {
                 <div className={styles.mgrName}>{m.name || '이름 없음'}</div>
                 <div className={styles.mgrAmounts}>
                   {m.count > 0 && (
-                    <span className={styles.mgrUnpaid}>이 달 미지급 {won(m.amount)}원 · {m.count}건</span>
+                    <span className={styles.mgrUnpaid}>이 달 미지급 {won(m.amount)}원 · 정산 {m.count}건</span>
                   )}
                   {m.settledCount > 0 && (
                     <>
                       {m.count > 0 && <span className={styles.mgrDot}>·</span>}
-                      <span className={styles.mgrPaid}>이 달 지급완료 {won(m.settledAmount)}원 · {m.settledCount}건</span>
+                      <span className={styles.mgrPaid}>이 달 지급완료 {won(m.settledAmount)}원 · 정산 {m.settledCount}건</span>
                     </>
                   )}
                 </div>
@@ -344,6 +393,17 @@ function MonthManagerList({ year, month, onBack }) {
             </Card>
           ))}
         </div>
+      )}
+
+      {confirm && (
+        <ConfirmModal
+          title="이 달 전체 지급"
+          message={`${year}년 ${month}월 미지급 ${unpaid.length}명 · ${won(unpaidTotal)}원을 모두 지급 완료 처리할까요? 되돌릴 수 없습니다.`}
+          confirmLabel={submitting ? '처리 중…' : '전체 지급'}
+          cancelLabel="취소"
+          onConfirm={handleBulkSettle}
+          onCancel={() => !submitting && setConfirm(false)}
+        />
       )}
     </div>
   );
