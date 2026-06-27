@@ -360,6 +360,13 @@
   flex-wrap: wrap;
 }
 
+.mgrTotalUnpaid {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-400);
+}
+
 .mgrUnpaid {
   font-weight: 700;
   color: var(--tangerine-700);

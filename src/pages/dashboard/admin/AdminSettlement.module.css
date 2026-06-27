@@ -22,6 +22,119 @@
   color: var(--ink-700);
 }
 
+/* === 지급 안내 카드 (계좌 + 복사 + 받을 잔고/누적 지급) === */
+.payoutCard {
+  composes: card from '../../../components/Card.module.css';
+  margin: 12px 16px 0;
+  padding: 14px 16px;
+}
+
+.payoutHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.payoutHeadIcon { color: var(--tangerine-600); }
+
+.payoutTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.payoutAccount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--ink-50);
+}
+
+.payoutAccountInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.payoutAccountIcon { color: var(--ink-400); flex-shrink: 0; }
+
+.payoutBankName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-600);
+}
+
+.payoutBankNumber {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--ink-200);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--ink-700);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copyBtn:hover { background: var(--ink-50); }
+
+.payoutNoAccount {
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--ink-50);
+  font-size: 12.5px;
+  color: var(--ink-400);
+}
+
+.payoutAmounts {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.payoutAmtBlock {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.payoutAmtLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-400);
+}
+
+.payoutAmtValue {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tangerine-700);
+  font-variant-numeric: tabular-nums;
+}
+
+.payoutAmtUnit { margin-left: 2px; font-size: 11px; font-weight: 700; }
+
+.payoutAmtPaid { color: var(--mint-600); }
+
 /* === 월별 정산 현황 패널 (SettlementView 상단) === */
 .panelWrap {
   padding: 12px 16px 0; /* SettlementView .content(16px 사이드)와 정렬 */

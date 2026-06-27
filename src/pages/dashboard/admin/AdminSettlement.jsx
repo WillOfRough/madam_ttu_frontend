@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Check, Users } from 'lucide-react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Check, Users, Copy, Landmark, Wallet } from 'lucide-react';
 import * as adminService from '../../../api/adminService';
 import { toast } from '../../../store/toastStore';
 import ConfirmModal from '../../../components/ConfirmModal';
@@ -21,6 +21,28 @@ export default function AdminSettlement() {
   const navigate = useNavigate();
   const managerId   = searchParams.get('managerId') || '';
   const managerName = searchParams.get('name') || '';
+
+  // 목록/드릴다운에서 navigation state 로 넘어온 매니저 계좌·누적 금액.
+  // (계좌번호=PII → URL 쿼리 대신 in-memory state 로 전달)
+  const location = useLocation();
+  const navState = location.state || {};
+  const [bankInfo, setBankInfo] = useState(() => ({
+    bankName: navState.bankName || '',
+    bankNumber: navState.bankNumber || '',
+    unsettledAmount: navState.unsettledAmount,
+    settledAmount: navState.settledAmount,
+  }));
+
+  // 계좌번호 복사
+  const handleCopyAccount = async () => {
+    if (!bankInfo.bankNumber) return;
+    try {
+      await navigator.clipboard.writeText(bankInfo.bankNumber);
+      toast.success('계좌번호를 복사했어요.');
+    } catch {
+      toast.error('복사에 실패했어요. 직접 선택해 복사해 주세요.');
+    }
+  };
 
   // 월별 보드 드릴다운에서 넘어온 year/month 쿼리(있고 유효하면)를 초기 선택 월로,
   // 없으면 이번 달. useState 초기화는 마운트 1회만 → 이후 내부 스텝퍼로 자유 변경.
@@ -77,6 +99,40 @@ export default function AdminSettlement() {
   }, [monthlyData]);
 
   const expectedTotal = monthlyData?.expectedTotal ?? 0;
+
+  // state 없이 진입(새로고침·딥링크)했고 계좌가 없으면 전체 매니저에서 폴백 조회.
+  useEffect(() => {
+    if (!managerId) return undefined;
+    if (navState.bankNumber || navState.bankName) return undefined; // state 로 이미 받음
+    let cancelled = false;
+    adminService.listAllManagers()
+      .then((all) => {
+        if (cancelled) return;
+        const m = all.find((x) => x.id === managerId);
+        if (m) {
+          setBankInfo({
+            bankName: m.bankName || '',
+            bankNumber: m.bankNumber || '',
+            unsettledAmount: m.unsettledAmount,
+            settledAmount: m.settledAmount,
+          });
+        }
+      })
+      .catch(() => { /* 계좌 폴백 실패는 조용히 무시 */ });
+    return () => { cancelled = true; };
+  }, [managerId, navState.bankNumber, navState.bankName]);
+
+  // 미지급 있는 매니저로 들어오면(쿼리 month 없음) 가장 최근 미지급 달로 1회 점프.
+  const autoMonthAppliedRef = useRef(false);
+  useEffect(() => {
+    if (hasQsYM) return;                       // 보드 드릴다운: 받은 달 유지
+    if (autoMonthAppliedRef.current) return;   // 1회만
+    const items = monthlyData?.items;
+    if (!items) return;                        // 로드 전
+    autoMonthAppliedRef.current = true;
+    const unpaidMonths = items.filter((it) => (it.count || 0) > 0).map((it) => it.month);
+    if (unpaidMonths.length) setSelectedMonth(Math.max(...unpaidMonths));
+  }, [hasQsYM, monthlyData]);
 
   // ── 월/연도 이동 핸들러 (미래월 차단) ────────────────────────────
   const stepMonth = useCallback((delta) => {
@@ -174,6 +230,16 @@ export default function AdminSettlement() {
   return (
     <div className={styles.page}>
       <BackBar onBack={() => navigate(-1)} label="뒤로" />
+
+      {/* 지급 안내: 계좌 + 복사 + 받을 잔고/누적 지급 */}
+      <PayoutSummaryCard
+        managerName={managerName}
+        bankName={bankInfo.bankName}
+        bankNumber={bankInfo.bankNumber}
+        unsettled={bankInfo.unsettledAmount ?? expectedTotal}
+        settled={bankInfo.settledAmount}
+        onCopy={handleCopyAccount}
+      />
 
       {/* 월 선택 + 선택 월 정산 현황 */}
       <MonthStrip
@@ -357,5 +423,50 @@ function BackBar({ onBack, label = '뒤로' }) {
       <ChevronLeft size={18} />
       {label}
     </button>
+  );
+}
+
+/* === 지급 안내 카드 (계좌 + 복사 + 받을 잔고/누적 지급) === */
+function PayoutSummaryCard({ managerName, bankName, bankNumber, unsettled, settled, onCopy }) {
+  const hasAccount = !!(bankName || bankNumber);
+  return (
+    <div className={styles.payoutCard}>
+      <div className={styles.payoutHead}>
+        <Wallet size={15} className={styles.payoutHeadIcon} />
+        <span className={styles.payoutTitle}>{managerName || '매니저'} 지급 안내</span>
+      </div>
+
+      {hasAccount ? (
+        <div className={styles.payoutAccount}>
+          <div className={styles.payoutAccountInfo}>
+            <Landmark size={14} className={styles.payoutAccountIcon} />
+            {bankName && <span className={styles.payoutBankName}>{bankName}</span>}
+            <span className={styles.payoutBankNumber}>{bankNumber}</span>
+          </div>
+          <button type="button" className={styles.copyBtn} onClick={onCopy} aria-label="계좌번호 복사">
+            <Copy size={13} /> 복사
+          </button>
+        </div>
+      ) : (
+        <div className={styles.payoutNoAccount}>등록된 계좌 정보가 없어요.</div>
+      )}
+
+      <div className={styles.payoutAmounts}>
+        <div className={styles.payoutAmtBlock}>
+          <span className={styles.payoutAmtLabel}>받을 잔고 · 전체 미지급</span>
+          <span className={styles.payoutAmtValue}>
+            {won(unsettled)}<span className={styles.payoutAmtUnit}>원</span>
+          </span>
+        </div>
+        {settled != null && (
+          <div className={styles.payoutAmtBlock}>
+            <span className={styles.payoutAmtLabel}>누적 지급완료</span>
+            <span className={`${styles.payoutAmtValue} ${styles.payoutAmtPaid}`}>
+              {won(settled)}<span className={styles.payoutAmtUnit}>원</span>
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

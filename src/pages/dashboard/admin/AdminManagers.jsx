@@ -82,7 +82,15 @@ export function ManagerInfoList() {
 
   const openManager = (m) => {
     const qs = new URLSearchParams({ managerId: m.id, name: m.name || '' });
-    navigate(`/dashboard/admin/settlements?${qs.toString()}`);
+    // 계좌·누적 금액은 state 로 전달(계좌=PII → URL 미사용). month 미전달 → 상세는 미지급 최근 달로 진입.
+    navigate(`/dashboard/admin/settlements?${qs.toString()}`, {
+      state: {
+        bankName: m.bankName,
+        bankNumber: m.bankNumber,
+        unsettledAmount: m.unsettledAmount,
+        settledAmount: m.settledAmount,
+      },
+    });
   };
 
   const renderBody = () => {
@@ -142,7 +150,7 @@ export function ManagerInfoList() {
                 {/* 정산 상태: 미지급(주) + 누적지급(부) */}
                 <div className={styles.amountBlock}>
                   <span className={`${styles.amtUnpaid} ${unpaid ? styles.amtUnpaidOn : ''}`}>
-                    미지급 <strong>{won(m.unsettledAmount)}</strong>원
+                    총 미지급 <strong>{won(m.unsettledAmount)}</strong>원
                   </span>
                   <span className={styles.amtPaid}>누적 지급 {won(m.settledAmount)}원</span>
                 </div>

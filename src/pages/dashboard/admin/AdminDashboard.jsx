@@ -262,6 +262,11 @@ function MonthManagerList({ year, month, onBack }) {
               amount: item.amount || 0,
               settledCount,
               settledAmount: item.settledAmount || 0,
+              // 매니저 계좌·전기간 누적(상세 PayoutSummaryCard·라벨 정합용)
+              bankName: mgr.bankName || '',
+              bankNumber: mgr.bankNumber || '',
+              unsettledTotal: mgr.unsettledAmount || 0,
+              settledTotal: mgr.settledAmount || 0,
             });
           });
         }
@@ -278,14 +283,21 @@ function MonthManagerList({ year, month, onBack }) {
   }, [year, month]);
 
   const openManager = (m) => {
-    // 선택한 달(year/month)을 함께 넘겨 정산 상세가 그 달로 열리게 한다.
+    // 선택한 달(year/month)은 쿼리로, 계좌·누적 금액(계좌=PII)은 state 로 전달.
     const qs = new URLSearchParams({
       managerId: m.id,
       name: m.name || '',
       year: String(year),
       month: String(month),
     });
-    navigate(`/dashboard/admin/settlements?${qs.toString()}`);
+    navigate(`/dashboard/admin/settlements?${qs.toString()}`, {
+      state: {
+        bankName: m.bankName,
+        bankNumber: m.bankNumber,
+        unsettledAmount: m.unsettledTotal,
+        settledAmount: m.settledTotal,
+      },
+    });
   };
 
   return (
@@ -315,15 +327,18 @@ function MonthManagerList({ year, month, onBack }) {
                 <div className={styles.mgrName}>{m.name || '이름 없음'}</div>
                 <div className={styles.mgrAmounts}>
                   {m.count > 0 && (
-                    <span className={styles.mgrUnpaid}>미지급 {won(m.amount)}원 · {m.count}건</span>
+                    <span className={styles.mgrUnpaid}>이 달 미지급 {won(m.amount)}원 · {m.count}건</span>
                   )}
                   {m.settledCount > 0 && (
                     <>
                       {m.count > 0 && <span className={styles.mgrDot}>·</span>}
-                      <span className={styles.mgrPaid}>지급완료 {won(m.settledAmount)}원 · {m.settledCount}건</span>
+                      <span className={styles.mgrPaid}>이 달 지급완료 {won(m.settledAmount)}원 · {m.settledCount}건</span>
                     </>
                   )}
                 </div>
+                {m.unsettledTotal > 0 && (
+                  <div className={styles.mgrTotalUnpaid}>전체 미지급 {won(m.unsettledTotal)}원</div>
+                )}
               </div>
               <ChevronRight size={18} className={styles.mgrChevron} />
             </Card>
