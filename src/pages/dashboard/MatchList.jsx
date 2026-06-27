@@ -16,6 +16,7 @@ import { SkeletonTable } from '../../components/Skeleton';
 import { toast } from '../../store/toastStore';
 import { scorePair, topChips } from './matchScore';
 import EmptyState from '../../components/EmptyState';
+import TextField from '../../components/TextField';
 import styles from './MatchList.module.css';
 
 /* ─── Stage config ─── */
@@ -845,6 +846,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
   const [clientA,        setClientA]        = useState(null);
   const [clientB,        setClientB]        = useState(null);
   const [note,           setNote]           = useState('');
+  const [proposerMessage, setProposerMessage] = useState('');
   const [searchQuery,    setSearchQuery]    = useState('');
   const [searchResults,  setSearchResults]  = useState([]);
   const [submitting,     setSubmitting]     = useState(false);
@@ -1069,6 +1071,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
         clientAId: clientA.id,
         clientBId: clientB.id,
         note,
+        proposerMessage,
         paymentAmountA,
         paymentAmountB,
       });
@@ -1438,13 +1441,27 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 />
               </div>
 
-              {/* ── Note ── */}
+              {/* ── Proposer message (회원에게 노출) ── */}
+              <div className={styles.wizNoteWrap}>
+                <TextField
+                  label={`${nameA}님께 보낼 한마디`}
+                  required={false}
+                  hint="제안받는 회원에게 발송되는 제안 문자와 프로필 확인 화면 상단에 표시됩니다. (상대방에게는 안 보입니다)"
+                  multiline
+                  maxLength={100}
+                  value={proposerMessage}
+                  onChange={setProposerMessage}
+                  placeholder="예) 오래 기다리셨죠? 꼭 맞을 분을 찾았어요. 한번 확인해보세요!"
+                />
+              </div>
+
+              {/* ── Note (내부 메모 — 회원에게 안 보임) ── */}
               <div className={styles.wizNoteWrap}>
                 <textarea
                   className={styles.wizNoteInput}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="이 매칭에 대한 메모를 남겨보세요"
+                  placeholder="내부 메모 (회원에게 보이지 않아요)"
                   aria-label="매칭 메모"
                 />
               </div>
