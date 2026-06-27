@@ -2,6 +2,22 @@
   position: relative;
 }
 
+/* 데스크탑: 정산 상세를 달력 폭(640px)에 맞춘 단일 컬럼으로 정렬.
+   (달력 카드가 640px 로 제한돼 다른 카드보다 좁아 보이던 문제 해소 —
+    컬럼 자체를 640px 로 맞춰 패널·요약·달력·내역 폭을 일치시킨다) */
+@media (min-width: 769px) {
+  .page {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* 패널 좌우 패딩 제거 → SettlementView 카드(데스크탑 content padding:0)와 폭 정렬 */
+  .panelWrap {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .backBar {
   display: inline-flex;
   align-items: center;
