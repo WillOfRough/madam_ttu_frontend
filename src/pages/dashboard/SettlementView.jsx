@@ -642,6 +642,7 @@ export default function SettlementView({
                 monthLabel={`${activeMonth}월`}
                 year={activeYear}
                 month={activeMonth}
+                fluid={isAdminMode}
                 selectedDay={selectedDay}
                 onSelectDay={(d) => setSelectedDay(d)}
               />
@@ -653,6 +654,7 @@ export default function SettlementView({
             monthLabel={`${activeMonth}월`}
             year={activeYear}
             month={activeMonth}
+            fluid={isAdminMode}
             selectedDay={isAdminMode ? selectedDay : (period === 'this' ? selectedDay : null)}
             onSelectDay={(d) => {
               if (!isAdminMode && period !== 'this') setPeriod('this');
@@ -1006,7 +1008,7 @@ function HeroCard({ monthLabel, accrued, count, settledAmount, settledCount, byR
 }
 
 /* === 매칭 종료 달력 카드 === */
-function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay }) {
+function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay, fluid }) {
   const firstDow = new Date(year, month - 1, 1).getDay(); // 0=일
   const totalDays = data.length;
   const totalCells = Math.ceil((firstDow + totalDays) / 7) * 7;
@@ -1018,7 +1020,7 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
   });
 
   return (
-    <div className={styles.calendarCard}>
+    <div className={`${styles.calendarCard} ${fluid ? styles.calendarCardFluid : ''}`}>
       <div className={styles.calendarHeader}>
         <div>
           <div className={styles.calendarTitle}>{monthLabel} 매칭 달력</div>

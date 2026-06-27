@@ -1034,6 +1034,11 @@
     max-width: 640px;
   }
 
+  /* admin 정산 상세: 달력이 컬럼 폭을 채워 다른 카드와 폭 일치 */
+  .calendarCardFluid {
+    max-width: none;
+  }
+
   /* Transaction list: constrained for readability */
   .txList {
     max-width: 100%;
