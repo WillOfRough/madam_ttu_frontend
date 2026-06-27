@@ -1447,7 +1447,7 @@ function CreateMatchModal({ onClose, onCreated, initialClientAId, initialClientB
                 <TextField
                   label={`${nameA}님께 보낼 한마디`}
                   required={false}
-                  hint="제안받는 회원에게 발송되는 제안 문자와 프로필 확인 화면 상단에 표시됩니다. (상대방에게는 안 보입니다)"
+                  hint={`매칭 성사율을 높이고 싶다면 한마디를 남겨보세요. 제안 문자와 프로필 확인 화면 상단에 표시돼요. (${nameB}님에게는 보이지 않아요)`}
                   multiline
                   maxLength={100}
                   value={proposerMessage}
