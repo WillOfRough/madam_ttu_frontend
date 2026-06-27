@@ -4,16 +4,8 @@ import { Lock } from 'lucide-react';
 import * as matchService from '../../api/matchService';
 import ConfirmModal from './ConfirmModal';
 import { birthYearLabelFromDate } from '../../utils/age';
+import { PROPOSAL_OATH_ITEMS as OATH_ITEMS } from '../../data/proposalOath';
 import styles from './Proposal.module.css';
-
-const OATH_ITEMS = [
-  '프로필 정보를 캡처·녹화·저장·인쇄하거나 SNS·메신저·단체방에 공유하지 않겠습니다.',
-  '사진·연락처·직장·거주지 등 개인정보를 외부에 노출하거나 신원 검색·조회에 사용하지 않겠습니다.',
-  '본인 외 제3자와 함께 열람하거나 대신 의견을 구하지 않겠습니다.',
-  '매칭 진행 외 목적(영업·홍보·사적 연락 시도 등)으로 정보를 사용하지 않겠습니다.',
-  '상대방을 존중하며 비방·차별·성희롱 등 부적절한 언행을 하지 않겠습니다.',
-  '위반 시 서비스 이용이 영구 제한될 수 있으며, 관련 법령에 따라 민·형사상 책임이 따를 수 있음을 이해합니다.',
-];
 
 export default function ProposalProfile() {
   const { token } = useParams();
