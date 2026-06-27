@@ -7,6 +7,7 @@ export default function TextField({
   onChange,
   placeholder = '',
   multiline = false,
+  compact = false,
   maxLength,
   type = 'text',
   required,
@@ -28,13 +29,13 @@ export default function TextField({
       )}
       {hint && <p className={styles.hint}>{hint}</p>}
       <Component
-        className={`${styles.input} ${multiline ? styles.textarea : ''} ${error ? styles.inputError : ''}`}
+        className={`${styles.input} ${multiline ? styles.textarea : ''} ${multiline && compact ? styles.textareaCompact : ''} ${error ? styles.inputError : ''}`}
         type={multiline ? undefined : type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
-        rows={multiline ? 4 : undefined}
+        rows={multiline ? (compact ? 2 : 4) : undefined}
       />
       {error && <span className={styles.errorText}>{error}</span>}
       {maxLength && !error && (

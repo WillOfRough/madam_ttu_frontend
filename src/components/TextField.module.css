@@ -80,6 +80,10 @@
   line-height: 1.7;
 }
 
+.textareaCompact {
+  min-height: 64px;
+}
+
 .counter {
   text-align: right;
   font-size: 0.72rem;
