@@ -525,43 +525,19 @@ export default function Connections() {
             onShare={handleAboutShare}
           />
 
-          {/* Dark hero invite card */}
-          <div className={styles.heroInviteCard}>
-            <p className={styles.heroInviteCaption}>INVITE · 링크 한 번이면 충분해요</p>
-            <h2 className={styles.heroInviteTitle}>매니저를 네트워크에<br />초대하기</h2>
-            <p className={styles.heroInviteDesc}>
-              링크를 전달받은 매니저가 수락하면 자동으로 연결됩니다. 라벨로 용도를 구분해보세요.
-            </p>
+          {/* Compact invite CTA */}
+          <div className={styles.inviteCtaRow}>
             <button
-              className={styles.heroInviteCta}
-              onClick={() => setShowInviteForm((v) => !v)}
+              className={styles.inviteCtaBtn}
+              onClick={handleCreateInvite}
             >
-              <Link2 size={14} strokeWidth={2} />
-              초대링크 생성
+              <div className={styles.inviteCtaHeader}>
+                <Link2 size={14} strokeWidth={2} />
+                <span>초대 링크 생성</span>
+              </div>
+              <span className={styles.inviteCtaSub}>링크를 전달하면 자동으로 네트워크가 연결돼요</span>
             </button>
           </div>
-
-          {/* Invite form (within manager-invites tab) */}
-          {showInviteForm && (
-            <div className={styles.inviteFormBox}>
-              <p className={styles.inviteFormTitle}>초대 링크 생성</p>
-              <div className={styles.inviteFormRow}>
-                <input
-                  className={styles.inviteFormInput}
-                  value={inviteLabel}
-                  onChange={(e) => setInviteLabel(e.target.value.slice(0, 50))}
-                  placeholder="라벨 (선택, 예: 홍길동 소개용)"
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreateInvite()}
-                />
-                <button
-                  className={styles.createBtn}
-                  onClick={handleCreateInvite}
-                >
-                  생성
-                </button>
-              </div>
-            </div>
-          )}
 
           {inviteUrl && (
             <div className={styles.inviteBox}>
