@@ -240,6 +240,17 @@
   color: var(--ink-400);
 }
 
+/* 운영자(role==='admin') 구분 배지 — 목록엔 포함하되 시각적으로 구분 */
+.roleAdminBadge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--tangerine-100);
+  color: var(--tangerine-700);
+}
+
 /* 연락처 나열 */
 .contact {
   display: flex;

@@ -130,6 +130,7 @@ export function ManagerInfoList() {
               <div className={styles.rowMain}>
                 <div className={styles.rowTopLine}>
                   <span className={styles.rowName}>{m.name || '이름 없음'}</span>
+                  {m.role === 'admin' && <span className={styles.roleAdminBadge}>운영자</span>}
                   {m.nickname && <span className={styles.rowNickname}>@{m.nickname}</span>}
                 </div>
 
