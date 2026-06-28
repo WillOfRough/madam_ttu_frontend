@@ -241,10 +241,9 @@ function MonthManagerList({ year, month, onBack }) {
     setError(null);
     (async () => {
       try {
-        // 매니저만 — 관리자/운영자(role==='admin')는 정산 대상이 아니므로 제외.
-        // (서버 role 필터 + 클라이언트 가드 이중 적용)
-        const all = (await adminService.listAllManagers({ role: 'manager' }))
-          .filter((m) => m.role !== 'admin');
+        // role 구분 없이 전체 계정 — 정산-지급 보드 합계(overview)와 모집단을 일치시켜
+        // '정산-지급엔 미지급 있는데 목록엔 0' 같은 불일치를 막는다.
+        const all = await adminService.listAllManagers();
         const collected = [];
         const CHUNK = 8;
         for (let i = 0; i < all.length; i += CHUNK) {

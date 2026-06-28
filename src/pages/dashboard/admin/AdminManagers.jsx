@@ -52,11 +52,11 @@ export function ManagerInfoList() {
     setLoading(true);
     setError(null);
     adminService
-      .listManagers({ search: search || undefined, role: 'manager', status: 'active', page, size: PAGE_SIZE })
+      .listManagers({ search: search || undefined, status: 'active', page, size: PAGE_SIZE })
       .then((res) => {
         if (cancelled) return;
-        // 관리자/운영자(role==='admin') 제외 — 매니저 정보 목록엔 매니저만
-        setManagers((res?.data || []).filter((m) => m.role !== 'admin'));
+        // role 구분 없이 전체(관리자·매니저) 표시
+        setManagers(res?.data || []);
         setPagination(res?.pagination || { page: 0, total: 0, totalPages: 1 });
       })
       .catch((err) => {
