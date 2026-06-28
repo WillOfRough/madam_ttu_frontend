@@ -1034,16 +1034,10 @@
     max-width: 640px;
   }
 
-  /* 매니저 정산 페이지: 달력을 Hero·정산내역과 같은 풀폭으로 맞춘다.
-     단, 셀은 정사각(1:1) 대신 높이를 고정해 풀폭에서도 세로로 과하게
-     커지지 않게 한다(매칭 종료일 확인용 컴팩트 그리드). */
-  .calendarCardWide .calendarCell,
-  .calendarCardWide .calendarCellEmpty {
-    aspect-ratio: auto;
-    height: 58px;
-  }
+  /* 매니저 정산 페이지: 정사각(1:1) 셀을 유지하면서 기본(640)보다 키운다.
+     풀폭으로 두면 셀이 ~160px 정사각이 돼 세로로 과커지므로 폭은 제한. */
   .calendarCardWide {
-    max-width: none;
+    max-width: 720px;
   }
 
   /* admin 정산 상세: 달력이 컬럼 폭을 채워 다른 카드와 폭 일치 */
