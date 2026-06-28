@@ -11,12 +11,9 @@ import {
   ChevronRight,
   Shield,
   Sparkles,
-  AlertTriangle,
-  ArrowUpRight,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useManagerStore from '../../store/managerStore';
-import useManagerInviteStore from '../../store/managerInviteStore';
 import { changePassword } from '../../api/authService';
 import { getApiErrorMessage } from '../../api/config';
 import { toast } from '../../store/toastStore';
@@ -41,8 +38,6 @@ export default function Settings() {
   const info = useManagerStore((s) => s.info);
   const fetchInfo = useManagerStore((s) => s.fetchInfo);
   const updateInfo = useManagerStore((s) => s.updateInfo);
-  const quota = useManagerInviteStore((s) => s.quota);
-  const fetchInvites = useManagerInviteStore((s) => s.fetchInvites);
   const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
@@ -59,8 +54,7 @@ export default function Settings() {
 
   useEffect(() => {
     fetchInfo();
-    fetchInvites({ page: 1, limit: 1 });
-  }, [fetchInfo, fetchInvites]);
+  }, [fetchInfo]);
 
   const handleStartEdit = () => {
     setForm({
@@ -134,12 +128,6 @@ export default function Settings() {
   // ── Display values ──
   const displayName = info?.name || name || '';
   const initial = displayName ? displayName[0] : '?';
-  const isUnlimited = quota?.limit === null;
-  const quotaLimit = isUnlimited ? null : (quota?.limit ?? 3);
-  const quotaRemaining = quota?.remaining ?? (isUnlimited ? null : 1);
-  const quotaUsed = quota?.used ?? (isUnlimited ? 0 : (quotaLimit - (quotaRemaining ?? 0)));
-  const usedRatio = !isUnlimited && quotaLimit > 0 ? Math.min(100, (quotaUsed / quotaLimit) * 100) : 0;
-  const isScarce = !isUnlimited && (quotaRemaining ?? 0) <= 1;
 
   return (
     <div className={styles.page}>
@@ -174,61 +162,6 @@ export default function Settings() {
                 )}
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Scarcity / invite quota ─────────────────────────────────── */}
-        <section className={`${styles.card} ${styles.scarcityCard}`}>
-          <div className={styles.scarcityHeader}>
-            <span className={styles.scarcityLabel}>나의 초대 권한</span>
-            <span className={styles.scarcityIconWrap} aria-hidden="true">
-              {isUnlimited ? <Sparkles size={13} strokeWidth={2.5} /> : <AlertTriangle size={13} strokeWidth={2.5} />}
-            </span>
-          </div>
-          <div className={styles.scarcityCount}>
-            {isUnlimited ? (
-              <span className={styles.scarcityCountNum}>무제한</span>
-            ) : (
-              <>
-                <span className={styles.scarcityCountNum}>{quotaRemaining}</span>
-                <span className={styles.scarcityCountDenom}>/ {quotaLimit} 장</span>
-              </>
-            )}
-          </div>
-          <p className={styles.scarcityCaption}>
-            {isUnlimited ? (
-              <>
-                관리자 계정은 초대권을 <strong>무제한</strong>으로 사용할 수 있습니다.
-              </>
-            ) : isScarce ? (
-              <>
-                현재 사용 가능한 초대권이 <strong>{quotaRemaining}장</strong>뿐입니다. 신중하게 사용하세요.
-              </>
-            ) : (
-              <>
-                남은 초대권 <strong>{quotaRemaining}장</strong>. 적절한 시점에 사용하세요.
-              </>
-            )}
-          </p>
-          {!isUnlimited && (
-            <div className={styles.scarcityBar}>
-              <div
-                className={styles.scarcityBarFill}
-                style={{ width: `${usedRatio}%` }}
-              />
-            </div>
-          )}
-          <div className={styles.scarcityFooter}>
-            <span>
-              {isUnlimited ? `사용 ${quotaUsed} · 잔여 무제한` : `사용 ${quotaUsed} · 잔여 ${quotaRemaining}`}
-            </span>
-            <button
-              type="button"
-              className={styles.scarcityLink}
-              onClick={() => navigate('/dashboard/invites')}
-            >
-              초대 관리 <ArrowUpRight size={12} strokeWidth={2.5} />
-            </button>
           </div>
         </section>
 
