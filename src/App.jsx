@@ -121,6 +121,7 @@ export default function App() {
         <Route path="/signup/oath" element={<Navigate to="/login" replace />} />
         <Route path="/signup" element={<Navigate to="/login" replace />} />
         <Route path="/register/:token" element={<RegisterManager />} />
+        <Route path="/register" element={<RegisterManager />} />
         <Route path="/connect/:token" element={<ConnectManager />} />
         <Route path="/invite/:token" element={<InviteValidation />} />
         <Route path="/apply/intro/:token" element={<ServiceIntro />} />
