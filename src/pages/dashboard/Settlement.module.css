@@ -1027,11 +1027,20 @@
     align-items: start;
   }
 
-  /* Calendar card: 매칭 종료일 확인용 — 풀폭이 필요 없어 폭을 좁게 제한한다.
-     모바일(~58px 정사각)보다 크되 셀이 거대해지지 않게. (셀 약 66px 정사각) */
+  /* Calendar card: 데스크탑 전용 크기. 풀폭(1160px)까지 부풀지 않도록 폭 제한.
+     (공개 Proposal 캘린더 등 비-매니저 사용처용 기본값) */
   .calendarCard {
-    padding: 16px 18px;
-    max-width: 520px;
+    padding: 18px 20px;
+    max-width: 640px;
+  }
+
+  /* 매니저 정산 페이지: 정사각(1:1) 셀을 유지하면서 기본(640)보다 키운다.
+     풀폭으로 두면 셀이 ~160px 정사각이 돼 세로로 과커지므로 폭은 제한.
+     풀폭 콘텐츠 안에서 가운데 정렬해 Hero 아래 균형 있게 배치. */
+  .calendarCardWide {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* admin 정산 상세: 달력이 컬럼 폭을 채워 다른 카드와 폭 일치 */

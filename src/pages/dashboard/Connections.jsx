@@ -58,7 +58,7 @@ export default function Connections() {
   const managerInviteQuota = useAuthStore((s) => s.managerInviteQuota);
   const {
     connections, receivedRequests, sentRequests, isLoading,
-    fetchConnections, fetchRequests, createInvite, disconnect,
+    fetchConnections, fetchRequests, disconnect,
     sendRequest, acceptRequest, rejectRequest,
   } = useConnectionStore();
   const {
@@ -78,7 +78,6 @@ export default function Connections() {
   const [showDesc, setShowDesc] = useState(() => localStorage.getItem('hideConnectionDesc') !== '1');
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [inviteLabel, setInviteLabel] = useState('');
-  const [creatingInvite, setCreatingInvite] = useState(false);
   const [copiedInviteId, setCopiedInviteId] = useState(null);
   const [revokeTarget, setRevokeTarget] = useState(null);
   const [aboutCopied, setAboutCopied] = useState(false);
@@ -110,20 +109,14 @@ export default function Connections() {
     }
   }, [tab, statusFilter, fetchInvites]);
 
-  const handleCreateInvite = async () => {
-    setCreatingInvite(true);
-    try {
-      const result = await createInvite({ expiresInHours: 48, label: inviteLabel.trim() || undefined });
-      const token = result.token || result.id;
-      setInviteUrl(`${window.location.origin}/connect/${token}`);
-      setCopied(false);
-      setShowInviteForm(false);
-      setInviteLabel('');
-      toast.success('네트워크 초대 링크가 생성되었습니다.');
-    } catch (err) {
-      toast.error(err.message || '초대 링크 생성에 실패했습니다.');
-    }
-    setCreatingInvite(false);
+  const handleCreateInvite = () => {
+    // 백엔드 초대 API 없이 프론트에서 매니저 가입 URL을 직접 만들어 공유한다.
+    // 매니저 가입은 토큰 없이도 동작하므로, 발급 제한·만료가 없는 고정 링크다.
+    setInviteUrl(`${window.location.origin}/register`);
+    setCopied(false);
+    setShowInviteForm(false);
+    setInviteLabel('');
+    toast.success('매니저 가입 링크가 준비되었습니다.');
   };
 
   const handleCopy = () => {
@@ -352,9 +345,8 @@ export default function Connections() {
                 <button
                   className={styles.createBtn}
                   onClick={handleCreateInvite}
-                  disabled={creatingInvite}
                 >
-                  {creatingInvite ? '생성 중…' : '생성'}
+                  생성
                 </button>
               </div>
             </div>
@@ -619,9 +611,8 @@ export default function Connections() {
                 <button
                   className={styles.createBtn}
                   onClick={handleCreateInvite}
-                  disabled={creatingInvite}
                 >
-                  {creatingInvite ? '생성 중…' : '생성'}
+                  생성
                 </button>
               </div>
             </div>
