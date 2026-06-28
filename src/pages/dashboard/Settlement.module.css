@@ -1010,13 +1010,13 @@
     padding: 0;
   }
 
-  /* Hero card: full width, more breathing room */
+  /* Hero card: keep compact — full width but not oversized */
   .heroCard {
-    padding: 22px 26px;
+    padding: 18px 22px;
   }
 
   .heroAmount {
-    font-size: 44px;
+    font-size: 32px;
   }
 
   /* Two-column layout: chart left, next payout right */
@@ -1027,11 +1027,11 @@
     align-items: start;
   }
 
-  /* Calendar card: 데스크탑 전용 크기. 모바일(~58px 정사각)보다 크되,
-     풀폭(1160px)까지 부풀지 않도록 폭을 제한한다. (셀 약 84px 정사각) */
+  /* Calendar card: 매칭 종료일 확인용 — 풀폭이 필요 없어 폭을 좁게 제한한다.
+     모바일(~58px 정사각)보다 크되 셀이 거대해지지 않게. (셀 약 66px 정사각) */
   .calendarCard {
-    padding: 18px 20px;
-    max-width: 640px;
+    padding: 16px 18px;
+    max-width: 520px;
   }
 
   /* admin 정산 상세: 달력이 컬럼 폭을 채워 다른 카드와 폭 일치 */
