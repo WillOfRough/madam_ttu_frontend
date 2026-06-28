@@ -241,9 +241,10 @@ function MonthManagerList({ year, month, onBack }) {
     setError(null);
     (async () => {
       try {
-        // 필터 없이 전체 매니저 — 월별 보드 합계(overview, 전 매니저)와 모집단을 맞춰
-        // 정산 받을 사람이 드릴다운에서 누락되지 않게 한다.
-        const all = await adminService.listAllManagers();
+        // 매니저만 — 관리자/운영자(role==='admin')는 정산 대상이 아니므로 제외.
+        // (서버 role 필터 + 클라이언트 가드 이중 적용)
+        const all = (await adminService.listAllManagers({ role: 'manager' }))
+          .filter((m) => m.role !== 'admin');
         const collected = [];
         const CHUNK = 8;
         for (let i = 0; i < all.length; i += CHUNK) {

@@ -55,7 +55,8 @@ export function ManagerInfoList() {
       .listManagers({ search: search || undefined, role: 'manager', status: 'active', page, size: PAGE_SIZE })
       .then((res) => {
         if (cancelled) return;
-        setManagers(res?.data || []);
+        // 관리자/운영자(role==='admin') 제외 — 매니저 정보 목록엔 매니저만
+        setManagers((res?.data || []).filter((m) => m.role !== 'admin'));
         setPagination(res?.pagination || { page: 0, total: 0, totalPages: 1 });
       })
       .catch((err) => {
