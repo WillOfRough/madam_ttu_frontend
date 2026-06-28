@@ -357,7 +357,7 @@ export default function Settlement() {
         </button>
       </div>
 
-      <div className={styles.content}>
+      <div className={`${styles.content} ${styles.contentNarrow}`}>
         {/* === Hero 카드 === */}
         <HeroCard
           monthLabel={getCurrentMonthLabel()}

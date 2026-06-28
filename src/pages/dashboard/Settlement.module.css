@@ -1010,6 +1010,19 @@
     padding: 0;
   }
 
+  /* 매니저 정산 페이지: Hero·달력·내역을 한 폭으로 정렬한 컴팩트 컬럼.
+     (admin SettlementView 는 자체 .page 래퍼라 영향 없음) */
+  .contentNarrow {
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* 컬럼 안에서 달력은 폭을 채워 위 Hero·아래 내역과 width 를 일치시킨다 */
+  .contentNarrow .calendarCard {
+    max-width: none;
+  }
+
   /* Hero card: keep compact — full width but not oversized */
   .heroCard {
     padding: 18px 22px;
@@ -1027,11 +1040,11 @@
     align-items: start;
   }
 
-  /* Calendar card: 매칭 종료일 확인용 — 풀폭이 필요 없어 폭을 좁게 제한한다.
-     모바일(~58px 정사각)보다 크되 셀이 거대해지지 않게. (셀 약 66px 정사각) */
+  /* Calendar card: 데스크탑 전용 크기. 풀폭(1160px)까지 부풀지 않도록 폭 제한.
+     매니저 정산 페이지는 .contentNarrow 가 폭을 다시 잡는다(아래 참조). */
   .calendarCard {
-    padding: 16px 18px;
-    max-width: 520px;
+    padding: 18px 20px;
+    max-width: 640px;
   }
 
   /* admin 정산 상세: 달력이 컬럼 폭을 채워 다른 카드와 폭 일치 */
