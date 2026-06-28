@@ -357,7 +357,7 @@ export default function Settlement() {
         </button>
       </div>
 
-      <div className={`${styles.content} ${styles.contentNarrow}`}>
+      <div className={styles.content}>
         {/* === Hero 카드 === */}
         <HeroCard
           monthLabel={getCurrentMonthLabel()}
@@ -632,7 +632,7 @@ function CalendarCard({ data, monthLabel, year, month, selectedDay, onSelectDay 
   });
 
   return (
-    <div className={styles.calendarCard}>
+    <div className={`${styles.calendarCard} ${styles.calendarCardWide}`}>
       <div className={styles.calendarHeader}>
         <div>
           <div className={styles.calendarTitle}>{monthLabel} 매칭 달력</div>
