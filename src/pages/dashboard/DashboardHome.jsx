@@ -141,8 +141,26 @@ function SectionHeader({ title, sub, action, onAction }) {
   );
 }
 
+/* ── Todo Row 역할 배지 스타일 ──
+   매칭 매니저(내가 만든 매칭) = 강조(tangerine), 회원 매니저(내 회원만 낀 매칭) = 차분(muted). */
+const ROLE_BADGE_BASE = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontSize: 10.5,
+  fontWeight: 700,
+  padding: '2px 7px',
+  borderRadius: 'var(--r-xs)',
+  letterSpacing: '-0.01em',
+  flexShrink: 0,
+  whiteSpace: 'nowrap',
+};
+const ROLE_BADGE_STYLE = {
+  match:  { ...ROLE_BADGE_BASE, background: 'var(--tangerine-100)', color: 'var(--tangerine-700)' },
+  member: { ...ROLE_BADGE_BASE, background: 'var(--ink-100)',       color: 'var(--ink-500)'       },
+};
+
 /* ── Todo Row ── */
-function TodoRow({ match, onClick }) {
+function TodoRow({ match, onClick, myManagerId }) {
   const status = match.status;
   const cfg  = STAGE_CONFIG[status] || STAGE_CONFIG.draft;
   const tone = cfg.tone;
@@ -151,6 +169,10 @@ function TodoRow({ match, onClick }) {
   const nameB   = match.clientB?.clientName   || 'B';
   const genderA = match.clientA?.clientGender || 'male';
   const genderB = match.clientB?.clientGender || 'female';
+
+  /* 매칭 매니저(내가 만든 매칭) 여부. 아니면 내 회원이 상대편으로 들어간 매칭(=회원 매니저)
+     이라 실제 처리 주체는 다른 매니저다. 헷갈리지 않도록 역할을 배지로 표시한다. */
+  const isMyMatch = myManagerId != null && match.createdByManagerId === myManagerId;
 
   return (
     <button className={styles.todoRow} onClick={onClick} type="button">
@@ -166,9 +188,17 @@ function TodoRow({ match, onClick }) {
           <span className={styles.todoHeart}>♥</span>
           {nameB}
         </div>
-        <div className={styles.todoActionBadge} style={{ background: t.actionBg, color: t.fg }}>
-          <span style={{ width: 5, height: 5, borderRadius: '50%', background: t.dot, display: 'inline-block', flexShrink: 0 }} />
-          {cfg.action}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <span className={styles.todoActionBadge} style={{ background: t.actionBg, color: t.fg }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: t.dot, display: 'inline-block', flexShrink: 0 }} />
+            {cfg.action}
+          </span>
+          <span
+            style={isMyMatch ? ROLE_BADGE_STYLE.match : ROLE_BADGE_STYLE.member}
+            title={!isMyMatch && match.createdByManagerName ? `매칭 매니저: ${match.createdByManagerName}` : undefined}
+          >
+            {isMyMatch ? '매칭 매니저' : '회원 매니저'}
+          </span>
         </div>
       </div>
       <ChevronRight size={16} color="var(--ink-300)" strokeWidth={1.8} />
@@ -322,6 +352,7 @@ export default function DashboardHome() {
   const isLoading    = useManagerStore((s) => s.isLoading);
   const fetchSummary = useManagerStore((s) => s.fetchSummary);
   const myName       = useAuthStore((s) => s.name);
+  const myManagerId  = useAuthStore((s) => s.managerId);
   const connections  = useConnectionStore((s) => s.connections);
   const navigate     = useNavigate();
 
@@ -504,6 +535,7 @@ export default function DashboardHome() {
                     <TodoRow
                       key={m.matchId}
                       match={m}
+                      myManagerId={myManagerId}
                       onClick={() => navigate(`/dashboard/matches/${m.matchId}`)}
                     />
                   ))}

@@ -97,7 +97,7 @@ function sumAmount(list, status) {
 const ROLE_LABEL = {
   matchmaker: '매칭 매니저',
   client_owner: '회원 매니저',
-  both: '매물+매칭',
+  both: '가입+매칭',
 };
 
 const STATUS_LABEL = {
@@ -722,9 +722,9 @@ function TxRow({ s, onClick }) {
   const reasonLabel = roleIsMatch
     ? '매칭 성사 보상'
     : roleIsClient
-      ? '회원 매물 보상'
+      ? '회원 가입 보상'
       : s.role === 'both'
-        ? '매물 + 매칭 보상'
+        ? '가입 + 매칭 보상'
         : '정산';
   const matchCode = s.matchId ? `#${String(s.matchId).slice(-6)}` : '';
   const payoutDate = formatPayoutDate(s.matchEndedAt);
@@ -942,9 +942,9 @@ function ReceiptSheet({ s, onClose }) {
   const reasonLabel = s.role === 'matchmaker'
     ? '매칭 성사 보상'
     : s.role === 'client_owner'
-      ? '회원 매물 보상'
+      ? '회원 가입 보상'
       : s.role === 'both'
-        ? '매물 + 매칭 보상'
+        ? '가입 + 매칭 보상'
         : '정산';
   const payoutDate = formatPayoutDate(s.matchEndedAt);
 
