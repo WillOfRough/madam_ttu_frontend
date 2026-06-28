@@ -4,7 +4,6 @@ import {
   Check, XCircle, Clock, ChevronRight, ChevronLeft, Users,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
 import useConnectionStore from '../../store/connectionStore';
 import useManagerInviteStore from '../../store/managerInviteStore';
 import { searchManager } from '../../api/connectionService';
@@ -55,7 +54,6 @@ function formatConnectedDate(dateStr) {
 
 export default function Connections() {
   const navigate = useNavigate();
-  const managerInviteQuota = useAuthStore((s) => s.managerInviteQuota);
   const {
     connections, receivedRequests, sentRequests, isLoading,
     fetchConnections, fetchRequests, disconnect,
@@ -63,7 +61,6 @@ export default function Connections() {
   } = useConnectionStore();
   const {
     invites: managerInvites,
-    quota,
     pagination,
     statusFilter,
     isLoading: invitesLoading,
@@ -242,8 +239,6 @@ export default function Connections() {
   const handlePageChange = (page) => {
     fetchInvites({ status: statusFilter || undefined, page });
   };
-
-  const displayQuota = quota || managerInviteQuota;
 
   /* KPI counts */
   const connectedCount = connections.length;
@@ -515,56 +510,6 @@ export default function Connections() {
               <p className={styles.descText}>
                 다른 매니저와 네트워크를 맺으면 서로의 회원 풀을 공유할 수 있습니다.
                 네트워크 매니저가 등록한 회원을 열람할 수 있고, 상대방도 나의 회원을 볼 수 있어 더 좋은 매칭 기회를 만들 수 있습니다.
-              </p>
-            </div>
-          )}
-
-          {/* Quota hero — 행동 전에 잔여 수량 인지 (scarcity emphasis) */}
-          {displayQuota && displayQuota.limit !== null && (
-            <div
-              className={`${styles.quotaHero} ${displayQuota.remaining <= 1 ? styles.quotaHeroScarce : ''}`}
-            >
-              <div className={styles.quotaHeroHead}>
-                <span className={styles.quotaHeroTag}>INVITATION TICKETS</span>
-                <span className={styles.quotaHeroRemaining}>
-                  잔여 <strong>{displayQuota.remaining}</strong>장
-                </span>
-              </div>
-              <div className={styles.quotaHeroNumbers}>
-                <span className={styles.quotaHeroUsed}>{displayQuota.used}</span>
-                <span className={styles.quotaHeroSlash}>/</span>
-                <span className={styles.quotaHeroLimit}>{displayQuota.limit}</span>
-                <span className={styles.quotaHeroSuffix}>장 사용</span>
-              </div>
-              <div className={styles.quotaHeroBar}>
-                <div
-                  className={styles.quotaHeroFill}
-                  style={{ width: `${Math.min(100, (displayQuota.used / displayQuota.limit) * 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
-          {displayQuota && displayQuota.limit === null && (
-            <div className={styles.quotaHero}>
-              <div className={styles.quotaHeroHead}>
-                <span className={styles.quotaHeroTag}>INVITATION TICKETS</span>
-                <span className={styles.quotaHeroRemaining}>무제한</span>
-              </div>
-              <div className={styles.quotaHeroNumbers}>
-                <span className={styles.quotaHeroUsed}>{displayQuota.used}</span>
-                <span className={styles.quotaHeroSuffix}>장 사용</span>
-              </div>
-            </div>
-          )}
-
-          {/* Warning callout — 신중한 공유 안내 */}
-          {displayQuota && displayQuota.limit !== null && (
-            <div className={styles.warningCallout} role="note">
-              <span className={styles.warningIcon} aria-hidden="true">⚠️</span>
-              <p className={styles.warningText}>
-                초대권은 계정당 총 <strong>{displayQuota.limit}장</strong>만 제공됩니다.
-                무분별한 링크 생성은 초대권 낭비로 이어질 수 있으니,
-                반드시 신뢰할 수 있는 매니저에게만 신중하게 공유해 주세요.
               </p>
             </div>
           )}
