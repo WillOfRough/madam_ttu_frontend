@@ -24,7 +24,7 @@ const REWARD_ROLES = [
 ];
 
 const MANAGER_VALUES = [
-  { emoji: '🔗', title: '네트워크 초대권', desc: '믿는 매니저들과 회원 풀을 함께 나눠요.' },
+  { emoji: '🔗', title: '매니저 네트워크', desc: '믿는 매니저들과 회원 풀을 함께 나눠요.' },
   { emoji: '📘', title: '검증된 가이드와 양식', desc: '매칭 단계별 가이드와 바로 쓰는 문자 양식을 드려요.' },
   { emoji: '🤝', title: '회원 정보 보호 서약', desc: '개인정보보호법에 따라 회원 정보를 안전하게 지켜요.' },
 ];
