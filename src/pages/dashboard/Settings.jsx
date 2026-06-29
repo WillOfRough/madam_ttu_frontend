@@ -137,7 +137,7 @@ export default function Settings() {
           <Sparkles size={11} /> Account · Knots &amp; Links
         </span>
         <h1 className={styles.pageTitle}>설정</h1>
-        <p className={styles.pageSubtitle}>내 정보·보안·초대 권한을 한눈에 관리하세요.</p>
+        <p className={styles.pageSubtitle}>내 정보와 보안을 한눈에 관리하세요.</p>
       </header>
 
       {/* ── Bento grid ── */}

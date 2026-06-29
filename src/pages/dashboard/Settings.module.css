@@ -847,7 +847,7 @@
   }
 
   .heroCard {
-    grid-column: span 8;
+    grid-column: span 12;
     padding: 30px;
   }
 
